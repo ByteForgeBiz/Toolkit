@@ -1,0 +1,676 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="..\packages\Costura.Fody.6.0.0\build\Costura.Fody.props" Condition="Exists('..\packages\Costura.Fody.6.0.0\build\Costura.Fody.props')" />
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{FB0484EC-D6EF-41DD-B8C1-6F25E828127C}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>ByteForge.Toolkit</RootNamespace>
+    <AssemblyName>TelecomInc.Common</AssemblyName>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <LangVersion>12.0</LangVersion>
+    <TargetFrameworkProfile />
+    <WarningLevel>4</WarningLevel>
+    <ErrorReport>prompt</ErrorReport>
+    <DocumentationFile>bin\TelecomInc.Common.xml</DocumentationFile>
+    <NuGetPackageImportStamp>
+    </NuGetPackageImportStamp>
+  </PropertyGroup>
+  <PropertyGroup>
+    <Deterministic>true</Deterministic>
+    <PathMap>$(MSBuildProjectDirectory)=C:\ByteForge.Toolkit</PathMap>
+    <SourceRevisionId>$(CommitHash)</SourceRevisionId>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Costura, Version=6.0.0.0, Culture=neutral, PublicKeyToken=9919ef960d84173d, processorArchitecture=MSIL">
+      <HintPath>..\packages\Costura.Fody.6.0.0\lib\netstandard2.0\Costura.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Bcl.AsyncInterfaces, Version=9.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Bcl.AsyncInterfaces.9.0.0\lib\net462\Microsoft.Bcl.AsyncInterfaces.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Microsoft.Extensions.Configuration, Version=9.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Extensions.Configuration.9.0.0\lib\net462\Microsoft.Extensions.Configuration.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Extensions.Configuration.Abstractions, Version=9.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Extensions.Configuration.Abstractions.9.0.0\lib\net462\Microsoft.Extensions.Configuration.Abstractions.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Microsoft.Extensions.Configuration.FileExtensions, Version=9.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Extensions.Configuration.FileExtensions.9.0.0\lib\net462\Microsoft.Extensions.Configuration.FileExtensions.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Extensions.Configuration.Ini, Version=9.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Extensions.Configuration.Ini.9.0.0\lib\net462\Microsoft.Extensions.Configuration.Ini.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Extensions.FileProviders.Abstractions, Version=9.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Extensions.FileProviders.Abstractions.9.0.0\lib\net462\Microsoft.Extensions.FileProviders.Abstractions.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Extensions.FileProviders.Physical, Version=9.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Extensions.FileProviders.Physical.9.0.0\lib\net462\Microsoft.Extensions.FileProviders.Physical.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Extensions.FileSystemGlobbing, Version=9.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Extensions.FileSystemGlobbing.9.0.0\lib\net462\Microsoft.Extensions.FileSystemGlobbing.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Extensions.Primitives, Version=9.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Extensions.Primitives.9.0.0\lib\net462\Microsoft.Extensions.Primitives.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Microsoft.VisualBasic" />
+    <Reference Include="Newtonsoft.Json, Version=13.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\packages\Newtonsoft.Json.13.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="RestSharp, Version=112.1.0.0, Culture=neutral, PublicKeyToken=598062e77f915f75, processorArchitecture=MSIL">
+      <HintPath>..\packages\RestSharp.112.1.0\lib\net471\RestSharp.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Buffers, Version=4.0.4.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Buffers.4.6.0\lib\net462\System.Buffers.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.CommandLine, Version=2.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.CommandLine.2.0.0-beta4.22272.1\lib\netstandard2.0\System.CommandLine.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.CommandLine.NamingConventionBinder, Version=2.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.CommandLine.NamingConventionBinder.2.0.0-beta4.22272.1\lib\netstandard2.0\System.CommandLine.NamingConventionBinder.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.ComponentModel.Composition" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.IO, Version=4.1.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.IO.4.3.0\lib\net462\System.IO.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.IO.Compression.FileSystem" />
+    <Reference Include="System.IO.Compression.ZipFile, Version=4.0.2.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.IO.Compression.ZipFile.4.3.0\lib\net46\System.IO.Compression.ZipFile.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.IO.Pipelines, Version=9.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.IO.Pipelines.9.0.0\lib\net462\System.IO.Pipelines.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Memory, Version=4.0.2.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Memory.4.6.0\lib\net462\System.Memory.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Net.Http, Version=4.1.1.3, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Net.Http.4.3.4\lib\net46\System.Net.Http.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Numerics" />
+    <Reference Include="System.Numerics.Vectors, Version=4.1.5.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Numerics.Vectors.4.6.0\lib\net462\System.Numerics.Vectors.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Runtime, Version=4.1.1.1, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Runtime.4.3.1\lib\net462\System.Runtime.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Runtime.CompilerServices.Unsafe, Version=6.0.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Runtime.CompilerServices.Unsafe.6.1.0\lib\net462\System.Runtime.CompilerServices.Unsafe.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Security.Cryptography.Algorithms, Version=4.2.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Security.Cryptography.Algorithms.4.3.1\lib\net463\System.Security.Cryptography.Algorithms.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Security.Cryptography.Encoding, Version=4.0.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Security.Cryptography.Encoding.4.3.0\lib\net46\System.Security.Cryptography.Encoding.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Security.Cryptography.Primitives, Version=4.0.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Security.Cryptography.Primitives.4.3.0\lib\net46\System.Security.Cryptography.Primitives.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Security.Cryptography.X509Certificates, Version=4.1.1.2, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Security.Cryptography.X509Certificates.4.3.2\lib\net461\System.Security.Cryptography.X509Certificates.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Text.Encodings.Web, Version=9.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Text.Encodings.Web.9.0.0\lib\net462\System.Text.Encodings.Web.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Text.Json, Version=9.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Text.Json.9.0.0\lib\net462\System.Text.Json.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Threading.Tasks.Extensions, Version=4.2.1.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Threading.Tasks.Extensions.4.6.0\lib\net462\System.Threading.Tasks.Extensions.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.ValueTuple, Version=4.0.3.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.ValueTuple.4.5.0\lib\net47\System.ValueTuple.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Web" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="AESEncryption.cs" />
+    <Compile Include="BinarySearchTree.cs" />
+    <Compile Include="CommandLine\CommandAttribute.cs" />
+    <Compile Include="CommandLine\CommandBuilder.cs" />
+    <Compile Include="CommandLine\OptionAttribute.cs" />
+    <Compile Include="CommandLine\RootCommandBuilder.cs" />
+    <Compile Include="Configuration\Configuration.cs" />
+    <Compile Include="Configuration\ConfigurationSection.cs" />
+    <Compile Include="Configuration\IConfigurationSection.cs" />
+    <Compile Include="Configuration\PropertyNameAttribute.cs" />
+    <Compile Include="ConsoleUtil.cs" />
+    <Compile Include="CSVReader.cs" />
+    <Compile Include="DateTimeParser.cs" />
+    <Compile Include="DBLayer\DBAccess.cs" />
+    <Compile Include="DBLayer\DBOptions.cs" />
+    <Compile Include="DBLayer\ScriptExecutionResult.cs" />
+    <Compile Include="Encryptor.cs" />
+    <Compile Include="IOUtils.cs" />
+    <Compile Include="Log.cs" />
+    <Compile Include="Logging\BaseLogger.cs" />
+    <Compile Include="Logging\CompositeLogger.cs" />
+    <Compile Include="Logging\ConsoleLogger.cs" />
+    <Compile Include="Logging\CorrelationContext.cs" />
+    <Compile Include="Logging\FileLogger.cs" />
+    <Compile Include="Logging\FileLoggerOptions.cs" />
+    <Compile Include="Logging\ILogger.cs" />
+    <Compile Include="Logging\LogEntry.cs" />
+    <Compile Include="Logging\LogLevel.cs" />
+    <Compile Include="MailUtil.cs" />
+    <Compile Include="ParamArgumentsMismatchException.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="TimingUtil.cs" />
+    <Compile Include="Url.cs" />
+    <Compile Include="Utils.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="app.config" />
+    <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include=".gitignore" />
+    <Content Include="FodyWeavers.xml" />
+    <Content Include="ILLink\ILLink.Descriptors.LibraryBuild.xml" />
+  </ItemGroup>
+  <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+  <!--  ___           _        _    _ _                        __  __      _     _                               -->
+  <!-- | _ ) ___ __ _(_)_ _   | |  (_) |__ _ _ __ _ _ _ _  _  |  \/  |__ _(_)_ _| |_ ___ _ _  __ _ _ _  __ ___   -->
+  <!-- | _ \/ -_) _` | | ' \  | |__| | '_ \ '_/ _` | '_| || | | |\/| / _` | | ' \  _/ -_) ' \/ _` | ' \/ _/ -_)  -->
+  <!-- |___/\___\__, |_|_||_| |____|_|_.__/_| \__,_|_|  \_, | |_|  |_\__,_|_|_||_\__\___|_||_\__,_|_||_\__\___|  -->
+  <!--          |___/                                   |__/                                                     -->
+  <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+  <Import Project="..\packages\Fody.6.9.1\build\Fody.targets" Condition="Exists('..\packages\Fody.6.9.1\build\Fody.targets')" />
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('..\packages\Fody.6.9.1\build\Fody.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Fody.6.9.1\build\Fody.targets'))" />
+    <Error Condition="!Exists('..\packages\Costura.Fody.6.0.0\build\Costura.Fody.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Costura.Fody.6.0.0\build\Costura.Fody.props'))" />
+    <Error Condition="!Exists('..\packages\Costura.Fody.6.0.0\build\Costura.Fody.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Costura.Fody.6.0.0\build\Costura.Fody.targets'))" />
+    <Error Condition="!Exists('..\packages\NETStandard.Library.2.0.3\build\netstandard2.0\NETStandard.Library.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\NETStandard.Library.2.0.3\build\netstandard2.0\NETStandard.Library.targets'))" />
+  </Target>
+  <Import Project="..\packages\Costura.Fody.6.0.0\build\Costura.Fody.targets" Condition="Exists('..\packages\Costura.Fody.6.0.0\build\Costura.Fody.targets')" />
+  <Import Project="..\packages\NETStandard.Library.2.0.3\build\netstandard2.0\NETStandard.Library.targets" Condition="Exists('..\packages\NETStandard.Library.2.0.3\build\netstandard2.0\NETStandard.Library.targets')" />
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <!--
+       -   ___               ___ _ _          _          _   
+       -  / __|___ _ __ _  _| __(_) |___ ___ | |__  __ _| |_ 
+       - | (__/ _ \ '_ \ || | _|| | / -_)_-<_| '_ \/ _` |  _|
+       -  \___\___/ .__/\_, |_| |_|_\___/__(_)_.__/\__,_|\__|
+       -          |_|   |__/                                 
+       -->
+    <BatchFileLines>
+@echo off
+setlocal enabledelayedexpansion
+
+Call :RemoveQuotes %1
+set _source=%rst%
+
+Call :RemoveQuotes %2
+set _destination=%rst%
+
+echo.Source     : %_source%
+echo.Destination: %_destination%
+
+if not exist %_destination% mk %_destination%
+
+rem Delete any existing status file to prevent it from being copied
+if exist "%~dp0.robocopy_status" del "%~dp0.robocopy_status"
+
+if "%3"=="fromcentral" (
+  robocopy %_source% %_destination% /E /XO /XD .vs bin obj /XF .robocopy_status version.txt CopyFiles.bat
+) else (
+  robocopy %_source% %_destination% /E /XO /XD .vs bin obj /XF .robocopy_status version.txt CopyFiles.bat Properties\AssemblyInfo.cs
+)
+
+set /a rc = %ERRORLEVEL%
+echo ErrorLevel %rc%
+set /a _NoCopy   = "(%rc% &amp;  0)"
+set /a _Copy     = "(%rc% &amp;  1)"
+set /a _Extra    = "(%rc% &amp;  2)"
+set /a _Mismatch = "(%rc% &amp;  4)"
+set /a _Failed   = "(%rc% &amp;  8)"
+set /a _Serious  = "(%rc% &amp; 16)"
+
+if %_Copy%     NEQ 0 echo One or more files were copied successfully (that is, new files have arrived).
+if %_Extra%    NEQ 0 echo Some extra files or directories were detected. No files were copied. Examine the output log for details.
+if %_Mismatch% NEQ 0 echo Some mismatched files or directories were detected. Examine the output log. Housekeeping might be required.
+if %_Failed%   NEQ 0 echo Some files or directories could not be copied. Copy errors occurred, and the retry limit was exceeded. Check these errors further.
+if %_Serious%  NEQ 0 echo Serious error. Robocopy did not copy any files. Either a usage error or an error due to insufficient access privileges on the source or destination directories.
+if %rc%        EQU 0 echo No errors occurred, and no copying was done. The source and destination directory trees are completely synchronized.
+
+rem Write the actual error level to the project directory using %~dp0 (batch file location)
+echo %rc% &gt; "%~dp0.robocopy_status"
+
+if %rc% LEQ 3 ( exit /b 0 ) else ( exit /b %rc% )
+
+:RemoveQuotes
+rem setlocal enabledelayedexpansion
+set bk=\
+set qt=%1
+set tst=%qt:~0,1% -- %qt:~-1,1%
+if %tst% EQU " -- " (set qt2=%qt:~1,-1%) else (set qt2=%qt%)
+set tst2=%qt2:~-1,1%
+if %tst2% EQU %bk% (set qt2=%qt2:~0,-1%)
+set rst="%qt2%"
+exit /b 0
+    </BatchFileLines>
+  </PropertyGroup>
+  <UsingTask TaskName="WriteFileTask" TaskFactory="CodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.Core.dll">
+    <!--
+       - __      __   _ _       ___ _ _    _____        _   
+       - \ \    / / _(_) |_ ___| __(_) |__|_   _|_ _ __| |__
+       -  \ \/\/ / '_| |  _/ -_) _|| | / -_)| |/ _` (_-< / /
+       -   \_/\_/|_| |_|\__\___|_| |_|_\___||_|\__,_/__/_\_\
+       -                                                    
+
+      Task to write lines to a file with ASCII encoding.
+      Parameters:
+        - FileName: The name of the file to write to.
+        - Lines: An array of strings representing the lines to write to the file.
+    -->
+    <ParameterGroup>
+      <FileName ParameterType="System.String" Required="true" />
+      <Lines ParameterType="System.String[]" Required="true" />
+    </ParameterGroup>
+    <Task>
+      <Using Namespace="System.IO" />
+      <Using Namespace="System.Text" />
+      <Code Type="Fragment" Language="cs">
+        File.WriteAllLines(FileName, Lines, Encoding.ASCII);
+      </Code>
+    </Task>
+  </UsingTask>
+  <UsingTask TaskName="FileUpdate" TaskFactory="RoslynCodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.Core.dll">
+    <!--
+       -  ___ _ _     _   _          _      _       
+       - | __(_) |___| | | |_ __  __| |__ _| |_ ___ 
+       - | _|| | / -_) |_| | '_ \/ _` / _` |  _/ -_)
+       - |_| |_|_\___|\___/| .__/\__,_\__,_|\__\___|
+       -                   |_|                      
+
+      Task to update file content based on a regex pattern.
+      Parameters:
+        - Files: The files to be updated.
+        - Pattern: The regex pattern to find in the file.
+        - ReplacementText: The text to replace the pattern with.
+       -->
+    <ParameterGroup>
+      <Files ParameterType="Microsoft.Build.Framework.ITaskItem[]" Required="true" />
+      <Pattern ParameterType="System.String" Required="true" />
+      <ReplacementText ParameterType="System.String" Required="true" />
+    </ParameterGroup>
+    <Task>
+      <Using Namespace="System" />
+      <Using Namespace="System.IO" />
+      <Using Namespace="System.Text.RegularExpressions" />
+      <Code Type="Fragment" Language="cs"><![CDATA[
+try
+{
+    foreach (var file in Files)
+    {
+        Log.LogMessage(MessageImportance.High, $"Updating version in {Path.GetFileName(file.ItemSpec)}");
+        string content = File.ReadAllText(file.ItemSpec);
+        content = Regex.Replace(content, Pattern, ReplacementText);
+        File.WriteAllText(file.ItemSpec, content);
+    }
+    return true;
+}
+catch (Exception ex)
+{
+    Log.LogError(ex.Message);
+    return false;
+}
+]]></Code>
+    </Task>
+  </UsingTask>
+  <UsingTask TaskName="UpdateSmartVersionTask" TaskFactory="CodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.Core.dll">
+    <!--
+       -  _   _          _      _       ___                _ __   __          _        _____        _   
+       - | | | |_ __  __| |__ _| |_ ___/ __|_ __  __ _ _ _| |\ \ / /__ _ _ __(_)___ _ |_   _|_ _ __| |__
+       - | |_| | '_ \/ _` / _` |  _/ -_)__ \ '  \/ _` | '_|  _\ V / -_) '_(_-< / _ \ ' \| |/ _` (_-< / /
+       -  \___/| .__/\__,_\__,_|\__\___|___/_|_|_\__,_|_|  \__|\_/\___|_| /__/_\___/_||_|_|\__,_/__/_\_\
+       -       |_|                                                                                      
+
+      Task to update the version file based on the result of a file copy operation.
+      Parameters:
+        - CentralVersionFile: The path to the central version file.
+        - RobocopyErrorLevel: The error level returned by the robocopy command.
+      -->
+    <ParameterGroup>
+      <CentralVersionFile ParameterType="System.String" Required="true" />
+      <RobocopyErrorLevel ParameterType="System.Int32" Required="true" />
+    </ParameterGroup>
+    <Task>
+      <Using Namespace="System" />
+      <Using Namespace="System.IO" />
+      <Code Type="Fragment" Language="cs"><![CDATA[
+try {
+    // Only process if files were actually copied
+    bool filesCopied = (RobocopyErrorLevel & 1) != 0;
+    if (!filesCopied) {
+        Log.LogMessage(MessageImportance.High, "No files were copied, skipping version update");
+        return true;
+    }
+
+    var versionFileExists = File.Exists(CentralVersionFile);
+    Log.LogMessage(MessageImportance.High, "Checking version file: {0}", CentralVersionFile);
+                        
+    // Create version file if it doesn't exist
+    if (!versionFileExists) {
+        Log.LogMessage(MessageImportance.High, "Version file does not exist. Creating...");
+        File.WriteAllText(CentralVersionFile, "1.0.0");
+    }
+        
+    var oldVersion = File.ReadAllText(CentralVersionFile);
+    var parts = oldVersion.Split('.');
+    var intMajor = int.Parse(parts[0]);
+    var intMinor = int.Parse(parts[1]);
+    var intPatch = int.Parse(parts[2]);
+                        
+    Log.LogMessage(MessageImportance.High, "Current Library Version: {0}", oldVersion);
+                        
+    // Check if new files were added (robocopy return code 2)
+    bool newFilesAdded = (RobocopyErrorLevel & 2) != 0;
+                        
+    if (newFilesAdded) {
+        Log.LogMessage(MessageImportance.High, "New files added to the library. Incrementing Minor.");
+        intMinor += 1;
+        intPatch  = 0;
+    } else {
+        Log.LogMessage(MessageImportance.High, "Some files were updated. Incrementing Patch");
+        intPatch += 1;
+    }
+        
+    // Correcting version number
+    if (intPatch > 49) {
+        Log.LogMessage(MessageImportance.High, "Patch would be 50, incrementing Minor.");
+        intMinor += 1;
+        intPatch  = 0;
+    }
+        
+    if (intMinor > 49) {
+        Log.LogMessage(MessageImportance.High, "Minor would be 50, incrementing Major.");
+        intMajor += 1;
+        intMinor = 0;
+        intPatch = 0;
+    }
+        
+    // Updating version file
+        
+    var newVersion = string.Format("{0}.{1}.{2}.{3:MMdd}", intMajor, intMinor, intPatch, DateTime.Now);
+                        
+    // Save updated version
+    File.WriteAllText(CentralVersionFile, newVersion);
+        
+    var verChange = string.Format("Version changed from {0} to {1}", oldVersion, newVersion);
+    Log.LogMessage(MessageImportance.High, verChange);
+                        
+    return true;
+}
+catch (Exception ex) {
+    Log.LogError(string.Format("Failed to update central version file: {0}", ex.Message));
+    return false;
+}
+    ]]></Code>
+    </Task>
+  </UsingTask>
+  <UsingTask TaskName="CleanupCentralLocationTask" TaskFactory="RoslynCodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.Core.dll">
+    <!--
+         -   ___ _                         ___         _            _ _                 _   _        _____        _   
+         -  / __| |___ __ _ _ _ _  _ _ __ / __|___ _ _| |_ _ _ __ _| | |   ___  __ __ _| |_(_)___ _ |_   _|_ _ __| |__
+         - | (__| / -_) _` | ' \ || | '_ \ (__/ -_) ' \  _| '_/ _` | | |__/ _ \/ _/ _` |  _| / _ \ ' \| |/ _` (_-< / /
+         -  \___|_\___\__,_|_||_\_,_| .__/\___\___|_||_\__|_| \__,_|_|____\___/\__\__,_|\__|_\___/_||_|_|\__,_/__/_\_\
+         -                          |_|                                                                               
+
+         Task to clean up obsolete files in the central location.
+         Parameters:
+           - CentralPath: The path to the central location.
+           - ProjectItems: The items from the project to compare against.
+           - ExcludePatterns: Optional patterns to exclude from deletion.
+      -->
+    <ParameterGroup>
+      <CentralPath ParameterType="System.String" Required="true" />
+      <ProjectItems ParameterType="Microsoft.Build.Framework.ITaskItem[]" Required="true" />
+      <ExcludePatterns ParameterType="System.String[]" Required="false" />
+    </ParameterGroup>
+    <Task>
+      <Using Namespace="System" />
+      <Using Namespace="System.IO" />
+      <Using Namespace="System.Linq" />
+      <Using Namespace="System.Collections.Generic" />
+      <Code Type="Fragment" Language="cs"><![CDATA[
+  try
+  {
+      // Get all source files from project
+      var projectFiles = ProjectItems
+          .Select(item => item.ItemSpec.Replace(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar))
+          .ToList();
+
+      // Build exclude list (default + custom patterns)
+      var defaultExcludes = new[] { "version.txt", ".gitignore", "packages.config" };
+      var excludeList = (ExcludePatterns ?? Array.Empty<string>())
+          .Concat(defaultExcludes)
+          .ToList();
+
+      // Get all files in central location
+      var centralFiles = Directory.GetFiles(CentralPath, "*.*", SearchOption.AllDirectories)
+          .Select(f => f.Replace(CentralPath, "").TrimStart(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar))
+          .Where(f => !excludeList.Any(exclude => f.EndsWith(exclude, StringComparison.OrdinalIgnoreCase)))
+          .ToList();
+
+      // Find files that exist in central but not in project
+      var obsoleteFiles = centralFiles
+          .Where(centralFile => !projectFiles.Any(projFile => 
+              string.Equals(projFile, centralFile, StringComparison.OrdinalIgnoreCase)))
+          .ToList();
+
+      if (obsoleteFiles.Any())
+      {
+          Log.LogMessage(MessageImportance.High, "Found {0} obsolete files:", obsoleteFiles.Count);
+          foreach (var file in obsoleteFiles)
+          {
+              var fullPath = Path.Combine(CentralPath, file);
+              Log.LogMessage(MessageImportance.High, $"Deleting: {file}");
+                          
+              try
+              {
+                  File.Delete(fullPath);
+                              
+                  // Clean up empty directories
+                  var directory = Path.GetDirectoryName(fullPath);
+                  while (!string.IsNullOrEmpty(directory) && 
+                          directory.StartsWith(CentralPath) && 
+                          Directory.Exists(directory) &&
+                          !Directory.EnumerateFileSystemEntries(directory).Any())
+                  {
+                      Directory.Delete(directory);
+                      directory = Path.GetDirectoryName(directory);
+                  }
+              }
+              catch (Exception ex)
+              {
+                  Log.LogWarning($"Failed to delete {file}: {ex.Message}");
+              }
+          }
+      }
+      else
+      {
+          Log.LogMessage(MessageImportance.Normal, "No obsolete files found in central location.");
+      }
+
+      return true;
+  }
+  catch (Exception ex)
+  {
+      Log.LogError($"Failed to cleanup central location: {ex.Message}");
+      return false;
+  }
+  ]]></Code>
+    </Task>
+  </UsingTask>
+  <PropertyGroup>
+    <!--
+      Property group for various project settings.
+      Parameters:
+        - CleanupAfterCopy: Indicates whether to clean up after copying files.
+        - ParentDir: The parent directory of the project.
+        - CopyFiles: Determines if files should be copied based on the parent directory.
+        - TargetFolderPath: The target folder path for copying files.
+        - CmdCopyTo: Command to copy files to the target folder.
+        - CmdCopyFrom: Command to copy files from the target folder.
+        - CentralVersionFile: The path to the central version file.
+    -->
+    <CleanupAfterCopy>true</CleanupAfterCopy>
+    <ParentDir>$([System.IO.Path]::GetFullPath('$(ProjectDir)\..'))</ParentDir>
+    <CopyFiles>$([System.String]::new($(ParentDir)).EndsWith('TelecomInc').Equals(False))</CopyFiles>
+    <TargetFolderPath>$([System.IO.Path]::GetFullPath('$(ProjectDir)..\..\ByteForge.Toolkit'))</TargetFolderPath>
+    <CmdCopyTo>Call CopyFiles.bat "$(ProjectDir)" "$(TargetFolderPath)"</CmdCopyTo>
+    <CmdCopyFrom>Call CopyFiles.bat "$(TargetFolderPath)" "$(ProjectDir)" fromcentral</CmdCopyFrom>
+    <CentralVersionFile>$(TargetFolderPath)\version.txt</CentralVersionFile>
+  </PropertyGroup>
+  <ItemGroup>
+    <AsmInfo Include="Properties\AssemblyInfo.cs" Visible="False" />
+  </ItemGroup>
+  <Target Name="CreateCopyBatFile" BeforeTargets="BeforeBuild">
+    <!--
+      Target to create the CopyFiles.bat file before the build process.
+      This batch file is used to copy files between directories.
+      Parameters:
+        - FileName: The name of the batch file to create.
+        - Lines: The content of the batch file.
+    -->
+    <WriteFileTask FileName="CopyFiles.bat" Lines="$(BatchFileLines)" />
+  </Target>
+  <Target Name="MessageTarget" BeforeTargets="CopyFromCentral">
+    <!--
+      Target to display messages before copying files from the central location.
+      Displays whether the project must be copied and the path to the central version file.
+      Parameters:
+        - ProjectName: The name of the project.
+        - CopyFiles: Condition to check if files should be copied.
+        - CentralVersionFile: The path to the central version file.
+    -->
+    <Message Importance="high" Text="$(ProjectName) must be copied." Condition="$(CopyFiles)" />
+    <Message Importance="high" Text="$(ProjectName) will not be copied." Condition="!$(CopyFiles)" />
+    <Message Importance="high" Text="Central Version File: $(CentralVersionFile)" />
+  </Target>
+  <Target Name="CopyFromCentral" BeforeTargets="BeforeBuild" Condition="$(CopyFiles) AND Exists($(TargetFolderPath))">
+    <!--
+      Target to copy updated files from the central location before the build process.
+      Executes the command to copy files from the central location to the project directory.
+      Parameters:
+        - CmdCopyFrom: The command to copy files from the central location.
+    -->
+    <Message Importance="high" Text="Copying updated files from $(TargetFolderPath)" />
+    <Message Importance="high" Text="Executing: $(CmdCopyFrom)" />
+    <Exec Command="$(CmdCopyFrom)" />
+  </Target>
+  <Target Name="CopyFromActive" AfterTargets="AfterBuild" Condition="$(CopyFiles)">
+    <!--
+      Target to copy source files to the central location after the build process.
+      Executes the command to copy files from the project directory to the central location.
+      Parameters:
+        - CmdCopyTo: The command to copy files to the central location.
+    -->
+    <Message Importance="high" Text="Copying source files to $(TargetFolderPath)" />
+    <Message Importance="high" Text="Executing: $(CmdCopyTo)" />
+    <Exec Command="$(CmdCopyTo)" />
+  </Target>
+  <Target Name="GetRobocopyStatus" BeforeTargets="UpdateSmartVersion">
+    <!--
+      Target to read the status of the robocopy command before updating the version.
+      Reads the robocopy status from a file and deletes the status file afterwards.
+      Parameters:
+        - ProjectDir: The project directory.
+        - RobocopyStatus: The status of the robocopy command.
+    -->
+    <ReadLinesFromFile File="$(ProjectDir).robocopy_status">
+      <Output TaskParameter="Lines" PropertyName="RobocopyStatus" />
+    </ReadLinesFromFile>
+    <Message Importance="high" Text="Robocopy Status: $(RobocopyStatus)" />
+    <Delete Files="$(ProjectDir).robocopy_status" />
+  </Target>
+  <Target Name="CleanupCentral" AfterTargets="CopyFromActive" BeforeTargets="GetRobocopyStatus">
+    <!--
+    Target to clean up obsolete files from the central location.
+    Executes after copying new files but before version update.
+    Parameters:
+      - CentralPath: The target folder path
+      - ProjectItems: All source files from the project
+  -->
+    <Message Importance="high" Text="Cleaning up obsolete files in central location" />
+    <ItemGroup>
+      <!-- Collect all source files from the project -->
+      <ProjectSourceFiles Include="@(Compile)" />
+      <ProjectSourceFiles Include="@(Content)" />
+      <ProjectSourceFiles Include="@(None)" />
+      <ProjectSourceFiles Include="*.csproj" />
+      <!-- Add any other item types that should be preserved -->
+    </ItemGroup>
+    <CleanupCentralLocationTask CentralPath="$(TargetFolderPath)" ProjectItems="@(ProjectSourceFiles)" />
+  </Target>
+  <Target Name="UpdateSmartVersion" AfterTargets="CopyFromActive">
+    <!--
+      Target to update the version file after copying source files to the central location.
+      Calls the UpdateSmartVersionTask to update the version file based on the robocopy status.
+      Updates the AssemblyInfo.cs file with the new version and deletes the batch file.
+      Parameters:
+        - CentralVersionFile: The path to the central version file.
+        - RobocopyStatus: The status of the robocopy command.
+        - FileVersion: The new version to update in the AssemblyInfo.cs file.
+        - ProjectDir: The project directory.
+        - AsmInfo: The AssemblyInfo.cs file.
+    -->
+    <Message Importance="high" Text="Calling UpdateSmartVersionTask" />
+    <UpdateSmartVersionTask CentralVersionFile="$(CentralVersionFile)" RobocopyErrorLevel="$(RobocopyStatus)" Condition="$(RobocopyStatus) != '0'" />
+    <ReadLinesFromFile File="$(CentralVersionFile)">
+      <Output TaskParameter="Lines" PropertyName="FileVersion" />
+    </ReadLinesFromFile>
+    <FileUpdate Files="$(ProjectDir)Properties\AssemblyInfo.cs" Pattern="Version\(&quot;.+?&quot;\)" ReplacementText="Version(&quot;$(FileVersion)&quot;)" />
+    <Copy SkipUnchangedFiles="True" SourceFiles="@(AsmInfo)" DestinationFolder="$(TargetFolderPath)\Properties" />
+    <Delete Files="$(ProjectDir)CopyFiles.bat" />
+  </Target>
+</Project>
