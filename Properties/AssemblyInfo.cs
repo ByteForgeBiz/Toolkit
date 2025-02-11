@@ -7,9 +7,9 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyTitle("ByteForge.Toolkit")]
 [assembly: AssemblyDescription("Common library for .NET Framerowk.")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("Telecom, Inc.")]
+[assembly: AssemblyCompany("Paulo Santos")]
 [assembly: AssemblyProduct("ByteForge.Toolkit")]
-[assembly: AssemblyCopyright("Copyright © 2024 - Telecom, Inc.")]
+[assembly: AssemblyCopyright("Copyright © 2024 - Paulo Santos")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
@@ -30,5 +30,5 @@ using System.Runtime.InteropServices;
 //
 // You can specify all the values or you can default the Build and Revision Numbers
 // by using the '*' as shown below:
-[assembly: AssemblyVersion("3.11.0.1213")]
-[assembly: AssemblyFileVersion("3.11.0.1213")]
+[assembly: AssemblyVersion("3.12.0.0211")]
+[assembly: AssemblyFileVersion("3.12.0.0211")]

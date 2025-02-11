@@ -1,0 +1,43 @@
+::  ___     _          ___                    _     _    
+:: | _ \___| |__  ___ / __|___ _ __ _  _   _ | |___| |__ 
+:: |   / _ \ '_ \/ _ \ (__/ _ \ '_ \ || | | || / _ \ '_ \
+:: |_|_\___/_.__/\___/\___\___/ .__/\_, |  \__/\___/_.__/
+::                            |_|   |__/                 
+::
+:: Created by Paulo Santos 
+:: 21 Dec 2024
+::
+
+::
+:: Exclude These Directories :
+::
+	/XD		:: eXclude Directories matching these names
+		.git
+		.vs
+		bin
+		obj
+
+::
+:: Exclude These Files :
+::
+	/XF		:: eXclude Files matching these names
+		.robocopy_status
+		version.txt
+		CopyFiles.bat
+        ByteForge.Tasks.targets
+		*.sln
+        *.user
+        *.rcj
+	/XO		:: eXclude Older files.
+::
+:: Copy options :
+::
+	/S		:: copy Subdirectories, but not empty ones.
+	/E		:: copy subdirectories, including Empty ones.
+	/DCOPY:DA	:: what to COPY for directories (default is /DCOPY:DA).
+	/COPY:DAT	:: what to COPY for files (default is /COPY:DAT).
+
+::
+:: Retry Options :
+::
+	/R:0
