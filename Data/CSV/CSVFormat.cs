@@ -6,6 +6,7 @@ namespace ByteForge.Toolkit
     /// <summary>
     /// Represents the format configuration for CSV parsing.
     /// </summary>
+    [Serializable]
     public class CSVFormat
     {
         /// <summary>
@@ -51,6 +52,12 @@ namespace ByteForge.Toolkit
             TrimValues = true
         };
 
+        /// <inheritdoc />
+        override public string ToString()
+        {
+            return $"Delimiter: ‘{Delimiter}’, QuoteChar: ‘{QuoteChar}’, HasHeader: {HasHeader}, HeaderQuoted: {HeaderQuoted}, DataQuoted: {DataQuoted}, TrimValues: {TrimValues}";
+        }
+
         /// <summary>
         /// Attempts to detect the format from a sample of lines.
         /// </summary>
@@ -73,24 +80,131 @@ namespace ByteForge.Toolkit
             format.Delimiter = DetectDelimiter(sampleLines, delimiters);
 
             // Detect quotes in header
-            format.HeaderQuoted = IsQuoted(headerLine, '"') || IsQuoted(headerLine, '\'');
-            format.QuoteChar = format.HeaderQuoted ? headerLine[0] : (char?)null;
+            var possibleQuoteChars = new[] { '"', '\'' };
+            var headerQuoteChar = possibleQuoteChars.FirstOrDefault(q => headerLine.Contains(q));
+
+            if (headerQuoteChar != default(char))
+            {
+                format.HeaderQuoted = CountQuotedFields(headerLine, format.Delimiter, headerQuoteChar) > 0;
+                format.QuoteChar = format.HeaderQuoted ? headerQuoteChar : (char?)null;
+            }
+            else
+            {
+                format.HeaderQuoted = false;
+                format.QuoteChar = null;
+            }
 
             // Detect quotes in data
             if (dataLines.Length > 0)
             {
-                format.DataQuoted = dataLines.All(line =>
-                    IsQuoted(line, format.QuoteChar ?? '"') ||
-                    IsQuoted(line, '\''));
+                // If no quote char found in header, try to find one in data
+                if (!format.QuoteChar.HasValue)
+                {
+                    foreach (var quoteChar in possibleQuoteChars)
+                    {
+                        if (dataLines.Any(line => line.Contains(quoteChar)))
+                        {
+                            format.QuoteChar = quoteChar;
+                            break;
+                        }
+                    }
+                }
 
-                if (format.DataQuoted && !format.HeaderQuoted)
-                    format.QuoteChar = dataLines[0][0];
+                if (format.QuoteChar.HasValue)
+                {
+                    // Count total and quoted fields to determine if data is mostly quoted
+                    var totalFields = 0;
+                    var quotedFields = 0;
+
+                    foreach (var line in dataLines)
+                    {
+                        var fieldsInLine = CountFields(line, format.Delimiter);
+                        totalFields += fieldsInLine;
+                        quotedFields += CountQuotedFields(line, format.Delimiter, format.QuoteChar.Value);
+                    }
+
+                    // Consider data quoted if more than 25% of fields are quoted
+                    // This threshold handles mixed quoting patterns but avoids false positives
+                    format.DataQuoted = quotedFields > (totalFields * 0.25);
+                }
+                else
+                {
+                    format.DataQuoted = false;
+                }
             }
 
             format.HasHeader = true; // Assume headers by default
             format.TrimValues = true;
 
             return format;
+        }
+
+        /// <summary>
+        /// Counts the number of fields that appear to be quoted in a line.
+        /// </summary>
+        /// <param name="line">The line to analyze.</param>
+        /// <param name="delimiter">The delimiter character.</param>
+        /// <param name="quoteChar">The quote character.</param>
+        /// <returns>The number of quoted fields in the line.</returns>
+        private static int CountQuotedFields(string line, char delimiter, char quoteChar)
+        {
+            var count = 0;
+            var inQuotes = false;
+            var fieldStart = 0;
+
+            for (var i = 0; i <= line.Length; i++)
+            {
+                // At delimiter or end of line - evaluate field
+                if (i == line.Length || (line[i] == delimiter && !inQuotes))
+                {
+                    // Get the field content (trimmed)
+                    var field = i == fieldStart ? string.Empty :
+                                   line.Substring(fieldStart, i - fieldStart).Trim();
+
+                    // Check if field is quoted
+                    if (field.Length >= 2 &&
+                        field[0] == quoteChar &&
+                        field[field.Length - 1] == quoteChar)
+                    {
+                        count++;
+                    }
+
+                    fieldStart = i + 1;
+                }
+                // Toggle quote state when encountering a quote character
+                else if (line[i] == quoteChar)
+                {
+                    // Handle escaped quotes (double quotes)
+                    if (i + 1 < line.Length && line[i + 1] == quoteChar)
+                        i++; // Skip next quote character
+                    else
+                        inQuotes = !inQuotes;
+                }
+            }
+
+            return count;
+        }
+
+        /// <summary>
+        /// Counts the number of fields in a line when split by a delimiter.
+        /// </summary>
+        /// <param name="line">The line to analyze.</param>
+        /// <param name="delimiter">The delimiter to use for splitting.</param>
+        /// <returns>The number of fields in the line.</returns>
+        private static int CountFields(string line, char delimiter)
+        {
+            var count = 1;
+            var inQuotes = false;
+
+            for (int i = 0; i < line.Length; i++)
+            {
+                if (line[i] == '"' || line[i] == '\'')
+                    inQuotes = !inQuotes;
+                else if (line[i] == delimiter && !inQuotes)
+                    count++;
+            }
+
+            return count;
         }
 
         /// <summary>
@@ -127,29 +241,6 @@ namespace ByteForge.Toolkit
         }
 
         /// <summary>
-        /// Counts the number of fields in a line when split by a delimiter.
-        /// </summary>
-        /// <param name="line">The line to analyze.</param>
-        /// <param name="delimiter">The delimiter to use for splitting.</param>
-        /// <returns>The number of fields in the line.</returns>
-        private static int CountFields(string line, char delimiter)
-        {
-            var count = 1;
-            var inQuotes = false;
-            var quoteChar = line.FirstOrDefault(c => c == '"' || c == '\'');
-
-            for (var i = 0; i < line.Length; i++)
-            {
-                if (line[i] == quoteChar)
-                    inQuotes = !inQuotes;
-                else if (line[i] == delimiter && !inQuotes)
-                    count++;
-            }
-
-            return count;
-        }
-
-        /// <summary>
         /// Determines whether a line is quoted with a specific quote character.
         /// </summary>
         /// <param name="line">The line to analyze.</param>
@@ -160,6 +251,38 @@ namespace ByteForge.Toolkit
             return line.Length >= 2 &&
                    line[0] == quoteChar &&
                    line[line.Length - 1] == quoteChar;
+        }
+
+        /// <summary>
+        /// Determines whether the specified object is equal to the current object.
+        /// </summary>
+        /// <param name="obj">The object to compare with the current object.</param>
+        /// <returns><c>true</c> if the specified object is equal to the current object; otherwise, <c>false</c>.</returns>
+        override public bool Equals(object obj)
+        {
+            if (obj == null || GetType() != obj.GetType())
+                return false;
+            var other = (CSVFormat)obj;
+            return Delimiter == other.Delimiter &&
+                   QuoteChar == other.QuoteChar &&
+                   HasHeader == other.HasHeader &&
+                   HeaderQuoted == other.HeaderQuoted &&
+                   DataQuoted == other.DataQuoted &&
+                   TrimValues == other.TrimValues;
+        }
+
+        /// <summary>
+        /// Serves as the default hash function.
+        /// </summary>
+        /// <returns>A hash code for the current object.</returns>
+        override public int GetHashCode()
+        {
+            return Delimiter.GetHashCode() ^
+                   QuoteChar.GetHashCode() ^
+                   HasHeader.GetHashCode() ^
+                   HeaderQuoted.GetHashCode() ^
+                   DataQuoted.GetHashCode() ^
+                   TrimValues.GetHashCode();
         }
     }
 }

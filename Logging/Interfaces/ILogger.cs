@@ -16,6 +16,84 @@ namespace ByteForge.Toolkit.Logging
     /// </summary>
     public interface ILogger
     {
+        // General Logging Methods
+        /// <summary>
+        /// Logs a message with the specified log level.
+        /// </summary>
+        /// <param name="level">The log level.</param>
+        /// <param name="message">The message to log.</param>
+        /// <param name="ex">Optional exception associated with the log message.</param>
+        /// <param name="source">The source of the message. If omitted, uses the calling method's name.</param>
+        void Log(LogLevel level, string message, Exception ex = null, [CallerMemberName] string source = "");
+
+        // Level-Specific Logging Methods
+        /// <summary>
+        /// Logs a trace message.
+        /// </summary>
+        /// <param name="message">The message to log.</param>
+        /// <param name="source">The source of the message. If omitted, uses the calling method's name.</param>
+        void LogTrace(string message, [CallerMemberName] string source = "");
+
+        /// <summary>
+        /// Logs a debug message.
+        /// </summary>
+        /// <param name="message">The message to log.</param>
+        /// <param name="source">The source of the message. If omitted, uses the calling method's name.</param>
+        void LogDebug(string message, [CallerMemberName] string source = "");
+
+        /// <summary>
+        /// Logs a verbose message.
+        /// </summary>
+        /// <param name="message">The message to log.</param>
+        /// <param name="source">The source of the message. If omitted, uses the calling method's name.</param>
+        void LogVerbose(string message, [CallerMemberName] string source = "");
+
+        /// <summary>
+        /// Logs an informational message.
+        /// </summary>
+        /// <param name="message">The message to log.</param>
+        /// <param name="source">The source of the message. If omitted, uses the calling method's name.</param>
+        void LogInfo(string message, [CallerMemberName] string source = "");
+
+        /// <summary>
+        /// Logs a notice message.
+        /// </summary>
+        /// <param name="message">The message to log.</param>
+        /// <param name="source">The source of the message. If omitted, uses the calling method's name.</param>
+        void LogNotice(string message, [CallerMemberName] string source = "");
+
+        /// <summary>
+        /// Logs a warning message.
+        /// </summary>
+        /// <param name="message">The message to log.</param>
+        /// <param name="source">The source of the message. If omitted, uses the calling method's name.</param>
+        void LogWarning(string message, [CallerMemberName] string source = "");
+
+        /// <summary>
+        /// Logs an error message.
+        /// </summary>
+        /// <param name="message">The message to log.</param>
+        /// <param name="ex">Optional exception associated with the error.</param>
+        /// <param name="source">The source of the message. If omitted, uses the calling method's name.</param>
+        void LogError(string message, Exception ex = null, [CallerMemberName] string source = "");
+
+        /// <summary>
+        /// Logs a critical error message.
+        /// </summary>
+        /// <param name="message">The message to log.</param>
+        /// <param name="ex">Optional exception associated with the critical error.</param>
+        /// <param name="source">The source of the message. If omitted, uses the calling method's name.</param>
+        void LogCritical(string message, Exception ex = null, [CallerMemberName] string source = "");
+
+        /// <summary>
+        /// Logs a fatal error message.
+        /// </summary>
+        /// <param name="message">The message to log.</param>
+        /// <param name="ex">Optional exception associated with the fatal error.</param>
+        /// <param name="source">The source of the message. If omitted, uses the calling method's name.</param>
+        void LogFatal(string message, Exception ex = null, [CallerMemberName] string source = "");
+
+        // Utility Methods
         /// <summary>
         /// Gets the name of the logger.
         /// </summary>
@@ -25,65 +103,5 @@ namespace ByteForge.Toolkit.Logging
         /// Gets or sets the minimum log level for the logger.
         /// </summary>
         LogLevel MinLogLevel { get; set; }
-
-        /// <summary>
-        /// Logs a verbose message.
-        /// </summary>
-        /// <param name="message">The message to log.</param>
-        /// <param name="source">The source of the message. If ommitted uses the calling method's name.</param>
-        /// 
-        void LogVerbose(string message, [CallerMemberName] string source = "");
-
-        /// <summary>
-        /// Logs a debug message.
-        /// </summary>
-        /// <param name="message">The message to log.</param>
-        /// <param name="source">The source of the message. If ommitted uses the calling method's name.</param>
-        /// 
-        void LogDebug(string message, [CallerMemberName] string source = "");
-
-        /// <summary>
-        /// Logs an informational message.
-        /// </summary>
-        /// <param name="message">The message to log.</param>
-        /// <param name="source">The source of the message. If ommitted uses the calling method's name.</param>
-        /// 
-        void LogInfo(string message, [CallerMemberName] string source = "");
-
-        /// <summary>
-        /// Logs a warning message.
-        /// </summary>
-        /// <param name="message">The message to log.</param>
-        /// <param name="source">The source of the message. If ommitted uses the calling method's name.</param>
-        /// 
-        void LogWarning(string message, [CallerMemberName] string source = "");
-
-        /// <summary>
-        /// Logs an error message.
-        /// </summary>
-        /// <param name="message">The message to log.</param>
-        /// <param name="ex">Optional exception associated with the error.</param>
-        /// <param name="source">The source of the message. If ommitted uses the calling method's name.</param>
-        /// 
-        void LogError(string message, Exception ex = null, [CallerMemberName] string source = "");
-
-        /// <summary>
-        /// Logs a critical error message.
-        /// </summary>
-        /// <param name="message">The message to log.</param>
-        /// <param name="ex">Optional exception associated with the critical error.</param>
-        /// <param name="source">The source of the message. If ommitted uses the calling method's name.</param>
-        /// 
-        void LogCritical(string message, Exception ex = null, [CallerMemberName] string source = "");
-
-        /// <summary>
-        /// Logs a message with the specified log level.
-        /// </summary>
-        /// <param name="level">The log level.</param>
-        /// <param name="message">The message to log.</param>
-        /// <param name="ex">Optional exception associated with the log message.</param>
-        /// <param name="source">The source of the message. If ommitted uses the calling method's name.</param>
-        /// 
-        void Log(LogLevel level, string message, Exception ex = null, [CallerMemberName] string source = "");
     }
 }

@@ -62,6 +62,8 @@ namespace ByteForge.Toolkit
             if (DataProcessor == null)
                 throw new ArgumentNullException(nameof(DataProcessor));
 
+            Log.Debug($"Reading CSV file: {filePath}");
+
             using (var stream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.Read))
                 ReadStream(stream);
         }
@@ -87,17 +89,17 @@ namespace ByteForge.Toolkit
                 if (sample.Length == 0)
                     throw new InvalidDataException("The CSV file is empty.");
 
+                var isFormatDetected = Format == null;
                 Format = Format ?? CSVFormat.DetectFormat(sample);
 
-                // Process header
-                var headerLine = bufferedReader.ReadLine();
-                if (headerLine == null)
-                    throw new InvalidDataException("Failed to read header line.");
+                Log.Debug($"CSV format: {Format}");
 
+                // Process header
+                var headerLine = bufferedReader.ReadLine() ?? throw new InvalidDataException("Failed to read header line.");
                 var columns = ParseLine(headerLine, Format.Delimiter, Format.HeaderQuoted ? Format.QuoteChar : null);
 
                 // Process data rows
-                long totalBytes = stream.Length;
+                var totalBytes = stream.Length;
                 long prevPct = 0;
 
                 string line;
@@ -129,7 +131,17 @@ namespace ByteForge.Toolkit
                     if (values.Length != columns.Length)
                         throw new InvalidDataException($"Inconsistent field count. Expected {columns.Length}, got {values.Length} at line: {line}");
 
-                    DataProcessor(columns, values, line);
+                    try
+                    {
+                        DataProcessor(columns, values, line);
+                    }
+                    catch (Exception ex)
+                    {
+                        var error = new DataProcessingException($"Error processing data at line: {line}", ex);
+                        error.Data["Format"] = Format;
+                        error.Data["IsFormatDetected"] = isFormatDetected;
+                        throw error;
+                    }
                 }
             }
         }
@@ -153,7 +165,7 @@ namespace ByteForge.Toolkit
             var result = new System.Collections.Generic.List<string>();
             var inQuotes = false;
 
-            for (int i = 0; i < line.Length; i++)
+            for (var i = 0; i < line.Length; i++)
             {
                 if (line[i] == quoteChar)
                     inQuotes = !inQuotes;

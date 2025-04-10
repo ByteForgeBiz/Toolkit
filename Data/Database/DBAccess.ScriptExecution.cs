@@ -9,6 +9,22 @@ using System.Text.RegularExpressions;
 
 namespace ByteForge.Toolkit
 {
+
+    /*
+     * The `ExecuteScript` and `ExecuteQuery` methods both execute SQL commands against the database, but they have some key differences:
+     *
+     * Similarities:
+     * - Both methods open a database connection and execute SQL commands.
+     * - Both methods handle exceptions and log errors.
+     * - Both methods use a similar pattern for creating and executing commands.
+     *
+     * Differences:
+     * - `ExecuteQuery` executes a single SQL query, while `ExecuteScript` can execute multiple batches of SQL commands separated by "GO".
+     * - `ExecuteScript` can capture and return multiple result sets, while `ExecuteQuery` only returns the number of records affected.
+     * - `ExecuteScript` has additional logic to handle DDL statements and parameter parsing, which `ExecuteQuery` does not.
+     * - `ExecuteScript` returns a `ScriptExecutionResult` object containing detailed information about the execution, while `ExecuteQuery` returns a boolean indicating success or failure.
+     */
+
     public partial class DBAccess
     {
         /// <summary>
@@ -19,6 +35,11 @@ namespace ByteForge.Toolkit
         /// <param name="captureResults">Indicates whether to capture the results of the script execution.</param>
         /// <param name="caller">The name of the method that called this method.</param>
         /// <returns>The result of the script execution.</returns>
+        /// <remarks>
+        /// Use <c>ExecuteScript</c> when you need to execute a complex SQL script that may contain multiple batches of commands separated by "GO".
+        /// This method is suitable for running DDL (Data Definition Language) statements, complex transactions, or scripts that require capturing multiple result sets.
+        /// It returns a <see cref="ScriptExecutionResult"/> object containing detailed information about the execution, including success status, result sets, and any exceptions encountered.
+        /// </remarks>
         public ScriptExecutionResult ExecuteScript(string script, object[] arguments = null, bool captureResults = false, [CallerMemberName] string caller = "")
         {
             var result = new ScriptExecutionResult();
@@ -70,6 +91,8 @@ namespace ByteForge.Toolkit
                                 result.RecordsAffected.Add(affected);
                                 result.BatchResults.Add(affected);
                             }
+
+                            Log.Debug($"Execution completed. Records affected: {result.RecordsAffected.Last()}");
                         }
 
                         result.Success = true;
@@ -86,42 +109,6 @@ namespace ByteForge.Toolkit
             }
 
             return result;
-        }
-
-        /// <summary>
-        /// Executes a SQL script without capturing results.
-        /// </summary>
-        /// <param name="script">The SQL script to execute.</param>
-        /// <param name="arguments">Optional. The arguments for the SQL script.</param>
-        /// <returns>A task representing the asynchronous operation. The task result indicates whether the script executed successfully.</returns>
-        public bool ExecuteScriptNonQuery(string script, object[] arguments = null)
-        {
-            var result = ExecuteScript(script, arguments);
-            return result.Success;
-        }
-
-        /// <summary>
-        /// Executes a SQL script and returns the first result.
-        /// </summary>
-        /// <param name="script">The SQL script to execute.</param>
-        /// <param name="arguments">Optional. The arguments for the SQL script.</param>
-        /// <returns>A task representing the asynchronous operation. The task result contains the first result of the script execution.</returns>
-        public object ExecuteScriptScalar(string script, object[] arguments = null)
-        {
-            var result = ExecuteScript(script, arguments, captureResults: true);
-            return result.Success && result.BatchResults.Count > 0 ? result.BatchResults[0] : null;
-        }
-
-        /// <summary>
-        /// Executes a SQL script and returns the first result set.
-        /// </summary>
-        /// <param name="script">The SQL script to execute.</param>
-        /// <param name="arguments">Optional. The arguments for the SQL script.</param>
-        /// <returns>A task representing the asynchronous operation. The task result contains the first result set of the script execution.</returns>
-        public DataTable ExecuteScriptTable(string script, object[] arguments = null)
-        {
-            var result = ExecuteScript(script, arguments, captureResults: true);
-            return result.Success && result.ResultSets.Count > 0 ? result.ResultSets[0] : null;
         }
 
         /// <summary>

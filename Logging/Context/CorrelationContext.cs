@@ -15,13 +15,15 @@ namespace ByteForge.Toolkit.Logging
     /// </summary>
     public class CorrelationContext
     {
+        static int _currentId = 0;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="CorrelationContext"/> class with the specified ID.
         /// </summary>
         /// <param name="id">The correlation ID. If null, a new GUID will be generated.</param>
         public CorrelationContext(string id)
         {
-            Id = id ?? Guid.NewGuid().ToString();
+            Id = id ?? $"{(_currentId = ((_currentId + 1) & 0xffff)):x4}";
         }
 
         /// <summary>

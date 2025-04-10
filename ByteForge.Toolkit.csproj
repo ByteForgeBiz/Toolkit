@@ -38,6 +38,28 @@
     <OutputPath>bin\Release\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'">
+    <AssemblyName>$(AssemblyName).x86</AssemblyName>
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\x86\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DocumentationFile>bin\ByteForge.Toolkit.xml</DocumentationFile>
+    <DebugType>full</DebugType>
+    <PlatformTarget>x86</PlatformTarget>
+    <LangVersion>7.0</LangVersion>
+    <ErrorReport>prompt</ErrorReport>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x86'">
+    <AssemblyName>$(AssemblyName).x86</AssemblyName>
+    <OutputPath>bin\x86\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <DocumentationFile>bin\TelecomInc.Common.xml</DocumentationFile>
+    <Optimize>true</Optimize>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>x86</PlatformTarget>
+    <LangVersion>7.0</LangVersion>
+    <ErrorReport>prompt</ErrorReport>
+  </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.Bcl.AsyncInterfaces">
       <Version>9.0.0</Version>
@@ -111,6 +133,7 @@
     <Reference Include="System" />
     <Reference Include="System.ComponentModel.Composition" />
     <Reference Include="System.Core" />
+    <Reference Include="System.IO.Compression" />
     <Reference Include="System.IO.Compression.FileSystem" />
     <Reference Include="System.Numerics" />
     <Reference Include="System.Web" />
@@ -121,10 +144,17 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Attributes\CSVColumnAttribute.cs" />
+    <Compile Include="Attributes\DBColumnAttribute.cs" />
     <Compile Include="CLI\RootCommandBuilder.cs" />
-    <Compile Include="Configuration\Models\DoNotPersistAttribute.cs" />
+    <Compile Include="Configuration\Attributes\DoNotPersistAttribute.cs" />
     <Compile Include="Data\CSV\BufferedReader.cs" />
+    <Compile Include="Data\CSV\ConversionException.cs" />
     <Compile Include="Data\CSV\CSVFormat.cs" />
+    <Compile Include="Data\CSV\DataProcessingException.cs" />
+    <Compile Include="Data\CSV\CSVRecord.cs" />
+    <Compile Include="Data\CSV\ICSVRecord.cs" />
+    <Compile Include="Data\CSV\ValidationErrors.cs" />
     <Compile Include="Data\Database\DBAccess.Factory.cs" />
     <Compile Include="Data\Database\DBAccess.Logging.cs" />
     <Compile Include="Data\Database\DBAccess.Methods.cs" />
@@ -132,6 +162,15 @@
     <Compile Include="Data\Database\DBAccess.ScriptExecution.cs" />
     <Compile Include="Data\Database\DBAccess.TypeConverter.cs" />
     <Compile Include="Logging\Implementations\ConsoleLogger.cs" />
+    <Compile Include="Mail\AttachmentProcessResult.cs" />
+    <Compile Include="Mail\EmailAttachmentHandler.cs" />
+    <Compile Include="Mail\FileBucket.cs" />
+    <Compile Include="Mail\PartInfo.cs" />
+    <Compile Include="Mail\ProcessingMethod.cs" />
+    <Compile Include="Mail\SkippedFile.cs" />
+    <Compile Include="Utils\BooleanParser.cs" />
+    <Compile Include="Utils\EnumExtensions.cs" />
+    <Compile Include="Utils\Parser.cs" />
     <Compile Include="Utils\DateTimeParser.cs" />
     <Compile Include="Configuration\Interfaces\IConfigurationSection.cs" />
     <Compile Include="Configuration\Models\ConfigurationSection.cs" />
@@ -150,7 +189,7 @@
     <Compile Include="Logging\Interfaces\ILogger.cs" />
     <Compile Include="Logging\Implementations\FileLogger.cs" />
     <Compile Include="Data\CSV\CSVReader.cs" />
-    <Compile Include="Utils\MailUtil.cs" />
+    <Compile Include="Mail\MailUtil.cs" />
     <Compile Include="Utils\Utils.cs" />
     <Compile Include="Logging\Models\LogEntry.cs" />
     <Compile Include="CLI\Attributes\CommandAttribute.cs" />

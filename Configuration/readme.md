@@ -35,7 +35,7 @@ Configuration.Initialize(@"C:\config\settings.ini");
 var setting = Configuration.Obj.SomeSetting;
 
 // Get typed section
-var globalization = Configuration.Globalization.Value;
+var globalization = Configuration.Globalization;
 ```
 
 ### ConfigurationSection<T>
@@ -76,7 +76,7 @@ Provides culture and formatting settings:
 
 Example usage:
 ```csharp
-var globalization = Configuration.Globalization.Value;
+var globalization = Configuration.Globalization;
 var culture = globalization.CultureInfo;
 var dateFormat = globalization.DateFormat;
 ```

@@ -10,11 +10,27 @@ namespace ByteForge.Toolkit
     /// <summary>
     /// Provides methods to parse date and time strings into <see cref="DateTime"/> objects.
     /// </summary>
-    public static class DateTimeParser
+    /// <remarks>
+    /// This class provides enhanced date and time parsing capabilities, supporting a wide
+    /// variety of formats beyond the standard .NET parsing functions. It intelligently
+    /// attempts multiple formats and caches successful patterns for improved performance.
+    /// <para>
+    /// The class can be used through static methods (which use a shared singleton instance)
+    /// or by creating instance(s) with potentially different configurations.
+    /// </para>
+    /// </remarks>
+    public class DateTimeParser
     {
-        private static readonly ConcurrentDictionary<string, string> _successfulFormats = new ConcurrentDictionary<string, string>();
+        /// <summary>
+        /// Gets the default instance of the <see cref="DateTimeParser"/> class.
+        /// </summary>
+        public static DateTimeParser Default => _defaultInstance.Value;
 
-        private static readonly string[] TimeZones = new string[]
+        private static readonly Lazy<DateTimeParser> _defaultInstance = new Lazy<DateTimeParser>(() => new DateTimeParser());
+
+        private readonly ConcurrentDictionary<string, string> _successfulFormats = new ConcurrentDictionary<string, string>();
+
+        private readonly string[] _timeZones = new string[]
         {
             "UTC",  // Coordinated Universal Time
             "GMT",  // Greenwich Mean Time
@@ -35,10 +51,12 @@ namespace ByteForge.Toolkit
             // Add more as needed
         };
 
-        private static readonly string[] DateFormats = new string[]
+        private readonly string[] _dateFormats = new string[]
         {
             "MM/dd/yyyy", "M/d/yyyy", "dd/MM/yyyy", "d/M/yyyy",
+            "MMM/dd/yyyy", "MMM/d/yyyy", "dd/MMM/yyyy", "d/MMM/yyyy",
             "yyyy-MM-dd", "yyyy/MM/dd", "yyyy.MM.dd",
+            "yyyy-MMM-dd", "yyyy/MMM/dd", "yyyy.MMM.dd",
             "dd.MM.yyyy", "MM.dd.yyyy", "dd.MMM.yyyy", "MMM.dd.yyyy",
             "MMM dd yyyy", "MMMM dd yyyy",
             "dd MMM yyyy", "dd MMMM yyyy",
@@ -46,7 +64,7 @@ namespace ByteForge.Toolkit
             // Add more as needed
         };
 
-        private static readonly string[] TimeFormats = new string[]
+        private readonly string[] _timeFormats = new string[]
         {
             "HH:mm:ss", "HH:mm",
             "hh:mm:ss tt", "hh:mm tt",
@@ -55,10 +73,18 @@ namespace ByteForge.Toolkit
             // Add more as needed
         };
 
-        private static readonly string[] OffsetFormats = new string[]
+        private readonly string[] _offsetFormats = new string[]
         {
             "zzz", "'Z'", "zz:zz", " zzz", " zz:zz"
         };
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="DateTimeParser"/> class.
+        /// </summary>
+        public DateTimeParser()
+        {
+            // Default constructor uses the predefined format arrays
+        }
 
         /// <summary>
         /// Parses the specified date and time string into a <see cref="DateTime"/> object.
@@ -67,7 +93,7 @@ namespace ByteForge.Toolkit
         /// <returns>A <see cref="DateTime"/> object that represents the parsed date and time.</returns>
         /// <exception cref="ArgumentNullException">Thrown when the input string is null or empty.</exception>
         /// <exception cref="FormatException">Thrown when the input string cannot be parsed into a valid <see cref="DateTime"/>.</exception>
-        public static DateTime Parse(string input) => Parse(input, CultureInfo.InvariantCulture);
+        public DateTime ParseValue(string input) => ParseValue(input, CultureInfo.InvariantCulture);
 
         /// <summary>
         /// Parses the specified date and time string into a <see cref="DateTime"/> object.
@@ -77,7 +103,7 @@ namespace ByteForge.Toolkit
         /// <returns>A <see cref="DateTime"/> object that represents the parsed date and time.</returns>
         /// <exception cref="ArgumentNullException">Thrown when the input string is null or empty.</exception>
         /// <exception cref="FormatException">Thrown when the input string cannot be parsed into a valid <see cref="DateTime"/>.</exception>
-        public static DateTime Parse(string input, IFormatProvider formatProvider)
+        public DateTime ParseValue(string input, IFormatProvider formatProvider)
         {
             if (string.IsNullOrEmpty(input))
                 throw new ArgumentNullException(nameof(input));
@@ -111,7 +137,8 @@ namespace ByteForge.Toolkit
         /// <param name="input">The date and time string to parse.</param>
         /// <param name="result">When this method returns, contains the <see cref="DateTime"/> value equivalent to the date and time contained in <paramref name="input"/>, if the conversion succeeded, or <see cref="DateTime.MinValue"/> if the conversion failed. The conversion fails if the <paramref name="input"/> parameter is null or an empty string, or does not contain a valid string representation of a date and time. This parameter is passed uninitialized.</param>
         /// <returns><c>true</c> if the <paramref name="input"/> parameter was converted successfully; otherwise, <c>false</c>.</returns>
-        public static bool TryParse(string input, out DateTime result) => TryParse(input, CultureInfo.InvariantCulture, out result);
+        public bool TryParseValue(string input, out DateTime result) => 
+            TryParseValue(input, CultureInfo.InvariantCulture, out result);
 
         /// <summary>
         /// Tries to parse the specified date and time string into a <see cref="DateTime"/> object.
@@ -120,11 +147,11 @@ namespace ByteForge.Toolkit
         /// <param name="formatProvider">An object that supplies culture-specific formatting information about <paramref name="input"/>.</param>
         /// <param name="result">When this method returns, contains the <see cref="DateTime"/> value equivalent to the date and time contained in <paramref name="input"/>, if the conversion succeeded, or <see cref="DateTime.MinValue"/> if the conversion failed. The conversion fails if the <paramref name="input"/> parameter is null or an empty string, or does not contain a valid string representation of a date and time. This parameter is passed uninitialized.</param>
         /// <returns><c>true</c> if the <paramref name="input"/> parameter was converted successfully; otherwise, <c>false</c>.</returns>
-        public static bool TryParse(string input, IFormatProvider formatProvider, out DateTime result)
+        public bool TryParseValue(string input, IFormatProvider formatProvider, out DateTime result)
         {
             try
             {
-                result = Parse(input, formatProvider);
+                result = ParseValue(input, formatProvider);
                 return true;
             }
             catch
@@ -135,6 +162,14 @@ namespace ByteForge.Toolkit
         }
 
         /// <summary>
+        /// Clears the cache of successful formats.
+        /// </summary>
+        public void ClearFormatCache()
+        {
+            _successfulFormats.Clear();
+        }
+
+        /// <summary>
         /// Tries to parse the specified date and time string using the given format and culture information.
         /// </summary>
         /// <param name="input">The date and time string to parse.</param>
@@ -142,7 +177,7 @@ namespace ByteForge.Toolkit
         /// <param name="formatProvider">An object that supplies culture-specific formatting information about <paramref name="input"/>.</param>
         /// <param name="result">When this method returns, contains the <see cref="DateTime"/> value equivalent to the date and time contained in <paramref name="input"/>, if the conversion succeeded, or <see cref="DateTime.MinValue"/> if the conversion failed. This parameter is passed uninitialized.</param>
         /// <returns><c>true</c> if the <paramref name="input"/> parameter was converted successfully; otherwise, <c>false</c>.</returns>
-        private static bool TryParseWithCulture(string input, string format, IFormatProvider formatProvider, out DateTime result)
+        private bool TryParseWithCulture(string input, string format, IFormatProvider formatProvider, out DateTime result)
         {
             return DateTime.TryParseExact(input, format, formatProvider, DateTimeStyles.None, out result) ||
                    DateTime.TryParseExact(input, format, CultureInfo.InvariantCulture, DateTimeStyles.None, out result) ||
@@ -154,10 +189,10 @@ namespace ByteForge.Toolkit
         /// </summary>
         /// <param name="input">The input string to clean.</param>
         /// <returns>The cleaned input string.</returns>
-        private static string CleanInput(string input)
+        private string CleanInput(string input)
         {
             // Remove any timezone abbreviations but keep the offset
-            var tz = TimeZones.FirstOrDefault(x => input.Contains(x));
+            var tz = _timeZones.FirstOrDefault(x => input.Contains(x));
             if (!string.IsNullOrEmpty(tz))
             {
                 input = input.Replace(tz, "");
@@ -173,7 +208,7 @@ namespace ByteForge.Toolkit
         /// </summary>
         /// <param name="input">The input string to generate the pattern key for.</param>
         /// <returns>The generated pattern key.</returns>
-        private static string GetPatternKey(string input)
+        private string GetPatternKey(string input)
         {
             // Create a pattern key based on the input format
             var pattern = input;
@@ -195,17 +230,18 @@ namespace ByteForge.Toolkit
         /// </summary>
         /// <param name="input">The input string to generate format combinations for.</param>
         /// <returns>An enumerable of format combinations.</returns>
-        private static IEnumerable<string> GenerateFormatCombinations(string input)
+        private IEnumerable<string> GenerateFormatCombinations(string input)
         {
             var formats = new List<string>();
 
             // Has time component?
             var hasTime = input.Contains(":");
-            // Has timezone/offset?
-            var hasOffset = input.Contains("+") || input.Contains("-") ||
-                            input.Contains("Z") || input.EndsWith("UTC");
 
-            foreach (var dateFormat in DateFormats)
+            // Improved offset detection using regex to avoid false positives from date separators
+            var offsetRegex = new Regex(@"([+-](?:0[0-9]|1[0-4])(?::?[0-5][0-9])?|Z)$");
+            var hasOffset = offsetRegex.IsMatch(input) || input.EndsWith("UTC");
+
+            foreach (var dateFormat in _dateFormats)
             {
                 if (!hasTime)
                 {
@@ -213,7 +249,7 @@ namespace ByteForge.Toolkit
                     continue;
                 }
 
-                foreach (var timeFormat in TimeFormats)
+                foreach (var timeFormat in _timeFormats)
                 {
                     if (!hasOffset)
                     {
@@ -221,22 +257,60 @@ namespace ByteForge.Toolkit
                         continue;
                     }
 
-                    foreach (var offsetFormat in OffsetFormats)
-                    {
+                    foreach (var offsetFormat in _offsetFormats)
                         formats.Add($"{dateFormat} {timeFormat}{offsetFormat}");
-                    }
                 }
             }
 
             return formats;
         }
 
+        #region Static Methods
+
         /// <summary>
-        /// Clears the cache of successful formats.
+        /// Parses the specified date and time string into a <see cref="DateTime"/> object.
         /// </summary>
-        public static void ClearCache()
-        {
-            _successfulFormats.Clear();
-        }
+        /// <param name="input">The date and time string to parse.</param>
+        /// <returns>A <see cref="DateTime"/> object that represents the parsed date and time.</returns>
+        /// <exception cref="ArgumentNullException">Thrown when the input string is null or empty.</exception>
+        /// <exception cref="FormatException">Thrown when the input string cannot be parsed into a valid <see cref="DateTime"/>.</exception>
+        public static DateTime Parse(string input) => Default.ParseValue(input);
+
+        /// <summary>
+        /// Parses the specified date and time string into a <see cref="DateTime"/> object.
+        /// </summary>
+        /// <param name="input">The date and time string to parse.</param>
+        /// <param name="formatProvider">An object that supplies culture-specific formatting information about <paramref name="input"/>.</param>
+        /// <returns>A <see cref="DateTime"/> object that represents the parsed date and time.</returns>
+        /// <exception cref="ArgumentNullException">Thrown when the input string is null or empty.</exception>
+        /// <exception cref="FormatException">Thrown when the input string cannot be parsed into a valid <see cref="DateTime"/>.</exception>
+        public static DateTime Parse(string input, IFormatProvider formatProvider) => 
+            Default.ParseValue(input, formatProvider);
+
+        /// <summary>
+        /// Tries to parse the specified date and time string into a <see cref="DateTime"/> object.
+        /// </summary>
+        /// <param name="input">The date and time string to parse.</param>
+        /// <param name="result">When this method returns, contains the <see cref="DateTime"/> value equivalent to the date and time contained in <paramref name="input"/>, if the conversion succeeded, or <see cref="DateTime.MinValue"/> if the conversion failed. The conversion fails if the <paramref name="input"/> parameter is null or an empty string, or does not contain a valid string representation of a date and time. This parameter is passed uninitialized.</param>
+        /// <returns><c>true</c> if the <paramref name="input"/> parameter was converted successfully; otherwise, <c>false</c>.</returns>
+        public static bool TryParse(string input, out DateTime result) => 
+            Default.TryParseValue(input, out result);
+
+        /// <summary>
+        /// Tries to parse the specified date and time string into a <see cref="DateTime"/> object.
+        /// </summary>
+        /// <param name="input">The date and time string to parse.</param>
+        /// <param name="formatProvider">An object that supplies culture-specific formatting information about <paramref name="input"/>.</param>
+        /// <param name="result">When this method returns, contains the <see cref="DateTime"/> value equivalent to the date and time contained in <paramref name="input"/>, if the conversion succeeded, or <see cref="DateTime.MinValue"/> if the conversion failed. The conversion fails if the <paramref name="input"/> parameter is null or an empty string, or does not contain a valid string representation of a date and time. This parameter is passed uninitialized.</param>
+        /// <returns><c>true</c> if the <paramref name="input"/> parameter was converted successfully; otherwise, <c>false</c>.</returns>
+        public static bool TryParse(string input, IFormatProvider formatProvider, out DateTime result) => 
+            Default.TryParseValue(input, formatProvider, out result);
+
+        /// <summary>
+        /// Clears the cache of successful formats in the default instance.
+        /// </summary>
+        public static void ClearCache() => Default.ClearFormatCache();
+
+        #endregion
     }
 }

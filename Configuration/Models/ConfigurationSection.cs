@@ -18,33 +18,6 @@ namespace ByteForge.Toolkit
         private readonly PropertyInfo[] _properties;
         private readonly object _lock = new object();
 
-        private static readonly Lazy<Dictionary<Type, Func<string, object>>> 
-            typeParsers = new Lazy<Dictionary<Type, Func<string, object>>>(() => 
-                new Dictionary<Type, Func<string, object>>
-                {
-                    { typeof(TimeSpan), value => TimeSpan.Parse(value) },
-                    { typeof(Guid), value => Guid.Parse(value) },
-                    { typeof(Uri), value => new Uri(value) },
-                    { typeof(Version), value => Version.Parse(value) },
-                    { typeof(Type), value => Type.GetType(value) },
-                    { typeof(byte[]), value => Convert.FromBase64String(value) },
-                    { typeof(char), value => value[0] },
-                    { typeof(char[]), value => value.ToCharArray() },
-                    { typeof(DateTime), value => DateTimeParser.Parse(value) },
-                    { typeof(DateTimeOffset), value => DateTimeOffset.Parse(value) },
-                    { typeof(decimal), value => decimal.Parse(value) },
-                    { typeof(double), value => double.Parse(value) },
-                    { typeof(float), value => float.Parse(value) },
-                    { typeof(int), value => int.Parse(value) },
-                    { typeof(long), value => long.Parse(value) },
-                    { typeof(short), value => short.Parse(value) },
-                    { typeof(string), value => value },
-                    { typeof(uint), value => uint.Parse(value) },
-                    { typeof(ulong), value => ulong.Parse(value) },
-                    { typeof(ushort), value => ushort.Parse(value) },
-                    { typeof(CultureInfo), value => CultureInfo.GetCultureInfo(value) },
-                });
-
         /// <summary>
         /// Initializes a new instance of the <see cref="ConfigurationSection{T}"/> class.
         /// </summary>
@@ -73,6 +46,7 @@ namespace ByteForge.Toolkit
                     var attr = prop.GetCustomAttribute<PropertyNameAttribute>();
                     var name = attr?.Name ?? prop.Name;
                     var value = section[name];
+                    var propType = Nullable.GetUnderlyingType(prop.PropertyType) ?? prop.PropertyType;
 
                     if (string.IsNullOrEmpty(value) && !string.IsNullOrEmpty(attr?.DefaultValueProviderName))
                     {
@@ -81,20 +55,8 @@ namespace ByteForge.Toolkit
                         continue;
                     }
 
-                    if (value != null)
-                    {
-                        object convertedValue;
-
-                        if (prop.PropertyType.IsEnum)
-                            convertedValue = Enum.Parse(prop.PropertyType, value);
-                        else if (typeParsers.Value.TryGetValue(prop.PropertyType, out var parser))
-                            convertedValue = parser(value);
-                        else
-                            convertedValue = Convert.ChangeType(value, prop.PropertyType);
-
-                        if (prop.CanWrite)
-                            prop.SetValue(Value, convertedValue);
-                    }
+                    if (!string.IsNullOrEmpty(value) && prop.CanWrite)
+                        prop.SetValue(Value, Parser.Parse(propType, value));
                 }
             }
         }

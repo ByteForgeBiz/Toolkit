@@ -1,0 +1,37 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.13.35931.197 d17.13
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ByteForge.Toolkit", "ByteForge.Toolkit.csproj", "{FB0484EC-D6EF-41DD-B8C1-6F25E828127C}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{8EC462FD-D22E-90A8-E5CE-7E832BA40C5D}"
+	ProjectSection(SolutionItems) = preProject
+		.gitignore = .gitignore
+		robo.rcj = robo.rcj
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Debug|x86 = Debug|x86
+		Release|Any CPU = Release|Any CPU
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{FB0484EC-D6EF-41DD-B8C1-6F25E828127C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FB0484EC-D6EF-41DD-B8C1-6F25E828127C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FB0484EC-D6EF-41DD-B8C1-6F25E828127C}.Debug|x86.ActiveCfg = Debug|x86
+		{FB0484EC-D6EF-41DD-B8C1-6F25E828127C}.Debug|x86.Build.0 = Debug|x86
+		{FB0484EC-D6EF-41DD-B8C1-6F25E828127C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FB0484EC-D6EF-41DD-B8C1-6F25E828127C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FB0484EC-D6EF-41DD-B8C1-6F25E828127C}.Release|x86.ActiveCfg = Release|x86
+		{FB0484EC-D6EF-41DD-B8C1-6F25E828127C}.Release|x86.Build.0 = Release|x86
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {922F34C5-2289-4FE7-9A8E-F4F311516D5E}
+	EndGlobalSection
+EndGlobal

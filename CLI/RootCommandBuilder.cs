@@ -2,8 +2,10 @@
 using System.Collections.Generic;
 using System.CommandLine;
 using System.CommandLine.Builder;
+using System.CommandLine.Help;
 using System.CommandLine.Parsing;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 
 namespace ByteForge.Toolkit.CommandLine
@@ -210,7 +212,7 @@ namespace ByteForge.Toolkit.CommandLine
         /// Builds and returns the command line parser.
         /// </summary>
         /// <returns>The configured parser.</returns>
-        public Parser Build()
+        public System.CommandLine.Parsing.Parser Build()
         {
             var builder = new CommandLineBuilder(_rootCommand);
 

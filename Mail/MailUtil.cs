@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Net;
 using System.Net.Mail;
 
@@ -116,26 +117,9 @@ namespace ByteForge.Toolkit
         /// <param name="emailAddresses">The email addresses to send the email to, separated by semicolons.</param>
         /// <param name="subject">The subject of the email.</param>
         /// <param name="body">The body of the email.</param>
-        /// <param name="fileToAttach">The file path to attach to the email. If null, no file is attached.</param>
-        /// <returns>True if the email was sent successfully, otherwise false.</returns>
-        public static bool SendMail(string emailAddresses, string subject, string body, string fileToAttach)
-        {
-            var files = new string[] { fileToAttach };
-            if (string.IsNullOrEmpty(fileToAttach))
-                files = null;
-
-            return SendMail(emailAddresses, subject, body, files);
-        }
-
-        /// <summary>
-        /// Sends an email to the specified email addresses with the given subject and body.
-        /// </summary>
-        /// <param name="emailAddresses">The email addresses to send the email to, separated by semicolons.</param>
-        /// <param name="subject">The subject of the email.</param>
-        /// <param name="body">The body of the email.</param>
         /// <param name="filesToAttach">An array of file paths to attach to the email.</param>
         /// <returns>True if the email was sent successfully, otherwise false.</returns>
-        public static bool SendMail(string emailAddresses, string subject, string body, string[] filesToAttach = null)
+        public static bool SendMail(string emailAddresses, string subject, string body, params string[] filesToAttach)
         {
             return SendMail(emailAddresses, subject, body, true, filesToAttach);
         }
@@ -149,7 +133,7 @@ namespace ByteForge.Toolkit
         /// <param name="isHtml">A boolean value indicating whether the body of the email is in HTML format. True if the body is HTML, otherwise false.</param>
         /// <param name="filesToAttach">An array of file paths to attach to the email.</param>
         /// <returns>True if the email was sent successfully, otherwise false.</returns>
-        public static bool SendMail(string emailAddresses, string subject, string body, bool isHtml, string[] filesToAttach = null)
+        public static bool SendMail(string emailAddresses, string subject, string body, bool isHtml, params string[] filesToAttach)
         {
             var currentSecurityProtocol = ServicePointManager.SecurityProtocol;
 
@@ -180,9 +164,29 @@ namespace ByteForge.Toolkit
                         email.Body = body;
                     }
 
-                    foreach (var file in filesToAttach)
-                        email.Attachments.Add(new Attachment(file));
+                    var attachmentHandler = new EmailAttachmentHandler();
+                    var result = attachmentHandler.ProcessAttachments(email, filesToAttach.ToList(), true);
 
+                    // Add notification if needed based on processing method
+                    if (result.ProcessingMethod == ProcessingMethod.CompressedAndSplit)
+                    {
+                        email.Body += "\n\nNote: Due to size constraints, the attachments in this email have been ";
+                        email.Body += $"compressed and split into {result.PartDistribution.Count} parts. ";
+                        email.Body += "Each part can be opened individually with any ZIP utility.";
+                    }
+                    else if (result.ProcessingMethod == ProcessingMethod.Compressed)
+                    {
+                        email.Body += "\n\nNote: Due to size constraints, the attachments in this email have been compressed.";
+                    }
+
+                    // Add warnings about skipped files if any
+                    if (result.SkippedFiles.Count > 0)
+                    {
+                        email.Body += "\n\nThe following files could not be attached:";
+                        foreach (var skipped in result.SkippedFiles)
+                            email.Body += $"\n- {skipped.FilePath}: {skipped.Reason}";
+                    }
+ 
                     /*
                      * Define the credentials to use the SMTP server
                      * and security protocol

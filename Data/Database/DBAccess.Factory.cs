@@ -82,6 +82,10 @@ namespace ByteForge.Toolkit
                 }
             }
 
+            Log.Verbose($"Command created for query: {query}");
+            if (cmd.Parameters.Count > 0)
+                Log.Debug(string.Join(", " + Environment.NewLine, cmd.Parameters.Cast<DbParameter>().Select(p => $"{p.ParameterName} = '{p.Value}'")));
+
             return cmd;
         }
     }

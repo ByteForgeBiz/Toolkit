@@ -33,7 +33,6 @@
 :: Copy options :
 ::
 	/S		:: copy Subdirectories, but not empty ones.
-	/E		:: copy subdirectories, including Empty ones.
 	/DCOPY:DA	:: what to COPY for directories (default is /DCOPY:DA).
 	/COPY:DAT	:: what to COPY for files (default is /COPY:DAT).
 

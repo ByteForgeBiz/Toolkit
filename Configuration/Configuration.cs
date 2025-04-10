@@ -3,6 +3,7 @@ using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Dynamic;
 using System.IO;
 using System.Linq;
@@ -26,12 +27,13 @@ namespace ByteForge.Toolkit
 
         private static readonly object _lock =  new object();
         private static readonly Lazy<Configuration> _instance = new Lazy<Configuration>(() => new Configuration());
+        private static readonly Lazy<GlobalizationInfo> _globalization = new Lazy<GlobalizationInfo>(() => GetSection<GlobalizationInfo>("Globalization"));
         private static bool _initialized;
 
         /// <summary>
         /// Gets the dynamic object that provides access to the configuration settings.
         /// </summary>
-        public static Configuration Obj => _instance.Value;
+        public static Configuration Obj { get => _instance.Value; }
 
         /// <summary>
         /// Gets the root of the configuration.
@@ -41,7 +43,7 @@ namespace ByteForge.Toolkit
         /// <summary>
         /// Gets the globalization information.
         /// </summary>
-        public static readonly Lazy<GlobalizationInfo> Globalization = new Lazy<GlobalizationInfo>(() => GetSection<GlobalizationInfo>("Globalization"));
+        public static GlobalizationInfo Globalization { get => _globalization.Value; }
 
         /// <summary>
         /// Initializes the configuration settings by loading the INI file from the specified path.
@@ -76,7 +78,7 @@ namespace ByteForge.Toolkit
         /// <summary>
         /// Saves the current configuration settings to the INI file.
         /// </summary>
-        public static void Save() => Obj.InternalSave();
+        public static void Save() => Obj.SaveInternal();
 
         /// <summary>
         /// Adds a new section to the configuration.
@@ -136,13 +138,30 @@ namespace ByteForge.Toolkit
         /// <summary>
         /// Gets or sets the path to the log file.
         /// </summary>
+        /// <exception cref="UnauthorizedAccessException">The caller does not have the required permission.</exception>
+        /// <exception cref="ArgumentException">The path is a zero-length string, contains only white space, or contains one or more invalid characters.</exception>
+        /// <exception cref="ArgumentNullException">The path is null.</exception>
+        /// <exception cref="PathTooLongException">The specified path, file name, or both exceed the system-defined maximum length.</exception>
+        /// <exception cref="DirectoryNotFoundException">The specified path is invalid (for example, the directory doesn't exist or it is on an unmapped drive).</exception>
+        /// <exception cref="NotSupportedException">The path is in an invalid format.</exception>
+        /// <exception cref="IOException">An I/O error occurred while opening the file.</exception>
         public static string LogFilePath
         {
             get => Environment.ExpandEnvironmentVariables(Root["Logging:sLogFile"] ??
                     Path.ChangeExtension((Assembly.GetEntryAssembly() ??
                                           Assembly.GetCallingAssembly() ??
                                           Assembly.GetExecutingAssembly()).Location, ".log"));
-            set => Root["Logging:sLogFile"] = value;
+            set
+            {
+                if (!string.IsNullOrEmpty(value))
+                {
+                    /*
+                     * Check if we have permission to write to the specified file.
+                     */
+                    File.AppendText(value).Close();
+                }
+                Root["Logging:sLogFile"] = value;
+            }
         }
 
         /// <summary>
@@ -214,7 +233,7 @@ namespace ByteForge.Toolkit
         /// <remarks>
         /// This method preserves comments and only updates modified data.
         /// </remarks>
-        private void InternalSave()
+        private void SaveInternal()
         {
             var section = string.Empty;
             var iniData = new List<string>();
@@ -231,6 +250,9 @@ namespace ByteForge.Toolkit
              */
             foreach (var s in _sections.Values.Cast<IConfigurationSection>())
                 s.SaveToConfiguration();
+
+            // Build a dictionary of default values for properties
+            var defaultValues = GetDefaultValues();
 
             foreach (var line in iniLines)
             {
@@ -250,6 +272,7 @@ namespace ByteForge.Toolkit
                     section = trimmedLine.Trim('[', ']');
                     existingSections.Add(section);
                     iniData.Add(line);
+                    sectionEndPositions[section] = currentPosition + 1;
                     continue;
                 }
 
@@ -265,11 +288,21 @@ namespace ByteForge.Toolkit
                 var value = trimmedLine.Substring(equalsIndex + 1).Trim();
 
                 // Check if the key exists in the configuration root
-                var configValue = _root?.GetSection($"{section}:{key}").Value;
-                if (configValue != null && value != configValue)
-                    value = configValue;
+                var configKey = $"{section}:{key}";
+                var configValue = _root?.GetSection(configKey).Value;
 
-                existingKeys.Add($"{section}:{key}");
+                if (configValue != null)
+                {
+                    // Skip if the value is the default value
+                    if (IsDefaultValue(configKey, configValue, defaultValues))
+                        continue;
+
+                    // Update if the value has changed
+                    if (value != configValue)
+                        value = configValue;
+                }
+
+                existingKeys.Add(configKey);
                 iniData.Add($"{key}={value}");
 
                 // Update the end position of this section
@@ -289,9 +322,17 @@ namespace ByteForge.Toolkit
                     // Add new section
                     iniData.Add(string.Empty);  // Add blank line before new section
                     iniData.Add($"[{configSection.Key}]");
+
+                    // Add keys that aren't default values
                     foreach (var child in configSection.GetChildren())
-                        if (!string.IsNullOrEmpty(child.Value))
+                    {
+                        if (!string.IsNullOrEmpty(child.Value) &&
+                            !IsDefaultValue($"{configSection.Key}:{child.Key}", child.Value, defaultValues))
+                        {
                             iniData.Add($"{child.Key}={child.Value}");
+                        }
+                    }
+
                     iniData.Add(string.Empty);  // Add blank line after new section
                 }
                 else
@@ -302,7 +343,10 @@ namespace ByteForge.Toolkit
 
                     foreach (var child in configSection.GetChildren())
                     {
-                        if ((!string.IsNullOrEmpty(child.Value)) && (!existingKeys.Contains($"{configSection.Key}:{child.Key}")))
+                        var configKey = $"{configSection.Key}:{child.Key}";
+                        if (!string.IsNullOrEmpty(child.Value) &&
+                            !existingKeys.Contains(configKey) &&
+                            !IsDefaultValue(configKey, child.Value, defaultValues))
                         {
                             iniData.Insert(insertPosition, $"{child.Key}={child.Value}");
                             keysAdded++;
@@ -319,6 +363,51 @@ namespace ByteForge.Toolkit
             }
 
             File.WriteAllLines(iniFilePath, iniData);
+        }
+
+        /// <summary>
+        /// Gets the default values for all properties with the <see cref="DefaultValueAttribute"/> in the configuration sections.
+        /// </summary>
+        /// <returns>A dictionary containing the default values for the properties.</returns>
+        private Dictionary<string, string> GetDefaultValues()
+        {
+            var defaultValues = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+
+            // Process all sections
+            foreach (var section in _sections)
+            {
+                var sectionType = section.Value.GetType();
+                var sectionName = section.Key;
+
+                // Get all properties with DefaultValue attribute
+                foreach (var property in sectionType.GetProperties())
+                {
+                    var defaultAttr = property.GetCustomAttribute<DefaultValueAttribute>();
+                    if (defaultAttr != null)
+                    {
+                        var key = $"{sectionName}:{property.Name}";
+                        var defaultValue = defaultAttr.Value?.ToString() ?? string.Empty;
+                        defaultValues[key] = defaultValue;
+                    }
+                }
+            }
+
+            return defaultValues;
+        }
+
+        /// <summary>
+        /// Determines whether the specified value is the default value for the given configuration key.
+        /// </summary>
+        /// <param name="configKey">The configuration key.</param>
+        /// <param name="value">The value to check.</param>
+        /// <param name="defaultValues">A dictionary containing the default values for the properties.</param>
+        /// <returns><c>true</c> if the value is the default value; otherwise, <c>false</c>.</returns>
+        private bool IsDefaultValue(string configKey, string value, Dictionary<string, string> defaultValues)
+        {
+            if (defaultValues.TryGetValue(configKey, out string defaultValue))
+                return string.Equals(value, defaultValue, StringComparison.OrdinalIgnoreCase);
+
+            return false;
         }
 
         /// <summary>

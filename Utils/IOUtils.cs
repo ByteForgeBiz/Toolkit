@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 
@@ -8,8 +9,21 @@ namespace ByteForge.Toolkit
     /// <summary>
     /// Provides utility methods for IO operations.
     /// </summary>
-    public class IOUtils
+    public static class IOUtils
     {
+        /// <summary>
+        /// Gets the files from the specified path that match the search pattern.
+        /// </summary>
+        /// <param name="path">The directory path to search in.</param>
+        /// <param name="searchPattern">The search pattern to match against the names of files in the path. Multiple patterns can be separated by a semicolon (;).</param>
+        /// <param name="searchOption">Specifies whether to search the current directory, or the current directory and all subdirectories. The default is <see cref="SearchOption.TopDirectoryOnly"/>.</param>
+        /// <returns>An array of the full names (including paths) for the files in the specified directory that match the search pattern.</returns>
+        public static string[] GetFiles(string path, string searchPattern, SearchOption searchOption = SearchOption.TopDirectoryOnly)
+        {
+            var patterns = searchPattern.Split(';', '|');
+            return patterns.SelectMany(p => Directory.GetFiles(path, p, searchOption)).ToArray();
+        }
+
         /// <summary>
         /// Gets the universal path for the specified path.
         /// </summary>

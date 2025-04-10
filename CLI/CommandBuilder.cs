@@ -188,7 +188,7 @@ namespace ByteForge.Toolkit.CommandLine
 
                 // Create the option with the correct type
                 var option = CreateTypedOption(paramType, optionName, optAttr?.Description ?? $"The {param.Name} parameter");
-                option.IsRequired = !isNullable;
+                option.IsRequired = !isNullable && !param.IsOptional;
 
                 // Get both generated and developer-provided aliases
                 var generatedAliases = GenerateAliases(optionName).Concat(option.Aliases);

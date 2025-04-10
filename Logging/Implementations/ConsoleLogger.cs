@@ -73,7 +73,7 @@ namespace ByteForge.Toolkit.Logging
                     Console.WriteLine();
 
                 if (!ShowMessageOnly && ShowTimestamp)
-                    Console.Write($"[{entry.Timestamp:yyyy-MM-dd HH:mm:ss.fff}] ");
+                    Console.Write($"[{entry.Timestamp:yyyy/MM/dd HH:mm:ss.fff}] ");
 
                 if (!ShowMessageOnly)
                     Console.WriteLine($"[{entry.Level}] - {entry.Source}:");

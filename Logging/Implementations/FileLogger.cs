@@ -187,7 +187,7 @@ namespace ByteForge.Toolkit.Logging
         /// </summary>
         private void WriteLogEntry(LogEntry entry)
         {
-            var ts = $"{entry.Timestamp:yyyy-MM-dd HH:mm:ss.fff} [{entry.Level}] {(entry.CorrelationId == null ? "" : entry.CorrelationId.ToString() + " ")} - {entry.Source} - ";
+            var ts = $"{(entry.CorrelationId ?? "")} - {entry.Timestamp:yyyy.MM.dd HH:mm:ss.fff} [{entry.Level, 9}] - ";
             var indent = Environment.NewLine + new string(' ', ts.Length);
             var sb = new StringBuilder($"{ts}{string.Join(indent, entry.Message.Split(Utils.arrCRLF, StringSplitOptions.RemoveEmptyEntries))}");
             var ex = entry.Exception;
@@ -197,6 +197,14 @@ namespace ByteForge.Toolkit.Logging
                 sb.Append(indent + $"Exception: {{{ex.GetType()}}} {ex.Message}");
                 if (!string.IsNullOrEmpty(ex.StackTrace))
                     sb.Append(indent + $"Stack Trace: {string.Join(indent + "             ", ex.StackTrace.Split(Utils.arrCRLF, StringSplitOptions.RemoveEmptyEntries))}");
+
+                if (ex.Data?.Count > 0)
+                {
+                    var keys = ex.Data.Keys.OfType<string>().ToArray();
+                    sb.Append(indent + $"Data: {keys[0]}: {ex.Data[keys[0]]}");
+                    foreach (var key in keys.Skip(1))
+                        sb.Append(indent + $"      {key}: {ex.Data[key]}");
+                }
 
                 if (ex.InnerException != null)
                     indent += "  ";

@@ -5,13 +5,6 @@
       <RequiredProperties>ProjectDir</RequiredProperties>
   </PropertyGroup>
 
-  <Target Name="VerifyRequiredProperties" BeforeTargets="PrepareForBuild">
-      <ItemGroup>
-        <_RequiredProperty Include="$(RequiredProperties)"/>
-      </ItemGroup>
-      <Error Text="Missing required property: %(_RequiredProperty.Identity)" Condition="'$(%(_RequiredProperty.Identity))' == ''" />
-  </Target>
-      
   <PropertyGroup>
     <ParentDir>$([System.IO.Path]::GetFullPath('$(ProjectDir)\..'))</ParentDir>
     <CentralLocationPath>$([System.IO.Path]::GetFullPath('$(ProjectDir)..\..\ByteForge.Toolkit'))</CentralLocationPath>
@@ -19,10 +12,68 @@
     <CmdCopyTo>Call CopyFiles.bat "$(ProjectDir)" "$(CentralLocationPath)"</CmdCopyTo>
     <CmdCopyFrom>Call CopyFiles.bat "$(CentralLocationPath)" "$(ProjectDir)" fromcentral</CmdCopyFrom>
     <CentralVersionFile>$(CentralLocationPath)\version.txt</CentralVersionFile>
+    <CleanupUnusedFilesAfterBuild Condition="'$(CleanupUnusedFilesAfterBuild)' == ''">true</CleanupUnusedFilesAfterBuild>
   </PropertyGroup>
+
+  <Target Name="VerifyRequiredProperties" BeforeTargets="PrepareForBuild">
+    <ItemGroup>
+      <_RequiredProperty Include="$(RequiredProperties)"/>
+    </ItemGroup>
+    <Message Importance="high" Text="Required property: %(_RequiredProperty.Identity) : $(%(_RequiredProperty.Identity))" Condition="'$(%(_RequiredProperty.Identity))' != ''" />
+    <Error Text="Missing required property: %(_RequiredProperty.Identity)" Condition="'$(%(_RequiredProperty.Identity))' == ''" />
+  </Target>
+  
+  <Target Name="DebugProperties" BeforeTargets="VerifyRequiredProperties">
+    <Message Importance="high" Text="*** Debugging Properties Values ***" />
+    <Message Importance="high" Text="CentralLocationPath = '$(CentralLocationPath)'" />
+    <Message Importance="high" Text="CopyFiles = '$(CopyFiles)'" />
+    <Message Importance="high" Text="CmdCopyTo = '$(CmdCopyTo)'" />
+    <Message Importance="high" Text="CmdCopyFrom = '$(CmdCopyFrom)'" />
+    <Message Importance="high" Text="CentralVersionFile = '$(CentralVersionFile)'" />
+    <Message Importance="high" Text="CleanupUnusedFilesAfterBuild = '$(CleanupUnusedFilesAfterBuild)'" />
+    <Message Importance="high" Text="Non-project files will be deleted."      Condition="'$(CleanupUnusedFilesAfterBuild)' == 'true'"/>
+    <Message Importance="high" Text="Non-project files will NOT be deleted."  Condition="'$(CleanupUnusedFilesAfterBuild)' != 'true'"/>
+    <Message Importance="high" Text="*** --------------------------- ***" />
+  </Target>
 
   <!-- Task Definitions -->
   
+  <Target Name="CleanupUnusedFiles" AfterTargets="Build" Condition="'$(CleanupUnusedFilesAfterBuild)' == 'true'">
+    <Message Text="Starting cleanup of files not included in the project..." Importance="high" />
+    
+    <!-- Get all files not in the project -->
+    <ItemGroup>
+      <FilesToDelete 
+        Include="$(MSBuildProjectDirectory)\**\*.*" 
+        Exclude="$(ProjectDir)packages.config;
+                 @(Compile);
+                 @(Content);
+                 @(None);
+                 @(EmbeddedResource);
+                 @(Resource);
+                 $(MSBuildProjectFile);
+                 $(MSBuildProjectFile).user;
+                 $(MSBuildProjectDirectory)\.vs\**\*.*;
+                 $(MSBuildProjectDirectory)\.vscode\**\*.*;
+                 $(MSBuildProjectDirectory)\bin\**\*.*;
+                 $(MSBuildProjectDirectory)\obj\**\*.*;
+                 $(MSBuildProjectDirectory)\**\*.md" />
+    </ItemGroup>
+    
+    <!-- Output files to be deleted -->
+    <Message Text="Files to be deleted:" Importance="high" />
+    <Message Text="  %(FilesToDelete.Identity)" Importance="high" />
+    
+    <!-- Delete the files -->
+    <Delete Files="@(FilesToDelete)" ContinueOnError="true">
+      <Output TaskParameter="DeletedFiles" ItemName="DeletedFilesList" />
+    </Delete>
+    
+    <!-- Report results -->
+    <Message Text="Successfully deleted the files listed above." Importance="high" Condition="'@(DeletedFilesList)' != ''" />
+    <Message Text="No files were deleted." Importance="high" Condition="'@(DeletedFilesList)' == ''" />
+  </Target>
+
   <UsingTask 
     TaskName="WriteFileTask" 
     TaskFactory="CodeTaskFactory" 
@@ -234,12 +285,17 @@ try
     LocalPath = NormalizePath(LocalPath);
     CentralPath = NormalizePath(CentralPath);
     
+    var localPathLength = LocalPath.Length;
+    var centralPathLength = CentralPath.Length;
+    
     // Get all source files from project as relative paths
     var projectFiles = ProjectItems
         .Select(item => NormalizePath(item.ItemSpec))
         .Select(dir => (dir.StartsWith(LocalPath, StringComparison.InvariantCultureIgnoreCase) ? dir.Substring(LocalPath.Length + 1) : dir).TrimStart('/', '\\'))
         .ToList();
         
+    Log.LogMessage(MessageImportance.High, $"Found {projectFiles.Count} project files.");
+
     var excludeFolders = new[]
     {
         ".git",
@@ -248,6 +304,8 @@ try
      .Select(f => Path.GetFileName(f.TrimEnd('\\', '/')))
      .Distinct()
      .ToList();
+
+    Log.LogMessage(MessageImportance.High, $"Found {excludeFolders.Count} excluded folders.");
 
     // Build exclude list
     var excludeFiles = new[]
@@ -270,70 +328,82 @@ try
      .Distinct()
      .ToList();
 
+    Log.LogMessage(MessageImportance.High, $"Found {excludeFiles.Count} excluded files.");
+
     // Get all files in central location excluding patterns
     var di = new DirectoryInfo(CentralPath);
-    var obsoleteFiles = di.EnumerateFiles("*.*", SearchOption.AllDirectories)
-        .Where(fi => !excludeFiles.Any(f => fi.Name.ToLowerInvariant() == f.ToLowerInvariant()))
-        .Where(fi => !excludeFolders.Any(folder => fi.FullName.ToLowerInvariant().Split('\\', '/').Contains(folder.ToLowerInvariant())))
-        .Where(fi => !projectFiles.Any(pf => NormalizePath(fi.FullName).ToLowerInvariant().EndsWith(pf.ToLowerInvariant())))
-        .ToList();
+    List<FileInfo> excludedFiles = null;
+    var obsoleteFiles = di.EnumerateFiles("*.*", SearchOption.AllDirectories).ToList();
+    Log.LogMessage(MessageImportance.High, $"Found {obsoleteFiles.Count} files in central location.");
+    
+    excludedFiles = obsoleteFiles.Where(fi => excludeFolders.Any(folder => fi.FullName.ToLowerInvariant().Split('\\', '/').Contains(folder.ToLowerInvariant()))).ToList();
+    obsoleteFiles = obsoleteFiles.Where(fi => !excludeFolders.Any(folder => fi.FullName.ToLowerInvariant().Split('\\', '/').Contains(folder.ToLowerInvariant()))).ToList();
+    
+    Log.LogMessage(MessageImportance.High, $"After excluding {excludedFiles.Count} files (from excluded folders), we have {obsoleteFiles.Count} files to delete.");
 
-    if (obsoleteFiles.Count != 0)
+    excludedFiles = obsoleteFiles.Where(fi => excludeFiles.Any(f => fi.Name.ToLowerInvariant() == f.ToLowerInvariant())).ToList();
+    obsoleteFiles = obsoleteFiles.Where(fi => !excludeFiles.Any(f => fi.Name.ToLowerInvariant() == f.ToLowerInvariant())).ToList();
+    Log.LogMessage(MessageImportance.High, $"After excluding {excludedFiles.Count} files, we have {obsoleteFiles.Count} files to delete.");
+
+    excludedFiles = obsoleteFiles.Where(fi => projectFiles.Any(pf => NormalizePath(fi.FullName).Substring(centralPathLength + 1).TrimStart('/', '\\').ToLowerInvariant() == (pf.ToLowerInvariant()))).ToList();
+    obsoleteFiles = obsoleteFiles.Where(fi => !projectFiles.Any(pf => NormalizePath(fi.FullName).Substring(centralPathLength + 1).TrimStart('/', '\\').ToLowerInvariant() == (pf.ToLowerInvariant()))).ToList();
+    Log.LogMessage(MessageImportance.High, $"After excluding {excludedFiles.Count} files (from project files), we have {obsoleteFiles.Count} files to delete.");
+
+    if (obsoleteFiles.Count == 0) 
     {
-        Log.LogMessage(MessageImportance.High, "Found {0} obsolete files:", obsoleteFiles.Count);
-        foreach (var file in obsoleteFiles)
-        {
-            Log.LogMessage(MessageImportance.High, $"Deleting: {file}");
-                    
-            try
-            {
-                // Delete obsolete central file
-                var fullPath = file.FullName;
-                file.Delete();
-                
-                // Check if we have the same obsolete file in the local node.
-                var relativePath = fullPath.Substring(di.FullName.Length).TrimStart('\\', '/');
-                var localFile = Path.Combine(LocalPath, relativePath);
-                if (File.Exists(localFile))
-                    File.Delete(localFile);
-                
-                // Clean up empty directories
-                var dn = NormalizePath(Path.GetDirectoryName(fullPath));
-                while (!string.IsNullOrEmpty(dn) &&
-                       dn.StartsWith(CentralPath) && 
-                       !excludeFolders.Any(ef => dn.ToLowerInvariant() == ef.ToLowerInvariant()) &&
-                       Directory.Exists(dn) &&
-                       !Directory.EnumerateFileSystemEntries(dn).Any())
-                {
-                    try 
-                    {
-                        Directory.Delete(dn);
-                    }
-                    catch (Exception ex2)
-                    {
-                        Log.LogWarning($"Failed to delete folder {dn}: {ex2.Message}");
-                    }
-                    dn = Path.GetDirectoryName(dn);
-                }
-            }
-            catch (Exception ex)
-              {
-                  Log.LogWarning($"Failed to delete {file}: {ex.Message}");
-              }
-          }
-      }
-      else
-      {
-          Log.LogMessage(MessageImportance.Normal, "No obsolete files found in central location.");
-      }
+        Log.LogMessage(MessageImportance.High, "No obsolete files found in central location.");
+        return true;
+    }
 
-      return true;
-  }
-  catch (Exception ex)
-  {
-      Log.LogError($"Failed to cleanup central location: {ex.Message}");
-      return false;
-  }
+    Log.LogMessage(MessageImportance.High, "Found {0} obsolete files:", obsoleteFiles.Count);
+    foreach (var file in obsoleteFiles)
+    {
+        Log.LogMessage(MessageImportance.High, $"Deleting: {file}");
+                
+        try
+        {
+            // Delete obsolete central file
+            var fullPath = file.FullName;
+            file.Delete();
+            
+            // Check if we have the same obsolete file in the local node.
+            var relativePath = fullPath.Substring(di.FullName.Length).TrimStart('\\', '/');
+            var localFile = Path.Combine(LocalPath, relativePath);
+            if (File.Exists(localFile))
+                File.Delete(localFile);
+            
+            // Clean up empty directories
+            var dn = NormalizePath(Path.GetDirectoryName(fullPath));
+            while (!string.IsNullOrEmpty(dn) &&
+                   dn.StartsWith(CentralPath) && 
+                   !excludeFolders.Any(ef => dn.ToLowerInvariant() == ef.ToLowerInvariant()) &&
+                   Directory.Exists(dn) &&
+                   !Directory.EnumerateFileSystemEntries(dn).Any())
+            {
+                try 
+                {
+                    Directory.Delete(dn);
+                }
+                catch (Exception ex2)
+                {
+                    Log.LogWarning($"Failed to delete folder {dn}: {ex2.Message}");
+                }
+                dn = Path.GetDirectoryName(dn);
+            }
+        }
+        catch (Exception ex)
+          {
+              Log.LogWarning($"Failed to delete {file}: {ex.Message}");
+          }
+    }
+
+    return true;
+}
+catch (Exception ex)
+{
+    Log.LogError($"Failed to cleanup central location: {ex.Message}");
+    return false;
+}
   ]]></Code>
     </Task>
   </UsingTask>
@@ -482,12 +552,18 @@ exit /b 0
       <ProjectSourceFiles Include="@(Compile)" />
       <ProjectSourceFiles Include="@(Content)" />
       <ProjectSourceFiles Include="@(None)" />
-      <ProjectSourceFiles Include="*.csproj" />
-      <!-- Add any other item types that should be preserved -->
-      <ExcludeFiles Include="**/*.config" />
-      <ExcludeFiles Include="**/*.md" />
+      <ProjectSourceFiles Include="@(EmbeddedResource)" />
+      <ProjectSourceFiles Include="@(Resource)" />
+      <ProjectSourceFiles Include="$(MSBuildProjectFile)" />
+      <!-- Add any other item types that should NOT be preserved -->
+      <ExcludeFiles Include="**/*.config" Exclude="bin/**/*.config; obj/**/*.config" />
+      <ExcludeFiles Include="**/*.md"  Exclude="bin/**/*.md; obj/**/*.md" />
     </ItemGroup>
-    <CleanupCentralLocationTask LocalPath="$(ProjectDir)" CentralPath="$(CentralLocationPath)" ProjectItems="@(ProjectSourceFiles)" ExcludeFiles="@(ExcludeFiles)" />
+    <CleanupCentralLocationTask 
+        LocalPath="$(ProjectDir)" 
+        CentralPath="$(CentralLocationPath)" 
+        ProjectItems="@(ProjectSourceFiles)" 
+        ExcludeFiles="@(ExcludeFiles)" />
   </Target>
 
   <Target Name="UpdateSmartVersion" AfterTargets="CopyFromActive">
