@@ -1,13 +1,15 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
-VisualStudioVersion = 17.13.35931.197 d17.13
+VisualStudioVersion = 17.13.35931.197
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ByteForge.Toolkit", "ByteForge.Toolkit.csproj", "{FB0484EC-D6EF-41DD-B8C1-6F25E828127C}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{8EC462FD-D22E-90A8-E5CE-7E832BA40C5D}"
 	ProjectSection(SolutionItems) = preProject
 		.gitignore = .gitignore
+		ByteForge.Tasks.targets = ByteForge.Tasks.targets
+		CLAUDE.md = CLAUDE.md
 		robo.rcj = robo.rcj
 	EndProjectSection
 EndProject
