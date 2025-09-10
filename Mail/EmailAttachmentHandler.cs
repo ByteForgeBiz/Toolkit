@@ -7,6 +7,13 @@ using System.Net.Mail;
 
 namespace ByteForge.Toolkit
 {
+    /*
+     *  ___            _ _   _  _   _           _                  _   _  _              _ _         
+     * | __|_ __  __ _(_) | /_\| |_| |_ __ _ __| |_  _ __  ___ _ _| |_| || |__ _ _ _  __| | |___ _ _ 
+     * | _|| '  \/ _` | | |/ _ \  _|  _/ _` / _| ' \| '  \/ -_) ' \  _| __ / _` | ' \/ _` | / -_) '_|
+     * |___|_|_|_\__,_|_|_/_/ \_\__|\__\__,_\__|_||_|_|_|_\___|_||_\__|_||_\__,_|_||_\__,_|_\___|_|  
+     *                                                                                               
+     */
     /// <summary>
     /// Handles email attachments with size restrictions, compression, and splitting capabilities.
     /// </summary>
@@ -29,6 +36,22 @@ namespace ByteForge.Toolkit
         /// <returns>Result describing the processing outcome.</returns>
         /// <exception cref="ArgumentNullException">Thrown when the email parameter is null.</exception>
         public AttachmentProcessResult ProcessAttachments(MailMessage email, List<string> filesToAttach, bool addAttachmentSummary = true)
+        {
+            return ProcessAttachments(email, filesToAttach, null, addAttachmentSummary);
+        }
+
+        /// <summary>
+        /// Processes files for email attachment with size limiting, compression, and splitting if needed.
+        /// Supports renaming files in attachments.
+        /// </summary>
+        /// <param name="email">The email message to attach files to.</param>
+        /// <param name="filesToAttach">List of file paths to attach.</param>
+        /// <param name="fileNameMap">Optional dictionary mapping file paths to desired attachment names.</param>
+        /// <param name="addAttachmentSummary">If true, adds a summary of attachments to the email body.</param>
+        /// <returns>Result describing the processing outcome.</returns>
+        /// <exception cref="ArgumentNullException">Thrown when the email parameter is null.</exception>
+        public AttachmentProcessResult ProcessAttachments(MailMessage email, List<string> filesToAttach,
+            Dictionary<string, string> fileNameMap = null, bool addAttachmentSummary = true)
         {
             var result = new AttachmentProcessResult();
 
@@ -61,14 +84,21 @@ namespace ByteForge.Toolkit
             {
                 var attachedFiles = new List<FileInfo>();
                 foreach (var file in filesToAttach)
+                {
                     if (File.Exists(file))
                     {
-                        email.Attachments.Add(new Attachment(file));
+                        var attachment = new Attachment(file)
+                        {
+                            Name = GetDisplayName(file, fileNameMap)
+                        };
+
+                        email.Attachments.Add(attachment);
                         attachedFiles.Add(new FileInfo(file));
                     }
+                }
 
                 if (addAttachmentSummary)
-                    AddDirectAttachmentSummary(email, attachedFiles);
+                    AddDirectAttachmentSummary(email, attachedFiles, fileNameMap);
 
                 result.ProcessingMethod = ProcessingMethod.DirectAttachment;
                 return result;
@@ -84,7 +114,7 @@ namespace ByteForge.Toolkit
             var zipFileName = Path.Combine(TempDirectory, $"Attachments_{timeStamp}.zip");
             try
             {
-                CompressFiles(filesToAttach.Where(f => File.Exists(f)).ToList(), zipFileName);
+                CompressFiles(filesToAttach.Where(f => File.Exists(f)).ToList(), zipFileName, fileNameMap);
                 result.TempFilesCreated.Add(zipFileName);
                 result.ProcessingMethod = ProcessingMethod.Compressed;
             }
@@ -100,10 +130,15 @@ namespace ByteForge.Toolkit
             if (zipFileInfo.Length <= MaxIndividualFileSizeBytes)
             {
                 // Compressed file is under the limit, attach it
-                email.Attachments.Add(new Attachment(zipFileName));
+
+                var zipAttachment = new Attachment(zipFileName);
+                if (filesToAttach.Count == 1 && fileNameMap.Count == 1)
+                    zipAttachment.Name = Path.ChangeExtension(GetDisplayName(filesToAttach[0], fileNameMap), ".zip");
+
+                email.Attachments.Add(zipAttachment);
 
                 if (addAttachmentSummary)
-                    AddCompressedAttachmentSummary(email, fileInfos, zipFileName);
+                    AddCompressedAttachmentSummary(email, fileInfos, zipAttachment, fileNameMap);
             }
             else if (zipFileInfo.Length <= MaxTotalSizeBytes)
             {
@@ -120,7 +155,7 @@ namespace ByteForge.Toolkit
                     optimalPartCount = (int)(MaxTotalSizeMB / MaxIndividualFileSizeMB);
 
                 // Create multi-part zip files
-                var multiPartZips = CreateMultiPartZipArchives(fileInfos, optimalPartCount, timeStamp, out var buckets);
+                var multiPartZips = CreateMultiPartZipArchives(fileInfos, optimalPartCount, timeStamp, fileNameMap, out var buckets);
 
                 foreach (var partZip in multiPartZips)
                 {
@@ -129,13 +164,13 @@ namespace ByteForge.Toolkit
                 }
 
                 if (addAttachmentSummary)
-                    AddMultiPartAttachmentSummary(email, fileInfos, multiPartZips, buckets);
+                    AddMultiPartAttachmentSummary(email, fileInfos, multiPartZips, buckets, fileNameMap);
 
                 result.PartDistribution = buckets.Select(b => new PartInfo
                 {
                     PartNumber = b.Index + 1,
                     FileCount = b.Files.Count,
-                    Files = b.Files.Select(f => f.Name).ToList()
+                    Files = b.Files.Select(f => GetDisplayName(f.FullName, fileNameMap)).ToList()
                 }).ToList();
             }
             else
@@ -159,7 +194,8 @@ namespace ByteForge.Toolkit
         /// </summary>
         /// <param name="files">The list of files to compress.</param>
         /// <param name="outputZipFile">The output zip file path.</param>
-        private void CompressFiles(List<string> files, string outputZipFile)
+        /// <param name="fileNameMap">Optional dictionary mapping file paths to desired names in the archive.</param>
+        private void CompressFiles(List<string> files, string outputZipFile, Dictionary<string, string> fileNameMap = null)
         {
             using (var zipArchive = ZipFile.Open(outputZipFile, ZipArchiveMode.Create))
             {
@@ -167,8 +203,8 @@ namespace ByteForge.Toolkit
                 {
                     if (File.Exists(file))
                     {
-                        var fileName = Path.GetFileName(file);
-                        zipArchive.CreateEntryFromFile(file, fileName);
+                        var entryName = GetDisplayName(file, fileNameMap);
+                        zipArchive.CreateEntryFromFile(file, entryName);
                     }
                 }
             }
@@ -181,9 +217,11 @@ namespace ByteForge.Toolkit
         /// <param name="files">The list of files to distribute.</param>
         /// <param name="partCount">The number of parts to create.</param>
         /// <param name="timeStamp">The timestamp to use in the file names.</param>
+        /// <param name="fileNameMap">Optional dictionary mapping file paths to desired names in the archive.</param>
         /// <param name="buckets">The output list of file buckets.</param>
         /// <returns>The list of created zip file paths.</returns>
-        private List<string> CreateMultiPartZipArchives(List<FileInfo> files, int partCount, string timeStamp, out List<FileBucket> buckets)
+        private List<string> CreateMultiPartZipArchives(List<FileInfo> files, int partCount, string timeStamp,
+            Dictionary<string, string> fileNameMap, out List<FileBucket> buckets)
         {
             var zipFiles = new List<string>();
             buckets = new List<FileBucket>();
@@ -221,7 +259,8 @@ namespace ByteForge.Toolkit
                 {
                     foreach (var file in bucket.Files)
                     {
-                        zipArchive.CreateEntryFromFile(file.FullName, file.Name);
+                        var entryName = GetDisplayName(file.FullName, fileNameMap);
+                        zipArchive.CreateEntryFromFile(file.FullName, entryName);
                     }
                 }
 
@@ -229,6 +268,21 @@ namespace ByteForge.Toolkit
             }
 
             return zipFiles;
+        }
+
+        /// <summary>
+        /// Gets the display name for a file, using the mapped name if available.
+        /// </summary>
+        /// <param name="filePath">The full file path.</param>
+        /// <param name="fileNameMap">Optional dictionary mapping file paths to desired names.</param>
+        /// <returns>The display name to use for the file.</returns>
+        private string GetDisplayName(string filePath, Dictionary<string, string> fileNameMap)
+        {
+            var key = Path.GetFileName(filePath);
+            if (fileNameMap != null && fileNameMap.ContainsKey(key))
+                return fileNameMap[key];
+
+            return Path.GetFileName(filePath);
         }
 
         /// <summary>
@@ -259,7 +313,8 @@ namespace ByteForge.Toolkit
         /// </summary>
         /// <param name="email">The email message to add the summary to.</param>
         /// <param name="files">The list of attached files.</param>
-        private void AddDirectAttachmentSummary(MailMessage email, List<FileInfo> files)
+        /// <param name="fileNameMap">Optional dictionary mapping file paths to desired names.</param>
+        private void AddDirectAttachmentSummary(MailMessage email, List<FileInfo> files, Dictionary<string, string> fileNameMap = null)
         {
             if (files == null || files.Count == 0)
                 return;
@@ -272,7 +327,8 @@ namespace ByteForge.Toolkit
             foreach (var file in files)
             {
                 var sizeStr = FormatFileSize(file.Length);
-                summary.AppendLine($"   - {file.Name} ({sizeStr})");
+                var displayName = GetDisplayName(file.FullName, fileNameMap);
+                summary.AppendLine($"   - {displayName} ({sizeStr})");
             }
 
             email.Body += summary.ToString();
@@ -283,23 +339,26 @@ namespace ByteForge.Toolkit
         /// </summary>
         /// <param name="email">The email message to add the summary to.</param>
         /// <param name="originalFiles">The list of original files.</param>
-        /// <param name="zipFilePath">The path to the compressed zip file.</param>
-        private void AddCompressedAttachmentSummary(MailMessage email, List<FileInfo> originalFiles, string zipFilePath)
+        /// <param name="zip">The zip attachment.</param>
+        /// <param name="fileNameMap">Optional dictionary mapping file paths to desired names.</param>
+        private void AddCompressedAttachmentSummary(MailMessage email, List<FileInfo> originalFiles, Attachment zip, Dictionary<string, string> fileNameMap = null)
         {
             if (originalFiles == null || originalFiles.Count == 0)
                 return;
 
-            var zipInfo = new FileInfo(zipFilePath);
-            var zipSizeStr = FormatFileSize(zipInfo.Length);
+            var zipSizeStr = FormatFileSize(zip.ContentStream.Length);
 
             var summary = new System.Text.StringBuilder();
             summary.AppendLine();
             summary.AppendLine("----");
             summary.AppendLine("Attached:");
-            summary.AppendLine($"   - {Path.GetFileName(zipFilePath)} ({zipSizeStr})");
+            summary.AppendLine($"   - {zip.Name} ({zipSizeStr})");
 
             foreach (var file in originalFiles)
-                summary.AppendLine($"       - {file.Name}");
+            {
+                var displayName = GetDisplayName(file.FullName, fileNameMap);
+                summary.AppendLine($"       - {displayName}");
+            }
 
             email.Body += summary.ToString();
         }
@@ -311,8 +370,9 @@ namespace ByteForge.Toolkit
         /// <param name="originalFiles">The list of original files.</param>
         /// <param name="zipParts">The list of zip part file paths.</param>
         /// <param name="buckets">The list of file buckets.</param>
+        /// <param name="fileNameMap">Optional dictionary mapping file paths to desired names.</param>
         private void AddMultiPartAttachmentSummary(MailMessage email, List<FileInfo> originalFiles,
-                                                  List<string> zipParts, List<FileBucket> buckets)
+                                                  List<string> zipParts, List<FileBucket> buckets, Dictionary<string, string> fileNameMap = null)
         {
             if (originalFiles is null) throw new ArgumentNullException(nameof(originalFiles));
             if (zipParts == null || zipParts.Count == 0)
@@ -333,7 +393,10 @@ namespace ByteForge.Toolkit
                 if (bucket != null)
                 {
                     foreach (var file in bucket.Files)
-                        summary.AppendLine($"       - {file.Name}");
+                    {
+                        var displayName = GetDisplayName(file.FullName, fileNameMap);
+                        summary.AppendLine($"       - {displayName}");
+                    }
                 }
             }
 

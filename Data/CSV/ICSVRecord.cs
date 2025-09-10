@@ -1,5 +1,12 @@
 ﻿namespace ByteForge.Toolkit
 {
+    /*
+     *  ___ ___ _____   _____                   _ 
+     * |_ _/ __/ __\ \ / / _ \___ __ ___ _ _ __| |
+     *  | | (__\__ \\ V /|   / -_) _/ _ \ '_/ _` |
+     * |___\___|___/ \_/ |_|_\___\__\___/_| \__,_|
+     *                                            
+     */
     /// <summary>
     /// Represents a record in a CSV file with validation capabilities.
     /// </summary>
@@ -13,9 +20,8 @@
     /// processing CSV files that need to meet specific business or data format rules.
     /// </para>
     /// <para>
-    /// Classes implementing this interface are typically used with <see cref="CSVReader{T}"/>
-    /// where T is a concrete implementation of ICSVRecord. The CSV reader will create instances
-    /// of the record class and populate them with data from the CSV file.
+    /// Classes implementing this interface are typically used with <see cref="CSVReader"/>. 
+    /// The CSV reader will create instances of the record class and populate them with data from the CSV file.
     /// </para>
     /// </remarks>
     /// <example>
@@ -91,7 +97,7 @@
         /// <summary>
         /// Determines whether the record is valid according to business rules.
         /// </summary>
-        /// <returns><c>true</c> if the record is valid; otherwise, <c>false</c>.</returns>
+        /// <returns><see langword="true" /> if the record is valid; otherwise, <see langword="false" />.</returns>
         /// <remarks>
         /// This method evaluates the record against validation rules defined by the
         /// implementing class. If validation fails, the method should add appropriate

@@ -6,6 +6,13 @@ using ByteForge.Toolkit.Logging;
 
 namespace ByteForge.Toolkit
 {
+    /*
+     *  _____ _       _           _   _ _   _ _ 
+     * |_   _(_)_ __ (_)_ _  __ _| | | | |_(_) |
+     *   | | | | '  \| | ' \/ _` | |_| |  _| | |
+     *   |_| |_|_|_|_|_|_||_\__, |\___/ \__|_|_|
+     *                      |___/               
+     */
     /// <summary>
     /// Utility class for measuring and logging the time taken to execute actions and functions.
     /// </summary>

@@ -4,6 +4,13 @@ using System.Linq;
 
 namespace ByteForge.Toolkit
 {
+    /*
+     *  ___           _               ___                      
+     * | _ ) ___  ___| |___ __ _ _ _ | _ \__ _ _ _ ___ ___ _ _ 
+     * | _ \/ _ \/ _ \ / -_) _` | ' \|  _/ _` | '_(_-</ -_) '_|
+     * |___/\___/\___/_\___\__,_|_||_|_| \__,_|_| /__/\___|_|  
+     *                                                         
+     */
     /// <summary>
     /// Provides enhanced methods to parse string representations into <see cref="bool"/> values,
     /// with support for various common boolean representations beyond the standard "true" and "false".
@@ -65,7 +72,7 @@ namespace ByteForge.Toolkit
         /// </summary>
         public static BooleanParser Default => _defaultInstance.Value;
 
-        private static readonly Lazy<BooleanParser> _defaultInstance = new Lazy<BooleanParser>(() => new BooleanParser());
+        private static readonly Lazy<BooleanParser> _defaultInstance = new Lazy<BooleanParser>();
 
         /// <summary>
         /// Initializes a new instance of the <see cref="BooleanParser"/> class with default true and false values.
@@ -154,20 +161,20 @@ namespace ByteForge.Toolkit
         /// <param name="input">The string to parse.</param>
         /// <param name="result">
         /// When this method returns, contains the <see cref="bool"/> value equivalent 
-        /// to the string contained in <paramref name="input"/>, if the conversion succeeded, or <c>false</c> 
+        /// to the string contained in <paramref name="input"/>, if the conversion succeeded, or <see langword="false" /> 
         /// if the conversion failed. The conversion fails if the <paramref name="input"/> parameter is null 
         /// or does not contain a valid string representation of a boolean value.
         /// </param>
         /// <returns>
-        /// <c>true</c> if the <paramref name="input"/> parameter was converted successfully; 
-        /// otherwise, <c>false</c>.
+        /// <see langword="true" /> if the <paramref name="input"/> parameter was converted successfully; 
+        /// otherwise, <see langword="false" />.
         /// </returns>
         /// <remarks>
         /// This method is similar to <see cref="bool.TryParse(string, out bool)"/> but recognizes
         /// a wider range of string representations for boolean values.
         /// <para>
         /// Unlike <see cref="ParseValue"/>, this method does not throw an exception when the conversion fails.
-        /// Instead, it returns <c>false</c> and sets <paramref name="result"/> to <c>false</c>.
+        /// Instead, it returns <see langword="false" /> and sets <paramref name="result"/> to <see langword="false" />.
         /// </para>
         /// <para>
         /// This method internally calls <see cref="ParseValue"/> and catches any exceptions that might occur.
@@ -286,7 +293,7 @@ namespace ByteForge.Toolkit
         /// </summary>
         /// <param name="input">The string to parse.</param>
         /// <param name="result">When this method returns, contains the parsed value or default.</param>
-        /// <returns><c>true</c> if parsing succeeded; otherwise, <c>false</c>.</returns>
+        /// <returns><see langword="true" /> if parsing succeeded; otherwise, <see langword="false" />.</returns>
         /// <remarks>
         /// This static method uses the default BooleanParser instance.
         /// </remarks>

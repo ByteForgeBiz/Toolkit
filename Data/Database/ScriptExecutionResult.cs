@@ -4,6 +4,13 @@ using System.Data;
 
 namespace ByteForge.Toolkit
 {
+    /*
+     *  ___         _      _   ___                 _   _          ___             _ _   
+     * / __| __ _ _(_)_ __| |_| __|_ _____ __ _  _| |_(_)___ _ _ | _ \___ ____  _| | |_ 
+     * \__ \/ _| '_| | '_ \  _| _|\ \ / -_) _| || |  _| / _ \ ' \|   / -_)_-< || | |  _|
+     * |___/\__|_| |_| .__/\__|___/_\_\___\__|\_,_|\__|_\___/_||_|_|_\___/__/\_,_|_|\__|
+     *               |_|                                                                
+     */
     /// <summary>
     /// Represents the comprehensive result of executing a SQL script, potentially containing multiple batches.
     /// </summary>
@@ -68,11 +75,11 @@ namespace ByteForge.Toolkit
         /// Gets or sets a value indicating whether the script executed successfully.
         /// </summary>
         /// <remarks>
-        /// A value of <c>true</c> indicates that all batches in the script executed without
+        /// A value of <see langword="true" /> indicates that all batches in the script executed without
         /// throwing exceptions. Note that this does not necessarily mean that the script
         /// accomplished its intended business logic - it only indicates that no SQL errors occurred.
         /// <para>
-        /// When <c>false</c>, the <see cref="LastException"/> property will contain
+        /// When <see langword="false" />, the <see cref="LastException"/> property will contain
         /// information about the error that caused the failure.
         /// </para>
         /// </remarks>
@@ -136,14 +143,14 @@ namespace ByteForge.Toolkit
         /// Gets or sets the last exception that occurred during script execution.
         /// </summary>
         /// <remarks>
-        /// If <see cref="Success"/> is <c>false</c>, this property contains the exception
+        /// If <see cref="Success"/> is <see langword="false" />, this property contains the exception
         /// that caused the script execution to fail.
         /// <para>
         /// The exception typically includes information such as the error code, error message,
         /// and stack trace, which can be used to diagnose the cause of the failure.
         /// </para>
         /// <para>
-        /// This property will be <c>null</c> if <see cref="Success"/> is <c>true</c>.
+        /// This property will be <c>null</c> if <see cref="Success"/> is <see langword="true" />.
         /// </para>
         /// </remarks>
         public Exception LastException { get; set; }

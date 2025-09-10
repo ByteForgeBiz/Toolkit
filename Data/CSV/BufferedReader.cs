@@ -4,6 +4,13 @@ using System.IO;
 
 namespace ByteForge.Toolkit
 {
+    /*
+     *  ___       __  __                _ ___             _         
+     * | _ )_  _ / _|/ _|___ _ _ ___ __| | _ \___ __ _ __| |___ _ _ 
+     * | _ \ || |  _|  _/ -_) '_/ -_) _` |   / -_) _` / _` / -_) '_|
+     * |___/\_,_|_| |_| \___|_| \___\__,_|_|_\___\__,_\__,_\___|_|  
+     *                                                              
+     */
     /// <summary>
     /// Provides buffered reading capabilities for CSV processing.
     /// </summary>

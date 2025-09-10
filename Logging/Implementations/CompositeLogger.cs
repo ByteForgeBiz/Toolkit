@@ -17,12 +17,12 @@ namespace ByteForge.Toolkit.Logging
     /// <summary>
     /// Composite logger that logs messages to multiple loggers.
     /// </summary>
-    public class CompositeLogger : BaseLogger, IList<ILogger>
+    public class CompositeLogger : BaseLogger, IList<ILogger>, IDisposable
     {
-        private readonly List<ILogger> _loggers = new List<ILogger>();
         private readonly bool _continueOnError;
         private readonly int? _maxDegreeOfParallelism;
         private bool enableMultiThreading = false;
+        private bool _disposed;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="CompositeLogger"/> class with the specified name.
@@ -59,7 +59,7 @@ namespace ByteForge.Toolkit.Logging
         /// <param name="maxDegreeOfParallelism">Maximum degree of parallelism for logging operations.</param>
         public CompositeLogger(ILogger[] loggers, bool continueOnError = true, int? maxDegreeOfParallelism = 2) : base("CompositeLogger")
         {
-            _loggers.AddRange(loggers);
+            Loggers.AddRange(loggers);
             _continueOnError = continueOnError;
             _maxDegreeOfParallelism = maxDegreeOfParallelism;
         }
@@ -72,7 +72,7 @@ namespace ByteForge.Toolkit.Logging
         /// <summary>
         /// Gets the list of loggers in the composite logger.
         /// </summary>
-        protected List<ILogger> Loggers => _loggers;
+        protected List<ILogger> Loggers { get; } = new List<ILogger>();
 
         /// <summary>
         /// Gets a value indicating whether the current application is a web application.
@@ -94,14 +94,14 @@ namespace ByteForge.Toolkit.Logging
         /// <summary>
         /// Gets a value indicating whether the collection is read-only.
         /// </summary>
-        public bool IsReadOnly => ((ICollection<ILogger>)_loggers).IsReadOnly;
+        public bool IsReadOnly => ((ICollection<ILogger>)Loggers).IsReadOnly;
 
         /// <summary>
         /// Gets or sets the logger at the specified index.
         /// </summary>
         /// <param name="index">The index of the logger.</param>
         /// <returns>The logger at the specified index.</returns>
-        public ILogger this[int index] { get => ((IList<ILogger>)_loggers)[index]; set => ((IList<ILogger>)_loggers)[index] = value; }
+        public ILogger this[int index] { get => ((IList<ILogger>)Loggers)[index]; set => ((IList<ILogger>)Loggers)[index] = value; }
 
         /// <summary>
         /// Clears all loggers from the composite logger.
@@ -144,8 +144,7 @@ namespace ByteForge.Toolkit.Logging
 
             var tasks = Loggers.Select(logger => Task.Run(() =>
             {
-                var log = logger as BaseLogger;
-                if (log == null)
+                if (!(logger is BaseLogger log))
                     return;
 
                 try
@@ -181,8 +180,7 @@ namespace ByteForge.Toolkit.Logging
         {
             Loggers.All(logger =>
             {
-                var log = logger as BaseLogger;
-                if (log == null)
+                if (!(logger is BaseLogger log))
                     return true;
 
                 try
@@ -205,7 +203,7 @@ namespace ByteForge.Toolkit.Logging
         /// <returns>The index of the logger if found; otherwise, -1.</returns>
         public int IndexOf(ILogger item)
         {
-            return ((IList<ILogger>)_loggers).IndexOf(item);
+            return ((IList<ILogger>)Loggers).IndexOf(item);
         }
 
         /// <summary>
@@ -215,7 +213,7 @@ namespace ByteForge.Toolkit.Logging
         /// <param name="item">The logger to insert.</param>
         public void Insert(int index, ILogger item)
         {
-            ((IList<ILogger>)_loggers).Insert(index, item);
+            ((IList<ILogger>)Loggers).Insert(index, item);
         }
 
         /// <summary>
@@ -224,7 +222,7 @@ namespace ByteForge.Toolkit.Logging
         /// <param name="index">The zero-based index of the logger to remove.</param>
         public void RemoveAt(int index)
         {
-            ((IList<ILogger>)_loggers).RemoveAt(index);
+            ((IList<ILogger>)Loggers).RemoveAt(index);
         }
 
         /// <summary>
@@ -233,7 +231,7 @@ namespace ByteForge.Toolkit.Logging
         /// <param name="item">The logger to add.</param>
         public void Add(ILogger item)
         {
-            ((ICollection<ILogger>)_loggers).Add(item);
+            ((ICollection<ILogger>)Loggers).Add(item);
         }
 
         /// <summary>
@@ -241,7 +239,7 @@ namespace ByteForge.Toolkit.Logging
         /// </summary>
         public void Clear()
         {
-            ((ICollection<ILogger>)_loggers).Clear();
+            ((ICollection<ILogger>)Loggers).Clear();
         }
 
         /// <summary>
@@ -251,7 +249,7 @@ namespace ByteForge.Toolkit.Logging
         /// <returns>true if the logger is found; otherwise, false.</returns>
         public bool Contains(ILogger item)
         {
-            return ((ICollection<ILogger>)_loggers).Contains(item);
+            return ((ICollection<ILogger>)Loggers).Contains(item);
         }
 
         /// <summary>
@@ -261,7 +259,7 @@ namespace ByteForge.Toolkit.Logging
         /// <param name="arrayIndex">The zero-based index in the array at which copying begins.</param>
         public void CopyTo(ILogger[] array, int arrayIndex)
         {
-            ((ICollection<ILogger>)_loggers).CopyTo(array, arrayIndex);
+            ((ICollection<ILogger>)Loggers).CopyTo(array, arrayIndex);
         }
 
         /// <summary>
@@ -271,7 +269,7 @@ namespace ByteForge.Toolkit.Logging
         /// <returns>true if the logger was successfully removed; otherwise, false.</returns>
         public bool Remove(ILogger item)
         {
-            return ((ICollection<ILogger>)_loggers).Remove(item);
+            return ((ICollection<ILogger>)Loggers).Remove(item);
         }
 
         /// <summary>
@@ -280,7 +278,7 @@ namespace ByteForge.Toolkit.Logging
         /// <returns>An enumerator for the composite logger.</returns>
         public IEnumerator<ILogger> GetEnumerator()
         {
-            return ((IEnumerable<ILogger>)_loggers).GetEnumerator();
+            return ((IEnumerable<ILogger>)Loggers).GetEnumerator();
         }
 
         /// <summary>
@@ -289,7 +287,35 @@ namespace ByteForge.Toolkit.Logging
         /// <returns>An enumerator for the composite logger.</returns>
         IEnumerator IEnumerable.GetEnumerator()
         {
-            return ((IEnumerable)_loggers).GetEnumerator();
+            return ((IEnumerable)Loggers).GetEnumerator();
+        }
+
+        /// <summary>
+        /// Releases the resources used by the current instance of the class.
+        /// </summary>
+        /// <param name="disposing">A value indicating whether to release both managed and unmanaged resources  (<see langword="true"/>) or only unmanaged resources (<see langword="false"/>).</param>
+        protected virtual void Dispose(bool disposing)
+        {
+            if (_disposed)
+                return;
+
+            if (disposing)
+                foreach (var logger in Loggers)
+                    if (logger is IDisposable disposable)
+                        disposable.Dispose();
+
+            _disposed = true;
+        }
+
+        /// <inheritdoc/>
+        public void Dispose()
+        {
+            if (_disposed)
+                return;
+
+            // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
+            Dispose(disposing: true);
+            GC.SuppressFinalize(this);
         }
     }
 }

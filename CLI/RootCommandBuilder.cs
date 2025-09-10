@@ -1,11 +1,9 @@
-﻿using System;
+﻿using ByteForge.Toolkit.CLI;
+using System;
 using System.Collections.Generic;
 using System.CommandLine;
 using System.CommandLine.Builder;
-using System.CommandLine.Help;
-using System.CommandLine.Parsing;
 using System.IO;
-using System.Linq;
 using System.Reflection;
 
 namespace ByteForge.Toolkit.CommandLine
@@ -212,7 +210,7 @@ namespace ByteForge.Toolkit.CommandLine
         /// Builds and returns the command line parser.
         /// </summary>
         /// <returns>The configured parser.</returns>
-        public System.CommandLine.Parsing.Parser Build()
+        public CommandParser Build()
         {
             var builder = new CommandLineBuilder(_rootCommand);
 
@@ -243,7 +241,9 @@ namespace ByteForge.Toolkit.CommandLine
             if (_useCancellation)
                 builder.CancelOnProcessTermination();
 
-            return builder.Build();
+            var systemParser = builder.Build();
+            var tokenList = CommandBuilder.TokenList;
+            return new CommandParser(systemParser, tokenList);
         }
     }
 }

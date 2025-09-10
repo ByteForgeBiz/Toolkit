@@ -9,13 +9,13 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>ByteForge.Toolkit</RootNamespace>
     <AssemblyName>ByteForge.Toolkit</AssemblyName>
-    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
-    <LangVersion>7.0</LangVersion>
+    <LangVersion>8.0</LangVersion>
     <TargetFrameworkProfile />
     <WarningLevel>4</WarningLevel>
     <ErrorReport>prompt</ErrorReport>
-    <DocumentationFile>bin\TelecomInc.Common.xml</DocumentationFile>
+    <DocumentationFile>bin\ByteForge.Toolkit.xml</DocumentationFile>
     <NuGetPackageImportStamp>
     </NuGetPackageImportStamp>
   </PropertyGroup>
@@ -30,7 +30,6 @@
     <Optimize>false</Optimize>
     <OutputPath>bin\Debug\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <DocumentationFile>bin\ByteForge.Toolkit.xml</DocumentationFile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -43,50 +42,50 @@
     <DebugSymbols>true</DebugSymbols>
     <OutputPath>bin\x86\Debug\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <DocumentationFile>bin\ByteForge.Toolkit.xml</DocumentationFile>
     <DebugType>full</DebugType>
     <PlatformTarget>x86</PlatformTarget>
-    <LangVersion>7.0</LangVersion>
     <ErrorReport>prompt</ErrorReport>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x86'">
     <AssemblyName>$(AssemblyName).x86</AssemblyName>
     <OutputPath>bin\x86\Release\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
-    <DocumentationFile>bin\TelecomInc.Common.xml</DocumentationFile>
     <Optimize>true</Optimize>
     <DebugType>pdbonly</DebugType>
     <PlatformTarget>x86</PlatformTarget>
-    <LangVersion>7.0</LangVersion>
     <ErrorReport>prompt</ErrorReport>
   </PropertyGroup>
   <ItemGroup>
+    <PackageReference Include="Costura.Fody">
+      <Version>6.0.0</Version>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
     <PackageReference Include="Microsoft.Bcl.AsyncInterfaces">
-      <Version>9.0.0</Version>
+      <Version>9.0.7</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.Extensions.Configuration">
-      <Version>9.0.0</Version>
+      <Version>9.0.7</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions">
-      <Version>9.0.0</Version>
+      <Version>9.0.7</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.Extensions.Configuration.FileExtensions">
-      <Version>9.0.0</Version>
+      <Version>9.0.7</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.Extensions.Configuration.Ini">
-      <Version>9.0.0</Version>
+      <Version>9.0.7</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.Extensions.FileProviders.Abstractions">
-      <Version>9.0.0</Version>
+      <Version>9.0.7</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.Extensions.FileProviders.Physical">
-      <Version>9.0.0</Version>
+      <Version>9.0.7</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.Extensions.FileSystemGlobbing">
-      <Version>9.0.0</Version>
+      <Version>9.0.7</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.Extensions.Primitives">
-      <Version>9.0.0</Version>
+      <Version>9.0.7</Version>
     </PackageReference>
     <PackageReference Include="Newtonsoft.Json">
       <Version>13.0.3</Version>
@@ -95,7 +94,7 @@
       <Version>112.1.0</Version>
     </PackageReference>
     <PackageReference Include="System.Buffers">
-      <Version>4.6.0</Version>
+      <Version>4.6.1</Version>
     </PackageReference>
     <PackageReference Include="System.CommandLine">
       <Version>2.0.0-beta4.22272.1</Version>
@@ -104,28 +103,28 @@
       <Version>2.0.0-beta4.22272.1</Version>
     </PackageReference>
     <PackageReference Include="System.IO.Pipelines">
-      <Version>9.0.0</Version>
+      <Version>9.0.7</Version>
     </PackageReference>
     <PackageReference Include="System.Memory">
-      <Version>4.6.0</Version>
+      <Version>4.6.3</Version>
     </PackageReference>
     <PackageReference Include="System.Numerics.Vectors">
-      <Version>4.6.0</Version>
+      <Version>4.6.1</Version>
     </PackageReference>
     <PackageReference Include="System.Runtime.CompilerServices.Unsafe">
-      <Version>6.1.0</Version>
+      <Version>6.1.2</Version>
     </PackageReference>
     <PackageReference Include="System.Text.Encodings.Web">
-      <Version>9.0.0</Version>
+      <Version>9.0.7</Version>
     </PackageReference>
     <PackageReference Include="System.Text.Json">
-      <Version>9.0.0</Version>
+      <Version>9.0.7</Version>
     </PackageReference>
     <PackageReference Include="System.Threading.Tasks.Extensions">
-      <Version>4.6.0</Version>
+      <Version>4.6.3</Version>
     </PackageReference>
     <PackageReference Include="System.ValueTuple">
-      <Version>4.5.0</Version>
+      <Version>4.6.1</Version>
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
@@ -146,22 +145,32 @@
   <ItemGroup>
     <Compile Include="Attributes\CSVColumnAttribute.cs" />
     <Compile Include="Attributes\DBColumnAttribute.cs" />
+    <Compile Include="CLI\CommandParser.cs" />
     <Compile Include="CLI\RootCommandBuilder.cs" />
+    <Compile Include="Configuration\Attributes\ArrayAttribute.cs" />
+    <Compile Include="Configuration\Attributes\DefaultValueProviderAttribute.cs" />
     <Compile Include="Configuration\Attributes\DoNotPersistAttribute.cs" />
+    <Compile Include="Configuration\DefaultValueHelper.cs" />
+    <Compile Include="Data\Audio\AudioFormatDetector.cs" />
     <Compile Include="Data\CSV\BufferedReader.cs" />
     <Compile Include="Data\CSV\ConversionException.cs" />
     <Compile Include="Data\CSV\CSVFormat.cs" />
+    <Compile Include="Data\CSV\CSVWriter.cs" />
     <Compile Include="Data\CSV\DataProcessingException.cs" />
     <Compile Include="Data\CSV\CSVRecord.cs" />
     <Compile Include="Data\CSV\ICSVRecord.cs" />
     <Compile Include="Data\CSV\ValidationErrors.cs" />
+    <Compile Include="Data\Database\BulkDbProcessor.cs" />
     <Compile Include="Data\Database\DBAccess.Factory.cs" />
     <Compile Include="Data\Database\DBAccess.Logging.cs" />
     <Compile Include="Data\Database\DBAccess.Methods.cs" />
     <Compile Include="Data\Database\DBAccess.Parameters.cs" />
     <Compile Include="Data\Database\DBAccess.ScriptExecution.cs" />
-    <Compile Include="Data\Database\DBAccess.TypeConverter.cs" />
+    <Compile Include="Data\Database\TypeConverter.cs" />
     <Compile Include="Logging\Implementations\ConsoleLogger.cs" />
+    <Compile Include="Logging\Implementations\SessionFileLogger.cs" />
+    <Compile Include="Logging\Models\AsyncOptions.cs" />
+    <Compile Include="Logging\Models\SessionFileLoggerOptions.cs" />
     <Compile Include="Mail\AttachmentProcessResult.cs" />
     <Compile Include="Mail\EmailAttachmentHandler.cs" />
     <Compile Include="Mail\FileBucket.cs" />
@@ -169,22 +178,26 @@
     <Compile Include="Mail\ProcessingMethod.cs" />
     <Compile Include="Mail\SkippedFile.cs" />
     <Compile Include="Utils\BooleanParser.cs" />
+    <Compile Include="CLI\ConsoleSpinner.cs" />
+    <Compile Include="Utils\DateTimeUtil.cs" />
     <Compile Include="Utils\EnumExtensions.cs" />
     <Compile Include="Utils\Parser.cs" />
     <Compile Include="Utils\DateTimeParser.cs" />
-    <Compile Include="Configuration\Interfaces\IConfigurationSection.cs" />
-    <Compile Include="Configuration\Models\ConfigurationSection.cs" />
+    <Compile Include="Configuration\Interfaces\IConfigSection.cs" />
+    <Compile Include="Configuration\Models\ConfigSection.cs" />
     <Compile Include="Logging\Implementations\BaseLogger.cs" />
     <Compile Include="Configuration\Models\GlobalizationInfo.cs" />
     <Compile Include="CLI\Attributes\OptionAttribute.cs" />
     <Compile Include="CLI\CommandBuilder.cs" />
+    <Compile Include="Utils\StringUtil.cs" />
+    <Compile Include="Utils\TemplateProcessor.cs" />
     <Compile Include="Utils\TimingUtil.cs" />
-    <Compile Include="Logging\Models\LogOptions.cs" />
+    <Compile Include="Logging\Models\LogSettings.cs" />
     <Compile Include="Utils\ConsoleUtil.cs" />
-    <Compile Include="Configuration\Attributes\PropertyNameAttribute.cs" />
+    <Compile Include="Configuration\Attributes\ConfigNameAttribute.cs" />
     <Compile Include="Utils\IOUtils.cs" />
     <Compile Include="DataStructures\Url.cs" />
-    <Compile Include="Logging\Context\CorrelationContext.cs" />
+    <Compile Include="Logging\Models\CorrelationContext.cs" />
     <Compile Include="Security\Encryptor.cs" />
     <Compile Include="Logging\Interfaces\ILogger.cs" />
     <Compile Include="Logging\Implementations\FileLogger.cs" />
@@ -205,6 +218,7 @@
     <Compile Include="Logging\Log.cs" />
     <Compile Include="Logging\Models\FileLoggerOptions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Utils\ValueConverterRegistry.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
@@ -213,13 +227,27 @@
     <None Include="DataStructures\readme.md" />
     <None Include="Data\CSV\readme.md" />
     <None Include="Data\Database\readme.md" />
+    <None Include="FodyWeavers.xsd">
+      <SubType>Designer</SubType>
+    </None>
     <None Include="Logging\readme.md" />
+    <None Include="Mail\readme.md" />
     <None Include="readme.md" />
+    <None Include="Documentation\CLI.md" />
+    <None Include="Documentation\Configuration.md" />
+    <None Include="Documentation\DataStructures.md" />
+    <None Include="Documentation\Data_CSV.md" />
+    <None Include="Documentation\Data_Database.md" />
+    <None Include="Documentation\Logging.md" />
+    <None Include="Documentation\ByteForge.Toolkit.md" />
+    <None Include="Documentation\Security.md" />
+    <None Include="Documentation\Utils.md" />
     <None Include="Security\readme.md" />
     <None Include="Utils\readme.md" />
   </ItemGroup>
   <ItemGroup>
     <Content Include=".gitignore" />
+    <Content Include="FodyWeavers.xml" />
     <Content Include="ILLink\ILLink.Descriptors.LibraryBuild.xml" />
   </ItemGroup>
   <Import Project="..\packages\NETStandard.Library.2.0.3\build\netstandard2.0\NETStandard.Library.targets" Condition="Exists('..\packages\NETStandard.Library.2.0.3\build\netstandard2.0\NETStandard.Library.targets')" />

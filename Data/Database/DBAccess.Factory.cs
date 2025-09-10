@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Data;
 using System.Data.Common;
 using System.Data.Odbc;
 using System.Data.SqlClient;
@@ -8,14 +9,21 @@ using System.Text.RegularExpressions;
 
 namespace ByteForge.Toolkit
 {
+    /*
+     *  ___  ___   _                   
+     * |   \| _ ) /_\  __ __ ___ ______
+     * | |) | _ \/ _ \/ _/ _/ -_)_-<_-<
+     * |___/|___/_/ \_\__\__\___/__/__/
+     *                                 
+     */
     public partial class DBAccess
     {
         /// <summary>
-        /// Creates the correct <see cref="DbConnection"/> object based on the database type.
+        /// Creates the correct <see cref="IDbConnection"/> object based on the database type.
         /// </summary>
-        /// <returns>The correct <see cref="DbConnection"/> object.</returns>
+        /// <returns>The correct <see cref="IDbConnection"/> object.</returns>
         /// <exception cref="NotSupportedException">Thrown when the database type is not supported.</exception>
-        private DbConnection CreateConnection([CallerMemberName] string caller = "")
+        private IDbConnection CreateConnection([CallerMemberName] string caller = "")
         {
             var conn = ConnectionString;
             if (caller.ToLowerInvariant().Contains("async"))
@@ -38,7 +46,7 @@ namespace ByteForge.Toolkit
         /// <param name="command">A <see cref="DbCommand"/> object that contains the query.</param>
         /// <returns>The correct <see cref="DbDataAdapter"/> object.</returns>
         /// <exception cref="NotSupportedException">Thrown when the database type is not supported.</exception>
-        private DbDataAdapter CreateDataAdapter(DbCommand command)
+        private IDbDataAdapter CreateDataAdapter(IDbCommand command)
         {
             switch (DbType)
             {
@@ -58,7 +66,7 @@ namespace ByteForge.Toolkit
         /// <param name="query">The SQL query to execute.</param>
         /// <param name="arguments">The arguments for the SQL query.</param>
         /// <returns>The created command.</returns>
-        private DbCommand CreateCommand(DbConnection connection, string query, object[] arguments)
+        private IDbCommand CreateCommand(IDbConnection connection, string query, object[] arguments)
         {
             var cmd = connection.CreateCommand();
             cmd.CommandTimeout = 240;
@@ -77,12 +85,14 @@ namespace ByteForge.Toolkit
                     var prm = cmd.CreateParameter();
                     prm.ParameterName = prms[i];
                     prm.Value = arguments[i] ?? DBNull.Value;
+                    if (Options.AutoTrimStrings && prm.Value is string str)
+                        prm.Value = str.Trim();
                     DefineDbType(prm, prm.Value);
                     cmd.Parameters.Add(prm);
                 }
             }
 
-            Log.Verbose($"Command created for query: {query}");
+            Log.Verbose($"Command created for query:{Environment.NewLine}{query}");
             if (cmd.Parameters.Count > 0)
                 Log.Debug(string.Join(", " + Environment.NewLine, cmd.Parameters.Cast<DbParameter>().Select(p => $"{p.ParameterName} = '{p.Value}'")));
 

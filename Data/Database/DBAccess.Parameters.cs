@@ -1,12 +1,17 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Data;
-using System.Data.Common;
 using System.Data.SqlClient;
 using System.Text.RegularExpressions;
 
 namespace ByteForge.Toolkit
 {
+    /*
+     *  ___  ___   _                   
+     * |   \| _ ) /_\  __ __ ___ ______
+     * | |) | _ \/ _ \/ _/ _/ -_)_-<_-<
+     * |___/|___/_/ \_\__\__\___/__/__/
+     *                                 
+     */
     public partial class DBAccess
     {
         private readonly Regex rxParam = new Regex(@"(?<![a-zA-Z0-9_.])@[A-Za-z]\w*(?=(?:[^']*'[^']*')*[^']*$)");
@@ -18,7 +23,7 @@ namespace ByteForge.Toolkit
         /// <param name="batch">The SQL batch containing the parameters.</param>
         /// <param name="arguments">The arguments to be added as parameters.</param>
         /// <exception cref="ParamArgumentsMismatchException">Thrown when the number of parameters does not match the number of arguments.</exception>
-        private void AddParameters(DbCommand cmd, string batch, object[] arguments)
+        private void AddParameters(IDbCommand cmd, string batch, object[] arguments)
         {
             var parameters = ParseParameters(batch);
             if (parameters.Count != arguments.Length)
@@ -41,7 +46,7 @@ namespace ByteForge.Toolkit
         /// </summary>
         /// <param name="prm">The database parameter.</param>
         /// <param name="value">The value to determine the database type.</param>
-        private void DefineDbType(DbParameter prm, object value)
+        private void DefineDbType(IDbDataParameter prm, object value)
         {
             /*
              * First we deal with null values

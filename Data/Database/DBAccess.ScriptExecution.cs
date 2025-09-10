@@ -25,6 +25,13 @@ namespace ByteForge.Toolkit
      * - `ExecuteScript` returns a `ScriptExecutionResult` object containing detailed information about the execution, while `ExecuteQuery` returns a boolean indicating success or failure.
      */
 
+    /*
+     *  ___  ___   _                   
+     * |   \| _ ) /_\  __ __ ___ ______
+     * | |) | _ \/ _ \/ _/ _/ -_)_-<_-<
+     * |___/|___/_/ \_\__\__\___/__/__/
+     *                                 
+     */
     public partial class DBAccess
     {
         /// <summary>
@@ -64,8 +71,9 @@ namespace ByteForge.Toolkit
                             if (arguments != null && !IsDDLStatement(batch))
                                 AddParameters(cmd, batch, arguments);
 
-                            Log.Verbose($"Executing query: {cmd.CommandText}");
+                            Log.Verbose($"Executing query:{Environment.NewLine}{batch}");
                             Log.Debug(string.Join(", ", cmd.Parameters.Cast<SqlParameter>().Select(p => $"{p.ParameterName} = '{p.Value}'").ToArray()));
+                            var timeStart = DateTime.Now;
 
                             if (captureResults)
                             {
@@ -92,7 +100,9 @@ namespace ByteForge.Toolkit
                                 result.BatchResults.Add(affected);
                             }
 
-                            Log.Debug($"Execution completed. Records affected: {result.RecordsAffected.Last()}");
+                            var duration = DateTime.Now - timeStart;
+                            Log.Debug($"Query executed in {duration}.");
+                            Log.Verbose($"Execution completed. Records affected: {result.RecordsAffected.Last()}");
                         }
 
                         result.Success = true;
@@ -135,7 +145,7 @@ namespace ByteForge.Toolkit
         /// <returns>An enumerable collection of SQL script batches.</returns>
         private static IEnumerable<string> SplitIntoBatches(string script)
         {
-            var lines = script.Split(new[] { "\r\n", "\n" }, StringSplitOptions.None);
+            var lines = script.Split(new[] { Environment.NewLine, "\r\n", "\n" }, StringSplitOptions.None);
             var currentBatch = new StringBuilder();
 
             foreach (var line in lines)

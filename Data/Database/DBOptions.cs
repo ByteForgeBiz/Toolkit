@@ -1,7 +1,15 @@
 ﻿using System;
+using System.ComponentModel;
 
 namespace ByteForge.Toolkit
 {
+    /*
+     *  ___       _        _                   ___       _   _             
+     * |   \ __ _| |_ __ _| |__  __ _ ___ ___ / _ \ _ __| |_(_)___ _ _  ___
+     * | |) / _` |  _/ _` | '_ \/ _` (_-</ -_) (_) | '_ \  _| / _ \ ' \(_-<
+     * |___/\__,_|\__\__,_|_.__/\__,_/__/\___|\___/| .__/\__|_\___/_||_/__/
+     *                                             |_|                     
+     */
     /// <summary>
     /// Represents the configuration options for a database connection.
     /// </summary>
@@ -13,7 +21,7 @@ namespace ByteForge.Toolkit
     /// <para>
     /// The class is typically used with the <see cref="Configuration"/> system to load
     /// database settings from configuration files. Most properties are decorated with
-    /// <see cref="PropertyNameAttribute"/> to map between configuration keys and class properties.
+    /// <see cref="ConfigNameAttribute"/> to map between configuration keys and class properties.
     /// </para>
     /// <para>
     /// Sensitive information like database credentials are stored in encrypted form and
@@ -32,7 +40,6 @@ namespace ByteForge.Toolkit
     /// </remarks>
     public class DatabaseOptions
     {
-        private readonly Encryptor enc = new Encryptor(13, 16);
         private static readonly object _lock = new object();
 
         /// <summary>
@@ -42,7 +49,7 @@ namespace ByteForge.Toolkit
         /// This determines which connection string format will be used when
         /// <see cref="GetConnectionString"/> is called.
         /// </remarks>
-        [PropertyName("sType")]
+        [ConfigName("sType")]
         public DBAccess.DataBaseType DatabaseType { get; set; }
 
         /// <summary>
@@ -52,7 +59,7 @@ namespace ByteForge.Toolkit
         /// For SQL Server connections, this is typically a server name, instance name,
         /// or IP address. For example: "localhost", "SQLSERVER01\INSTANCE1", or "192.168.1.100".
         /// </remarks>
-        [PropertyName("sServer")]
+        [ConfigName("sServer")]
         public string Server { get; set; }
 
         /// <summary>
@@ -63,7 +70,7 @@ namespace ByteForge.Toolkit
         /// <see cref="DBAccess.DataBaseType.ODBC"/>. It should reference a system DSN
         /// configured in the ODBC Data Source Administrator.
         /// </remarks>
-        [PropertyName("sServerDSN")]
+        [ConfigName("sServerDSN")]
         public string ServerDSN { get; set; }
 
         /// <summary>
@@ -72,7 +79,7 @@ namespace ByteForge.Toolkit
         /// <remarks>
         /// Specifies the name of the database to connect to on the server.
         /// </remarks>
-        [PropertyName("sDatabaseName")]
+        [ConfigName("sDatabaseName")]
         public string DatabaseName { get; set; }
 
         /// <summary>
@@ -86,7 +93,7 @@ namespace ByteForge.Toolkit
         /// predefined encryption keys.
         /// </para>
         /// </remarks>
-        [PropertyName("esUser")]
+        [ConfigName("esUser")]
         public string EncryptedUser { get; set; }
 
         /// <summary>
@@ -100,7 +107,7 @@ namespace ByteForge.Toolkit
         /// predefined encryption keys.
         /// </para>
         /// </remarks>
-        [PropertyName("esPass")]
+        [ConfigName("esPass")]
         public string EncryptedPassword { get; set; }
 
         /// <summary>
@@ -115,7 +122,7 @@ namespace ByteForge.Toolkit
         /// plain text, so use this with caution in scenarios requiring high security.
         /// </para>
         /// </remarks>
-        [PropertyName("sConnectionString")]
+        [ConfigName("sConnectionString")]
         public string ConnectionString { get; set; }
 
         /// <summary>
@@ -130,7 +137,7 @@ namespace ByteForge.Toolkit
         /// and is separate from the encryption of credentials in configuration storage.
         /// </para>
         /// </remarks>
-        [PropertyName("bEncrypt")]
+        [ConfigName("bEncrypt")]
         public bool UseEncryption { get; set; }
 
         /// <summary>
@@ -144,7 +151,8 @@ namespace ByteForge.Toolkit
         /// timing out. This is particularly important in scenarios where network
         /// connectivity might be unreliable.
         /// </remarks>
-        [PropertyName("iConnectionTimeout")]
+        [DefaultValue(60)]
+        [ConfigName("iConnectionTimeout")]
         public int ConnectionTimeout { get; set; } = 60;
 
         /// <summary>
@@ -162,14 +170,15 @@ namespace ByteForge.Toolkit
         /// but may need to be increased for long-running reports or data imports.
         /// </para>
         /// </remarks>
-        [PropertyName("iCommandTimeout")]
+        [DefaultValue(240)]
+        [ConfigName("iCommandTimeout")]
         public int CommandTimeout { get; set; } = 240;
 
         /// <summary>
         /// Gets or sets whether the connection uses a trusted connection.
         /// </summary>
         /// <value>
-        /// <c>true</c> if the connection uses a trusted connection; otherwise, <c>false</c>. Defaults to <c>false</c>.
+        /// <see langword="true" /> if the connection uses a trusted connection; otherwise, <see langword="false" />. Defaults to <see langword="false" />.
         /// </value>
         /// <remarks>
         /// When set to true, Windows Authentication (integrated security) is used
@@ -181,27 +190,39 @@ namespace ByteForge.Toolkit
         /// is available and provides better security than storing credentials.
         /// </para>
         /// </remarks>
-        [PropertyName("bTrustedConnection")]
+        [DefaultValue(false)]
+        [ConfigName("bTrustedConnection")]
         public bool UseTrustedConnection { get; set; } = false;
 
         /// <summary>
-        /// Gets the decrypted database user.
+        /// Gets or sets whether string values should be automatically trimmed.
+        /// </summary>
+        /// <value>
+        /// <see langword="true" /> if string values should be auto-trimmed; otherwise, <see langword="false" />. Defaults to <see langword="true" />.
+        /// </value>
+        /// <remarks>
+        /// When enabled, string values stored to the database will be automatically trimmed of leading and trailing whitespace.
+        /// </remarks>
+        [DefaultValue(true)]
+        [ConfigName("bAutoTrimStrings")]
+        public bool AutoTrimStrings { get; set; } = true;
+
+        /// <summary>
+        /// Gets or sets the database user name in a clear format.
         /// </summary>
         /// <remarks>
-        /// This property decrypts and returns the user name stored in
-        /// <see cref="EncryptedUser"/>. Thread safety is ensured through locking.
-        /// <para>
-        /// If decryption fails, an exception is logged and rethrown.
-        /// </para>
+        /// Accessing this property decrypts the stored encrypted user name. <br />
+        /// Setting this property encrypts the provided value before storing it. <br />
+        /// Thread safety is ensured by locking during both get and set operations.
         /// </remarks>
-        [DoNotPersist]
+        [Ignore]
         public string User
         {
             get
             {
                 lock (_lock)
                 {
-                    try { return enc.Decrypt(EncryptedUser); }
+                    try { return Encryptor.Default.Decrypt(EncryptedUser); }
                     catch (Exception ex)
                     {
                         Log.Error(ex, "Failed to decrypt database user");
@@ -209,31 +230,43 @@ namespace ByteForge.Toolkit
                     }
                 }
             }
+            set
+            {
+                lock (_lock)
+                {
+                    EncryptedUser = Encryptor.Default.Encrypt(value);
+                }
+            }
         }
 
         /// <summary>
-        /// Gets the decrypted database password.
+        /// Gets or sets the password in an encrypted form.
         /// </summary>
         /// <remarks>
-        /// This property decrypts and returns the password stored in
-        /// <see cref="EncryptedPassword"/>. Thread safety is ensured through locking.
-        /// <para>
-        /// If decryption fails, an exception is logged and rethrown.
-        /// </para>
+        /// Accessing this property decrypts the stored encrypted password. <br />
+        /// Setting this property encrypts the provided value before storing it. <br />
+        /// Thread safety is ensured by locking during both get and set operations.
         /// </remarks>
-        [DoNotPersist]
+        [Ignore]
         public string Password
         {
             get
             {
                 lock (_lock)
                 {
-                    try { return enc.Decrypt(EncryptedPassword); }
+                    try { return Encryptor.Default.Decrypt(EncryptedPassword); }
                     catch (Exception ex)
                     {
                         Log.Error(ex, "Failed to decrypt database password");
                         throw;
                     }
+                }
+            }
+            set
+            {
+                lock (_lock)
+                {
+                    EncryptedPassword = Encryptor.Default.Encrypt(value);
                 }
             }
         }
@@ -307,8 +340,8 @@ namespace ByteForge.Toolkit
     /// <example>
     /// <code>
     /// // In configuration file:
-    /// // [Database]
-    /// // SelectedDB=Production
+    /// // [Data Source]
+    /// // SelectedDB = Production
     /// // 
     /// // [Production]
     /// // sType=SQLServer
@@ -329,7 +362,7 @@ namespace ByteForge.Toolkit
         /// the database connection details. The value typically corresponds to an
         /// environment name like "Development", "Testing", or "Production".
         /// </remarks>
-        [PropertyName("SelectedDB")]
+        [ConfigName("SelectedDB")]
         public string SelectedDatabase { get; set; }
     }
 }

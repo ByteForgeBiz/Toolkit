@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -22,31 +23,47 @@ namespace ByteForge.Toolkit.Logging
     public class FileLogger : BaseLogger, IDisposable
     {
         private readonly string _baseFilePath;
-        private readonly FileLoggerOptions _options;
         private static readonly object _lock = new object();
         private DateTime _currentFileDate;
-        private string _currentFilePath;
         private int _currentFileIndex;
         private readonly CancellationTokenSource _cancellationTokenSource;
         private readonly BlockingCollection<LogEntry> _messageQueue;
         private readonly Task _processQueueTask;
         private bool _disposed;
 
-        private static readonly FileLoggerOptions options = Configuration.GetSection<FileLoggerOptions>("FileLogger");
+        /// <summary>
+        /// Gets the file path currently in use by the application.
+        /// </summary>
+        public string CurrentFilePath
+        {
+            get
+            {
+                if (string.IsNullOrEmpty(currentFilePath))
+                    UpdateCurrentFilePath();
+                return currentFilePath;
+            }
+            protected set => currentFilePath = value ?? throw new ArgumentNullException(nameof(value));
+        }
+        private string currentFilePath;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="FileLogger"/> class.
         /// </summary>
         /// <param name="filePath">The path of the file to log messages to.</param>
-        public FileLogger(string filePath) : this(filePath, options) { }
+        public FileLogger(string filePath) : this(filePath, null) { }
+
+        /// <summary>
+        /// Gets the configuration settings for the file logger.
+        /// </summary>
+        public FileLoggerOptions Settings { get; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="FileLogger"/> class with specified options.
         /// </summary>
         /// <param name="filePath">The base path of the file to log messages to.</param>
         /// <param name="options">Configuration options for the logger.</param>
-        public FileLogger(string filePath, FileLoggerOptions options)
-            : base(Path.GetFileNameWithoutExtension(filePath))
+        /// <param name="delayInitialization">If true, delays file initialization (useful for derived classes).</param>
+        protected FileLogger(string filePath, FileLoggerOptions options, bool delayInitialization = false) : base(Path.GetFileNameWithoutExtension(filePath))
         {
             if (string.IsNullOrEmpty(filePath))
             {
@@ -56,44 +73,117 @@ namespace ByteForge.Toolkit.Logging
             else
                 filePath = Environment.ExpandEnvironmentVariables(filePath);
 
+            Settings = options ?? Configuration.GetSection<FileLoggerOptions>("FileLogger") ?? new FileLoggerOptions();
             _baseFilePath = filePath;
-            _options = options ?? new FileLoggerOptions();
             _currentFileDate = DateTime.Now.Date;
             _currentFileIndex = 1;
 
-            if (_options.UseAsyncLogging)
+            if (Settings.UseAsyncLogging)
             {
-                _messageQueue = new BlockingCollection<LogEntry>(_options.AsyncQueueSize);
+                _messageQueue = new BlockingCollection<LogEntry>(Settings.AsyncQueueSize);
                 _cancellationTokenSource = new CancellationTokenSource();
                 _processQueueTask = Task.Run((Action)ProcessMessageQueue);
             }
 
+            if (delayInitialization) return;
+
+            InitializeFileLogger();
+        }
+
+        /// <summary>
+        /// Initializes the file logger by setting up the current log file path and removing outdated log files.
+        /// </summary>
+        /// <remarks>
+        /// This method prepares the file logger for use by ensuring the log file path is updated
+        /// and any old log files  are cleaned up. It should be called before writing logs to ensure the logger is
+        /// properly configured.
+        /// </remarks>
+        protected void InitializeFileLogger()
+        {
             UpdateCurrentFilePath();
-            EnsureAccess(_currentFilePath);
             CleanupOldFiles();
         }
 
         /// <summary>
         /// Updates the current file path based on the configuration settings.
         /// </summary>
-        private void UpdateCurrentFilePath()
+        protected void UpdateCurrentFilePath()
         {
-            var baseNameWithoutExt = Path.Combine(
-                Path.GetDirectoryName(_baseFilePath),
-                Path.GetFileNameWithoutExtension(_baseFilePath)
-            );
-            var extension = Path.GetExtension(_baseFilePath);
-
-            if (!_options.UseDaily)
+            // Use custom provider if available
+            if (Settings.CustomFileNameProvider != null)
             {
-                _currentFilePath = _baseFilePath;
+                CurrentFilePath = Settings.CustomFileNameProvider(_baseFilePath, Settings);
                 return;
             }
 
-            var dateStr = DateTime.Now.ToString(_options.DateFormat);
-            _currentFilePath = _options.MaxFileSizeMB > 0
-                ? $"{baseNameWithoutExt}_{dateStr}_{_currentFileIndex}{extension}"
-                : $"{baseNameWithoutExt}_{dateStr}{extension}";
+            // Use pattern-based naming
+            CurrentFilePath = GenerateFileName(_baseFilePath, Settings);
+            EnsureAccess(CurrentFilePath);
+        }
+
+        /// <summary>
+        /// Generates a file name using the specified pattern and base file path.
+        /// </summary>
+        /// <param name="baseFilePath">The base file path.</param>
+        /// <param name="options">The file logger options containing the naming pattern.</param>
+        /// <returns>The generated file path.</returns>
+        protected virtual string GenerateFileName(string baseFilePath, FileLoggerOptions options)
+        {
+            var directory = Path.GetDirectoryName(baseFilePath);
+            var baseNameWithoutExt = Path.GetFileNameWithoutExtension(baseFilePath);
+            var extension = Path.GetExtension(baseFilePath);
+
+            var pattern = options.FileNamingPattern ?? "{basename}";
+            if (options.UseDaily)
+                pattern += (pattern.ToLowerInvariant().Contains("{date") ? "" : "{date:yyyy-MM-dd}");
+
+            // Replace basic placeholders
+            var fileName = pattern
+                .Replace("{basename}", baseNameWithoutExt)
+                .Replace("{timestamp}", DateTime.Now.ToString("yyyyMMdd-HHmmss"))
+                .Replace("{index}", _currentFileIndex.ToString())
+                .Replace("{pid}", System.Diagnostics.Process.GetCurrentProcess().Id.ToString())
+                .Replace("{guid}", Guid.NewGuid().ToString("N").Substring(0, 8));
+
+            // Handle date format placeholder with optional format specifier
+            fileName = ProcessDatePlaceholder(fileName);
+
+            // Handle additional placeholders that might be added by derived classes
+            fileName = ProcessAdditionalPlaceholders(fileName, options);
+
+            return Path.Combine(directory, fileName + extension);
+        }
+
+        /// <summary>
+        /// Processes date placeholders in the file name pattern.
+        /// Supports {date:format} syntax where format is optional (defaults to yyyy-MM-dd).
+        /// </summary>
+        /// <param name="fileName">The file name to process.</param>
+        /// <returns>The file name with date placeholders processed.</returns>
+        private string ProcessDatePlaceholder(string fileName)
+        {
+            // Handle {date:format} pattern
+            var datePattern = System.Text.RegularExpressions.Regex.Match(fileName, @"\{date(?::([^}]+))?\}");
+            if (datePattern.Success)
+            {
+                var format = datePattern.Groups[1].Success ? datePattern.Groups[1].Value : "yyyy-MM-dd";
+                var dateValue = DateTime.Now.ToString(format);
+                fileName = fileName.Replace(datePattern.Value, dateValue);
+            }
+
+            return fileName;
+        }
+
+        /// <summary>
+        /// Processes additional placeholders that might be specific to derived classes.
+        /// Override this method in derived classes to handle custom placeholders.
+        /// </summary>
+        /// <param name="fileName">The file name with basic placeholders already processed.</param>
+        /// <param name="options">The file logger options.</param>
+        /// <returns>The file name with additional placeholders processed.</returns>
+        protected virtual string ProcessAdditionalPlaceholders(string fileName, FileLoggerOptions options)
+        {
+            return fileName;
         }
 
         /// <summary>
@@ -108,7 +198,8 @@ namespace ByteForge.Toolkit.Logging
             if (!File.Exists(filePath))
                 File.Create(filePath).Close();
 
-            using (var fs = File.Open(filePath, FileMode.Open, FileAccess.ReadWrite, FileShare.Read)) { return; }
+            using var fs = File.Open(filePath, FileMode.Open, FileAccess.ReadWrite, FileShare.Read);
+            return;
         }
 
         /// <summary>
@@ -121,7 +212,7 @@ namespace ByteForge.Toolkit.Logging
         {
             lock (_lock)
             {
-                File.WriteAllText(_currentFilePath, string.Empty);
+                File.WriteAllText(CurrentFilePath, string.Empty);
             }
         }
 
@@ -130,10 +221,10 @@ namespace ByteForge.Toolkit.Logging
         /// </summary>
         private bool NeedsRollover()
         {
-            if (_options.MaxFileSizeMB <= 0) return false;
+            if (Settings.MaxFileSizeMB <= 0) return false;
 
-            var fileInfo = new FileInfo(_currentFilePath);
-            return fileInfo.Length > _options.MaxFileSizeMB * 1024 * 1024;
+            var fileInfo = new FileInfo(CurrentFilePath);
+            return fileInfo.Length > Settings.MaxFileSizeMB * 1024 * 1024;
         }
 
         /// <summary>
@@ -141,26 +232,33 @@ namespace ByteForge.Toolkit.Logging
         /// </summary>
         private void CleanupOldFiles()
         {
-            if (_options.RetentionDays <= 0) return;
+            if (Settings.RetentionDays <= 0) return;
 
-            var directory = Path.GetDirectoryName(_baseFilePath);
-            var filePattern = $"{Path.GetFileNameWithoutExtension(_baseFilePath)}_*{Path.GetExtension(_baseFilePath)}";
-            var cutoffDate = DateTime.Now.AddDays(-_options.RetentionDays);
-
-            var files = Directory.GetFiles(directory, filePattern)
-                .Select(f => new FileInfo(f))
-                .Where(f => f.LastWriteTime < cutoffDate);
-
-            foreach (var file in files)
+            try
             {
-                try
+                var directory = Path.GetDirectoryName(_baseFilePath);
+                var filePattern = $"{Path.GetFileNameWithoutExtension(_baseFilePath)}_*{Path.GetExtension(_baseFilePath)}";
+                var cutoffDate = DateTime.Now.AddDays(-Settings.RetentionDays);
+
+                var files = Directory.GetFiles(directory, filePattern)
+                    .Select(f => new FileInfo(f))
+                    .Where(f => f.LastWriteTime < cutoffDate);
+
+                foreach (var file in files)
                 {
-                    file.Delete();
+                    try
+                    {
+                        file.Delete();
+                    }
+                    catch (Exception)
+                    {
+                        // Log deletion failure or handle appropriately
+                    }
                 }
-                catch (Exception)
-                {
-                    // Log deletion failure or handle appropriately
-                }
+            }
+            catch (Exception)
+            {
+                // Don't let cleanup failures affect logging
             }
         }
 
@@ -187,7 +285,7 @@ namespace ByteForge.Toolkit.Logging
         /// </summary>
         private void WriteLogEntry(LogEntry entry)
         {
-            var ts = $"{(entry.CorrelationId ?? "")} - {entry.Timestamp:yyyy.MM.dd HH:mm:ss.fff} [{entry.Level, 9}] - ";
+            var ts = $"{(entry.CorrelationId ?? "")} - {entry.Timestamp:yyyy.MM.dd HH:mm:ss.fff} [{entry.Level,-9}] - ";
             var indent = Environment.NewLine + new string(' ', ts.Length);
             var sb = new StringBuilder($"{ts}{string.Join(indent, entry.Message.Split(Utils.arrCRLF, StringSplitOptions.RemoveEmptyEntries))}");
             var ex = entry.Exception;
@@ -217,12 +315,12 @@ namespace ByteForge.Toolkit.Logging
             lock (_lock)
             {
                 // Check for daily rotation
-                if (_options.UseDaily && DateTime.Now.Date != _currentFileDate)
+                if (Settings.UseDaily && DateTime.Now.Date != _currentFileDate)
                 {
                     _currentFileDate = DateTime.Now.Date;
                     _currentFileIndex = 1;
                     UpdateCurrentFilePath();
-                    EnsureAccess(_currentFilePath);
+                    EnsureAccess(CurrentFilePath);
                     CleanupOldFiles();
                 }
 
@@ -231,10 +329,12 @@ namespace ByteForge.Toolkit.Logging
                 {
                     _currentFileIndex++;
                     UpdateCurrentFilePath();
-                    EnsureAccess(_currentFilePath);
+                    EnsureAccess(CurrentFilePath);
                 }
 
-                File.AppendAllText(_currentFilePath, logMessage + Environment.NewLine);
+                Debug.Assert(!string.IsNullOrEmpty(CurrentFilePath), "CurrentFilePath should not be null or empty here.");
+
+                File.AppendAllText(CurrentFilePath, logMessage + Environment.NewLine);
             }
         }
 
@@ -246,7 +346,7 @@ namespace ByteForge.Toolkit.Logging
             if (_disposed)
                 throw new ObjectDisposedException(nameof(FileLogger));
 
-            if (_options.UseAsyncLogging)
+            if (Settings.UseAsyncLogging)
             {
                 if (!_messageQueue.TryAdd(entry))
                 {
@@ -261,26 +361,41 @@ namespace ByteForge.Toolkit.Logging
         }
 
         /// <summary>
-        /// Disposes the logger resources.
+        /// Releases the resources used by the logger.
         /// </summary>
         public void Dispose()
         {
             if (_disposed) return;
 
-            if (_options.UseAsyncLogging)
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        /// <summary>
+        /// Releases the unmanaged resources used by the logger and optionally releases the managed resources.
+        /// </summary>
+        /// <param name="disposing">true to release both managed and unmanaged resources; false to release only unmanaged resources.</param>
+        protected virtual void Dispose(bool disposing)
+        {
+            if (_disposed) return;
+
+            if (disposing)
             {
-                _cancellationTokenSource.Cancel();
-                _messageQueue.CompleteAdding();
-                try
+                if (Settings.UseAsyncLogging)
                 {
-                    _processQueueTask.Wait(TimeSpan.FromSeconds(5));
+                    _cancellationTokenSource.Cancel();
+                    _messageQueue.CompleteAdding();
+                    try
+                    {
+                        _processQueueTask.Wait(TimeSpan.FromSeconds(5));
+                    }
+                    catch (Exception)
+                    {
+                        // Handle shutdown errors
+                    }
+                    _messageQueue.Dispose();
+                    _cancellationTokenSource.Dispose();
                 }
-                catch (Exception)
-                {
-                    // Handle shutdown errors
-                }
-                _messageQueue.Dispose();
-                _cancellationTokenSource.Dispose();
             }
 
             _disposed = true;

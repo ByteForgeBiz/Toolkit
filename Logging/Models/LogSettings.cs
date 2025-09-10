@@ -1,9 +1,17 @@
 ﻿using ByteForge.Toolkit.Logging;
+using System.ComponentModel;
 using System.IO;
 using System.Reflection;
 
 namespace ByteForge.Toolkit
 {
+    /*
+     *  _              ___      _   _   _              
+     * | |   ___  __ _/ __| ___| |_| |_(_)_ _  __ _ ___
+     * | |__/ _ \/ _` \__ \/ -_)  _|  _| | ' \/ _` (_-<
+     * |____\___/\__, |___/\___|\__|\__|_|_||_\__, /__/
+     *           |___/                        |___/    
+     */
     /// <summary>
     /// Represents the options for configuring the logging system.
     /// </summary>
@@ -13,7 +21,7 @@ namespace ByteForge.Toolkit
     /// included in logs, and whether logs are cleared on application startup.
     /// <para>
     /// LogOptions is typically loaded from configuration files using the <see cref="Configuration"/>
-    /// system, with property names mapped through <see cref="PropertyNameAttribute"/>.
+    /// system, with property names mapped through <see cref="ConfigNameAttribute"/>.
     /// </para>
     /// <para>
     /// The logging system supports multiple logging targets (console, file, etc.)
@@ -33,7 +41,7 @@ namespace ByteForge.Toolkit
     /// Log.Error(exception, "An error occurred");
     /// </code>
     /// </example>
-    public class LogOptions
+    public class LogSettings
     {
         /// <summary>
         /// Gets or sets the path to the log file.
@@ -47,7 +55,8 @@ namespace ByteForge.Toolkit
         /// method is called to provide a default value.
         /// </para>
         /// </remarks>
-        [PropertyName("sLogFile", "GetDefaultLogPath")]
+        [ConfigName("sLogFile")]
+        [DefaultValueProvider(typeof(LogSettings), nameof(GetDefaultLogPath))]
         public string LogFilePath { get; set; }
 
         /// <summary>
@@ -59,12 +68,15 @@ namespace ByteForge.Toolkit
         /// <para>
         /// The levels, in increasing order of severity, are:
         /// <list type="bullet">
+        ///   <item><see cref="LogLevel.Trace"/> - Very detailed messages for tracing execution</item>
         ///   <item><see cref="LogLevel.Debug"/> - Debugging information</item>
         ///   <item><see cref="LogLevel.Verbose"/> - Very detailed information</item>
         ///   <item><see cref="LogLevel.Info"/> - Normal application flow information</item>
         ///   <item><see cref="LogLevel.Warning"/> - Potential issues that don't stop execution</item>
         ///   <item><see cref="LogLevel.Error"/> - Errors that allow continued execution</item>
         ///   <item><see cref="LogLevel.Critical"/> - Critical errors that stop execution</item>
+        ///   <item><see cref="LogLevel.None"/> - Disables all logging</item>
+        ///   <item><see cref="LogLevel.All"/> - Enables all logging levels</item>
         /// </list>
         /// </para>
         /// <para>
@@ -72,14 +84,15 @@ namespace ByteForge.Toolkit
         /// Error, and Fatal messages, but ignore Trace and Debug messages.
         /// </para>
         /// </remarks>
-        [PropertyName("eTraceLogLevel")]
+        [DefaultValue(LogLevel.All)]
+        [ConfigName("eTraceLogLevel")]
         public LogLevel TraceLogLevel { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether the log should be cleared on startup.
         /// </summary>
         /// <value>
-        /// <c>true</c> if the log should be cleared on startup; otherwise, <c>false</c>.
+        /// <see langword="true" /> if the log should be cleared on startup; otherwise, <see langword="false" />.
         /// </value>
         /// <remarks>
         /// When set to true, the log file will be cleared (truncated to zero length)
@@ -90,13 +103,21 @@ namespace ByteForge.Toolkit
         /// a log rotation strategy instead.
         /// </para>
         /// </remarks>
-        [PropertyName("bClearLogOnStartup")]
+        [DefaultValue(false)]
+        [ConfigName("bClearLogOnStartup")]
         public bool ClearLogOnStartup { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether to use session-based logging.
+        /// When true, each application run gets its own unique log file.
+        /// </summary>
+        [DefaultValue(false)]
+        [ConfigName("bUseSessionLogging")]
+        public bool UseSessionLogging { get; set; }
 
         /// <summary>
         /// Gets the default log file path.
         /// </summary>
-        /// <param name="paramName">The name of the parameter (ignored).</param>
         /// <returns>The default log file path.</returns>
         /// <remarks>
         /// This method is called automatically by the configuration system when the
@@ -108,7 +129,7 @@ namespace ByteForge.Toolkit
         /// if neither of those are available.
         /// </para>
         /// </remarks>
-        private static string GetDefaultLogPath(string paramName)
+        private static string GetDefaultLogPath()
         {
             // paramName is ignored because the default log file path is determined by the calling assembly.
 

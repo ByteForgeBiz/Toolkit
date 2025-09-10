@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Text.RegularExpressions;
 
 namespace ByteForge.Toolkit
@@ -81,9 +82,24 @@ namespace ByteForge.Toolkit
             if (urls == null || urls.Length == 0)
                 return string.Empty;
 
-            var result = urls[0];
-            for (var i = 1; i < urls.Length; i++)
-                result = Combine(result, urls[i]);
+            
+            return Combine(urls[0], urls.Skip(1).ToArray());
+        }
+
+        /// <summary>
+        /// Combines a base URL with an array of URL fragments or parameters into a single URL.
+        /// </summary>
+        /// <param name="baseUrl">The base URL to which the fragments or parameters will be appended.</param>
+        /// <param name="parameters">An array of URL fragments or parameters to append to the base URL.</param>
+        /// <returns>The combined URL as a string. Returns an empty string if <paramref name="parameters"/> is null or empty.</returns>
+        public static string Combine(string baseUrl, string[] parameters)
+        {
+            if (parameters == null || parameters.Length == 0)
+                return string.Empty;
+
+            var result = baseUrl;
+            for (var i = 0; i < parameters.Length; i++)
+                result = Combine(result, parameters[i]);
 
             return result;
         }

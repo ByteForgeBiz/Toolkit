@@ -5,6 +5,13 @@ using System.Text;
 
 namespace ByteForge.Toolkit
 {
+    /*
+     *   ___ _____   _____             _         
+     *  / __/ __\ \ / / _ \___ __ _ __| |___ _ _ 
+     * | (__\__ \\ V /|   / -_) _` / _` / -_) '_|
+     *  \___|___/ \_/ |_|_\___\__,_\__,_\___|_|  
+     *                                           
+     */
     /// <summary>
     /// Provides utilities for reading and processing CSV files with flexible format support.
     /// </summary>
@@ -16,9 +23,17 @@ namespace ByteForge.Toolkit
         public event EventHandler<ProgressEventArgs> Progress;
 
         /// <summary>
-        /// Gets or sets the action to process the data.
+        /// Delegate for processing CSV data rows.
         /// </summary>
-        public Action<string[], string[], string> DataProcessor { get; set; }
+        /// <param name="columns">The column headers.</param>
+        /// <param name="values">The field values for the current row.</param>
+        /// <param name="rawLine">The raw CSV line.</param>
+        public delegate void CSVDataProcessorDelegate(string[] columns, string[] values, string rawLine);
+
+        /// <summary>
+        /// Gets or sets the delegate to process the data.
+        /// </summary>
+        public CSVDataProcessorDelegate DataProcessor { get; set; }
 
         /// <summary>
         /// Gets or sets the format to use for parsing. If not set, format will be auto-detected.
@@ -30,7 +45,7 @@ namespace ByteForge.Toolkit
         /// </summary>
         /// <param name="filePath">The path to the CSV file.</param>
         /// <param name="dataProcessor">The action to process the data.</param>
-        public static void ReadFile(string filePath, Action<string[], string[], string> dataProcessor)
+        public static void ReadFile(string filePath, CSVDataProcessorDelegate dataProcessor)
         {
             var reader = new CSVReader { DataProcessor = dataProcessor };
             reader.ReadFile(filePath);
@@ -41,7 +56,7 @@ namespace ByteForge.Toolkit
         /// </summary>
         /// <param name="stream">The stream to read from.</param>
         /// <param name="dataProcessor">The action to process the data.</param>
-        public static void ReadStream(Stream stream, Action<string[], string[], string> dataProcessor)
+        public static void ReadStream(Stream stream, CSVDataProcessorDelegate dataProcessor)
         {
             var reader = new CSVReader { DataProcessor = dataProcessor };
             reader.ReadStream(stream);

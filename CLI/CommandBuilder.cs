@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.CommandLine;
 using System.CommandLine.NamingConventionBinder;
 using System.Linq;
@@ -11,16 +12,20 @@ namespace ByteForge.Toolkit.CommandLine
     /// <summary>
     /// Class to build commands from an assembly.
     /// </summary>
-    public class CommandBuilder
+    public static class CommandBuilder
     {
-        private static readonly HashSet<Type> ValidParameterTypes = new HashSet<Type>()
+        private static readonly HashSet<Type> _supportedParameterTypes = new HashSet<Type>()
         {
             typeof(string),     typeof(int),        typeof(long),       typeof(float),
             typeof(double),     typeof(decimal),    typeof(bool),       typeof(DateTime),
-            typeof(Guid),       typeof(string[]),   typeof(int[]),      typeof(long[]),
-            typeof(float[]),    typeof(double[]),   typeof(decimal[]),  typeof(bool[]),
-            typeof(DateTime[]), typeof(Guid[])
+            typeof(Guid)
         };
+
+        /// <summary>
+        /// Gets a collection of tokens and their corresponding values.
+        /// </summary>
+        public static ReadOnlyDictionary<string, string> TokenList => new ReadOnlyDictionary<string, string>(_tokenList);
+        private static readonly Dictionary<string, string> _tokenList = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
         /// <summary>
         /// Builds commands from the specified assembly path.
@@ -42,12 +47,15 @@ namespace ByteForge.Toolkit.CommandLine
         {
             var commands = new List<Command>();
 
-            foreach (var type in assembly.GetTypes())
+            foreach (var type in assembly.GetTypes().Where(t => t.IsClass && !t.IsAbstract && t.IsPublic))
             {
+                // Build command group if class has a command attribute
                 var cmdAttr = type.GetCustomAttribute<CommandAttribute>();
                 if (cmdAttr != null)
                 {
-                    commands.Add(BuildCommandGroup(type, cmdAttr));
+                    var commandGroup = BuildCommandGroup(type, cmdAttr);
+                    if (commandGroup != null)
+                        commands.Add(commandGroup);
                 }
             }
 
@@ -65,69 +73,83 @@ namespace ByteForge.Toolkit.CommandLine
             var groupCommand = new Command(groupAttr.Name, groupAttr.Description);
             var groupTracker = new NameTracker(); // Track names across all commands in group
 
-            if (groupAttr.Aliases?.Length > 0)
+            try
             {
-                if (!groupTracker.TryAddNames(groupAttr.Aliases))
+                if (!groupTracker.TryAddName(groupAttr.Name))
                 {
-                    Log.Warning($"Command group {groupAttr.Name} has duplicate aliases. Skipping alias assignment.");
-                }
-                else
-                {
-                    foreach (var alias in groupAttr.Aliases)
-                        groupCommand.AddAlias(alias);
-                }
-            }
-
-            var instance = Activator.CreateInstance(type);
-
-            foreach (var method in type.GetMethods(BindingFlags.Public | BindingFlags.Instance))
-            {
-                var cmdAttr = method.GetCustomAttribute<CommandAttribute>();
-                if (cmdAttr == null) continue;
-
-                if (!ValidateMethodParameters(method, out var error))
-                {
-                    Log.Warning($"Skipping command {cmdAttr.Name}: {error}");
-                    continue;
+                    Log.Warning($"Type {type.FullName} has a command group name that conflicts with an existing name. Skipping group.");
+                    return null;
                 }
 
-                // Verify command name and aliases don't conflict with group
-                if (!groupTracker.TryAddName(cmdAttr.Name))
+                if (groupAttr.Aliases?.Length > 0)
                 {
-                    Log.Warning($"Command name {cmdAttr.Name} conflicts with existing name in group. Skipping command.");
-                    continue;
-                }
-
-                var command = new Command(cmdAttr.Name, cmdAttr.Description);
-
-                if (cmdAttr.Aliases?.Length > 0)
-                {
-                    if (!groupTracker.TryAddNames(cmdAttr.Aliases))
+                    if (!groupTracker.TryAddNames(groupAttr.Aliases))
                     {
-                        Log.Warning($"Command {cmdAttr.Name} has conflicting aliases. Skipping alias assignment.");
+                        Log.Warning($"Command group {groupAttr.Name} has duplicate aliases. Skipping alias assignment.");
                     }
                     else
                     {
-                        foreach (var alias in cmdAttr.Aliases)
-                            command.AddAlias(alias);
+                        foreach (var alias in groupAttr.Aliases)
+                            groupCommand.AddAlias(alias);
                     }
                 }
 
-                if (AddOptionsFromParameters(command, method))
+                var instance = Activator.CreateInstance(type);
+
+                foreach (var method in type.GetMethods(BindingFlags.Public | BindingFlags.Instance))
                 {
-                    command.Handler = CommandHandler.Create(method, instance);
-                    groupCommand.AddCommand(command);
-                }
-                else
-                {
-                    // Remove the command's names from tracker since we're skipping it
-                    groupTracker.TryAddName(cmdAttr.Name);
-                    if (cmdAttr.Aliases != null)
+                    var cmdAttr = method.GetCustomAttribute<CommandAttribute>();
+                    if (cmdAttr == null) continue;
+
+                    if (!ValidateMethodParameters(method, out var error))
                     {
-                        foreach (var alias in cmdAttr.Aliases)
-                            groupTracker.TryAddName(alias);
+                        Log.Warning($"Skipping command {cmdAttr.Name}: {error}");
+                        continue;
+                    }
+
+                    // Verify command name and aliases don't conflict with group
+                    if (!groupTracker.TryAddName(cmdAttr.Name))
+                    {
+                        Log.Warning($"Command name {cmdAttr.Name} conflicts with existing name in group. Skipping command.");
+                        continue;
+                    }
+
+                    var command = new Command(cmdAttr.Name, cmdAttr.Description);
+
+                    if (cmdAttr.Aliases?.Length > 0)
+                    {
+                        if (!groupTracker.TryAddNames(cmdAttr.Aliases))
+                        {
+                            Log.Warning($"Command {cmdAttr.Name} has conflicting aliases. Skipping alias assignment.");
+                        }
+                        else
+                        {
+                            foreach (var alias in cmdAttr.Aliases)
+                                command.AddAlias(alias);
+                        }
+                    }
+
+                    if (AddOptionsFromParameters(command, method))
+                    {
+                        command.Handler = CommandHandler.Create(method, instance);
+                        groupCommand.AddCommand(command);
+                    }
+                    else
+                    {
+                        // Remove the command's names from tracker since we're skipping it
+                        groupTracker.TryAddName(cmdAttr.Name);
+                        if (cmdAttr.Aliases != null)
+                        {
+                            foreach (var alias in cmdAttr.Aliases)
+                                groupTracker.TryAddName(alias);
+                        }
                     }
                 }
+            }
+            finally
+            {
+                foreach (var name in groupTracker)
+                    _tokenList[name] = name;
             }
 
             return groupCommand;
@@ -145,6 +167,9 @@ namespace ByteForge.Toolkit.CommandLine
             {
                 var paramType = Nullable.GetUnderlyingType(param.ParameterType) ?? param.ParameterType;
 
+                if (paramType.IsEnum)
+                    continue;
+
                 // Check if it's an array
                 if (paramType.IsArray)
                 {
@@ -152,7 +177,7 @@ namespace ByteForge.Toolkit.CommandLine
                     return false;
                 }
 
-                if (!ValidParameterTypes.Contains(paramType))
+                if (!_supportedParameterTypes.Contains(paramType))
                 {
                     error = $"Parameter {param.Name} has unsupported type {param.ParameterType}";
                     return false;
@@ -172,36 +197,61 @@ namespace ByteForge.Toolkit.CommandLine
         {
             var optionTracker = new NameTracker(); // Track names within this command
 
-            foreach (var param in method.GetParameters())
+            try
             {
-                var optAttr = param.GetCustomAttribute<OptionAttribute>();
-                var paramType = param.ParameterType;
-                var isNullable = !paramType.IsValueType || Nullable.GetUnderlyingType(paramType) != null;
-                var optionName = (optAttr?.Name ?? param.Name).TrimStart('-', '/');
-
-                // Verify option name doesn't conflict
-                if (!optionTracker.TryAddName(optionName))
+                foreach (var param in method.GetParameters())
                 {
-                    Log.Warning($"Parameter {param.Name} in command {command.Name} has conflicting name. Skipping command.");
-                    return false;
+                    var optAttr = param.GetCustomAttribute<OptionAttribute>();
+                    var paramType = param.ParameterType;
+                    var isNullable = !paramType.IsValueType || Nullable.GetUnderlyingType(paramType) != null;
+                    var optionName = (optAttr?.Name ?? param.Name).TrimStart('-', '/');
+
+                    // Verify option name doesn't conflict
+                    if (!optionTracker.TryAddName(optionName))
+                    {
+                        Log.Warning($"Parameter {param.Name} in command {command.Name} has conflicting name. Skipping command.");
+                        return false;
+                    }
+
+                    // Create the option with the correct type
+                    var option = CreateTypedOption(paramType, optionName, optAttr?.Description ?? $"The {param.Name} parameter");
+                    option.IsRequired = !isNullable && !param.IsOptional;
+
+                    // Get both generated and developer-provided aliases
+                    var devAliases = NormalizeAlias(optAttr?.Aliases);
+                    var allAliases = GenerateAliases(optionName)
+                                        .Concat(devAliases)
+                                        .Except(optionTracker)
+                                        .ToArray();
+
+                    /* The ".ToArray()" is necessary above because
+                     * a simple IEnumerable is a finite iterator that
+                     * the method call below would consume, preventing
+                     * the AddAlias loop from working.
+                     * 
+                     * I didn't know that at first.
+                     * Live and learn.
+                     * Paulo Santos
+                     * 2025.09.09
+                     */
+
+                    optionTracker.AddNames(allAliases);
+
+                    foreach (var alias in allAliases)
+                        option.AddAlias(alias);
+
+                    command.AddOption(option);
+
+                    // If enum, add each name to token list for reference
+                    if (paramType.IsEnum)
+                        foreach (var name in Enum.GetNames(paramType))
+                            _tokenList[name.ToLowerInvariant()] = name;
                 }
-
-                // Create the option with the correct type
-                var option = CreateTypedOption(paramType, optionName, optAttr?.Description ?? $"The {param.Name} parameter");
-                option.IsRequired = !isNullable && !param.IsOptional;
-
-                // Get both generated and developer-provided aliases
-                var generatedAliases = GenerateAliases(optionName).Concat(option.Aliases);
-                var devAliases = NormalizeAlias(optAttr?.Aliases);
-                var allAliases = generatedAliases.Concat(devAliases).Distinct().ToList();
-                var cm = optionTracker.Intersect(allAliases);
-                allAliases.RemoveAll(x => cm.Contains(x));
-                optionTracker.AddNames(allAliases);
-
-                foreach (var alias in allAliases)
-                    option.AddAlias(alias);
-
-                command.AddOption(option);
+            }
+            finally
+            {
+                foreach (var name in optionTracker)
+                    _tokenList[name] = name;
             }
 
             return true;
@@ -231,41 +281,34 @@ namespace ByteForge.Toolkit.CommandLine
             if (underlyingType.IsArray)
                 throw new ArgumentException("Arrays are not supported as command parameters");
 
-            string[] aliases = new string[] { "--" + name };
-
-            // Handle scalar types
-            if (underlyingType == typeof(string))         return new Option<string>(aliases, description);
-            else if (underlyingType == typeof(int))       return new Option<int>(aliases, description);
-            else if (underlyingType == typeof(long))      return new Option<long>(aliases, description);
-            else if (underlyingType == typeof(float))     return new Option<float>(aliases, description);
-            else if (underlyingType == typeof(double))    return new Option<double>(aliases, description);
-            else if (underlyingType == typeof(decimal))   return new Option<decimal>(aliases, description);
-            else if (underlyingType == typeof(bool))      return new Option<bool>(aliases, description);
-            else if (underlyingType == typeof(DateTime))  return new Option<DateTime>(aliases, description);
-            else if (underlyingType == typeof(Guid))      return new Option<Guid>(aliases, description);
-            else
-                throw new ArgumentException($"Unsupported parameter type: {paramType}");
+            var optionType = typeof(Option<>).MakeGenericType(underlyingType);
+            var option = (Option)Activator.CreateInstance(optionType, new object[] { name, description });
+            return option;
         }
 
         /// <summary>
         /// Generates aliases for the specified option name.
         /// </summary>
-        /// <param name="option">The option name.</param>
+        /// <param name="name">The option name.</param>
         /// <returns>An array of aliases.</returns>
-        private static string[] GenerateAliases(string option)
+        private static string[] GenerateAliases(string name)
         {
             // Create short name based on option length
-            var shortName = option.Length >= 3
-                ? option.Substring(0, 3).ToLowerInvariant()
-                : option.ToLowerInvariant();
+            var shortName = name.Length >= 3
+                ? name.Substring(0, 3).ToLowerInvariant()
+                : name.ToLowerInvariant();
 
             // Generate standard aliases with single character and short name
             var standardAliases = new[]
             {
-        $"/{shortName[0]}",              // Single char with /
-        $"-{shortName[0]}",              // Single char with -
-        $"--{option.ToLowerInvariant()}" // Full name with --
-    };
+                $"/{shortName[0]}",            // Single char with /
+                $"-{shortName[0]}",            // Single char with -
+                $"--{shortName[0]}",           // Single char with -
+                $"/{shortName}",               // Short name  with /
+                $"-{shortName}",               // Short name  with -
+                $"--{shortName}",              // Short name  with -
+                $"--{name.ToLowerInvariant()}" // Full name   with --
+            };
             return standardAliases;
         }
 

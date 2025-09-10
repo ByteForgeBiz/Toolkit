@@ -1,5 +1,12 @@
 ﻿namespace ByteForge.Toolkit.Logging
 {
+    /*
+     *  _              _                _ 
+     * | |   ___  __ _| |   _____ _____| |
+     * | |__/ _ \/ _` | |__/ -_) V / -_) |
+     * |____\___/\__, |____\___|\_/\___|_|
+     *           |___/                    
+     */
     /// <summary>
     /// Specifies the level of logging.
     /// </summary>

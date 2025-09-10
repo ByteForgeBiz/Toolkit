@@ -5,6 +5,13 @@ namespace ByteForge.Toolkit
 {
 public partial class EmailAttachmentHandler
     {
+        /*
+         *  ___ _ _     ___         _       _   
+         * | __(_) |___| _ )_  _ __| |_____| |_ 
+         * | _|| | / -_) _ \ || / _| / / -_)  _|
+         * |_| |_|_\___|___/\_,_\__|_\_\___|\__|
+         *                                      
+         */
         /// <summary>
         /// Helper class for file distribution into buckets when creating multi-part archives.
         /// </summary>

@@ -2,6 +2,13 @@
 
 namespace ByteForge.Toolkit
 {
+    /*
+     *  ___          _   ___       __     
+     * | _ \__ _ _ _| |_|_ _|_ _  / _|___ 
+     * |  _/ _` | '_|  _|| || ' \|  _/ _ \
+     * |_| \__,_|_|  \__|___|_||_|_| \___/
+     *                                    
+     */
     /// <summary>
     /// Information about a part in a multi-part archive created during email attachment processing.
     /// </summary>

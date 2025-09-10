@@ -1,183 +1,361 @@
-# ByteForge.Toolkit Database Access Layer
+﻿# ByteForge.Toolkit Database Access Layer
 
-A robust and flexible database access layer built for .NET Framework 4.8, supporting SQL Server 2000 and ODBC connections.
+A comprehensive, secure, and high-performance database access layer designed for SQL Server 2000 and ODBC databases. Features enterprise-grade security with encrypted credentials, bulk operations, async support, and extensive logging capabilities.
 
-## Overview
+## 🚀 Key Features
 
-This database access layer provides a comprehensive set of tools for database operations while maintaining high security standards and clean code practices. It supports both SQL Server and ODBC connections, with built-in support for connection encryption, parameter handling, and script execution.
+### Core Database Operations
+- **Multi-Database Support**: SQL Server 2000 and ODBC with automatic connection factory
+- **Parameterized Queries**: Built-in SQL injection protection with automatic parameter binding
+- **Script Execution**: Advanced batch processing with GO statement parsing
+- **Full Async Support**: Complete async/await pattern implementation for all operations
+- **Type Conversion**: Intelligent type mapping between database and .NET types
 
-## Features
+### Bulk Operations
+- **High-Performance Bulk Insert**: Efficient batch processing for large datasets
+- **Bulk Upsert**: Update existing records, insert new ones in single operation
+- **Bulk Delete**: Mass deletion operations using staging tables
+- **Progress Tracking**: Real-time progress reporting for long-running operations
+- **Automatic Table Creation**: Dynamic table generation based on entity mappings
 
-- Support for SQL Server 2000 and ODBC connections
-- Asynchronous database operations
-- Secure password encryption
-- Parameterized queries to prevent SQL injection
-- Comprehensive logging system
-- Script execution with GO statement parsing
-- Batch operations support
-- Type-safe value conversion
-- Connection string management
-- Error handling and debugging support
+### Security & Configuration
+- **Encrypted Credentials**: Secure storage of database credentials using built-in encryption
+- **Flexible Configuration**: INI-based configuration with multiple database support
+- **Connection Security**: Optional TLS/SSL encryption for database connections
+- **Trusted Connections**: Windows Authentication support
 
-## Core Components
+### Monitoring & Diagnostics
+- **Comprehensive Logging**: Detailed execution logging with configurable verbosity
+- **Error Tracking**: Rich exception handling with detailed error context
+- **Performance Monitoring**: Automatic query execution timing
+- **Batch Execution Tracking**: Progress monitoring for multi-batch operations
 
-### DBAccess
+## 🏗️ Architecture
 
-The main class that handles database connections and operations. It's split into several partial classes for better organization:
+### Core Classes
 
-- **DBAccess.Core**: Contains the core functionality and configuration setup
-- **DBAccess.Factory**: Handles creation of database-specific objects
-- **DBAccess.Methods**: Implements the main database operations
-- **DBAccess.Parameters**: Manages parameter handling and type mapping
-- **DBAccess.ScriptExecution**: Provides script execution capabilities
-- **DBAccess.TypeConverter**: Handles type conversion for database operations
-- **DBAccess.Logging**: Implements logging functionality
+#### `DBAccess` (Modular Design)
+The main database access class is split into focused partial classes:
 
-### DatabaseOptions
+- **`DBAccess.Core`**: Primary configuration and connection management
+- **`DBAccess.Factory`**: Database provider factory for SQL Server and ODBC
+- **`DBAccess.Methods`**: Core query execution methods (sync and async)
+- **`DBAccess.ScriptExecution`**: Advanced script processing with batch handling
+- **`DBAccess.TypeConverter`**: Intelligent type conversion between database and .NET types
+- **`DBAccess.Logging`**: Comprehensive logging and error tracking
+- **`DBAccess.Parameters`**: Parameter binding and SQL injection prevention
 
-Manages database connection configuration with support for:
-- Server configuration
-- Database credentials (encrypted)
-- Connection timeouts
-- Trusted connections
-- Connection string building
+#### `BulkDbProcessor<T>`
+Generic bulk operations processor providing:
+- Type-safe bulk insert, upsert, and delete operations
+- Automatic table creation and schema management
+- Progress reporting and error handling
+- Support for primary keys, unique indexes, and identity columns
 
-### ScriptExecutionResult
+#### Supporting Classes
+- **`DatabaseOptions`**: Configuration management with encrypted credential support
+- **`DatabaseRootOptions`**: Multi-environment database configuration
+- **`ScriptExecutionResult`**: Comprehensive script execution results and error tracking
 
-Represents the result of a script execution, including:
-- Success status
-- Batch results
-- Result sets
-- Records affected
-- Exception information
+## 📋 Usage Examples
 
-## Usage Examples
-
-### Basic Connection Setup
-
-```csharp
-// Initialize database access with default configuration
-var db = new DBAccess();
-
-// Or specify a custom configuration section
-var db = new DBAccess("CustomDB");
-```
-
-### Execute a Query
+### Basic Operations
 
 ```csharp
-// Simple query execution
-bool success = db.ExecuteQuery("UPDATE Users SET Status = @status WHERE ID = @id",
-    new object[] { "Active", 1 });
+// Initialize database access
+var db = new DBAccess("Production");
 
-// Get a single value
-int count = db.GetValue<int>("SELECT COUNT(*) FROM Users");
+// Simple value retrieval
+int userCount = db.GetValue<int>("SELECT COUNT(*) FROM Users WHERE Active = @active", new object[] { true });
 
-// Get multiple records
-var records = db.GetRecords("SELECT * FROM Users WHERE Status = @status",
-    new object[] { "Active" });
+// Record retrieval
+var user = db.GetRecord<User>("SELECT * FROM Users WHERE UserId = @userId", new object[] { 123 });
+
+// Multiple records
+var activeUsers = db.GetRecords<User>("SELECT * FROM Users WHERE Active = @active", new object[] { true });
+
+// Execute commands
+bool success = db.ExecuteQuery("UPDATE Users SET LastLogin = @date WHERE UserId = @userId", 
+    new object[] { DateTime.Now, 123 });
 ```
 
 ### Async Operations
 
 ```csharp
-// Async value retrieval
-var count = await db.GetValueAsync<int>("SELECT COUNT(*) FROM Users");
-
 // Async record retrieval
-var records = await db.GetRecordsAsync("SELECT * FROM Users");
+var users = await db.GetRecordsAsync<User>("SELECT * FROM Users WHERE Department = @dept", new object[] { "IT" });
+
+// Async command execution
+bool result = await db.ExecuteQueryAsync("INSERT INTO AuditLog (Action, Timestamp) VALUES (@action, @time)", 
+    new object[] { "UserLogin", DateTime.Now });
 ```
 
 ### Script Execution
 
 ```csharp
-string script = @"
-    CREATE TABLE #TempUsers (ID INT, Name NVARCHAR(100));
+string deploymentScript = @"
+    CREATE TABLE TempUsers (Id int, Name varchar(255))
     GO
-    INSERT INTO #TempUsers VALUES (1, 'John');
+    INSERT INTO TempUsers SELECT Id, Name FROM Users WHERE Active = 1
     GO
-    SELECT * FROM #TempUsers;";
+    SELECT COUNT(*) FROM TempUsers
+    GO
+    DROP TABLE TempUsers
+";
 
-var result = db.ExecuteScript(script, captureResults: true);
+var result = db.ExecuteScript(deploymentScript, captureResults: true);
+
+if (result.Success)
+{
+    Console.WriteLine($"Executed {result.BatchResults.Count} batches");
+    Console.WriteLine($"Records affected: {string.Join(", ", result.RecordsAffected)}");
+    
+    // Access result sets from SELECT statements
+    foreach (var resultSet in result.ResultSets)
+        Console.WriteLine($"Result set contains {resultSet.Rows.Count} rows");
+}
+else
+{
+    Console.WriteLine($"Script failed: {result.LastException.Message}");
+}
 ```
 
-## Configuration
+### Bulk Operations
 
-The database configuration uses INI format. Here's an example configuration:
+```csharp
+// Define entity with database mappings
+public class Product
+{
+    [DBColumn(IsPrimaryKey = true)]
+    public int ProductId { get; set; }
+    
+    [DBColumn(MaxLength = 100)]
+    public string Name { get; set; }
+    
+    [DBColumn]
+    public decimal Price { get; set; }
+    
+    [DBColumn(IsUnique = true)]
+    public string SKU { get; set; }
+}
+
+// Bulk insert
+var processor = new BulkDbProcessor<Product>("Products");
+var products = GetProductsFromSource(); // Your data source
+
+processor.ProgressChanged += (progress) => Console.WriteLine($"Progress: {progress:F1}%");
+processor.ErrorOccurred += (message, ex) => Console.WriteLine($"Error: {message} - {ex.Message}");
+
+bool success = await processor.BulkInsertAsync(db, products, cancellationToken);
+
+// Bulk upsert (update existing, insert new)
+bool upsertSuccess = await processor.BulkUpsertAsync(db, products, cancellationToken);
+
+// Bulk delete
+bool deleteSuccess = await processor.BulkDeleteAsync(db, productsToDelete, cancellationToken);
+```
+
+## ⚙️ Configuration
+
+### Database Configuration (INI Format)
 
 ```ini
 [Data Source]
-SelectedDB=MainDatabase
+SelectedDB=Production
 
-[MainDatabase]
+[Production]
 sType=SQLServer
-sServer=ServerName
-sDatabaseName=DatabaseName
-esUser=[encrypted-user]
-esPass=[encrypted-password]
+sServer=PRODSERVER\INSTANCE1
+sDatabaseName=MyApplication
+esUser=[encrypted_username]
+esPass=[encrypted_password]
 bEncrypt=true
+bTrustedConnection=false
 iConnectionTimeout=60
 iCommandTimeout=240
-bTrustedConnection=false
+bAutoTrimStrings=true
 
-[ReportDB]
+[Development]
+sType=SQLServer
+sServer=localhost
+sDatabaseName=MyApp_Dev
+esUser=[encrypted_dev_user]
+esPass=[encrypted_dev_pass]
+bEncrypt=false
+bTrustedConnection=true
+
+[ODBC_Example]
 sType=ODBC
-sServerDSN=ReportDSN
-sServer=ReportServer
-sDatabaseName=ReportDB
-esUser=[encrypted-user]
-esPass=[encrypted-password]
+sServerDSN=MyODBCDSN
+sServer=ODBCServer
+sDatabaseName=LegacyDB
+esUser=[encrypted_odbc_user]
+esPass=[encrypted_odbc_pass]
 ```
 
-### Configuration Options
+### Configuration Properties
 
-- **sType**: Database type (SQLServer or ODBC)
-- **sServer**: Server name or IP address
-- **sServerDSN**: DSN name (for ODBC connections)
-- **sDatabaseName**: Database name
-- **esUser**: Encrypted username
-- **esPass**: Encrypted password
-- **bEncrypt**: Enable connection encryption (true/false)
-- **iConnectionTimeout**: Connection timeout in seconds
-- **iCommandTimeout**: Command timeout in seconds
-- **bTrustedConnection**: Use Windows authentication (true/false)
+| Property | Config Key | Description | Default |
+|----------|------------|-------------|---------|
+| `DatabaseType` | `sType` | Database type (SQLServer/ODBC) | - |
+| `Server` | `sServer` | Server name or IP address | - |
+| `ServerDSN` | `sServerDSN` | ODBC DSN name | - |
+| `DatabaseName` | `sDatabaseName` | Database name | - |
+| `EncryptedUser` | `esUser` | Encrypted username | - |
+| `EncryptedPassword` | `esPass` | Encrypted password | - |
+| `ConnectionString` | `sConnectionString` | Direct connection string override | - |
+| `UseEncryption` | `bEncrypt` | Enable connection encryption | false |
+| `ConnectionTimeout` | `iConnectionTimeout` | Connection timeout (seconds) | 60 |
+| `CommandTimeout` | `iCommandTimeout` | Command timeout (seconds) | 240 |
+| `UseTrustedConnection` | `bTrustedConnection` | Use Windows Authentication | false |
+| `AutoTrimStrings` | `bAutoTrimStrings` | Auto-trim string values | true |
 
-## Security Features
+## 🛡️ Security Features
 
-- Password encryption using custom encryption algorithm
-- Support for encrypted connections
-- Parameterized queries to prevent SQL injection
-- Secure credential handling
-- Connection string protection
+### Credential Protection
+- Database credentials stored encrypted in configuration
+- Automatic encryption/decryption during access
+- Thread-safe credential access with locking
 
-## Error Handling
+### SQL Injection Prevention
+- Automatic parameterization of all queries
+- Parameter type inference and binding
+- Regex-based parameter parsing with safety checks
 
-The system provides comprehensive error handling:
-- Exception logging
-- Last exception tracking
-- Detailed error messages
-- Query execution logging
-- Parameter logging for debugging
+### Connection Security
+- Optional TLS/SSL encryption for database connections
+- Support for Windows Authentication (trusted connections)
+- Secure connection string generation
 
-## Best Practices
+## 🔍 Entity Mapping
 
-1. Always use parameterized queries instead of string concatenation
-2. Dispose of database connections properly using `using` statements
-3. Handle exceptions appropriately
-4. Use async methods for long-running operations
-5. Check the `LastException` property when operations fail
-6. Use appropriate timeout values for your operations
+Use `DBColumnAttribute` to map entity properties to database columns:
 
-## Requirements
+```csharp
+public class Customer
+{
+    [DBColumn(IsPrimaryKey = true, IsIdentity = true)]
+    public int CustomerId { get; set; }
+    
+    [DBColumn(Name = "customer_name", MaxLength = 255)]
+    public string Name { get; set; }
+    
+    [DBColumn(IsUnique = true)]
+    public string Email { get; set; }
+    
+    [DBColumn(HasIndex = true)]
+    public string City { get; set; }
+    
+    [DBColumn(DbType = DbType.DateTime)]
+    public DateTime CreatedDate { get; set; }
+    
+    // Properties without DBColumnAttribute are ignored
+    public string TemporaryField { get; set; }
+}
+```
 
-- .NET Framework 4.8
-- SQL Server 2000 or later
-- ODBC Driver (if using ODBC connections)
+### Attribute Properties
+- `Name`: Database column name (defaults to property name)
+- `IsPrimaryKey`: Mark as primary key column
+- `IsIdentity`: Auto-increment identity column
+- `IsUnique`: Unique constraint
+- `HasIndex`: Create index on column
+- `MaxLength`: String column maximum length
+- `DbType`: Explicit database type mapping
+- `IdentitySeed`/`IdentityIncrement`: Identity column configuration
 
-## Notes
+## 📊 Performance Features
 
-- This library is specifically optimized for SQL Server 2000
-- All database operations are logged for debugging purposes
-- Connection strings are built securely based on configuration
-- The system supports both synchronous and asynchronous operations
-- Script execution supports GO statement batch separation
+### Bulk Operations
+- SQL Server bulk copy for maximum throughput
+- Configurable batch sizes (default: 1000 records)
+- Progress reporting for long-running operations
+- Automatic staging table management for upserts/deletes
+
+### Connection Management
+- Efficient connection factory pattern
+- Automatic connection disposal
+- Configurable timeouts for connections and commands
+
+### Type Conversion
+- Optimized type mapping with caching
+- Support for nullable types, enums, and custom conversions
+- Automatic handling of DBNull values
+
+## 🔧 Error Handling
+
+### Exception Management
+- Comprehensive exception capture and logging
+- Contextual error information with query details
+- Parameter values included in error logs (when safe)
+
+### Result Validation
+- `LastException` property for immediate error access
+- Boolean return values for success/failure indication
+- Detailed script execution results with batch-level error tracking
+
+## 🧪 Best Practices
+
+### Connection Usage
+```csharp
+// Each method manages its own connection lifecycle
+var db = new DBAccess("Production");
+var result = db.GetValue<int>("SELECT COUNT(*) FROM Users");
+// Connection is automatically opened, query executed, and closed
+
+// Multiple operations can reuse the same DBAccess instance
+var userCount = db.GetValue<int>("SELECT COUNT(*) FROM Users");
+var activeUsers = db.GetRecords<User>("SELECT * FROM Users WHERE Active = 1");
+bool success = db.ExecuteQuery("UPDATE Users SET LastAccess = @date WHERE Id = @id", 
+    new object[] { DateTime.Now, userId });
+```
+
+### Async Operations
+```csharp
+// Prefer async methods for I/O bound operations
+var users = await db.GetRecordsAsync<User>("SELECT * FROM Users WHERE Active = 1");
+
+// Use cancellation tokens for long-running operations
+var processor = new BulkDbProcessor<Product>("Products");
+await processor.BulkInsertAsync(db, products, cancellationToken);
+```
+
+### Error Handling
+```csharp
+// Always check for errors after operations
+bool success = db.ExecuteQuery("UPDATE Users SET LastLogin = @date WHERE Id = @id", 
+    new object[] { DateTime.Now, userId });
+
+if (!success)
+{
+    Log.Error("Failed to update user login", db.LastException);
+    // Handle error appropriately
+}
+```
+
+### Configuration Security
+```csharp
+// Encrypt credentials before storing in configuration
+var options = new DatabaseOptions();
+options.User = "myuser";        // Automatically encrypted
+options.Password = "mypass";    // Automatically encrypted
+
+// Access is automatically decrypted
+string connectionString = options.GetConnectionString();
+```
+
+## 🔗 Dependencies
+
+- **[Configuration Module](../../Configuration/readme.md)**: For INI-based configuration management
+- **[Logging Module](../../Logging/readme.md)**: For comprehensive operation logging
+- **[Security Module](../../Security/readme.md)**: For credential encryption/decryption
+- **System.Data.SqlClient**: For SQL Server connectivity
+- **System.Data.Odbc**: For ODBC database connectivity
+
+## 📝 Notes
+
+- Designed specifically for SQL Server 2000 compatibility
+- .NET Framework 4.8 compatible
+- Thread-safe credential access with proper locking
+- Extensive logging for debugging and monitoring
+- Production-ready with enterprise security features

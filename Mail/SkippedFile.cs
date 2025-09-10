@@ -1,5 +1,12 @@
 ﻿namespace ByteForge.Toolkit
 {
+    /*
+     *  ___ _   _                   _ ___ _ _     
+     * / __| |_(_)_ __ _ __  ___ __| | __(_) |___ 
+     * \__ \ / / | '_ \ '_ \/ -_) _` | _|| | / -_)
+     * |___/_\_\_| .__/ .__/\___\__,_|_| |_|_\___|
+     *           |_|  |_|                         
+     */
     /// <summary>
     /// Information about a file that was skipped during processing.
     /// </summary>

@@ -3,6 +3,13 @@ using System.Linq;
 
 namespace ByteForge.Toolkit
 {
+    /*
+     *   ___ _____   _____                   _   
+     *  / __/ __\ \ / / __|__ _ _ _ __  __ _| |_ 
+     * | (__\__ \\ V /| _/ _ \ '_| '  \/ _` |  _|
+     *  \___|___/ \_/ |_|\___/_| |_|_|_\__,_|\__|
+     *                                           
+     */
     /// <summary>
     /// Represents the format configuration for CSV parsing.
     /// </summary>
@@ -55,7 +62,7 @@ namespace ByteForge.Toolkit
         /// <inheritdoc />
         override public string ToString()
         {
-            return $"Delimiter: ‘{Delimiter}’, QuoteChar: ‘{QuoteChar}’, HasHeader: {HasHeader}, HeaderQuoted: {HeaderQuoted}, DataQuoted: {DataQuoted}, TrimValues: {TrimValues}";
+            return $"Delimiter: '{Delimiter}', QuoteChar: '{QuoteChar}', HasHeader: {HasHeader}, HeaderQuoted: {HeaderQuoted}, DataQuoted: {DataQuoted}, TrimValues: {TrimValues}";
         }
 
         /// <summary>
@@ -81,7 +88,17 @@ namespace ByteForge.Toolkit
 
             // Detect quotes in header
             var possibleQuoteChars = new[] { '"', '\'' };
-            var headerQuoteChar = possibleQuoteChars.FirstOrDefault(q => headerLine.Contains(q));
+
+            // Check if quotes are actually used as field delimiters in the header
+            var headerQuoteChar = default(char);
+            foreach (var q in possibleQuoteChars)
+            {
+                if (headerLine.Contains(q) && IsLikelyQuoteChar(headerLine, q, format.Delimiter))
+                {
+                    headerQuoteChar = q;
+                    break;
+                }
+            }
 
             if (headerQuoteChar != default(char))
             {
@@ -102,7 +119,9 @@ namespace ByteForge.Toolkit
                 {
                     foreach (var quoteChar in possibleQuoteChars)
                     {
-                        if (dataLines.Any(line => line.Contains(quoteChar)))
+                        // Check if this character is likely being used as a quote character
+                        if (dataLines.Any(line => line.Contains(quoteChar) &&
+                                                  IsLikelyQuoteChar(line, quoteChar, format.Delimiter)))
                         {
                             format.QuoteChar = quoteChar;
                             break;
@@ -118,7 +137,7 @@ namespace ByteForge.Toolkit
 
                     foreach (var line in dataLines)
                     {
-                        var fieldsInLine = CountFields(line, format.Delimiter);
+                        var fieldsInLine = CountFields(line, format.Delimiter, format.QuoteChar);
                         totalFields += fieldsInLine;
                         quotedFields += CountQuotedFields(line, format.Delimiter, format.QuoteChar.Value);
                     }
@@ -186,20 +205,56 @@ namespace ByteForge.Toolkit
         }
 
         /// <summary>
+        /// Determines if a character is likely being used as a quote character in the line.
+        /// </summary>
+        /// <param name="line">The line to analyze.</param>
+        /// <param name="quoteChar">The potential quote character.</param>
+        /// <param name="delimiter">The delimiter character.</param>
+        /// <returns>True if the character is likely a quote character; otherwise, false.</returns>
+        private static bool IsLikelyQuoteChar(string line, char quoteChar, char delimiter)
+        {
+            // Check if the line has an even number of the quote character
+            var quoteCount = line.Count(c => c == quoteChar);
+            if (quoteCount % 2 != 0)
+                return false;
+
+            // Check if fields start and end with the quote character
+            var fields = line.Split(delimiter);
+            var quotedFieldCount = fields.Count(f =>
+            {
+                var trimmed = f.Trim();
+                return trimmed.Length >= 2 &&
+                       trimmed[0] == quoteChar &&
+                       trimmed[trimmed.Length - 1] == quoteChar;
+            });
+
+            // It's likely a quote char if at least one field is properly quoted
+            return quotedFieldCount > 0;
+        }
+
+        /// <summary>
         /// Counts the number of fields in a line when split by a delimiter.
         /// </summary>
         /// <param name="line">The line to analyze.</param>
         /// <param name="delimiter">The delimiter to use for splitting.</param>
+        /// <param name="quoteChar">The quote character, if any.</param>
         /// <returns>The number of fields in the line.</returns>
-        private static int CountFields(string line, char delimiter)
+        private static int CountFields(string line, char delimiter, char? quoteChar = null)
         {
             var count = 1;
             var inQuotes = false;
 
             for (int i = 0; i < line.Length; i++)
             {
-                if (line[i] == '"' || line[i] == '\'')
-                    inQuotes = !inQuotes;
+                // Only toggle quote state if the character matches our expected quote character
+                if (quoteChar.HasValue && line[i] == quoteChar.Value)
+                {
+                    // Handle escaped quotes (double quotes)
+                    if (i + 1 < line.Length && line[i + 1] == quoteChar.Value)
+                        i++; // Skip next quote character
+                    else
+                        inQuotes = !inQuotes;
+                }
                 else if (line[i] == delimiter && !inQuotes)
                     count++;
             }
@@ -217,23 +272,38 @@ namespace ByteForge.Toolkit
         {
             var bestDelimiter = ','; // Default
             var bestConsistency = 0;
+            var bestScore = 0;
 
             foreach (var delimiter in candidates)
             {
-                // Count fields in each line when split by this delimiter
-                var fieldCounts = lines.Select(line =>
-                    CountFields(line, delimiter)).ToArray();
+                // Count occurrences of each delimiter
+                var delimiterCount = lines.Sum(line => line.Count(c => c == delimiter));
+                if (delimiterCount == 0)
+                    continue;
 
-                // Check consistency (all counts equal and > 1)
-                if (fieldCounts.All(count => count == fieldCounts[0]) &&
-                    fieldCounts[0] > 1)
+                // Count fields in each line when split by this delimiter
+                // Don't consider quotes for initial delimiter detection to avoid circular dependency
+                var fieldCounts = lines.Select(line => CountFields(line, delimiter)).ToArray();
+
+                // Calculate consistency score
+                var avgFieldCount = fieldCounts.Average();
+                var stdDev = Math.Sqrt(fieldCounts.Average(fc => Math.Pow(fc - avgFieldCount, 2)));
+
+                // Lower standard deviation means more consistent field counts
+                var consistencyScore = stdDev == 0 ? int.MaxValue : (int)(1.0 / stdDev * 1000);
+
+                // Check if all field counts are greater than 1
+                var allFieldsValid = fieldCounts.All(count => count > 1);
+
+                // Calculate overall score based on consistency and delimiter occurrence
+                var longScore = allFieldsValid ? ((long)consistencyScore * delimiterCount) : 0;
+                var score = longScore > int.MaxValue ? int.MaxValue : (int)longScore;
+
+                if (score > bestScore)
                 {
-                    var consistency = fieldCounts[0];
-                    if (consistency > bestConsistency)
-                    {
-                        bestConsistency = consistency;
-                        bestDelimiter = delimiter;
-                    }
+                    bestScore = score;
+                    bestDelimiter = delimiter;
+                    bestConsistency = (int)avgFieldCount;
                 }
             }
 
@@ -257,7 +327,7 @@ namespace ByteForge.Toolkit
         /// Determines whether the specified object is equal to the current object.
         /// </summary>
         /// <param name="obj">The object to compare with the current object.</param>
-        /// <returns><c>true</c> if the specified object is equal to the current object; otherwise, <c>false</c>.</returns>
+        /// <returns><see langword="true" /> if the specified object is equal to the current object; otherwise, <see langword="false" />.</returns>
         override public bool Equals(object obj)
         {
             if (obj == null || GetType() != obj.GetType())
@@ -278,7 +348,7 @@ namespace ByteForge.Toolkit
         override public int GetHashCode()
         {
             return Delimiter.GetHashCode() ^
-                   QuoteChar.GetHashCode() ^
+                   (QuoteChar?.GetHashCode() ?? 0) ^
                    HasHeader.GetHashCode() ^
                    HeaderQuoted.GetHashCode() ^
                    DataQuoted.GetHashCode() ^

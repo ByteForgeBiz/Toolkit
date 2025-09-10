@@ -19,8 +19,6 @@ namespace ByteForge.Toolkit
     /// </summary>
     public class Log : CompositeLogger
     {
-        private readonly LogOptions options = Configuration.GetSection<LogOptions>("Logging");
-
         private LogLevel _PreviousConsoleLoggerLevel = LogLevel.Verbose;
         private readonly FileLogger fileLogger;
         private readonly ConsoleLogger consoleLogger = new ConsoleLogger()
@@ -35,40 +33,70 @@ namespace ByteForge.Toolkit
         /// </summary>
         private Log() : base("ByteForge.Toolkit->Static Logger")
         {
-            fileLogger = new FileLogger(options.LogFilePath)
+            // Create the appropriate file logger based on configuration
+            if (Settings.UseSessionLogging)
             {
-                Name = "File",
-                MinLogLevel = options.TraceLogLevel
-            };
+                var sessionOptions = Configuration.GetSection<SessionFileLoggerOptions>("FileLogger");
+
+                fileLogger = new SessionFileLogger(Settings.LogFilePath, sessionOptions)
+                {
+                    Name = "SessionFile",
+                    MinLogLevel = Settings.TraceLogLevel
+                };
+            }
+            else
+            {
+                fileLogger = new FileLogger(Settings.LogFilePath)
+                {
+                    Name = "File",
+                    MinLogLevel = Settings.TraceLogLevel
+                };
+            }
 
             if (HttpContext.Current == null && AppDomain.CurrentDomain.FriendlyName.Contains("W3SVC") == false)
                 AddLogger(consoleLogger);
 
             AddLogger(fileLogger);
 
-            if (options.ClearLogOnStartup)
+            if (Settings.ClearLogOnStartup && !Settings.UseSessionLogging)
                 fileLogger.Clear();
 
-            this.MinLogLevel = options.TraceLogLevel;
+            this.MinLogLevel = Settings.TraceLogLevel;
+        }
+
+        // Add these properties to access session logger features
+        /// <summary>
+        /// Gets the session file logger instance if session logging is enabled.
+        /// </summary>
+        public static SessionFileLogger SessionLogger => Instance.fileLogger as SessionFileLogger;
+
+        /// <summary>
+        /// Gets the current session's log file path if using session logging.
+        /// </summary>
+        public static string CurrentLogFile => SessionLogger?.CurrentFilePath ?? ((FileLogger)Instance.fileLogger)?.CurrentFilePath;
+
+        /// <summary>
+        /// Ends the current logging session if using session logging.
+        /// Call this during application shutdown.
+        /// </summary>
+        public static void EndSession()
+        {
+            SessionLogger?.EndSession();
         }
 
         /// <summary>
         /// Gets a value indicating whether console logging is enabled.
         /// </summary>
         /// <value>
-        /// <c>true</c> if console logging is enabled; otherwise, <c>false</c>.
+        /// <see langword="true" /> if console logging is enabled; otherwise, <see langword="false" />.
         /// </value>
-        public bool IsConsoleLoggingEnabled
-        {
-            get => consoleLogger.MinLogLevel != LogLevel.None;
-        }
+        public static bool IsConsoleLoggingEnabled => Instance.consoleLogger.MinLogLevel != LogLevel.None;
 
         /// <summary>
         /// Gets the alternate logger instance, which logs to a temporary file.
         /// </summary>
         public ILogger AlternateLogger =>
-                                _alternateLogger = _alternateLogger ?? 
-                                new FileLogger(Path.Combine(Path.GetTempPath(), $"LogError.{Guid.NewGuid()}.log"))
+                                _alternateLogger ??= new FileLogger(Path.Combine(Path.GetTempPath(), $"LogError.{Guid.NewGuid()}.log"))
                                 {
                                     Name = "Alternate",
                                     MinLogLevel = LogLevel.Verbose
@@ -78,8 +106,9 @@ namespace ByteForge.Toolkit
         /// <summary>
         /// Gets the singleton instance of the Log class.
         /// </summary>
-        public static Log Instance => _instance = (_instance ?? new Log());
+        public static Log Instance => _instance ??= new Log();
         private static Log _instance;
+        private bool _disposed;
 
         /// <summary>
         /// Enables console logging.
@@ -115,6 +144,16 @@ namespace ByteForge.Toolkit
         /// The <see cref="ConsoleLogger"/> instance used for console logging.
         /// </value>
         public static ConsoleLogger Console => (ConsoleLogger)Instance.consoleLogger;
+
+        /// <summary>
+        /// Gets the logging configuration options.
+        /// </summary>
+        /// <remarks>
+        /// This property retrieves the logging options from the application's configuration. <br/> 
+        /// If the options have not been initialized, they are loaded from the "Logging" section of the
+        /// configuration.</remarks>
+        public LogSettings Settings => _options ??= Configuration.GetSection<LogSettings>("Logging");
+        private LogSettings _options;
 
         /// <summary>
         /// Logs a trace message.
@@ -277,5 +316,24 @@ namespace ByteForge.Toolkit
                 AlternateLogger.Log(level, string.Join("\n", text), ex, source);
             }
         }
-    }
+
+        /// <summary>
+        /// Releases the resources used by the current instance of the class.
+        /// </summary>
+        /// <param name="disposing"><see langword="true"/> to release both managed and unmanaged resources; <see langword="false"/> to release only unmanaged resources.</param>
+        protected override void Dispose(bool disposing)
+        {
+            if (_disposed)
+                return;
+
+            if (disposing)
+            {
+                SessionLogger?.EndSession();
+                SessionLogger?.Dispose();
+                fileLogger?.Dispose();
+            }
+
+            _disposed = true;
+        }
+   }
 }

@@ -5,6 +5,13 @@ using System.Threading;
 
 namespace ByteForge.Toolkit.Logging
 {
+    /*
+     *  ___               _                           
+     * | _ ) __ _ ___ ___| |   ___  __ _ __ _ ___ _ _ 
+     * | _ \/ _` (_-</ -_) |__/ _ \/ _` / _` / -_) '_|
+     * |___/\__,_/__/\___|____\___/\__, \__, \___|_|  
+     *                             |___/|___/         
+     */
     /// <summary>
     /// Abstract base class for logging functionality.
     /// </summary>
@@ -50,7 +57,7 @@ namespace ByteForge.Toolkit.Logging
 
             var entry = new LogEntry
             {
-                Timestamp = DateTime.UtcNow,
+                Timestamp = DateTime.Now,
                 Level = level,
                 Message = message,
                 Source = source,

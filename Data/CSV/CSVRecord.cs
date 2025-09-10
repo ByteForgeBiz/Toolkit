@@ -6,6 +6,13 @@ using System.Reflection;
 
 namespace ByteForge.Toolkit
 {
+    /*
+     *   ___ _____   _____                   _ 
+     *  / __/ __\ \ / / _ \___ __ ___ _ _ __| |
+     * | (__\__ \\ V /|   / -_) _/ _ \ '_/ _` |
+     *  \___|___/ \_/ |_|_\___\__\___/_| \__,_|
+     *                                         
+     */
     /// <summary>
     /// Represents the base class for records with property and column mapping.
     /// </summary>
@@ -20,15 +27,15 @@ namespace ByteForge.Toolkit
         protected CSVRecord()
         {
             // Initialize the properties and column mapping.
-            properties = GetType().GetProperties(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
-                .Where(p => p.GetCustomAttributes(typeof(CSVColumnAttribute), true).Any())
+            properties = GetType().GetProperties(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.FlattenHierarchy)
+                .Where(p => p.GetCustomAttributes(typeof(CSVColumnAttribute)).Any())
                 .ToArray();
             propertyColumnMapping = new Dictionary<PropertyInfo, string>();
             foreach (var property in properties)
             {
                 var columnAttribute = property.GetCustomAttribute<CSVColumnAttribute>();
                 if (columnAttribute != null)
-                    propertyColumnMapping.Add(property, columnAttribute.Name);
+                    propertyColumnMapping.Add(property, columnAttribute.Name ?? property.Name);
             }
         }
 
@@ -93,7 +100,7 @@ namespace ByteForge.Toolkit
         /// Determines whether the record is valid.
         /// </summary>
         /// <returns>
-        /// <c>true</c> if the record is valid; otherwise, <c>false</c>.
+        /// <see langword="true" /> if the record is valid; otherwise, <see langword="false" />.
         /// </returns>
         public virtual bool IsValid()
         {

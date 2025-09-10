@@ -1,120 +1,74 @@
-# ByteForge.Toolkit
+﻿# Utils.md
 
-ByteForge.Toolkit is a comprehensive .NET utility library designed for .NET Framework 4.8, providing various helper classes for common programming tasks. This toolkit includes utilities for console operations, datetime parsing, IO operations, email handling, performance timing, and general utility functions.
+## ByteForge Toolkit Utility Modules
 
-## Components
+A collection of versatile helper classes that streamline string manipulation, IO operations, parsing, logging, and diagnostics in .NET Framework 4.8 applications.
 
-### ConsoleUtil
+### 🚀 Features
+- Console progress bar rendering
+- Flexible date and time parsing across cultures and formats
+- File path resolution with UNC support
+- Synchronous wrapper for async methods
+- Enum extension methods for `DescriptionAttribute`
+- Rich type parser supporting .NET primitives and custom types
+- Advanced boolean parser supporting domain-specific values
+- Email formatting helpers, string cleansing, and general utilities
 
-A static utility class that provides console-related functionality, particularly focused on progress bar visualization.
+### 🧱 Core Components
+- `ConsoleUtil`: Console progress bars with width detection
+- `DateTimeParser`: Intelligent format-inferred timestamp parser
+- `IOUtils`: Get network-aware universal paths
+- `TimingUtil`: Measure execution time and log performance
+- `Utils`: Phone formatting, string filters, sync wrappers
+- `Parser`: Type conversion from string to object
+- `BooleanParser`: Extended true/false parsing with custom values
+- `EnumExtensions`: Access enum descriptions
 
-Key features:
-- `DrawProgressBar`: Renders a customizable progress bar in the console with optional message display
-- Automatically handles console width constraints
-- Uses Unicode block characters for a visually appealing display
-
-### DateTimeParser
-
-A sophisticated datetime parsing utility that handles various date and time formats flexibly.
-
-Key features:
-- Supports multiple date formats (US, UK, ISO, etc.)
-- Handles different time formats (12-hour, 24-hour)
-- Timezone aware parsing
-- Performance optimized with format caching
-- Thread-safe implementation using ConcurrentDictionary
-- Extensive format support including:
-  - Date formats (MM/dd/yyyy, yyyy-MM-dd, etc.)
-  - Time formats (HH:mm:ss, hh:mm tt, etc.)
-  - Timezone and offset formats
-
-### IOUtils
-
-Provides utility methods for IO operations, particularly focused on path resolution.
-
-Key features:
-- `GetUniversalPath`: Converts local paths to universal paths (UNC)
-- Handles network drive resolution
-- Windows-specific path normalization
-- Error logging integration
-
-### MailUtil
-
-A comprehensive email utility for sending emails using SMTP.
-
-Key features:
-- Configurable SMTP settings
-- Secure credential management with encryption
-- Support for HTML and plain text emails
-- Multiple recipient handling
-- File attachment support
-- TLS/SSL support
-- Comprehensive error handling and logging
-
-### TimingUtil
-
-A utility class for performance measurement and timing operations.
-
-Key features:
-- Measures execution time of synchronous and asynchronous operations
-- Flexible logging options
-- Support for both void and value-returning operations
-- Millisecond precision
-- Asynchronous operation support
-- Custom logger integration
-
-### Utils
-
-General utility methods for common programming tasks.
-
-Key features:
-- String handling utilities
-- Synchronous wrapper for async operations
-- Common constants
-
-## Requirements
-
-- .NET Framework 4.8
-- Windows platform (for some IO operations)
-
-## Usage Examples
-
-### Console Progress Bar
+### 🧪 Examples
+#### Progress Bar
 ```csharp
-for (int i = 0; i <= 100; i++)
-{
-    ConsoleUtil.DrawProgressBar(i, "Processing...");
-    Thread.Sleep(100);
-}
+ConsoleUtil.DrawProgressBar(75, "Uploading file...");
 ```
 
-### DateTime Parsing
+#### DateTime Parsing
 ```csharp
-var dateString = "2024-02-11 15:30:00";
-var parsedDate = DateTimeParser.Parse(dateString);
+var dt = DateTimeParser.Parse("2024-02-11 15:30:00 EST");
 ```
 
-### Sending Email
+#### Run Async Sync
 ```csharp
-MailUtil.SendMail(
-    "recipient@example.com",
-    "Test Subject",
-    "<h1>Hello World!</h1>",
-    true,
-    new[] { "attachment.pdf" }
-);
+string result = Utils.RunSync(async token => await SomeAsyncCall(token));
 ```
 
-### Performance Timing
+#### Universal Path
 ```csharp
-var timer = new TimingUtil();
-timer.Time(() => {
-    // Your code here
-}, "Operation completed in");
+string uncPath = IOUtils.GetUniversalPath("Z:\Shared\Project.docx");
 ```
 
-## Notes
+#### Enum Description
+```csharp
+string label = MyEnum.ValueX.GetDescription();
+```
 
-- This toolkit is optimized for Windows environments
-- Some features require specific permissions (e.g., network access for UNC paths)
-- Email functionality requires valid SMTP server configuration
+#### Boolean Parsing
+```csharp
+bool flag = BooleanParser.Parse("enabled");
+BooleanParser.RegisterFalseValue("nah");
+```
+
+#### General Utility
+```csharp
+string formatted = Utils.FormatUSPhoneNumber("+1 (202) 555-0183");
+string clean = "dirty value".Remove(" ");
+```
+
+### ✅ Best Practices
+- Register custom boolean/enum string values for localization
+- Use `TimingUtil` for performance instrumentation
+- Clean user inputs with `NullIfEmpty` or `.Remove()` helpers
+- Extend `Parser` with domain-specific converters when needed
+
+### 🔗 Related Modules
+- [CSV](../Data/CSV/readme.md)
+- [Logging](../Logging/readme.md)
+- [Configuration](../Configuration/readme.md)

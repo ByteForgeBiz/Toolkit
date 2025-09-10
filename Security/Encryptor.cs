@@ -15,6 +15,11 @@
         private readonly AESEncryption aes = new AESEncryption();
         private readonly string secretKey;
 
+        /// <summary>
+        /// Gets the default instance of the <see cref="Encryptor"/> class with predefined configuration.
+        /// </summary>
+        public static Encryptor Default { get; } = new Encryptor(13, 16);
+
         /// <summary>  
         /// Initializes a new instance of the <see cref="Encryptor"/> class.  
         /// </summary>  

@@ -6,6 +6,13 @@ using System.Text;
 
 namespace ByteForge.Toolkit
 {
+    /*
+     *  ___ ___  _   _ _   _ _    
+     * |_ _/ _ \| | | | |_(_) |___
+     *  | | (_) | |_| |  _| | (_-<
+     * |___\___/ \___/ \__|_|_/__/
+     *                            
+     */
     /// <summary>
     /// Provides utility methods for IO operations.
     /// </summary>

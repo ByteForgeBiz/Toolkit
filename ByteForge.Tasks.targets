@@ -7,7 +7,7 @@
 
   <PropertyGroup>
     <ParentDir>$([System.IO.Path]::GetFullPath('$(ProjectDir)\..'))</ParentDir>
-    <CentralLocationPath>$([System.IO.Path]::GetFullPath('$(ProjectDir)..\..\ByteForge.Toolkit'))</CentralLocationPath>
+    <CentralLocationPath Condition="'$(CentralLocationPath)' == ''">$([System.IO.Path]::GetDirectoryName('$(MSBuildThisFile)'))</CentralLocationPath>
     <CopyFiles>$([System.String]::new($(ParentDir)).EndsWith('TelecomInc').Equals(False))</CopyFiles>
     <CmdCopyTo>Call CopyFiles.bat "$(ProjectDir)" "$(CentralLocationPath)"</CmdCopyTo>
     <CmdCopyFrom>Call CopyFiles.bat "$(CentralLocationPath)" "$(ProjectDir)" fromcentral</CmdCopyFrom>
@@ -31,14 +31,14 @@
     <Message Importance="high" Text="CmdCopyFrom = '$(CmdCopyFrom)'" />
     <Message Importance="high" Text="CentralVersionFile = '$(CentralVersionFile)'" />
     <Message Importance="high" Text="CleanupUnusedFilesAfterBuild = '$(CleanupUnusedFilesAfterBuild)'" />
-    <Message Importance="high" Text="Non-project files will be deleted."      Condition="'$(CleanupUnusedFilesAfterBuild)' == 'true'"/>
+    <Message Importance="high" Text="Non-project files will be deleted."      Condition="'$(CleanupUnusedFilesAfterBuild)' == 'true' or '$(CleanupUnusedFilesAfterBuild)' == ''"/>
     <Message Importance="high" Text="Non-project files will NOT be deleted."  Condition="'$(CleanupUnusedFilesAfterBuild)' != 'true'"/>
     <Message Importance="high" Text="*** --------------------------- ***" />
   </Target>
 
   <!-- Task Definitions -->
   
-  <Target Name="CleanupUnusedFiles" AfterTargets="Build" Condition="'$(CleanupUnusedFilesAfterBuild)' == 'true'">
+  <Target Name="CleanupUnusedFiles" AfterTargets="ForceCleanupFiles" Condition="'$(CleanupUnusedFilesAfterBuild)' == 'true' or '$(CleanupUnusedFilesAfterBuild)' == ''">
     <Message Text="Starting cleanup of files not included in the project..." Importance="high" />
     
     <!-- Get all files not in the project -->
@@ -235,11 +235,11 @@ try {
     var verChange = string.Format("Version changed from {0} to {1}", oldVersion, newVersion);
     Log.LogMessage(MessageImportance.High, verChange);
                         
-    return true;
+    Success = true;
 }
 catch (Exception ex) {
     Log.LogError(string.Format("Failed to update central version file: {0}", ex.Message));
-    return false;
+    Success = false;
 }
     ]]></Code>
     </Task>
@@ -277,6 +277,7 @@ catch (Exception ex) {
       <Using Namespace="System.Linq" />
       <Using Namespace="System.Collections.Generic" />
       <Code Type="Fragment" Language="cs"><![CDATA[
+      
 try
 {
     var NormalizePath = (string p) => p.Replace(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
@@ -352,59 +353,85 @@ try
     if (obsoleteFiles.Count == 0) 
     {
         Log.LogMessage(MessageImportance.High, "No obsolete files found in central location.");
-        return true;
     }
-
-    Log.LogMessage(MessageImportance.High, "Found {0} obsolete files:", obsoleteFiles.Count);
-    foreach (var file in obsoleteFiles)
+    else
     {
-        Log.LogMessage(MessageImportance.High, $"Deleting: {file}");
-                
-        try
+        Log.LogMessage(MessageImportance.High, "Found {0} obsolete files:", obsoleteFiles.Count);
+        foreach (var file in obsoleteFiles)
         {
-            // Delete obsolete central file
-            var fullPath = file.FullName;
-            file.Delete();
-            
-            // Check if we have the same obsolete file in the local node.
-            var relativePath = fullPath.Substring(di.FullName.Length).TrimStart('\\', '/');
-            var localFile = Path.Combine(LocalPath, relativePath);
-            if (File.Exists(localFile))
-                File.Delete(localFile);
-            
-            // Clean up empty directories
-            var dn = NormalizePath(Path.GetDirectoryName(fullPath));
-            while (!string.IsNullOrEmpty(dn) &&
-                   dn.StartsWith(CentralPath) && 
-                   !excludeFolders.Any(ef => dn.ToLowerInvariant() == ef.ToLowerInvariant()) &&
-                   Directory.Exists(dn) &&
-                   !Directory.EnumerateFileSystemEntries(dn).Any())
+            Log.LogMessage(MessageImportance.High, $"Deleting: {file}");
+                    
+            try
             {
-                try 
-                {
-                    Directory.Delete(dn);
-                }
-                catch (Exception ex2)
-                {
-                    Log.LogWarning($"Failed to delete folder {dn}: {ex2.Message}");
-                }
-                dn = Path.GetDirectoryName(dn);
+                // Delete obsolete central file
+                var fullPath = file.FullName;
+                file.Delete();
+                
+                // Check if we have the same obsolete file in the local node.
+                var relativePath = fullPath.Substring(di.FullName.Length).TrimStart('\\', '/');
+                var localFile = Path.Combine(LocalPath, relativePath);
+                if (File.Exists(localFile))
+                    File.Delete(localFile);
+            }
+            catch (Exception ex)
+            {
+                Log.LogWarning($"Failed to delete {file}: {ex.Message}");
             }
         }
-        catch (Exception ex)
-          {
-              Log.LogWarning($"Failed to delete {file}: {ex.Message}");
-          }
     }
+    
+    // Now clean up all empty directories at once
+    Log.LogMessage(MessageImportance.High, "Cleaning up empty directories in central location...");
+    int emptyDirsDeleted = 0;
+    
+    // Define a recursive action to delete empty directories
+    Action<DirectoryInfo> deleteEmptyDirs = null;
+    deleteEmptyDirs = (dir) => {
+        // Skip if this is an excluded folder
+        if (excludeFolders.Any(ef => dir.FullName.ToLowerInvariant().Split('\\', '/').Contains(ef.ToLowerInvariant())))
+            return;
+        
+        // Process all subdirectories first (bottom-up approach)
+        foreach (var subDir in dir.GetDirectories())
+        {
+            deleteEmptyDirs(subDir);
+        }
+        
+        // Refresh directory info (subdirectories might have been deleted)
+        dir.Refresh();
+        
+        // If the directory is empty and not the root directory, delete it
+        if (dir.GetFiles().Length == 0 && 
+            dir.GetDirectories().Length == 0 && 
+            NormalizePath(dir.FullName) != NormalizePath(CentralPath))
+        {
+            try
+            {
+                Log.LogMessage(MessageImportance.Normal, $"Deleting empty directory: {dir.FullName}");
+                dir.Delete();
+                emptyDirsDeleted++;
+            }
+            catch (Exception ex)
+            {
+                Log.LogWarning($"Failed to delete directory {dir.FullName}: {ex.Message}");
+            }
+        }
+    };
+    
+    // Start the recursive directory cleanup from the root
+    deleteEmptyDirs(di);
+    
+    Log.LogMessage(MessageImportance.High, $"Deleted {emptyDirsDeleted} empty directories from central location.");
 
-    return true;
+    Success = true;
 }
 catch (Exception ex)
 {
     Log.LogError($"Failed to cleanup central location: {ex.Message}");
-    return false;
+    Success = false;
 }
-  ]]></Code>
+
+]]></Code>
     </Task>
   </UsingTask>
 

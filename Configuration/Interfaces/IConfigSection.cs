@@ -1,5 +1,12 @@
 ﻿namespace ByteForge.Toolkit
 {
+    /*
+     *  ___ ___           __ _      ___         _   _          
+     * |_ _/ __|___ _ _  / _(_)__ _/ __| ___ __| |_(_)___ _ _  
+     *  | | (__/ _ \ ' \|  _| / _` \__ \/ -_) _|  _| / _ \ ' \ 
+     * |___\___\___/_||_|_| |_\__, |___/\___\__|\__|_\___/_||_|
+     *                        |___/                            
+     */
     /// <summary>
     /// Represents a configuration section that can be loaded and saved from the configuration root.
     /// </summary>
@@ -19,7 +26,7 @@
     /// class to interact with configuration sections.
     /// </para>
     /// </remarks>
-    internal interface IConfigurationSection
+    internal interface IConfigSection
     {
         /// <summary>
         /// Gets the value of the configuration section.
@@ -29,7 +36,7 @@
         /// section. The returned object can be of any type, as determined by the concrete
         /// implementation of the interface.
         /// <para>
-        /// For the generic version <see cref="IConfigurationSection{T}"/>, this property
+        /// For the generic version <see cref="IConfigSection{T}"/>, this property
         /// returns a strongly-typed value.
         /// </para>
         /// </remarks>
@@ -75,7 +82,7 @@
     /// </summary>
     /// <typeparam name="T">The type of the configuration section value.</typeparam>
     /// <remarks>
-    /// This generic interface extends <see cref="IConfigurationSection"/> to provide
+    /// This generic interface extends <see cref="IConfigSection"/> to provide
     /// strongly-typed access to configuration values. It's particularly useful for
     /// providing intellisense and compile-time type checking when working with
     /// configuration objects.
@@ -86,7 +93,7 @@
     /// </para>
     /// <para>
     /// The generic type parameter T is usually a class with properties decorated with
-    /// <see cref="PropertyNameAttribute"/> to map between configuration keys and
+    /// <see cref="ConfigNameAttribute"/> to map between configuration keys and
     /// class properties.
     /// </para>
     /// </remarks>
@@ -130,7 +137,7 @@
     /// }
     /// </code>
     /// </example>
-    internal interface IConfigurationSection<T> : IConfigurationSection
+    internal interface IConfigSection<T> : IConfigSection
     {
         /// <summary>
         /// Gets the value of the configuration section.
@@ -140,7 +147,7 @@
         /// represented by this section. The return type is specified by the generic
         /// type parameter T.
         /// <para>
-        /// This property hides the base <see cref="IConfigurationSection.Value"/>
+        /// This property hides the base <see cref="IConfigSection.Value"/>
         /// property and returns the same value but with the specific type T instead
         /// of object.
         /// </para>

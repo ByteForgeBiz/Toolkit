@@ -7,6 +7,13 @@ using System.Text.RegularExpressions;
 
 namespace ByteForge.Toolkit
 {
+    /*
+     *  ___       _      _____ _           ___                      
+     * |   \ __ _| |_ __|_   _(_)_ __  ___| _ \__ _ _ _ ___ ___ _ _ 
+     * | |) / _` |  _/ -_)| | | | '  \/ -_)  _/ _` | '_(_-</ -_) '_|
+     * |___/\__,_|\__\___||_| |_|_|_|_\___|_| \__,_|_| /__/\___|_|  
+     *                                                              
+     */
     /// <summary>
     /// Provides methods to parse date and time strings into <see cref="DateTime"/> objects.
     /// </summary>
@@ -26,7 +33,7 @@ namespace ByteForge.Toolkit
         /// </summary>
         public static DateTimeParser Default => _defaultInstance.Value;
 
-        private static readonly Lazy<DateTimeParser> _defaultInstance = new Lazy<DateTimeParser>(() => new DateTimeParser());
+        private static readonly Lazy<DateTimeParser> _defaultInstance = new Lazy<DateTimeParser>();
 
         private readonly ConcurrentDictionary<string, string> _successfulFormats = new ConcurrentDictionary<string, string>();
 
@@ -128,6 +135,10 @@ namespace ByteForge.Toolkit
                     return result;
                 }
 
+            // Try a last resort with DateTime.Parse
+            if (DateTime.TryParse(input, formatProvider, DateTimeStyles.None, out result))
+                return result;
+
             throw new FormatException($"Could not parse datetime: {input}");
         }
 
@@ -136,7 +147,7 @@ namespace ByteForge.Toolkit
         /// </summary>
         /// <param name="input">The date and time string to parse.</param>
         /// <param name="result">When this method returns, contains the <see cref="DateTime"/> value equivalent to the date and time contained in <paramref name="input"/>, if the conversion succeeded, or <see cref="DateTime.MinValue"/> if the conversion failed. The conversion fails if the <paramref name="input"/> parameter is null or an empty string, or does not contain a valid string representation of a date and time. This parameter is passed uninitialized.</param>
-        /// <returns><c>true</c> if the <paramref name="input"/> parameter was converted successfully; otherwise, <c>false</c>.</returns>
+        /// <returns><see langword="true" /> if the <paramref name="input"/> parameter was converted successfully; otherwise, <see langword="false" />.</returns>
         public bool TryParseValue(string input, out DateTime result) => 
             TryParseValue(input, CultureInfo.InvariantCulture, out result);
 
@@ -146,7 +157,7 @@ namespace ByteForge.Toolkit
         /// <param name="input">The date and time string to parse.</param>
         /// <param name="formatProvider">An object that supplies culture-specific formatting information about <paramref name="input"/>.</param>
         /// <param name="result">When this method returns, contains the <see cref="DateTime"/> value equivalent to the date and time contained in <paramref name="input"/>, if the conversion succeeded, or <see cref="DateTime.MinValue"/> if the conversion failed. The conversion fails if the <paramref name="input"/> parameter is null or an empty string, or does not contain a valid string representation of a date and time. This parameter is passed uninitialized.</param>
-        /// <returns><c>true</c> if the <paramref name="input"/> parameter was converted successfully; otherwise, <c>false</c>.</returns>
+        /// <returns><see langword="true" /> if the <paramref name="input"/> parameter was converted successfully; otherwise, <see langword="false" />.</returns>
         public bool TryParseValue(string input, IFormatProvider formatProvider, out DateTime result)
         {
             try
@@ -176,7 +187,7 @@ namespace ByteForge.Toolkit
         /// <param name="format">The format specifier that defines the required format of <paramref name="input"/>.</param>
         /// <param name="formatProvider">An object that supplies culture-specific formatting information about <paramref name="input"/>.</param>
         /// <param name="result">When this method returns, contains the <see cref="DateTime"/> value equivalent to the date and time contained in <paramref name="input"/>, if the conversion succeeded, or <see cref="DateTime.MinValue"/> if the conversion failed. This parameter is passed uninitialized.</param>
-        /// <returns><c>true</c> if the <paramref name="input"/> parameter was converted successfully; otherwise, <c>false</c>.</returns>
+        /// <returns><see langword="true" /> if the <paramref name="input"/> parameter was converted successfully; otherwise, <see langword="false" />.</returns>
         private bool TryParseWithCulture(string input, string format, IFormatProvider formatProvider, out DateTime result)
         {
             return DateTime.TryParseExact(input, format, formatProvider, DateTimeStyles.None, out result) ||
@@ -292,7 +303,7 @@ namespace ByteForge.Toolkit
         /// </summary>
         /// <param name="input">The date and time string to parse.</param>
         /// <param name="result">When this method returns, contains the <see cref="DateTime"/> value equivalent to the date and time contained in <paramref name="input"/>, if the conversion succeeded, or <see cref="DateTime.MinValue"/> if the conversion failed. The conversion fails if the <paramref name="input"/> parameter is null or an empty string, or does not contain a valid string representation of a date and time. This parameter is passed uninitialized.</param>
-        /// <returns><c>true</c> if the <paramref name="input"/> parameter was converted successfully; otherwise, <c>false</c>.</returns>
+        /// <returns><see langword="true" /> if the <paramref name="input"/> parameter was converted successfully; otherwise, <see langword="false" />.</returns>
         public static bool TryParse(string input, out DateTime result) => 
             Default.TryParseValue(input, out result);
 
@@ -302,7 +313,7 @@ namespace ByteForge.Toolkit
         /// <param name="input">The date and time string to parse.</param>
         /// <param name="formatProvider">An object that supplies culture-specific formatting information about <paramref name="input"/>.</param>
         /// <param name="result">When this method returns, contains the <see cref="DateTime"/> value equivalent to the date and time contained in <paramref name="input"/>, if the conversion succeeded, or <see cref="DateTime.MinValue"/> if the conversion failed. The conversion fails if the <paramref name="input"/> parameter is null or an empty string, or does not contain a valid string representation of a date and time. This parameter is passed uninitialized.</param>
-        /// <returns><c>true</c> if the <paramref name="input"/> parameter was converted successfully; otherwise, <c>false</c>.</returns>
+        /// <returns><see langword="true" /> if the <paramref name="input"/> parameter was converted successfully; otherwise, <see langword="false" />.</returns>
         public static bool TryParse(string input, IFormatProvider formatProvider, out DateTime result) => 
             Default.TryParseValue(input, formatProvider, out result);
 

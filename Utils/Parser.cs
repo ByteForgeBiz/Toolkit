@@ -7,6 +7,13 @@ using System.Threading.Tasks;
 
 namespace ByteForge.Toolkit
 {
+    /*
+     *  ___                      
+     * | _ \__ _ _ _ ___ ___ _ _ 
+     * |  _/ _` | '_(_-</ -_) '_|
+     * |_| \__,_|_| /__/\___|_|  
+     *                           
+     */
     /// <summary>
     /// Provides methods for parsing strings into various types.
     /// </summary>
@@ -19,7 +26,7 @@ namespace ByteForge.Toolkit
         /// </summary>
         public static Parser Default => _defaultInstance.Value;
 
-        private static readonly Lazy<Parser> _defaultInstance = new Lazy<Parser>(() => new Parser());
+        private static readonly Lazy<Parser> _defaultInstance = new Lazy<Parser>();
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Parser"/> class.
@@ -87,7 +94,7 @@ namespace ByteForge.Toolkit
         /// <param name="type">The type to parse the string value into.</param>
         /// <param name="value">The string value to parse.</param>
         /// <param name="result">When this method returns, contains the parsed value, if the parsing succeeded, or null if the parsing failed.</param>
-        /// <returns><c>true</c> if the parsing succeeded; otherwise, <c>false</c>.</returns>
+        /// <returns><see langword="true" /> if the parsing succeeded; otherwise, <see langword="false" />.</returns>
         public bool TryParseValue(Type type, string value, out object result)
         {
             try
@@ -108,7 +115,7 @@ namespace ByteForge.Toolkit
         /// <typeparam name="T">The type to parse the string value into.</typeparam>
         /// <param name="value">The string value to parse.</param>
         /// <param name="result">When this method returns, contains the parsed value, if the parsing succeeded, or the default value of the type if the parsing failed.</param>
-        /// <returns><c>true</c> if the parsing succeeded; otherwise, <c>false</c>.</returns>
+        /// <returns><see langword="true" /> if the parsing succeeded; otherwise, <see langword="false" />.</returns>
         public bool TryParseValue<T>(string value, out T result)
         {
             try
@@ -142,7 +149,7 @@ namespace ByteForge.Toolkit
         /// Determines whether the specified type is a known type that can be parsed.
         /// </summary>
         /// <param name="type">The type to check.</param>
-        /// <returns><c>true</c> if the type is a known type; otherwise, <c>false</c>.</returns>
+        /// <returns><see langword="true" /> if the type is a known type; otherwise, <see langword="false" />.</returns>
         public static bool IsKnownType(Type type)
         {
             return Default._typeParsers.ContainsKey(type);
@@ -176,7 +183,7 @@ namespace ByteForge.Toolkit
         /// <param name="type">The type to parse the string value into.</param>
         /// <param name="value">The string value to parse.</param>
         /// <param name="result">When this method returns, contains the parsed value, if the parsing succeeded, or null if the parsing failed.</param>
-        /// <returns><c>true</c> if the parsing succeeded; otherwise, <c>false</c>.</returns>
+        /// <returns><see langword="true" /> if the parsing succeeded; otherwise, <see langword="false" />.</returns>
         public static bool TryParse(Type type, string value, out object result)
         {
             return Default.TryParseValue(type, value, out result);
@@ -188,7 +195,7 @@ namespace ByteForge.Toolkit
         /// <typeparam name="T">The type to parse the string value into.</typeparam>
         /// <param name="value">The string value to parse.</param>
         /// <param name="result">When this method returns, contains the parsed value, if the parsing succeeded, or the default value of the type if the parsing failed.</param>
-        /// <returns><c>true</c> if the parsing succeeded; otherwise, <c>false</c>.</returns>
+        /// <returns><see langword="true" /> if the parsing succeeded; otherwise, <see langword="false" />.</returns>
         public static bool TryParse<T>(string value, out T result)
         {
             return Default.TryParseValue<T>(value, out result);

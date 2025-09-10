@@ -3,6 +3,13 @@ using System;
 
 namespace ByteForge.Toolkit.Logging
 {
+    /*
+     *   ___                  _     _                           
+     *  / __|___ _ _  ___ ___| |___| |   ___  __ _ __ _ ___ _ _ 
+     * | (__/ _ \ ' \(_-</ _ \ / -_) |__/ _ \/ _` / _` / -_) '_|
+     *  \___\___/_||_/__/\___/_\___|____\___/\__, \__, \___|_|  
+     *                                       |___/|___/         
+     */
     /// <summary>
     /// Console logger that logs messages to the console.
     /// </summary>
@@ -24,7 +31,7 @@ namespace ByteForge.Toolkit.Logging
         /// Gets or sets a value indicating whether to show the timestamp.
         /// </summary>
         /// <remarks>
-        /// If <see cref="ShowMessageOnly"/> is <c>true</c>, this property is ignored.
+        /// If <see cref="ShowMessageOnly"/> is <see langword="true" />, this property is ignored.
         /// </remarks>
         public bool ShowTimestamp { get; set; }
 
@@ -32,7 +39,7 @@ namespace ByteForge.Toolkit.Logging
         /// Gets or sets a value indicating whether to show the stack trace.
         /// </summary>
         /// <remarks>
-        /// If <see cref="ShowMessageOnly"/> is <c>true</c>, this property is ignored.
+        /// If <see cref="ShowMessageOnly"/> is <see langword="true" />, this property is ignored.
         /// </remarks>
         public bool ShowStackTrace { get; set; }
 
