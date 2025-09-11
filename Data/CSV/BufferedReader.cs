@@ -97,5 +97,18 @@ namespace ByteForge.Toolkit
         {
             _reader.Dispose();
         }
+
+        /// <summary>
+        /// Retrieves the first character from the next line in the buffer without removing it.
+        /// </summary>
+        /// <returns>The first character of the next line in the buffer, or <see langword="'\0'"/> if the buffer is empty or the
+        /// next line is empty.</returns>
+        internal char Peek()
+        {
+            int value = _reader.Peek();
+            if (value == -1)
+                return '\0';
+            return (char)value;
+        }
     }
 }

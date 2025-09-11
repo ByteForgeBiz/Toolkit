@@ -37,12 +37,13 @@ namespace ByteForge.Toolkit
             if (string.IsNullOrEmpty(url1) && string.IsNullOrEmpty(url2))
                 return string.Empty;
 
-            if (rxUrl.IsMatch(url2))
-                return url2;
+            var m = rxUrl.Match(url2);
+            if (m.Success)
+                return (m.Value == "/" ? "/" : "") + url2.Trim('/');
 
             // combine both parts and remove any duplicate slashes
             var result = $"{url1.TrimEnd('/')}/{url2.TrimStart('/')}".Replace('\\', '/');
-            result = result.Replace("//", "/");
+            result = result.Replace("//", "/").Trim('/');
 
             return rxUrlWrong.Replace(result, "$1/");
         }

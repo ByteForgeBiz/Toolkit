@@ -1,0 +1,4 @@
+Name,Age,Email
+John Doe,30,john@example.com,extra_field
+Jane Smith,25
+Bob Johnson,35,bob@example.com,city,too_many_fields

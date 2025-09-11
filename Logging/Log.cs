@@ -64,6 +64,11 @@ namespace ByteForge.Toolkit
             this.MinLogLevel = Settings.TraceLogLevel;
         }
 
+        /// <summary>
+        /// Gets a value indicating whether the static Log instance has been initialized.
+        /// </summary>
+        public static bool IsInitialized => _instance != null;
+
         // Add these properties to access session logger features
         /// <summary>
         /// Gets the session file logger instance if session logging is enabled.

@@ -167,7 +167,7 @@ namespace ByteForge.Toolkit
             }
             catch
             {
-                result = default(DateTime);
+                result = default;
                 return false;
             }
         }

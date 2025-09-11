@@ -301,6 +301,7 @@ try
     {
         ".git",
         ".vs",
+        "tests"
     }.Concat(ExcludeFolders ?? Array.Empty<string>())
      .Select(f => Path.GetFileName(f.TrimEnd('\\', '/')))
      .Distinct()

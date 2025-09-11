@@ -168,7 +168,9 @@
     <Compile Include="Data\Database\DBAccess.ScriptExecution.cs" />
     <Compile Include="Data\Database\TypeConverter.cs" />
     <Compile Include="Logging\Implementations\ConsoleLogger.cs" />
+    <Compile Include="Logging\Implementations\NullLogger.cs" />
     <Compile Include="Logging\Implementations\SessionFileLogger.cs" />
+    <Compile Include="Logging\Implementations\StaticLoggerAdapter.cs" />
     <Compile Include="Logging\Models\AsyncOptions.cs" />
     <Compile Include="Logging\Models\SessionFileLoggerOptions.cs" />
     <Compile Include="Mail\AttachmentProcessResult.cs" />

@@ -44,11 +44,6 @@ namespace ByteForge.Toolkit
         private static readonly object _lock = new object();
 
         /// <summary>
-        /// Indicates whether the configuration has been initialized.
-        /// </summary>
-        private static bool _initialized;
-
-        /// <summary>
         /// Indicates whether the configuration was manually initialized.
         /// </summary>
         private static bool _manuallyInitialized;
@@ -71,6 +66,11 @@ namespace ByteForge.Toolkit
         /// Gets the root of the configuration.
         /// </summary>
         public static IConfigurationRoot Root => Obj.InternalRoot;
+
+        /// <summary>
+        /// Gets a value indicating whether the configuration has been initialized.
+        /// </summary>
+        public static bool IsInitialized { get; private set; }
 
         // ===========================
         // Public Static Methods
@@ -117,7 +117,7 @@ namespace ByteForge.Toolkit
                 throw new ArgumentNullException(nameof(directory));
             if (string.IsNullOrEmpty(fileName))
                 throw new ArgumentNullException(nameof(fileName));
-            if (_initialized)
+            if (IsInitialized)
                 throw new InvalidOperationException("The configuration settings have already been initialized.");
 
             _manuallyInitialized = true;
@@ -254,7 +254,7 @@ namespace ByteForge.Toolkit
         {
             lock (_lock)
             {
-                if (_initialized)
+                if (IsInitialized)
                     throw new InvalidOperationException("The configuration settings have already been initialized.");
 
                 if (!_manuallyInitialized && string.IsNullOrEmpty(_configFile))
@@ -272,7 +272,7 @@ namespace ByteForge.Toolkit
                     .AddIniFile(_configFile);
 
                 _root = builder.Build();
-                _initialized = true;
+                IsInitialized = true;
             }
         }
 

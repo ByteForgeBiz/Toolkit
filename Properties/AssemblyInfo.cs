@@ -1,4 +1,5 @@
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 // General Information about an assembly is controlled through the following
@@ -32,3 +33,6 @@ using System.Runtime.InteropServices;
 // by using the '*' as shown below:
 [assembly: AssemblyVersion("8.28.0.0910")]
 [assembly: AssemblyFileVersion("8.28.0.0910")]
+
+// Make internal members visible to the test assembly
+[assembly: InternalsVisibleTo("ByteForge.Toolkit.Tests")]

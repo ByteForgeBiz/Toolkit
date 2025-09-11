@@ -1,0 +1,4 @@
+"Name","Age","Description","Quote"
+"John ""Johnny"" Doe",30,"Line1\nLine2","He said, ""Hello"""
+"Jane O'Connor",25,"Tab\tSeparated","Single 'quote'"
+"José González",35,"Special: àáâãäåæç","Unicode: 中文"
