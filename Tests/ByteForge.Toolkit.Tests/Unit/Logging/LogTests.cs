@@ -1,6 +1,7 @@
 using ByteForge.Toolkit.Logging;
 using ByteForge.Toolkit.Tests.Helpers;
 using FluentAssertions;
+using System.Reflection;
 
 namespace ByteForge.Toolkit.Tests.Unit.Logging
 {
@@ -12,9 +13,16 @@ namespace ByteForge.Toolkit.Tests.Unit.Logging
         private string _originalLogFile;
         private LogLevel _originalLogLevel;
 
+        static LogTests()
+        {
+            var configPath = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "TestData", "Configuration", "basic_config.ini");
+            Configuration.Initialize(configPath);
+        }
+
         [TestInitialize]
         public void TestInitialize()
         {
+
             // Store original settings to restore later
             _originalLogFile = Log.CurrentLogFile;
             _originalLogLevel = Log.LogLevel;

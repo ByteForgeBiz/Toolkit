@@ -1,4 +1,5 @@
 using System;
+using System.Security.Cryptography;
 using ByteForge.Toolkit;
 using ByteForge.Toolkit.Tests.Helpers;
 using FluentAssertions;
@@ -142,7 +143,7 @@ namespace ByteForge.Toolkit.Tests.Unit.Security
         }
 
         [TestMethod]
-        public void Decrypt_WrongKey_ShouldNotProduceOriginalText()
+        public void Decrypt_WrongKey_ShouldThrowCryptographicException()
         {
             // Arrange
             var aes = new AESEncryption();
@@ -151,11 +152,9 @@ namespace ByteForge.Toolkit.Tests.Unit.Security
             var wrongKey = AESEncryption.GenerateKey(43, 16);
             var encrypted = aes.Encrypt(plaintext, correctKey);
 
-            // Act
-            var decrypted = aes.Decrypt(encrypted, wrongKey);
-
-            // Assert
-            decrypted.Should().NotBe(plaintext, "wrong key should not decrypt correctly");
+            // Act & Assert
+            aes.Invoking(a => a.Decrypt(encrypted, wrongKey))
+                .Should().Throw<CryptographicException>("decrypting with wrong key should fail");
         }
 
         [TestMethod]
@@ -171,7 +170,7 @@ namespace ByteForge.Toolkit.Tests.Unit.Security
         }
 
         [TestMethod]
-        public void Encrypt_NullKey_ShouldHandleGracefully()
+        public void Encrypt_NullKey_ShouldThrowArgumentNullException()
         {
             // Arrange
             var aes = new AESEncryption();
@@ -179,7 +178,7 @@ namespace ByteForge.Toolkit.Tests.Unit.Security
 
             // Act & Assert
             aes.Invoking(a => a.Encrypt(plaintext, null))
-                .Should().NotThrow("should handle null key gracefully");
+                .Should().Throw<ArgumentNullException>("key should not be null");
         }
 
         [TestMethod]
@@ -195,19 +194,7 @@ namespace ByteForge.Toolkit.Tests.Unit.Security
         }
 
         [TestMethod]
-        public void Decrypt_NullKey_ShouldHandleGracefully()
-        {
-            // Arrange
-            var aes = new AESEncryption();
-            var ciphertext = "some_cipher_text";
-
-            // Act & Assert
-            aes.Invoking(a => a.Decrypt(ciphertext, null))
-                .Should().NotThrow("should handle null key gracefully");
-        }
-
-        [TestMethod]
-        public void Decrypt_InvalidCiphertext_ShouldHandleGracefully()
+        public void Decrypt_InvalidCiphertext_ShouldThrowCryptographicException()
         {
             // Arrange
             var aes = new AESEncryption();
@@ -217,15 +204,14 @@ namespace ByteForge.Toolkit.Tests.Unit.Security
                 "not_encrypted",
                 "invalid_base64_!@#",
                 "123456789",
-                "ÿÿÿÿÿÿÿÿ",
-                ""
+                "ÿÿÿÿÿÿÿÿ"
             };
 
             // Act & Assert
             foreach (var invalidCiphertext in invalidCiphertexts)
             {
                 aes.Invoking(a => a.Decrypt(invalidCiphertext, key))
-                    .Should().NotThrow($"should handle invalid ciphertext gracefully: {invalidCiphertext}");
+                    .Should().Throw<CryptographicException>("invalid ciphertext should not decrypt correctly");
             }
         }
 

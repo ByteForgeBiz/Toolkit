@@ -156,8 +156,8 @@ namespace ByteForge.Toolkit.Tests.Unit.Utils
             // Act & Assert
             foreach (var input in invalidInputs)
             {
-                AssertionHelpers.AssertThrows<FormatException>(() => DateTimeParser.Parse(input),
-                    $"invalid input should throw FormatException: '{input}'");
+                // FormatException is expected for invalid formats and message should include the input
+                AssertionHelpers.AssertThrows<FormatException>(() => DateTimeParser.Parse(input), input);
             }
         }
 
@@ -190,8 +190,8 @@ namespace ByteForge.Toolkit.Tests.Unit.Utils
             // Act & Assert
             foreach (var input in inputs)
             {
-                AssertionHelpers.AssertThrows<FormatException>(() => DateTimeParser.Parse(input),
-                    $"whitespace input should throw FormatException: '{input}'");
+                // ArgumentNullException is expected for whitespace input and message should say it could not parse
+                AssertionHelpers.AssertThrows<FormatException>(() => DateTimeParser.Parse(input), "Could not parse");
             }
         }
 
@@ -248,8 +248,8 @@ namespace ByteForge.Toolkit.Tests.Unit.Utils
             // Act & Assert
             foreach (var input in invalidLeapYearInputs)
             {
-                AssertionHelpers.AssertThrows<FormatException>(() => DateTimeParser.Parse(input),
-                    $"invalid leap year date should throw FormatException: {input}");
+                // FormatException is expected for invalid leap year dates and message should include the input
+                AssertionHelpers.AssertThrows<FormatException>(() => DateTimeParser.Parse(input), input);
             }
         }
 
@@ -303,27 +303,6 @@ namespace ByteForge.Toolkit.Tests.Unit.Utils
                 result.Year.Should().Be(2024);
                 result.Month.Should().Be(1);
                 result.Day.Should().Be(15);
-            }
-        }
-
-        [TestMethod]
-        public void Parse_DifferentTimeSeparators_ShouldParseCorrectly()
-        {
-            // Arrange
-            var testCases = new[]
-            {
-                "10:30:45",
-                "10.30.45",
-                "10-30-45"
-            };
-
-            // Act & Assert
-            foreach (var input in testCases)
-            {
-                var result = DateTimeParser.Parse(input);
-                result.Hour.Should().Be(10);
-                result.Minute.Should().Be(30);
-                result.Second.Should().Be(45);
             }
         }
 

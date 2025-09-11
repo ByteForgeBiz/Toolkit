@@ -1,4 +1,5 @@
 using System;
+using System.Security.Cryptography;
 using ByteForge.Toolkit;
 using ByteForge.Toolkit.Tests.Helpers;
 using FluentAssertions;
@@ -176,7 +177,7 @@ namespace ByteForge.Toolkit.Tests.Unit.Security
         }
 
         [TestMethod]
-        public void Decrypt_WrongEncryptor_ShouldNotProduceOriginalText()
+        public void Decrypt_WrongEncryptor_ShouldThrowCryptographicException()
         {
             // Arrange
             var encryptor1 = new Encryptor(13, 16);
@@ -184,11 +185,9 @@ namespace ByteForge.Toolkit.Tests.Unit.Security
             var plainText = "Secret message";
             var encrypted = encryptor1.Encrypt(plainText);
 
-            // Act
-            var decrypted = encryptor2.Decrypt(encrypted);
-
-            // Assert
-            decrypted.Should().NotBe(plainText, "wrong encryptor should not decrypt correctly");
+            // Act & Assert
+            encryptor2.Invoking(e => e.Decrypt(encrypted))
+                .Should().Throw<CryptographicException>("wrong encryptor should not decrypt correctly");
         }
 
         [TestMethod]
@@ -291,7 +290,7 @@ namespace ByteForge.Toolkit.Tests.Unit.Security
         }
 
         [TestMethod]
-        public void InvalidCipherText_ShouldHandleGracefully()
+        public void InvalidCipherText_ShouldThrowCryptographicException()
         {
             // Arrange
             var encryptor = new Encryptor(13, 16);
@@ -307,7 +306,7 @@ namespace ByteForge.Toolkit.Tests.Unit.Security
             foreach (var invalidText in invalidCipherTexts)
             {
                 encryptor.Invoking(e => e.Decrypt(invalidText))
-                    .Should().NotThrow($"should handle invalid cipher text gracefully: {invalidText}");
+                    .Should().Throw<CryptographicException>($"invalid cipher text '{invalidText}' should throw");
             }
         }
 

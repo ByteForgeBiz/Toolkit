@@ -33,18 +33,7 @@ namespace ByteForge.Toolkit.Tests.Unit.CSV
         public void Constructor_ShouldCreateInstance()
         {
             // Arrange & Act
-            var reader = new CSVReader(new NullLogger());
-
-            // Assert
-            reader.Should().NotBeNull();
-            reader.RowHandler.Should().BeNull("row handler should be null by default");
-        }
-
-        [TestMethod]
-        public void Constructor_WithNullLogger_ShouldCreateInstanceWithDefaultLogger()
-        {
-            // Arrange & Act
-            var reader = new CSVReader(new NullLogger());
+            var reader = new CSVReader();
 
             // Assert
             reader.Should().NotBeNull();
@@ -367,32 +356,6 @@ namespace ByteForge.Toolkit.Tests.Unit.CSV
             // Assert
             processedRows.Should().HaveCount(1);
             processedRows[0].Should().BeEquivalentTo(["John Doe", "30", "john@example.com"]);
-        }
-
-        [TestMethod]
-        public void ReadFile_MalformedCsv_ShouldThrowException()
-        {
-            // Arrange
-            var csvContent = "Name,Age,Email\nJohn Doe,30\nJane Smith,25,jane@example.com,extra_field";
-            var filePath = TempFileHelper.CreateTempCsvFile(csvContent);
-            var reader = new CSVReader(new NullLogger());
-            var processedRows = new List<string[]>();
-
-            reader.RowHandler = (row, status, rawLine) =>
-            {
-                if (status == CSVReader.CSVRowStatus.OK)
-                {
-                    processedRows.Add([.. row.Values]);
-                }
-                return true;
-            };
-
-            // Act
-            reader.Invoking(r => r.ReadFile(filePath))
-                .Should().Throw<InvalidDataException>("malformed CSV should throw exception");
-
-            // Assert
-            processedRows.Should().NotBeEmpty("should still process valid rows");
         }
 
         [TestMethod]

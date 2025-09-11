@@ -25,4 +25,17 @@
     <ProjectReference Include="..\..\ByteForge.Toolkit.csproj" />
   </ItemGroup>
 
+
+  <ItemGroup>
+    <None Update="TestData\Configuration\basic_config.ini">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="TestData\Configuration\invalid_config.ini">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="TestData\Configuration\test_config.ini">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>

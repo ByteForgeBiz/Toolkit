@@ -19,7 +19,7 @@ namespace ByteForge.Toolkit
     /// </summary>
     public class Log : CompositeLogger
     {
-        private LogLevel _PreviousConsoleLoggerLevel = LogLevel.Verbose;
+        private LogLevel? _PreviousConsoleLoggerLevel = LogLevel.Verbose;
         private readonly FileLogger fileLogger;
         private readonly ConsoleLogger consoleLogger = new ConsoleLogger()
         {
@@ -118,14 +118,20 @@ namespace ByteForge.Toolkit
         /// <summary>
         /// Enables console logging.
         /// </summary>
-        public static void EnableConsoleLogging() => Instance.consoleLogger.MinLogLevel = Instance._PreviousConsoleLoggerLevel;
+        public static void EnableConsoleLogging()
+        {
+            Instance.consoleLogger.MinLogLevel = Instance._PreviousConsoleLoggerLevel ?? LogLevel.Verbose;
+            Instance._PreviousConsoleLoggerLevel = null;
+        }
 
         /// <summary>
         /// Disables console logging.
         /// </summary>
         public static void DisableConsoleLogging()
         {
-            Instance._PreviousConsoleLoggerLevel = Instance.consoleLogger.MinLogLevel;
+            if (!Instance._PreviousConsoleLoggerLevel.HasValue)
+                Instance._PreviousConsoleLoggerLevel = Instance.consoleLogger.MinLogLevel;
+
             Instance.consoleLogger.MinLogLevel = LogLevel.None;
         }
 

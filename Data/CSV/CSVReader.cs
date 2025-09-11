@@ -199,7 +199,7 @@ namespace ByteForge.Toolkit
 #pragma warning restore CS0618 // Type or member is obsolete
 
             // If using RowHandler, we can choose to not throw on malformed rows
-            var throwExceptions = RowHandler != null;
+            var throwExceptions = RowHandler == null;
             using var streamReader = new StreamReader(stream);
             using var bufferedReader = new BufferedReader(streamReader);
 

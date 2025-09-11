@@ -1,5 +1,6 @@
 ﻿// ILogger.cs
 using System;
+using System.Runtime.InteropServices;
 
 namespace ByteForge.Toolkit.Logging
 {
@@ -50,16 +51,21 @@ namespace ByteForge.Toolkit.Logging
         /// <returns>The console color for the log level.</returns>
         private static ConsoleColor GetColorForLogLevel(LogLevel level)
         {
-            switch (level)
+            return level switch
             {
-                case LogLevel.Verbose: return ConsoleColor.Gray;
-                case LogLevel.Debug: return ConsoleColor.Gray;
-                case LogLevel.Info: return ConsoleColor.White;
-                case LogLevel.Warning: return ConsoleColor.Yellow;
-                case LogLevel.Error: return ConsoleColor.Red;
-                case LogLevel.Critical: return ConsoleColor.DarkRed;
-                default: return ConsoleColor.White;
-            }
+                LogLevel.Verbose => ConsoleColor.Gray,
+                LogLevel.Debug => ConsoleColor.Gray,
+                LogLevel.Info => ConsoleColor.White,
+                LogLevel.Warning => ConsoleColor.Yellow,
+                LogLevel.Error => ConsoleColor.Red,
+                LogLevel.Critical => ConsoleColor.DarkRed,
+                _ => ConsoleColor.White,
+            };
+        }
+
+        private bool HasConsole()
+        {
+            return GetConsoleWindow() != IntPtr.Zero;
         }
 
         /// <summary>
@@ -68,7 +74,7 @@ namespace ByteForge.Toolkit.Logging
         /// <param name="entry">The log entry to record.</param>
         protected internal override void RecordLogEntry(LogEntry entry)
         {
-            if (entry.Level < MinLogLevel)
+            if (entry.Level < MinLogLevel || !HasConsole())
                 return;
 
             lock (_lock)
@@ -97,5 +103,8 @@ namespace ByteForge.Toolkit.Logging
                 Console.ForegroundColor = originalColor;
             }
         }
+
+        [DllImport("kernel32.dll")]
+        private static extern IntPtr GetConsoleWindow();
     }
 }

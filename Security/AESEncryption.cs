@@ -1,6 +1,7 @@
 ﻿using Microsoft.VisualBasic;
 using System;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Text;
 
 namespace ByteForge.Toolkit
@@ -740,14 +741,21 @@ namespace ByteForge.Toolkit
             if (string.IsNullOrEmpty(Data))
                 return string.Empty;
 
-            var Pass = Encoding.Unicode.GetBytes(Key);
+            try
+            {
+                var Pass = Encoding.Unicode.GetBytes(Key);
 
-            var ByteIn = Enumerable.Range(0, Data.Length)
-                             .Where(x => x % 2 == 0)
-                             .Select(x => Convert.ToByte(Data.Substring(x, 2), 16))
-                             .ToArray();
-            var ByteOut = DecryptBytes(ByteIn, Pass);
-            return Encoding.Unicode.GetString(ByteOut);
+                var ByteIn = Enumerable.Range(0, Data.Length)
+                                 .Where(x => x % 2 == 0)
+                                 .Select(x => Convert.ToByte(Data.Substring(x, 2), 16))
+                                 .ToArray();
+                var ByteOut = DecryptBytes(ByteIn, Pass);
+                return Encoding.Unicode.GetString(ByteOut);
+            }
+            catch (Exception ex)
+            {
+                throw new CryptographicException("Decryption failed. The data may be corrupted or the key may be incorrect.", ex);
+            }
         }
 
         /// <summary>
