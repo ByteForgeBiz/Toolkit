@@ -10,6 +10,12 @@ namespace ByteForge.Toolkit.Tests.Unit.Utils
     [TestCategory("Utils")]
     public class StringUtilTests
     {
+        /// <summary>
+        /// Verifies that EscapeForJavaScript returns an empty string for null input.
+        /// </summary>
+        /// <remarks>
+        /// Ensures null input is handled gracefully, preventing exceptions.
+        /// </remarks>
         [TestMethod]
         public void EscapeForJavaScript_NullInput_ShouldReturnEmptyString()
         {
@@ -23,6 +29,12 @@ namespace ByteForge.Toolkit.Tests.Unit.Utils
             result.Should().BeEmpty();
         }
 
+        /// <summary>
+        /// Verifies that EscapeForJavaScript returns an empty string for empty input.
+        /// </summary>
+        /// <remarks>
+        /// Ensures empty input is handled gracefully, preventing exceptions.
+        /// </remarks>
         [TestMethod]
         public void EscapeForJavaScript_EmptyInput_ShouldReturnEmptyString()
         {
@@ -36,6 +48,12 @@ namespace ByteForge.Toolkit.Tests.Unit.Utils
             result.Should().BeEmpty();
         }
 
+        /// <summary>
+        /// Verifies that EscapeForJavaScript returns unchanged text for simple input.
+        /// </summary>
+        /// <remarks>
+        /// Ensures normal text is not unnecessarily escaped.
+        /// </remarks>
         [TestMethod]
         public void EscapeForJavaScript_SimpleText_ShouldReturnUnchanged()
         {
@@ -49,6 +67,12 @@ namespace ByteForge.Toolkit.Tests.Unit.Utils
             result.Should().Be("Hello World");
         }
 
+        /// <summary>
+        /// Verifies that EscapeForJavaScript escapes backslashes correctly.
+        /// </summary>
+        /// <remarks>
+        /// Ensures special characters are escaped for safe JavaScript usage.
+        /// </remarks>
         [TestMethod]
         public void EscapeForJavaScript_Backslashes_ShouldEscapeCorrectly()
         {
@@ -63,6 +87,12 @@ namespace ByteForge.Toolkit.Tests.Unit.Utils
             AssertionHelpers.AssertJavaScriptEscaping(input, result);
         }
 
+        /// <summary>
+        /// Verifies that EscapeForJavaScript escapes single quotes correctly.
+        /// </summary>
+        /// <remarks>
+        /// Ensures single quotes are escaped for safe JavaScript usage.
+        /// </remarks>
         [TestMethod]
         public void EscapeForJavaScript_SingleQuotes_ShouldEscapeCorrectly()
         {
@@ -77,6 +107,12 @@ namespace ByteForge.Toolkit.Tests.Unit.Utils
             AssertionHelpers.AssertJavaScriptEscaping(input, result);
         }
 
+        /// <summary>
+        /// Verifies that EscapeForJavaScript escapes double quotes correctly.
+        /// </summary>
+        /// <remarks>
+        /// Ensures double quotes are escaped for safe JavaScript usage.
+        /// </remarks>
         [TestMethod]
         public void EscapeForJavaScript_DoubleQuotes_ShouldEscapeCorrectly()
         {
@@ -91,6 +127,12 @@ namespace ByteForge.Toolkit.Tests.Unit.Utils
             AssertionHelpers.AssertJavaScriptEscaping(input, result);
         }
 
+        /// <summary>
+        /// Verifies that EscapeForJavaScript escapes newlines correctly.
+        /// </summary>
+        /// <remarks>
+        /// Ensures newlines are escaped for safe JavaScript usage.
+        /// </remarks>
         [TestMethod]
         public void EscapeForJavaScript_Newlines_ShouldEscapeCorrectly()
         {
@@ -105,6 +147,12 @@ namespace ByteForge.Toolkit.Tests.Unit.Utils
             AssertionHelpers.AssertJavaScriptEscaping(input, result);
         }
 
+        /// <summary>
+        /// Verifies that EscapeForJavaScript escapes carriage returns correctly.
+        /// </summary>
+        /// <remarks>
+        /// Ensures carriage returns are escaped for safe JavaScript usage.
+        /// </remarks>
         [TestMethod]
         public void EscapeForJavaScript_CarriageReturns_ShouldEscapeCorrectly()
         {
@@ -119,6 +167,12 @@ namespace ByteForge.Toolkit.Tests.Unit.Utils
             AssertionHelpers.AssertJavaScriptEscaping(input, result);
         }
 
+        /// <summary>
+        /// Verifies that EscapeForJavaScript escapes tabs correctly.
+        /// </summary>
+        /// <remarks>
+        /// Ensures tabs are escaped for safe JavaScript usage.
+        /// </remarks>
         [TestMethod]
         public void EscapeForJavaScript_Tabs_ShouldEscapeCorrectly()
         {
@@ -133,6 +187,12 @@ namespace ByteForge.Toolkit.Tests.Unit.Utils
             AssertionHelpers.AssertJavaScriptEscaping(input, result);
         }
 
+        /// <summary>
+        /// Verifies that EscapeForJavaScript escapes backspace characters correctly.
+        /// </summary>
+        /// <remarks>
+        /// Ensures backspace is escaped for safe JavaScript usage.
+        /// </remarks>
         [TestMethod]
         public void EscapeForJavaScript_Backspace_ShouldEscapeCorrectly()
         {
@@ -147,6 +207,12 @@ namespace ByteForge.Toolkit.Tests.Unit.Utils
             AssertionHelpers.AssertJavaScriptEscaping(input, result);
         }
 
+        /// <summary>
+        /// Verifies that EscapeForJavaScript escapes form feed characters correctly.
+        /// </summary>
+        /// <remarks>
+        /// Ensures form feed is escaped for safe JavaScript usage.
+        /// </remarks>
         [TestMethod]
         public void EscapeForJavaScript_FormFeed_ShouldEscapeCorrectly()
         {
@@ -161,6 +227,12 @@ namespace ByteForge.Toolkit.Tests.Unit.Utils
             AssertionHelpers.AssertJavaScriptEscaping(input, result);
         }
 
+        /// <summary>
+        /// Verifies that EscapeForJavaScript escapes Windows line endings correctly.
+        /// </summary>
+        /// <remarks>
+        /// Ensures Windows line endings are escaped for cross-platform compatibility.
+        /// </remarks>
         [TestMethod]
         public void EscapeForJavaScript_WindowsLineEndings_ShouldEscapeCorrectly()
         {
@@ -175,6 +247,12 @@ namespace ByteForge.Toolkit.Tests.Unit.Utils
             AssertionHelpers.AssertJavaScriptEscaping(input, result);
         }
 
+        /// <summary>
+        /// Verifies that EscapeForJavaScript escapes mixed special characters correctly.
+        /// </summary>
+        /// <remarks>
+        /// Ensures all special characters are escaped for safe JavaScript usage.
+        /// </remarks>
         [TestMethod]
         public void EscapeForJavaScript_MixedSpecialCharacters_ShouldEscapeAllCorrectly()
         {
@@ -189,6 +267,12 @@ namespace ByteForge.Toolkit.Tests.Unit.Utils
             AssertionHelpers.AssertJavaScriptEscaping(input, result);
         }
 
+        /// <summary>
+        /// Verifies that EscapeForJavaScript does not escape Unicode characters.
+        /// </summary>
+        /// <remarks>
+        /// Ensures Unicode is preserved for internationalization.
+        /// </remarks>
         [TestMethod]
         public void EscapeForJavaScript_UnicodeCharacters_ShouldNotEscape()
         {
@@ -202,6 +286,12 @@ namespace ByteForge.Toolkit.Tests.Unit.Utils
             result.Should().Be("Unicode: 你好世界 🌍", "Unicode characters should not be escaped");
         }
 
+        /// <summary>
+        /// Verifies that EscapeForJavaScript escapes only special characters.
+        /// </summary>
+        /// <remarks>
+        /// Ensures correct escaping for input containing only special characters.
+        /// </remarks>
         [TestMethod]
         public void EscapeForJavaScript_OnlySpecialCharacters_ShouldEscapeAll()
         {
@@ -216,6 +306,12 @@ namespace ByteForge.Toolkit.Tests.Unit.Utils
             AssertionHelpers.AssertJavaScriptEscaping(input, result);
         }
 
+        /// <summary>
+        /// Verifies that EscapeForJavaScript escapes repeated characters correctly.
+        /// </summary>
+        /// <remarks>
+        /// Ensures correct escaping for input with repeated special characters.
+        /// </remarks>
         [TestMethod]
         public void EscapeForJavaScript_RepeatedCharacters_ShouldEscapeAll()
         {
@@ -230,6 +326,12 @@ namespace ByteForge.Toolkit.Tests.Unit.Utils
             AssertionHelpers.AssertJavaScriptEscaping(input, result);
         }
 
+        /// <summary>
+        /// Verifies that EscapeForJavaScript escapes long strings correctly.
+        /// </summary>
+        /// <remarks>
+        /// Ensures performance and correctness for large input.
+        /// </remarks>
         [TestMethod]
         public void EscapeForJavaScript_LongString_ShouldEscapeCorrectly()
         {
@@ -245,6 +347,12 @@ namespace ByteForge.Toolkit.Tests.Unit.Utils
             result.Length.Should().Be(4000, "each character should be escaped, doubling the length");
         }
 
+        /// <summary>
+        /// Verifies that EscapeForJavaScript escapes JSON-like strings correctly.
+        /// </summary>
+        /// <remarks>
+        /// Ensures correct escaping for structured data formats.
+        /// </remarks>
         [TestMethod]
         public void EscapeForJavaScript_JsonLikeString_ShouldEscapeCorrectly()
         {
@@ -259,6 +367,12 @@ namespace ByteForge.Toolkit.Tests.Unit.Utils
             AssertionHelpers.AssertJavaScriptEscaping(input, result);
         }
 
+        /// <summary>
+        /// Verifies that EscapeForJavaScript escapes JavaScript code correctly.
+        /// </summary>
+        /// <remarks>
+        /// Ensures code snippets are safely escaped for embedding.
+        /// </remarks>
         [TestMethod]
         public void EscapeForJavaScript_JavaScriptCode_ShouldEscapeCorrectly()
         {
@@ -273,6 +387,12 @@ namespace ByteForge.Toolkit.Tests.Unit.Utils
             AssertionHelpers.AssertJavaScriptEscaping(input, result);
         }
 
+        /// <summary>
+        /// Verifies that EscapeForJavaScript handles control characters gracefully.
+        /// </summary>
+        /// <remarks>
+        /// Ensures control characters do not cause exceptions or crashes.
+        /// </remarks>
         [TestMethod]
         public void EscapeForJavaScript_ControlCharacters_ShouldHandleGracefully()
         {
@@ -288,6 +408,12 @@ namespace ByteForge.Toolkit.Tests.Unit.Utils
             // but it should not throw an exception
         }
 
+        /// <summary>
+        /// Verifies that EscapeForJavaScript escapes backslashes before other characters.
+        /// </summary>
+        /// <remarks>
+        /// Ensures correct escape order for safe JavaScript usage.
+        /// </remarks>
         [TestMethod]
         public void EscapeForJavaScript_EscapeOrder_ShouldEscapeBackslashesFirst()
         {
@@ -301,6 +427,12 @@ namespace ByteForge.Toolkit.Tests.Unit.Utils
             result.Should().Be("\\\\n", "backslash should be escaped first, then n remains as is");
         }
 
+        /// <summary>
+        /// Performance test for escaping large strings.
+        /// </summary>
+        /// <remarks>
+        /// Ensures escaping logic is efficient for large input.
+        /// </remarks>
         [TestMethod]
         public void EscapeForJavaScript_Performance_ShouldHandleLargeStrings()
         {
@@ -320,6 +452,12 @@ namespace ByteForge.Toolkit.Tests.Unit.Utils
             result.Should().Contain("\\\\");
         }
 
+        /// <summary>
+        /// Verifies that EscapeForJavaScript escapes special whitespace characters.
+        /// </summary>
+        /// <remarks>
+        /// Ensures whitespace is handled correctly for JavaScript embedding.
+        /// </remarks>
         [TestMethod]
         public void EscapeForJavaScript_WhitespaceOnly_ShouldEscapeSpecialWhitespace()
         {
@@ -342,6 +480,12 @@ namespace ByteForge.Toolkit.Tests.Unit.Utils
             }
         }
 
+        /// <summary>
+        /// Verifies that EscapeForJavaScript handles edge case characters correctly.
+        /// </summary>
+        /// <remarks>
+        /// Ensures robustness for unusual or boundary values.
+        /// </remarks>
         [TestMethod]
         public void EscapeForJavaScript_EdgeCaseCharacters_ShouldHandleCorrectly()
         {

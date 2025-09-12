@@ -11,6 +11,12 @@ namespace ByteForge.Toolkit.Tests.Unit.Security
     [TestCategory("Security")]
     public class EncryptorTests
     {
+        /// <summary>
+        /// Verifies that the constructor creates an Encryptor instance with valid parameters.
+        /// </summary>
+        /// <remarks>
+        /// Ensures the Encryptor can be instantiated for encryption operations.
+        /// </remarks>
         [TestMethod]
         public void Constructor_ValidParameters_ShouldCreateInstance()
         {
@@ -21,6 +27,12 @@ namespace ByteForge.Toolkit.Tests.Unit.Security
             encryptor.Should().NotBeNull();
         }
 
+        /// <summary>
+        /// Checks that Encryptor.Default returns the same singleton instance.
+        /// </summary>
+        /// <remarks>
+        /// Validates singleton pattern for default encryptor, preventing inconsistent state.
+        /// </remarks>
         [TestMethod]
         public void Default_ShouldReturnSameInstance()
         {
@@ -33,6 +45,12 @@ namespace ByteForge.Toolkit.Tests.Unit.Security
             default1.Should().NotBeNull();
         }
 
+        /// <summary>
+        /// Encrypts valid plaintext and verifies the result is not empty or equal to the input.
+        /// </summary>
+        /// <remarks>
+        /// Ensures encryption produces non-trivial, secure output.
+        /// </remarks>
         [TestMethod]
         public void Encrypt_ValidPlainText_ShouldReturnEncryptedText()
         {
@@ -48,6 +66,12 @@ namespace ByteForge.Toolkit.Tests.Unit.Security
             encrypted.Should().NotBe(plainText, "encrypted text should be different from plaintext");
         }
 
+        /// <summary>
+        /// Decrypts valid ciphertext and verifies the original text is returned.
+        /// </summary>
+        /// <remarks>
+        /// Confirms decryption restores original data, validating round-trip integrity.
+        /// </remarks>
         [TestMethod]
         public void Decrypt_ValidCipherText_ShouldReturnOriginalText()
         {
@@ -63,6 +87,12 @@ namespace ByteForge.Toolkit.Tests.Unit.Security
             decrypted.Should().Be(plainText);
         }
 
+        /// <summary>
+        /// Encrypts and decrypts multiple test cases, verifying round-trip preservation.
+        /// </summary>
+        /// <remarks>
+        /// Ensures encryption and decryption work for various input types and edge cases.
+        /// </remarks>
         [TestMethod]
         public void EncryptDecrypt_RoundTrip_ShouldPreserveOriginalText()
         {
@@ -92,6 +122,12 @@ namespace ByteForge.Toolkit.Tests.Unit.Security
             }
         }
 
+        /// <summary>
+        /// Encrypts null input and verifies graceful handling.
+        /// </summary>
+        /// <remarks>
+        /// Ensures null input does not cause exceptions or crashes.
+        /// </remarks>
         [TestMethod]
         public void Encrypt_NullInput_ShouldHandleGracefully()
         {
@@ -103,6 +139,12 @@ namespace ByteForge.Toolkit.Tests.Unit.Security
                 .Should().NotThrow("should handle null input gracefully");
         }
 
+        /// <summary>
+        /// Decrypts null input and verifies graceful handling.
+        /// </summary>
+        /// <remarks>
+        /// Ensures null input does not cause exceptions or crashes during decryption.
+        /// </remarks>
         [TestMethod]
         public void Decrypt_NullInput_ShouldHandleGracefully()
         {
@@ -114,6 +156,12 @@ namespace ByteForge.Toolkit.Tests.Unit.Security
                 .Should().NotThrow("should handle null input gracefully");
         }
 
+        /// <summary>
+        /// Encrypts an empty string and verifies correct round-trip behavior.
+        /// </summary>
+        /// <remarks>
+        /// Ensures empty input is handled without errors and can be decrypted.
+        /// </remarks>
         [TestMethod]
         public void Encrypt_EmptyString_ShouldHandleCorrectly()
         {
@@ -129,6 +177,12 @@ namespace ByteForge.Toolkit.Tests.Unit.Security
             decrypted.Should().Be(plainText);
         }
 
+        /// <summary>
+        /// Encrypts the same input twice and verifies the output is consistent.
+        /// </summary>
+        /// <remarks>
+        /// Ensures deterministic encryption for identical input and parameters.
+        /// </remarks>
         [TestMethod]
         public void Encrypt_SameInput_ShouldProduceSameOutput()
         {
@@ -144,6 +198,12 @@ namespace ByteForge.Toolkit.Tests.Unit.Security
             encrypted1.Should().Be(encrypted2, "same input should produce same encrypted output");
         }
 
+        /// <summary>
+        /// Verifies that different constructor parameters produce different encrypted results.
+        /// </summary>
+        /// <remarks>
+        /// Ensures encryption is sensitive to configuration, supporting multiple keys.
+        /// </remarks>
         [TestMethod]
         public void Constructor_DifferentParameters_ShouldProduceDifferentResults()
         {
@@ -160,6 +220,12 @@ namespace ByteForge.Toolkit.Tests.Unit.Security
             encrypted1.Should().NotBe(encrypted2, "different encryptors should produce different results");
         }
 
+        /// <summary>
+        /// Verifies that same constructor parameters produce the same encrypted results.
+        /// </summary>
+        /// <remarks>
+        /// Ensures encryption is deterministic for identical configuration.
+        /// </remarks>
         [TestMethod]
         public void Constructor_SameParameters_ShouldProduceSameResults()
         {
@@ -176,6 +242,12 @@ namespace ByteForge.Toolkit.Tests.Unit.Security
             encrypted1.Should().Be(encrypted2, "same parameters should produce same results");
         }
 
+        /// <summary>
+        /// Attempts to decrypt with the wrong encryptor, expecting a CryptographicException.
+        /// </summary>
+        /// <remarks>
+        /// Validates error handling for mismatched keys, ensuring security.
+        /// </remarks>
         [TestMethod]
         public void Decrypt_WrongEncryptor_ShouldThrowCryptographicException()
         {
@@ -190,6 +262,12 @@ namespace ByteForge.Toolkit.Tests.Unit.Security
                 .Should().Throw<CryptographicException>("wrong encryptor should not decrypt correctly");
         }
 
+        /// <summary>
+        /// Verifies static Encryptor.Encrypt works correctly.
+        /// </summary>
+        /// <remarks>
+        /// Ensures static encryption methods are functional and produce secure output.
+        /// </remarks>
         [TestMethod]
         public void StaticEncrypt_ShouldWorkCorrectly()
         {
@@ -206,6 +284,12 @@ namespace ByteForge.Toolkit.Tests.Unit.Security
             encrypted.Should().NotBe(plainText);
         }
 
+        /// <summary>
+        /// Verifies static Encryptor.Decrypt works correctly.
+        /// </summary>
+        /// <remarks>
+        /// Ensures static decryption methods restore original data.
+        /// </remarks>
         [TestMethod]
         public void StaticDecrypt_ShouldWorkCorrectly()
         {
@@ -222,6 +306,12 @@ namespace ByteForge.Toolkit.Tests.Unit.Security
             decrypted.Should().Be(plainText);
         }
 
+        /// <summary>
+        /// Verifies static round-trip encryption and decryption for multiple test cases.
+        /// </summary>
+        /// <remarks>
+        /// Ensures static methods work for various input and configuration.
+        /// </remarks>
         [TestMethod]
         public void StaticMethods_RoundTrip_ShouldPreserveOriginalText()
         {
@@ -244,6 +334,12 @@ namespace ByteForge.Toolkit.Tests.Unit.Security
             }
         }
 
+        /// <summary>
+        /// Verifies default encryptor can encrypt and decrypt correctly.
+        /// </summary>
+        /// <remarks>
+        /// Ensures the default instance is functional for basic operations.
+        /// </remarks>
         [TestMethod]
         public void Default_EncryptDecrypt_ShouldWorkCorrectly()
         {
@@ -258,6 +354,12 @@ namespace ByteForge.Toolkit.Tests.Unit.Security
             decrypted.Should().Be(plainText);
         }
 
+        /// <summary>
+        /// Verifies encryption and decryption of long text input.
+        /// </summary>
+        /// <remarks>
+        /// Ensures the encryptor can handle large data efficiently and correctly.
+        /// </remarks>
         [TestMethod]
         public void LongText_ShouldBeHandledCorrectly()
         {
@@ -274,6 +376,12 @@ namespace ByteForge.Toolkit.Tests.Unit.Security
             encrypted.Length.Should().BeGreaterThan(0);
         }
 
+        /// <summary>
+        /// Verifies encryption and decryption of special characters.
+        /// </summary>
+        /// <remarks>
+        /// Ensures the encryptor supports Unicode and control characters.
+        /// </remarks>
         [TestMethod]
         public void SpecialCharacters_ShouldBeHandledCorrectly()
         {
@@ -289,6 +397,12 @@ namespace ByteForge.Toolkit.Tests.Unit.Security
             decrypted.Should().Be(specialText);
         }
 
+        /// <summary>
+        /// Attempts to decrypt invalid cipher text, expecting a CryptographicException.
+        /// </summary>
+        /// <remarks>
+        /// Validates error handling for malformed or corrupted input.
+        /// </remarks>
         [TestMethod]
         public void InvalidCipherText_ShouldThrowCryptographicException()
         {
@@ -310,6 +424,12 @@ namespace ByteForge.Toolkit.Tests.Unit.Security
             }
         }
 
+        /// <summary>
+        /// Verifies constructor handles edge case parameters correctly.
+        /// </summary>
+        /// <remarks>
+        /// Ensures robustness for unusual or boundary values.
+        /// </remarks>
         [TestMethod]
         public void Constructor_EdgeCases_ShouldHandleCorrectly()
         {
@@ -333,6 +453,12 @@ namespace ByteForge.Toolkit.Tests.Unit.Security
             }
         }
 
+        /// <summary>
+        /// Performance test for multiple encryption and decryption operations.
+        /// </summary>
+        /// <remarks>
+        /// Ensures the encryptor is efficient for repeated use.
+        /// </remarks>
         [TestMethod]
         public void Performance_MultipleOperations_ShouldBeReasonablyFast()
         {

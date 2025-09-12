@@ -29,6 +29,12 @@ namespace ByteForge.Toolkit.Tests.Unit.CSV
             TempFileHelper.CleanupTempFiles();
         }
 
+        /// <summary>
+        /// Verifies that the CSVReader constructor creates an instance.
+        /// </summary>
+        /// <remarks>
+        /// Ensures the CSVReader can be instantiated for parsing operations.
+        /// </remarks>
         [TestMethod]
         public void Constructor_ShouldCreateInstance()
         {
@@ -40,6 +46,12 @@ namespace ByteForge.Toolkit.Tests.Unit.CSV
             reader.RowHandler.Should().BeNull("row handler should be null by default");
         }
 
+        /// <summary>
+        /// Reads a valid CSV file and verifies correct parsing.
+        /// </summary>
+        /// <remarks>
+        /// Ensures the reader parses standard CSV files and extracts data rows accurately.
+        /// </remarks>
         [TestMethod]
         public void ReadFile_ValidCsvFile_ShouldParseCorrectly()
         {
@@ -74,6 +86,12 @@ namespace ByteForge.Toolkit.Tests.Unit.CSV
             secondRow.values.Should().BeEquivalentTo(["Jane Smith", "25", "jane@example.com"]);
         }
 
+        /// <summary>
+        /// Reads a CSV file with semicolon delimiter and verifies correct parsing.
+        /// </summary>
+        /// <remarks>
+        /// Ensures delimiter detection and parsing flexibility for different CSV formats.
+        /// </remarks>
         [TestMethod]
         public void ReadFile_CsvWithSemicolonDelimiter_ShouldParseCorrectly()
         {
@@ -102,6 +120,12 @@ namespace ByteForge.Toolkit.Tests.Unit.CSV
             processedRows[0].values.Should().BeEquivalentTo(["John Doe", "30", "john@example.com"]);
         }
 
+        /// <summary>
+        /// Reads a CSV file with tab delimiter and verifies correct parsing.
+        /// </summary>
+        /// <remarks>
+        /// Ensures support for tab-delimited files, common in data exports.
+        /// </remarks>
         [TestMethod]
         public void ReadFile_CsvWithTabDelimiter_ShouldParseCorrectly()
         {
@@ -128,6 +152,12 @@ namespace ByteForge.Toolkit.Tests.Unit.CSV
             processedRows[0].Should().BeEquivalentTo(["John Doe", "30", "john@example.com"]);
         }
 
+        /// <summary>
+        /// Reads a CSV file with quoted fields and verifies correct parsing.
+        /// </summary>
+        /// <remarks>
+        /// Ensures quoted values are handled, supporting embedded delimiters and special characters.
+        /// </remarks>
         [TestMethod]
         public void ReadFile_CsvWithQuotedFields_ShouldParseCorrectly()
         {
@@ -155,6 +185,12 @@ namespace ByteForge.Toolkit.Tests.Unit.CSV
             processedRows[1].Should().BeEquivalentTo(["Jane Smith", "25", "Product Manager"]);
         }
 
+        /// <summary>
+        /// Reads a CSV file with escaped quotes and verifies correct parsing.
+        /// </summary>
+        /// <remarks>
+        /// Ensures escaped quotes are interpreted correctly, preventing data corruption.
+        /// </remarks>
         [TestMethod]
         public void ReadFile_CsvWithEscapedQuotes_ShouldParseCorrectly()
         {
@@ -182,6 +218,12 @@ namespace ByteForge.Toolkit.Tests.Unit.CSV
             processedRows[1].Should().BeEquivalentTo(["Jane O'Connor", "Single 'quote'"]);
         }
 
+        /// <summary>
+        /// Reads a CSV file with newlines in quoted fields and verifies correct parsing.
+        /// </summary>
+        /// <remarks>
+        /// Ensures multi-line fields are supported, common in real-world CSVs.
+        /// </remarks>
         [TestMethod]
         public void ReadFile_CsvWithNewlinesInQuotedFields_ShouldParseCorrectly()
         {
@@ -209,6 +251,12 @@ namespace ByteForge.Toolkit.Tests.Unit.CSV
             processedRows[1].Should().BeEquivalentTo(["Jane Smith", "Single line"]);
         }
 
+        /// <summary>
+        /// Reads an empty CSV file and verifies graceful handling.
+        /// </summary>
+        /// <remarks>
+        /// Ensures empty files do not cause errors or unexpected output.
+        /// </remarks>
         [TestMethod]
         public void ReadFile_EmptyFile_ShouldHandleGracefully()
         {
@@ -233,6 +281,12 @@ namespace ByteForge.Toolkit.Tests.Unit.CSV
             processedRows.Should().BeEmpty("empty file should produce no rows");
         }
 
+        /// <summary>
+        /// Reads a header-only CSV file and verifies graceful handling.
+        /// </summary>
+        /// <remarks>
+        /// Ensures files with only headers do not produce data rows.
+        /// </remarks>
         [TestMethod]
         public void ReadFile_HeaderOnlyFile_ShouldHandleGracefully()
         {
@@ -258,6 +312,12 @@ namespace ByteForge.Toolkit.Tests.Unit.CSV
             processedRows.Should().BeEmpty("header-only file should produce no data rows");
         }
 
+        /// <summary>
+        /// Attempts to read a non-existent CSV file, expecting an exception.
+        /// </summary>
+        /// <remarks>
+        /// Verifies error handling for missing files.
+        /// </remarks>
         [TestMethod]
         public void ReadFile_NonExistentFile_ShouldThrowException()
         {
@@ -269,6 +329,12 @@ namespace ByteForge.Toolkit.Tests.Unit.CSV
             AssertionHelpers.AssertThrows<FileNotFoundException>(() => reader.ReadFile(nonExistentPath));
         }
 
+        /// <summary>
+        /// Reads a CSV file with progress reporting and verifies progress events.
+        /// </summary>
+        /// <remarks>
+        /// Ensures progress events are fired during file reading, supporting UI feedback.
+        /// </remarks>
         [TestMethod]
         public void ReadFile_WithProgressReporting_ShouldReportProgress()
         {
@@ -294,6 +360,12 @@ namespace ByteForge.Toolkit.Tests.Unit.CSV
             progressReports.Last().Should().Be(100, "final progress should be 100%");
         }
 
+        /// <summary>
+        /// Reads a valid CSV stream and verifies correct parsing.
+        /// </summary>
+        /// <remarks>
+        /// Ensures stream-based reading is supported for in-memory data.
+        /// </remarks>
         [TestMethod]
         public void ReadStream_ValidCsvStream_ShouldParseCorrectly()
         {
@@ -320,6 +392,12 @@ namespace ByteForge.Toolkit.Tests.Unit.CSV
             processedRows[0].Should().BeEquivalentTo(["John Doe", "30", "john@example.com"]);
         }
 
+        /// <summary>
+        /// Attempts to read a null stream, expecting an exception.
+        /// </summary>
+        /// <remarks>
+        /// Verifies error handling for null input streams.
+        /// </remarks>
         [TestMethod]
         public void ReadStream_NullStream_ShouldThrowException()
         {
@@ -330,6 +408,12 @@ namespace ByteForge.Toolkit.Tests.Unit.CSV
             AssertionHelpers.AssertThrows<ArgumentNullException>(() => reader.ReadStream(null));
         }
 
+        /// <summary>
+        /// Sets a custom CSV format and verifies parsing with the specified delimiter.
+        /// </summary>
+        /// <remarks>
+        /// Ensures custom formats are respected, supporting non-standard CSVs.
+        /// </remarks>
         [TestMethod]
         public void SetFormat_CustomFormat_ShouldUseSpecifiedFormat()
         {
@@ -358,6 +442,12 @@ namespace ByteForge.Toolkit.Tests.Unit.CSV
             processedRows[0].Should().BeEquivalentTo(["John Doe", "30", "john@example.com"]);
         }
 
+        /// <summary>
+        /// Reads a CSV file with Unicode content and verifies correct parsing.
+        /// </summary>
+        /// <remarks>
+        /// Ensures Unicode characters are supported, preventing data loss.
+        /// </remarks>
         [TestMethod]
         public void ReadFile_UnicodeContent_ShouldHandleCorrectly()
         {
@@ -386,6 +476,12 @@ namespace ByteForge.Toolkit.Tests.Unit.CSV
             processedRows[2].Should().BeEquivalentTo(["🌍 Earth", "Unicode emoji"]);
         }
 
+        /// <summary>
+        /// Reads a large CSV file and verifies efficient processing.
+        /// </summary>
+        /// <remarks>
+        /// Ensures the reader can handle large files without performance issues.
+        /// </remarks>
         [TestMethod]
         public void ReadFile_LargeFile_ShouldHandleEfficiently()
         {
@@ -417,6 +513,12 @@ namespace ByteForge.Toolkit.Tests.Unit.CSV
             duration.Should().BeLessThan(TimeSpan.FromSeconds(5), "should process large file efficiently");
         }
 
+        /// <summary>
+        /// Attempts to read a file without setting RowHandler, expecting an exception.
+        /// </summary>
+        /// <remarks>
+        /// Verifies error handling for missing row processing logic.
+        /// </remarks>
         [TestMethod]
         public void ReadFile_WithoutRowHandler_ShouldThrowException()
         {
@@ -430,6 +532,12 @@ namespace ByteForge.Toolkit.Tests.Unit.CSV
                 .Should().Throw<InvalidOperationException>("should throw if RowHandler is not set");
         }
 
+        /// <summary>
+        /// Reads a CSV file with empty fields and verifies correct parsing.
+        /// </summary>
+        /// <remarks>
+        /// Ensures empty fields are handled, supporting sparse data.
+        /// </remarks>
         [TestMethod]
         public void ReadFile_EmptyFields_ShouldHandleCorrectly()
         {
@@ -458,6 +566,12 @@ namespace ByteForge.Toolkit.Tests.Unit.CSV
             processedRows[2].Should().BeEquivalentTo(["", "30", ""]);
         }
 
+        /// <summary>
+        /// Reads CSV files with different encodings and verifies correct parsing.
+        /// </summary>
+        /// <remarks>
+        /// Ensures encoding flexibility for internationalization and compatibility.
+        /// </remarks>
         [TestMethod]
         public void ReadFile_DifferentEncodings_ShouldHandleCorrectly()
         {
@@ -496,6 +610,12 @@ namespace ByteForge.Toolkit.Tests.Unit.CSV
             }
         }
 
+        /// <summary>
+        /// Auto-detects CSV format and verifies correct delimiter detection.
+        /// </summary>
+        /// <remarks>
+        /// Ensures automatic format detection for user convenience.
+        /// </remarks>
         [TestMethod]
         public void AutoDetectFormat_ShouldDetectCorrectDelimiter()
         {
@@ -531,6 +651,12 @@ namespace ByteForge.Toolkit.Tests.Unit.CSV
             }
         }
 
+        /// <summary>
+        /// Reads a malformed CSV file and verifies handling of malformed rows.
+        /// </summary>
+        /// <remarks>
+        /// Ensures error rows are detected and reported, supporting robust parsing.
+        /// </remarks>
         [TestMethod]
         public void ReadFile_MalformedCsvWithRowHandler_ShouldHandleMalformedRows()
         {
@@ -566,6 +692,12 @@ namespace ByteForge.Toolkit.Tests.Unit.CSV
             malformedRows[1].Should().Contain("Bob Wilson,35,bob@example.com,extra_field");
         }
 
+        /// <summary>
+        /// Reads a CSV file and verifies that RowHandler returning false stops processing.
+        /// </summary>
+        /// <remarks>
+        /// Ensures row processing can be interrupted, supporting early termination scenarios.
+        /// </remarks>
         [TestMethod]
         public void ReadFile_RowHandlerReturningFalse_ShouldStopProcessing()
         {

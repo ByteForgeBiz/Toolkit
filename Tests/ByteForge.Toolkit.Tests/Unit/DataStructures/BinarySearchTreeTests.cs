@@ -12,6 +12,12 @@ namespace ByteForge.Toolkit.Tests.Unit.DataStructures
     [TestCategory("DataStructures")]
     public class BinarySearchTreeTests
     {
+        /// <summary>
+        /// Verifies that the constructor creates an empty binary search tree.
+        /// </summary>
+        /// <remarks>
+        /// Ensures the tree is initialized correctly for subsequent operations.
+        /// </remarks>
         [TestMethod]
         public void Constructor_ShouldCreateEmptyTree()
         {
@@ -24,6 +30,12 @@ namespace ByteForge.Toolkit.Tests.Unit.DataStructures
             tree.IsEmpty.Should().BeTrue();
         }
 
+        /// <summary>
+        /// Inserts a single value and verifies root node creation.
+        /// </summary>
+        /// <remarks>
+        /// Ensures the first insert sets up the tree structure.
+        /// </remarks>
         [TestMethod]
         public void Insert_SingleValue_ShouldCreateRootNode()
         {
@@ -39,6 +51,12 @@ namespace ByteForge.Toolkit.Tests.Unit.DataStructures
             tree.Contains(10).Should().BeTrue();
         }
 
+        /// <summary>
+        /// Inserts multiple values and verifies BST property is maintained.
+        /// </summary>
+        /// <remarks>
+        /// Ensures the tree maintains correct ordering for search efficiency.
+        /// </remarks>
         [TestMethod]
         public void Insert_MultipleValues_ShouldMaintainBSTProperty()
         {
@@ -57,6 +75,12 @@ namespace ByteForge.Toolkit.Tests.Unit.DataStructures
             AssertionHelpers.AssertBinarySearchTreeOrdering(tree, values);
         }
 
+        /// <summary>
+        /// Inserts duplicate values and verifies graceful handling.
+        /// </summary>
+        /// <remarks>
+        /// Ensures duplicates do not corrupt the tree or inflate the count.
+        /// </remarks>
         [TestMethod]
         public void Insert_DuplicateValues_ShouldHandleGracefully()
         {
@@ -72,6 +96,12 @@ namespace ByteForge.Toolkit.Tests.Unit.DataStructures
             tree.Contains(10).Should().BeTrue();
         }
 
+        /// <summary>
+        /// Verifies that Contains returns true for existing values.
+        /// </summary>
+        /// <remarks>
+        /// Ensures search functionality works for inserted values.
+        /// </remarks>
         [TestMethod]
         public void Contains_ExistingValue_ShouldReturnTrue()
         {
@@ -90,6 +120,12 @@ namespace ByteForge.Toolkit.Tests.Unit.DataStructures
             }
         }
 
+        /// <summary>
+        /// Verifies that Contains returns false for non-existing values.
+        /// </summary>
+        /// <remarks>
+        /// Ensures search functionality does not return false positives.
+        /// </remarks>
         [TestMethod]
         public void Contains_NonExistingValue_ShouldReturnFalse()
         {
@@ -107,6 +143,12 @@ namespace ByteForge.Toolkit.Tests.Unit.DataStructures
             tree.Contains(0).Should().BeFalse();
         }
 
+        /// <summary>
+        /// Verifies that Contains returns false for an empty tree.
+        /// </summary>
+        /// <remarks>
+        /// Ensures search functionality is robust for empty trees.
+        /// </remarks>
         [TestMethod]
         public void Contains_EmptyTree_ShouldReturnFalse()
         {
@@ -117,6 +159,12 @@ namespace ByteForge.Toolkit.Tests.Unit.DataStructures
             tree.Contains(10).Should().BeFalse();
         }
 
+        /// <summary>
+        /// Removes a leaf node and verifies successful removal.
+        /// </summary>
+        /// <remarks>
+        /// Ensures leaf removal does not affect tree structure.
+        /// </remarks>
         [TestMethod]
         public void Remove_LeafNode_ShouldRemoveSuccessfully()
         {
@@ -141,6 +189,12 @@ namespace ByteForge.Toolkit.Tests.Unit.DataStructures
             AssertionHelpers.AssertBinarySearchTreeOrdering(tree, remaining);
         }
 
+        /// <summary>
+        /// Removes a node with one child and verifies restructuring.
+        /// </summary>
+        /// <remarks>
+        /// Ensures tree remains valid after removing nodes with one child.
+        /// </remarks>
         [TestMethod]
         public void Remove_NodeWithOneChild_ShouldRemoveAndRestructure()
         {
@@ -166,6 +220,12 @@ namespace ByteForge.Toolkit.Tests.Unit.DataStructures
             tree.Contains(15).Should().BeTrue();
         }
 
+        /// <summary>
+        /// Removes a node with two children and verifies restructuring.
+        /// </summary>
+        /// <remarks>
+        /// Ensures tree remains valid after removing nodes with two children.
+        /// </remarks>
         [TestMethod]
         public void Remove_NodeWithTwoChildren_ShouldRemoveAndRestructure()
         {
@@ -190,6 +250,12 @@ namespace ByteForge.Toolkit.Tests.Unit.DataStructures
             AssertionHelpers.AssertBinarySearchTreeOrdering(tree, remaining);
         }
 
+        /// <summary>
+        /// Attempts to remove a non-existing value, expecting false.
+        /// </summary>
+        /// <remarks>
+        /// Ensures removal does not affect tree for missing values.
+        /// </remarks>
         [TestMethod]
         public void Remove_NonExistingValue_ShouldReturnFalse()
         {
@@ -209,6 +275,12 @@ namespace ByteForge.Toolkit.Tests.Unit.DataStructures
             tree.Count.Should().Be(values.Length, "count should remain unchanged");
         }
 
+        /// <summary>
+        /// Attempts to remove from an empty tree, expecting false.
+        /// </summary>
+        /// <remarks>
+        /// Ensures removal is safe for empty trees.
+        /// </remarks>
         [TestMethod]
         public void Remove_FromEmptyTree_ShouldReturnFalse()
         {
@@ -223,6 +295,12 @@ namespace ByteForge.Toolkit.Tests.Unit.DataStructures
             tree.Count.Should().Be(0);
         }
 
+        /// <summary>
+        /// Verifies in-order traversal returns a sorted sequence.
+        /// </summary>
+        /// <remarks>
+        /// Ensures traversal logic produces correct ordering for algorithms.
+        /// </remarks>
         [TestMethod]
         public void InOrderTraversal_ShouldReturnSortedSequence()
         {
@@ -242,6 +320,12 @@ namespace ByteForge.Toolkit.Tests.Unit.DataStructures
             inOrder.Should().BeEquivalentTo(expected, options => options.WithStrictOrdering());
         }
 
+        /// <summary>
+        /// Verifies pre-order traversal returns the correct sequence.
+        /// </summary>
+        /// <remarks>
+        /// Ensures traversal logic supports root-first algorithms.
+        /// </remarks>
         [TestMethod]
         public void PreOrderTraversal_ShouldReturnCorrectSequence()
         {
@@ -262,6 +346,12 @@ namespace ByteForge.Toolkit.Tests.Unit.DataStructures
             preOrder.Length.Should().Be(values.Length);
         }
 
+        /// <summary>
+        /// Verifies post-order traversal returns the correct sequence.
+        /// </summary>
+        /// <remarks>
+        /// Ensures traversal logic supports root-last algorithms.
+        /// </remarks>
         [TestMethod]
         public void PostOrderTraversal_ShouldReturnCorrectSequence()
         {
@@ -282,6 +372,12 @@ namespace ByteForge.Toolkit.Tests.Unit.DataStructures
             postOrder.Length.Should().Be(values.Length);
         }
 
+        /// <summary>
+        /// Clears the tree and verifies all elements are removed.
+        /// </summary>
+        /// <remarks>
+        /// Ensures the tree can be reset for reuse or disposal.
+        /// </remarks>
         [TestMethod]
         public void Clear_ShouldRemoveAllElements()
         {
@@ -305,6 +401,12 @@ namespace ByteForge.Toolkit.Tests.Unit.DataStructures
             }
         }
 
+        /// <summary>
+        /// Finds the minimum value in the tree.
+        /// </summary>
+        /// <remarks>
+        /// Ensures minimum search logic is correct for algorithms.
+        /// </remarks>
         [TestMethod]
         public void FindMin_ShouldReturnSmallestValue()
         {
@@ -323,6 +425,12 @@ namespace ByteForge.Toolkit.Tests.Unit.DataStructures
             min.Should().Be(1);
         }
 
+        /// <summary>
+        /// Finds the maximum value in the tree.
+        /// </summary>
+        /// <remarks>
+        /// Ensures maximum search logic is correct for algorithms.
+        /// </remarks>
         [TestMethod]
         public void FindMax_ShouldReturnLargestValue()
         {
@@ -341,6 +449,12 @@ namespace ByteForge.Toolkit.Tests.Unit.DataStructures
             max.Should().Be(20);
         }
 
+        /// <summary>
+        /// Attempts to find the minimum value in an empty tree, expecting an exception.
+        /// </summary>
+        /// <remarks>
+        /// Ensures error handling for empty trees.
+        /// </remarks>
         [TestMethod]
         public void FindMin_EmptyTree_ShouldThrowException()
         {
@@ -351,6 +465,12 @@ namespace ByteForge.Toolkit.Tests.Unit.DataStructures
             AssertionHelpers.AssertThrows<InvalidOperationException>(() => tree.FindMin());
         }
 
+        /// <summary>
+        /// Attempts to find the maximum value in an empty tree, expecting an exception.
+        /// </summary>
+        /// <remarks>
+        /// Ensures error handling for empty trees.
+        /// </remarks>
         [TestMethod]
         public void FindMax_EmptyTree_ShouldThrowException()
         {
@@ -361,6 +481,12 @@ namespace ByteForge.Toolkit.Tests.Unit.DataStructures
             AssertionHelpers.AssertThrows<InvalidOperationException>(() => tree.FindMax());
         }
 
+        /// <summary>
+        /// Verifies binary search tree operations work correctly for string values.
+        /// </summary>
+        /// <remarks>
+        /// Ensures generic support for non-numeric types.
+        /// </remarks>
         [TestMethod]
         public void BinarySearchTree_WithStrings_ShouldWorkCorrectly()
         {
@@ -381,6 +507,12 @@ namespace ByteForge.Toolkit.Tests.Unit.DataStructures
             inOrder.Should().BeEquivalentTo(expected, options => options.WithStrictOrdering());
         }
 
+        /// <summary>
+        /// Verifies binary search tree operations for a large data set.
+        /// </summary>
+        /// <remarks>
+        /// Ensures scalability and performance for large collections.
+        /// </remarks>
         [TestMethod]
         public void BinarySearchTree_LargeDataSet_ShouldPerformCorrectly()
         {
@@ -410,6 +542,12 @@ namespace ByteForge.Toolkit.Tests.Unit.DataStructures
             inOrder.Length.Should().Be(1000);
         }
 
+        /// <summary>
+        /// Stress test for insert and remove operations in the binary search tree.
+        /// </summary>
+        /// <remarks>
+        /// Ensures robustness and correctness under random operations.
+        /// </remarks>
         [TestMethod]
         public void BinarySearchTree_StressTest_InsertAndRemove()
         {

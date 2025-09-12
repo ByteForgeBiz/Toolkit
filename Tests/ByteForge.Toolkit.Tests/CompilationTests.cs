@@ -10,6 +10,12 @@ namespace ByteForge.Toolkit.Tests
     [TestCategory("Compilation")]
     public class CompilationTests
     {
+        /// <summary>
+        /// Verifies that the ByteForge.Toolkit assembly loads successfully.
+        /// </summary>
+        /// <remarks>
+        /// Ensures the main assembly is present and can be loaded for reflection and runtime use.
+        /// </remarks>
         [TestMethod]
         public void ByteForgeToolkitAssembly_ShouldLoadSuccessfully()
         {
@@ -22,6 +28,12 @@ namespace ByteForge.Toolkit.Tests
             assembly.Should().NotBeNull();
         }
 
+        /// <summary>
+        /// Verifies that StringUtil is accessible in the ByteForge.Toolkit namespace.
+        /// </summary>
+        /// <remarks>
+        /// Ensures core utility types are available for use and testing.
+        /// </remarks>
         [TestMethod]
         public void StringUtil_ShouldBeAccessible()
         {
@@ -33,6 +45,12 @@ namespace ByteForge.Toolkit.Tests
             type.Namespace.Should().Be("ByteForge.Toolkit");
         }
 
+        /// <summary>
+        /// Verifies that BinarySearchTree is accessible in the ByteForge.Toolkit namespace.
+        /// </summary>
+        /// <remarks>
+        /// Ensures core data structure types are available for use and testing.
+        /// </remarks>
         [TestMethod]
         public void BinarySearchTree_ShouldBeAccessible()
         {
@@ -44,6 +62,12 @@ namespace ByteForge.Toolkit.Tests
             type.Namespace.Should().Be("ByteForge.Toolkit");
         }
 
+        /// <summary>
+        /// Verifies that Encryptor is accessible in the ByteForge.Toolkit namespace.
+        /// </summary>
+        /// <remarks>
+        /// Ensures core security types are available for use and testing.
+        /// </remarks>
         [TestMethod]
         public void Encryptor_ShouldBeAccessible()
         {
@@ -55,6 +79,12 @@ namespace ByteForge.Toolkit.Tests
             type.Namespace.Should().Be("ByteForge.Toolkit");
         }
 
+        /// <summary>
+        /// Verifies that CSVReader is accessible in the ByteForge.Toolkit namespace.
+        /// </summary>
+        /// <remarks>
+        /// Ensures core CSV parsing types are available for use and testing.
+        /// </remarks>
         [TestMethod]
         public void CSVReader_ShouldBeAccessible()
         {
@@ -66,6 +96,12 @@ namespace ByteForge.Toolkit.Tests
             type.Namespace.Should().Be("ByteForge.Toolkit");
         }
 
+        /// <summary>
+        /// Verifies that Log is accessible in the ByteForge.Toolkit namespace.
+        /// </summary>
+        /// <remarks>
+        /// Ensures core logging types are available for use and testing.
+        /// </remarks>
         [TestMethod]
         public void Log_ShouldBeAccessible()
         {

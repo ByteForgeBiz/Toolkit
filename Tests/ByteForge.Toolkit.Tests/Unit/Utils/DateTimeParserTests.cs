@@ -11,6 +11,12 @@ namespace ByteForge.Toolkit.Tests.Unit.Utils
     [TestCategory("Utils")]
     public class DateTimeParserTests
     {
+        /// <summary>
+        /// Verifies that Parse parses a valid ISO date-time string correctly.
+        /// </summary>
+        /// <remarks>
+        /// Ensures ISO date-time formats are supported for interoperability.
+        /// </remarks>
         [TestMethod]
         public void Parse_ValidIsoDateTime_ShouldParseCorrectly()
         {
@@ -25,6 +31,12 @@ namespace ByteForge.Toolkit.Tests.Unit.Utils
             result.Should().Be(expected);
         }
 
+        /// <summary>
+        /// Verifies that Parse parses a valid date-only string correctly.
+        /// </summary>
+        /// <remarks>
+        /// Ensures date-only formats are supported for date-based logic.
+        /// </remarks>
         [TestMethod]
         public void Parse_ValidDateOnly_ShouldParseCorrectly()
         {
@@ -39,6 +51,12 @@ namespace ByteForge.Toolkit.Tests.Unit.Utils
             result.Should().Be(expected);
         }
 
+        /// <summary>
+        /// Verifies that Parse parses a valid US date format correctly.
+        /// </summary>
+        /// <remarks>
+        /// Ensures US date formats are supported for localization.
+        /// </remarks>
         [TestMethod]
         public void Parse_ValidUsFormat_ShouldParseCorrectly()
         {
@@ -53,6 +71,12 @@ namespace ByteForge.Toolkit.Tests.Unit.Utils
             result.Should().Be(expected);
         }
 
+        /// <summary>
+        /// Verifies that Parse parses a valid European date format correctly.
+        /// </summary>
+        /// <remarks>
+        /// Ensures European date formats are supported for localization.
+        /// </remarks>
         [TestMethod]
         public void Parse_ValidEuropeanFormat_ShouldParseCorrectly()
         {
@@ -68,6 +92,12 @@ namespace ByteForge.Toolkit.Tests.Unit.Utils
             result.Day.Should().Be(15);
         }
 
+        /// <summary>
+        /// Verifies that Parse parses a valid time with seconds correctly.
+        /// </summary>
+        /// <remarks>
+        /// Ensures time parsing supports seconds for precise time values.
+        /// </remarks>
         [TestMethod]
         public void Parse_ValidTimeWithSeconds_ShouldParseCorrectly()
         {
@@ -83,6 +113,12 @@ namespace ByteForge.Toolkit.Tests.Unit.Utils
             result.Second.Should().Be(45);
         }
 
+        /// <summary>
+        /// Verifies that Parse parses a valid time without seconds correctly.
+        /// </summary>
+        /// <remarks>
+        /// Ensures time parsing supports formats without seconds.
+        /// </remarks>
         [TestMethod]
         public void Parse_ValidTimeWithoutSeconds_ShouldParseCorrectly()
         {
@@ -98,6 +134,12 @@ namespace ByteForge.Toolkit.Tests.Unit.Utils
             result.Second.Should().Be(0);
         }
 
+        /// <summary>
+        /// Verifies that Parse parses a valid date-time with milliseconds correctly.
+        /// </summary>
+        /// <remarks>
+        /// Ensures millisecond precision is supported for high-resolution timestamps.
+        /// </remarks>
         [TestMethod]
         public void Parse_ValidDateTimeWithMilliseconds_ShouldParseCorrectly()
         {
@@ -117,6 +159,12 @@ namespace ByteForge.Toolkit.Tests.Unit.Utils
             result.Millisecond.Should().Be(123);
         }
 
+        /// <summary>
+        /// Verifies that Parse parses a valid date-time with time zone correctly.
+        /// </summary>
+        /// <remarks>
+        /// Ensures time zone offsets are supported for global applications.
+        /// </remarks>
         [TestMethod]
         public void Parse_ValidDateTimeWithTimeZone_ShouldParseCorrectly()
         {
@@ -138,6 +186,12 @@ namespace ByteForge.Toolkit.Tests.Unit.Utils
             }
         }
 
+        /// <summary>
+        /// Attempts to parse invalid date-time strings, expecting exceptions.
+        /// </summary>
+        /// <remarks>
+        /// Verifies error handling for malformed or out-of-range input.
+        /// </remarks>
         [TestMethod]
         public void Parse_InvalidDateTime_ShouldThrowException()
         {
@@ -161,6 +215,12 @@ namespace ByteForge.Toolkit.Tests.Unit.Utils
             }
         }
 
+        /// <summary>
+        /// Attempts to parse a null input, expecting an exception.
+        /// </summary>
+        /// <remarks>
+        /// Ensures null input is handled with appropriate exceptions.
+        /// </remarks>
         [TestMethod]
         public void Parse_NullInput_ShouldThrowException()
         {
@@ -171,6 +231,12 @@ namespace ByteForge.Toolkit.Tests.Unit.Utils
             AssertionHelpers.AssertThrows<ArgumentNullException>(() => DateTimeParser.Parse(input));
         }
 
+        /// <summary>
+        /// Attempts to parse an empty input, expecting an exception.
+        /// </summary>
+        /// <remarks>
+        /// Ensures empty input is handled with appropriate exceptions.
+        /// </remarks>
         [TestMethod]
         public void Parse_EmptyInput_ShouldThrowException()
         {
@@ -181,6 +247,12 @@ namespace ByteForge.Toolkit.Tests.Unit.Utils
             AssertionHelpers.AssertThrows<ArgumentNullException>(() => DateTimeParser.Parse(input));
         }
 
+        /// <summary>
+        /// Attempts to parse whitespace input, expecting an exception.
+        /// </summary>
+        /// <remarks>
+        /// Ensures whitespace input is handled with appropriate exceptions.
+        /// </remarks>
         [TestMethod]
         public void Parse_WhitespaceInput_ShouldThrowException()
         {
@@ -195,6 +267,12 @@ namespace ByteForge.Toolkit.Tests.Unit.Utils
             }
         }
 
+        /// <summary>
+        /// Verifies that Parse respects specific culture settings.
+        /// </summary>
+        /// <remarks>
+        /// Ensures culture-specific parsing for internationalization.
+        /// </remarks>
         [TestMethod]
         public void Parse_WithSpecificCulture_ShouldRespectCulture()
         {
@@ -211,6 +289,12 @@ namespace ByteForge.Toolkit.Tests.Unit.Utils
             result.Day.Should().Be(15);
         }
 
+        /// <summary>
+        /// Verifies that Parse parses edge case dates correctly.
+        /// </summary>
+        /// <remarks>
+        /// Ensures leap years, end-of-year, and other boundary dates are supported.
+        /// </remarks>
         [TestMethod]
         public void Parse_EdgeCaseDates_ShouldParseCorrectly()
         {
@@ -234,6 +318,12 @@ namespace ByteForge.Toolkit.Tests.Unit.Utils
             }
         }
 
+        /// <summary>
+        /// Verifies leap year validation for date parsing.
+        /// </summary>
+        /// <remarks>
+        /// Ensures invalid leap year dates are rejected.
+        /// </remarks>
         [TestMethod]
         public void Parse_LeapYearValidation_ShouldHandleCorrectly()
         {
@@ -253,6 +343,12 @@ namespace ByteForge.Toolkit.Tests.Unit.Utils
             }
         }
 
+        /// <summary>
+        /// Verifies that TryParse returns true and correct value for valid input.
+        /// </summary>
+        /// <remarks>
+        /// Ensures TryParse provides a safe alternative to Parse for valid input.
+        /// </remarks>
         [TestMethod]
         public void TryParse_ValidDateTime_ShouldReturnTrueAndCorrectValue()
         {
@@ -268,6 +364,12 @@ namespace ByteForge.Toolkit.Tests.Unit.Utils
             result.Should().Be(expected);
         }
 
+        /// <summary>
+        /// Verifies that TryParse returns false and default value for invalid input.
+        /// </summary>
+        /// <remarks>
+        /// Ensures TryParse provides a safe alternative to Parse for invalid input.
+        /// </remarks>
         [TestMethod]
         public void TryParse_InvalidDateTime_ShouldReturnFalseAndDefaultValue()
         {
@@ -282,6 +384,12 @@ namespace ByteForge.Toolkit.Tests.Unit.Utils
             result.Should().Be(default);
         }
 
+        /// <summary>
+        /// Verifies that Parse supports different date separators.
+        /// </summary>
+        /// <remarks>
+        /// Ensures flexibility in date parsing for various formats.
+        /// </remarks>
         [TestMethod]
         public void Parse_DifferentDateSeparators_ShouldParseCorrectly()
         {
@@ -306,6 +414,12 @@ namespace ByteForge.Toolkit.Tests.Unit.Utils
             }
         }
 
+        /// <summary>
+        /// Verifies that Parse supports AM/PM time formats.
+        /// </summary>
+        /// <remarks>
+        /// Ensures support for 12-hour time formats.
+        /// </remarks>
         [TestMethod]
         public void Parse_AmPmFormat_ShouldParseCorrectly()
         {
@@ -329,6 +443,12 @@ namespace ByteForge.Toolkit.Tests.Unit.Utils
             }
         }
 
+        /// <summary>
+        /// Verifies that Parse supports various date-time formats.
+        /// </summary>
+        /// <remarks>
+        /// Ensures flexibility in parsing for user input and data sources.
+        /// </remarks>
         [TestMethod]
         public void Parse_DateTimeWithDifferentFormats_ShouldParseCorrectly()
         {
@@ -355,6 +475,12 @@ namespace ByteForge.Toolkit.Tests.Unit.Utils
             }
         }
 
+        /// <summary>
+        /// Performance test for multiple date parses.
+        /// </summary>
+        /// <remarks>
+        /// Ensures date parsing is efficient for repeated use.
+        /// </remarks>
         [TestMethod]
         public void Parse_Performance_ShouldHandleMultipleParsesQuickly()
         {
@@ -386,6 +512,12 @@ namespace ByteForge.Toolkit.Tests.Unit.Utils
                 $"should parse {iterations * inputs.Length} dates quickly");
         }
 
+        /// <summary>
+        /// Verifies thread safety for concurrent date parsing.
+        /// </summary>
+        /// <remarks>
+        /// Ensures the parser can be used safely in multi-threaded environments.
+        /// </remarks>
         [TestMethod]
         public void Parse_ThreadSafety_ShouldHandleConcurrentAccess()
         {

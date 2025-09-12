@@ -10,7 +10,6 @@ namespace ByteForge.Toolkit.Tests.Unit.Logging
     [TestCategory("Logging")]
     public class LogTests
     {
-        private string _originalLogFile;
         private LogLevel _originalLogLevel;
 
         static LogTests()
@@ -24,7 +23,6 @@ namespace ByteForge.Toolkit.Tests.Unit.Logging
         {
 
             // Store original settings to restore later
-            _originalLogFile = Log.CurrentLogFile;
             _originalLogLevel = Log.LogLevel;
             
             TempFileHelper.CleanupTempFiles();
@@ -46,6 +44,12 @@ namespace ByteForge.Toolkit.Tests.Unit.Logging
             TempFileHelper.CleanupTempFiles();
         }
 
+        /// <summary>
+        /// Verifies that the Log.Instance property returns the same singleton instance.
+        /// </summary>
+        /// <remarks>
+        /// Ensures the logging system maintains a single instance, preventing inconsistent state and resource leaks.
+        /// </remarks>
         [TestMethod]
         public void Instance_ShouldReturnSameInstance()
         {
@@ -58,6 +62,12 @@ namespace ByteForge.Toolkit.Tests.Unit.Logging
             instance1.Should().NotBeNull();
         }
 
+        /// <summary>
+        /// Ensures that all log level methods do not throw exceptions when called.
+        /// </summary>
+        /// <remarks>
+        /// Validates the robustness of the logging API, confirming that all log levels handle input gracefully and do not crash the application.
+        /// </remarks>
         [TestMethod]
         public void AllLogLevels_ShouldNotThrow()
         {
@@ -91,6 +101,12 @@ namespace ByteForge.Toolkit.Tests.Unit.Logging
             }
         }
 
+        /// <summary>
+        /// Tests logging with edge case messages to ensure graceful handling.
+        /// </summary>
+        /// <remarks>
+        /// Prevents failures when logging null, empty, very large, or special character messages, which can occur in real-world scenarios.
+        /// </remarks>
         [TestMethod]
         public void Log_EdgeCaseMessages_ShouldHandleGracefully()
         {
@@ -112,6 +128,12 @@ namespace ByteForge.Toolkit.Tests.Unit.Logging
             }
         }
 
+        /// <summary>
+        /// Verifies that console logging can be enabled and disabled without errors.
+        /// </summary>
+        /// <remarks>
+        /// Ensures that users can control console output, which is important for debugging and production environments.
+        /// </remarks>
         [TestMethod]
         public void ConsoleLogging_ShouldBeControllable()
         {
@@ -147,6 +169,12 @@ namespace ByteForge.Toolkit.Tests.Unit.Logging
             }
         }
 
+        /// <summary>
+        /// Checks that the log level can be set and retrieved correctly.
+        /// </summary>
+        /// <remarks>
+        /// Confirms that the logging system respects user configuration for verbosity, which is essential for filtering log output.
+        /// </remarks>
         [TestMethod]
         public void LogLevel_ShouldBeSettableAndGettable()
         {
@@ -177,6 +205,12 @@ namespace ByteForge.Toolkit.Tests.Unit.Logging
             }
         }
 
+        /// <summary>
+        /// Ensures that the current log file path is returned and is valid.
+        /// </summary>
+        /// <remarks>
+        /// Verifies that log file management is functioning, which is critical for diagnostics and auditing.
+        /// </remarks>
         [TestMethod]
         public void CurrentLogFile_ShouldReturnPath()
         {
@@ -187,6 +221,12 @@ namespace ByteForge.Toolkit.Tests.Unit.Logging
             logFile?.Should().NotBeEmpty("current log file should have a valid path");
         }
 
+        /// <summary>
+        /// Checks that the Console property returns a valid ConsoleLogger instance.
+        /// </summary>
+        /// <remarks>
+        /// Ensures that console logging is properly implemented and accessible for direct output.
+        /// </remarks>
         [TestMethod]
         public void Console_ShouldReturnConsoleLoggerInstance()
         {
@@ -198,6 +238,12 @@ namespace ByteForge.Toolkit.Tests.Unit.Logging
             consoleLogger.Should().BeOfType<ConsoleLogger>();
         }
 
+        /// <summary>
+        /// Verifies that the SessionLogger property returns a valid instance or null.
+        /// </summary>
+        /// <remarks>
+        /// Confirms session-based logging is available when configured, supporting advanced logging scenarios.
+        /// </remarks>
         [TestMethod]
         public void SessionLogger_ShouldReturnSessionLoggerOrNull()
         {
@@ -209,6 +255,12 @@ namespace ByteForge.Toolkit.Tests.Unit.Logging
             sessionLogger?.Should().BeOfType<SessionFileLogger>();
         }
 
+        /// <summary>
+        /// Ensures that calling EndSession does not throw exceptions.
+        /// </summary>
+        /// <remarks>
+        /// Validates safe cleanup of session logging, preventing resource leaks or crashes during shutdown.
+        /// </remarks>
         [TestMethod]
         public void EndSession_ShouldNotThrow()
         {
@@ -217,6 +269,12 @@ namespace ByteForge.Toolkit.Tests.Unit.Logging
             endSessionAction.Should().NotThrow("EndSession should not throw");
         }
 
+        /// <summary>
+        /// Verifies composite logger features of the Log instance.
+        /// </summary>
+        /// <remarks>
+        /// Ensures that the logging system supports multiple loggers and exposes collection properties correctly.
+        /// </remarks>
         [TestMethod]
         public void Instance_CompositeLoggerFeatures_ShouldWork()
         {
@@ -229,6 +287,12 @@ namespace ByteForge.Toolkit.Tests.Unit.Logging
             instance.IsReadOnly.Should().BeFalse("loggers collection should not be read-only by default");
         }
 
+        /// <summary>
+        /// Tests logging from multiple threads to ensure thread safety.
+        /// </summary>
+        /// <remarks>
+        /// Prevents race conditions and data corruption in concurrent environments, which is vital for multi-threaded applications.
+        /// </remarks>
         [TestMethod]
         public void ConcurrentLogging_ShouldHandleMultipleThreads()
         {
@@ -254,6 +318,12 @@ namespace ByteForge.Toolkit.Tests.Unit.Logging
                 .Should().BeTrue("all logging tasks should complete");
         }
 
+        /// <summary>
+        /// Measures logging performance under high volume.
+        /// </summary>
+        /// <remarks>
+        /// Ensures the logging system can handle large numbers of messages efficiently, which is important for scalability.
+        /// </remarks>
         [TestMethod]
         public void Performance_HighVolumeLogging_ShouldPerformWell()
         {
@@ -269,10 +339,16 @@ namespace ByteForge.Toolkit.Tests.Unit.Logging
 
             // Assert
             var duration = DateTime.UtcNow - startTime;
-            duration.Should().BeLessThan(TimeSpan.FromSeconds(10), 
+            duration.Should().BeLessThan(TimeSpan.FromMilliseconds(200), 
                 $"should log {messageCount} messages efficiently");
         }
 
+        /// <summary>
+        /// Checks that ToString returns a meaningful string for the Log instance.
+        /// </summary>
+        /// <remarks>
+        /// Confirms that the logger provides useful diagnostic information when converted to a string, aiding debugging and logging.
+        /// </remarks>
         [TestMethod]
         public void ToString_ShouldReturnMeaningfulString()
         {

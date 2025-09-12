@@ -11,6 +11,12 @@ namespace ByteForge.Toolkit.Tests.Unit.Security
     [TestCategory("Security")]
     public class AESEncryptionTests
     {
+        /// <summary>
+        /// Verifies that GenerateKey produces a key for valid parameters.
+        /// </summary>
+        /// <remarks>
+        /// Ensures key generation is functional and produces unique keys for different seeds.
+        /// </remarks>
         [TestMethod]
         public void GenerateKey_ValidParameters_ShouldGenerateKey()
         {
@@ -24,6 +30,12 @@ namespace ByteForge.Toolkit.Tests.Unit.Security
             key1.Should().NotBe(key2, "different seeds should generate different keys");
         }
 
+        /// <summary>
+        /// Verifies that GenerateKey produces the same key for identical seed and size.
+        /// </summary>
+        /// <remarks>
+        /// Ensures deterministic key generation for repeatable encryption.
+        /// </remarks>
         [TestMethod]
         public void GenerateKey_SameSeedAndSize_ShouldGenerateSameKey()
         {
@@ -35,6 +47,12 @@ namespace ByteForge.Toolkit.Tests.Unit.Security
             key1.Should().Be(key2, "same seed and size should generate same key");
         }
 
+        /// <summary>
+        /// Verifies that GenerateKey produces keys of different lengths for different sizes.
+        /// </summary>
+        /// <remarks>
+        /// Ensures key size parameter is respected, supporting various encryption strengths.
+        /// </remarks>
         [TestMethod]
         public void GenerateKey_DifferentSizes_ShouldGenerateDifferentLengthKeys()
         {
@@ -48,6 +66,12 @@ namespace ByteForge.Toolkit.Tests.Unit.Security
             key16.Length.Should().BeLessThan(key32.Length);
         }
 
+        /// <summary>
+        /// Verifies that the AESEncryption constructor creates an instance.
+        /// </summary>
+        /// <remarks>
+        /// Ensures the AESEncryption class can be instantiated for encryption operations.
+        /// </remarks>
         [TestMethod]
         public void Constructor_ShouldCreateInstance()
         {
@@ -58,6 +82,12 @@ namespace ByteForge.Toolkit.Tests.Unit.Security
             aes.Should().NotBeNull();
         }
 
+        /// <summary>
+        /// Encrypts and decrypts valid inputs, verifying correct round-trip behavior.
+        /// </summary>
+        /// <remarks>
+        /// Ensures AES encryption and decryption work for typical use cases.
+        /// </remarks>
         [TestMethod]
         public void EncryptDecrypt_ValidInputs_ShouldWorkCorrectly()
         {
@@ -76,6 +106,12 @@ namespace ByteForge.Toolkit.Tests.Unit.Security
             decrypted.Should().Be(plaintext, "decrypted text should match original");
         }
 
+        /// <summary>
+        /// Encrypts and decrypts multiple test cases, verifying round-trip preservation.
+        /// </summary>
+        /// <remarks>
+        /// Ensures AES encryption and decryption work for various input types and edge cases.
+        /// </remarks>
         [TestMethod]
         public void EncryptDecrypt_RoundTrip_MultipleTestCases()
         {
@@ -109,6 +145,12 @@ namespace ByteForge.Toolkit.Tests.Unit.Security
             }
         }
 
+        /// <summary>
+        /// Encrypts the same input with the same key twice, verifying output consistency.
+        /// </summary>
+        /// <remarks>
+        /// Ensures deterministic encryption for identical input and key.
+        /// </remarks>
         [TestMethod]
         public void Encrypt_SameInputSameKey_ShouldProduceSameOutput()
         {
@@ -125,6 +167,12 @@ namespace ByteForge.Toolkit.Tests.Unit.Security
             encrypted1.Should().Be(encrypted2, "same input and key should produce same output");
         }
 
+        /// <summary>
+        /// Encrypts the same input with different keys, verifying output difference.
+        /// </summary>
+        /// <remarks>
+        /// Ensures encryption is sensitive to key changes, supporting multiple keys.
+        /// </remarks>
         [TestMethod]
         public void Encrypt_DifferentKeys_ShouldProduceDifferentOutputs()
         {
@@ -142,6 +190,12 @@ namespace ByteForge.Toolkit.Tests.Unit.Security
             encrypted1.Should().NotBe(encrypted2, "different keys should produce different outputs");
         }
 
+        /// <summary>
+        /// Attempts to decrypt with the wrong key, expecting a CryptographicException.
+        /// </summary>
+        /// <remarks>
+        /// Validates error handling for mismatched keys, ensuring security.
+        /// </remarks>
         [TestMethod]
         public void Decrypt_WrongKey_ShouldThrowCryptographicException()
         {
@@ -157,6 +211,12 @@ namespace ByteForge.Toolkit.Tests.Unit.Security
                 .Should().Throw<CryptographicException>("decrypting with wrong key should fail");
         }
 
+        /// <summary>
+        /// Encrypts null plaintext and verifies graceful handling.
+        /// </summary>
+        /// <remarks>
+        /// Ensures null input does not cause exceptions or crashes.
+        /// </remarks>
         [TestMethod]
         public void Encrypt_NullPlaintext_ShouldHandleGracefully()
         {
@@ -169,6 +229,12 @@ namespace ByteForge.Toolkit.Tests.Unit.Security
                 .Should().NotThrow("should handle null plaintext gracefully");
         }
 
+        /// <summary>
+        /// Attempts to encrypt with a null key, expecting an ArgumentNullException.
+        /// </summary>
+        /// <remarks>
+        /// Verifies error handling for missing key input.
+        /// </remarks>
         [TestMethod]
         public void Encrypt_NullKey_ShouldThrowArgumentNullException()
         {
@@ -181,6 +247,12 @@ namespace ByteForge.Toolkit.Tests.Unit.Security
                 .Should().Throw<ArgumentNullException>("key should not be null");
         }
 
+        /// <summary>
+        /// Decrypts null ciphertext and verifies graceful handling.
+        /// </summary>
+        /// <remarks>
+        /// Ensures null input does not cause exceptions or crashes during decryption.
+        /// </remarks>
         [TestMethod]
         public void Decrypt_NullCiphertext_ShouldHandleGracefully()
         {
@@ -193,6 +265,12 @@ namespace ByteForge.Toolkit.Tests.Unit.Security
                 .Should().NotThrow("should handle null ciphertext gracefully");
         }
 
+        /// <summary>
+        /// Attempts to decrypt invalid ciphertext, expecting a CryptographicException.
+        /// </summary>
+        /// <remarks>
+        /// Validates error handling for malformed or corrupted input.
+        /// </remarks>
         [TestMethod]
         public void Decrypt_InvalidCiphertext_ShouldThrowCryptographicException()
         {
@@ -215,6 +293,12 @@ namespace ByteForge.Toolkit.Tests.Unit.Security
             }
         }
 
+        /// <summary>
+        /// Verifies GenerateKey handles edge case parameters correctly.
+        /// </summary>
+        /// <remarks>
+        /// Ensures robustness for unusual or boundary values.
+        /// </remarks>
         [TestMethod]
         public void GenerateKey_EdgeCases_ShouldHandleCorrectly()
         {
@@ -239,6 +323,12 @@ namespace ByteForge.Toolkit.Tests.Unit.Security
             }
         }
 
+        /// <summary>
+        /// Encrypts and decrypts an empty string, verifying correct round-trip behavior.
+        /// </summary>
+        /// <remarks>
+        /// Ensures empty input is handled without errors and can be decrypted.
+        /// </remarks>
         [TestMethod]
         public void EncryptDecrypt_EmptyString_ShouldWorkCorrectly()
         {
@@ -255,6 +345,12 @@ namespace ByteForge.Toolkit.Tests.Unit.Security
             decrypted.Should().Be(emptyString);
         }
 
+        /// <summary>
+        /// Encrypts and decrypts whitespace strings, verifying preservation of whitespace.
+        /// </summary>
+        /// <remarks>
+        /// Ensures whitespace is not lost or altered during encryption and decryption.
+        /// </remarks>
         [TestMethod]
         public void EncryptDecrypt_WhitespaceString_ShouldPreserveWhitespace()
         {
@@ -281,6 +377,12 @@ namespace ByteForge.Toolkit.Tests.Unit.Security
             }
         }
 
+        /// <summary>
+        /// Encrypts and decrypts Unicode content, verifying correct handling.
+        /// </summary>
+        /// <remarks>
+        /// Ensures Unicode characters are supported, preventing data loss.
+        /// </remarks>
         [TestMethod]
         public void EncryptDecrypt_UnicodeContent_ShouldHandleCorrectly()
         {
@@ -310,6 +412,12 @@ namespace ByteForge.Toolkit.Tests.Unit.Security
             }
         }
 
+        /// <summary>
+        /// Performance test for multiple encrypt/decrypt operations.
+        /// </summary>
+        /// <remarks>
+        /// Ensures AES encryption is efficient for repeated use.
+        /// </remarks>
         [TestMethod]
         public void Performance_MultipleEncryptDecryptOperations_ShouldBeReasonablyFast()
         {
@@ -339,6 +447,12 @@ namespace ByteForge.Toolkit.Tests.Unit.Security
                 $"Should complete {iterations} encrypt/decrypt cycles in reasonable time");
         }
 
+        /// <summary>
+        /// Performance test for key generation.
+        /// </summary>
+        /// <remarks>
+        /// Ensures key generation is efficient for repeated use.
+        /// </remarks>
         [TestMethod]
         public void KeyGeneration_Performance_ShouldBeReasonablyFast()
         {
@@ -359,6 +473,12 @@ namespace ByteForge.Toolkit.Tests.Unit.Security
                 $"Should generate {iterations} keys in reasonable time");
         }
 
+        /// <summary>
+        /// Encrypts and decrypts large data, verifying correct handling.
+        /// </summary>
+        /// <remarks>
+        /// Ensures AES encryption can handle large data efficiently and correctly.
+        /// </remarks>
         [TestMethod]
         public void EncryptDecrypt_LargeData_ShouldHandleCorrectly()
         {
@@ -377,6 +497,12 @@ namespace ByteForge.Toolkit.Tests.Unit.Security
             encrypted.Length.Should().BeGreaterThan(0);
         }
 
+        /// <summary>
+        /// Verifies key generation consistency across multiple calls.
+        /// </summary>
+        /// <remarks>
+        /// Ensures deterministic key generation for repeatable encryption.
+        /// </remarks>
         [TestMethod]
         public void KeyGeneration_ConsistencyAcrossMultipleCalls_ShouldBeDeterministic()
         {
