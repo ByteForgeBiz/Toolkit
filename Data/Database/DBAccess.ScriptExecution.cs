@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.RegularExpressions;
 
@@ -40,74 +39,69 @@ namespace ByteForge.Toolkit
         /// <param name="script">The SQL script to execute.</param>
         /// <param name="arguments">Optional. The arguments for the SQL script.</param>
         /// <param name="captureResults">Indicates whether to capture the results of the script execution.</param>
-        /// <param name="caller">The name of the method that called this method.</param>
-        /// <returns>The result of the script execution.</returns>
+                /// <returns>The result of the script execution.</returns>
         /// <remarks>
         /// Use <c>ExecuteScript</c> when you need to execute a complex SQL script that may contain multiple batches of commands separated by "GO".
         /// This method is suitable for running DDL (Data Definition Language) statements, complex transactions, or scripts that require capturing multiple result sets.
         /// It returns a <see cref="ScriptExecutionResult"/> object containing detailed information about the execution, including success status, result sets, and any exceptions encountered.
         /// </remarks>
-        public ScriptExecutionResult ExecuteScript(string script, object[] arguments = null, bool captureResults = false, [CallerMemberName] string caller = "")
+        public ScriptExecutionResult ExecuteScript(string script, object[] arguments = null, bool captureResults = false)
         {
             var result = new ScriptExecutionResult();
 
             try
             {
-                using (var dbConn = CreateConnection())
+                using var dbConn = CreateConnection();
+                dbConn.Open();
+                var batches = SplitIntoBatches(script);
+
+                foreach (var batch in batches)
                 {
-                    dbConn.Open();
-                    var batches = SplitIntoBatches(script);
+                    if (string.IsNullOrWhiteSpace(batch)) continue;
 
-                    foreach (var batch in batches)
+                    using (var cmd = dbConn.CreateCommand())
                     {
-                        if (string.IsNullOrWhiteSpace(batch)) continue;
+                        cmd.CommandTimeout = 240;
+                        cmd.CommandText = batch;
 
-                        using (var cmd = dbConn.CreateCommand())
+                        // Only process parameters for non-DDL statements
+                        if (arguments != null && !IsDDLStatement(batch))
+                            AddParameters(cmd, batch, arguments);
+
+                        Log.Verbose($"Executing query:{Environment.NewLine}{batch}");
+                        Log.Debug(string.Join(", ", cmd.Parameters.Cast<SqlParameter>().Select(p => $"{p.ParameterName} = '{p.Value}'").ToArray()));
+                        var timeStart = DateTime.Now;
+
+                        if (captureResults)
                         {
-                            cmd.CommandTimeout = 240;
-                            cmd.CommandText = batch;
-
-                            // Only process parameters for non-DDL statements
-                            if (arguments != null && !IsDDLStatement(batch))
-                                AddParameters(cmd, batch, arguments);
-
-                            Log.Verbose($"Executing query:{Environment.NewLine}{batch}");
-                            Log.Debug(string.Join(", ", cmd.Parameters.Cast<SqlParameter>().Select(p => $"{p.ParameterName} = '{p.Value}'").ToArray()));
-                            var timeStart = DateTime.Now;
-
-                            if (captureResults)
+                            using var reader = cmd.ExecuteReader();
+                            do
                             {
-                                using (var reader = cmd.ExecuteReader())
-                                {
-                                    do
-                                    {
-                                        var dataTable = new DataTable();
-                                        dataTable.Load(reader);
-                                        if (dataTable.Rows.Count > 0)
-                                            result.ResultSets.Add(dataTable);
+                                var dataTable = new DataTable();
+                                dataTable.Load(reader);
+                                if (dataTable.Rows.Count > 0)
+                                    result.ResultSets.Add(dataTable);
 
-                                        result.RecordsAffected.Add(reader.RecordsAffected);
-                                    } while (!reader.IsClosed && reader.NextResult());
+                                result.RecordsAffected.Add(reader.RecordsAffected);
+                            } while (!reader.IsClosed && reader.NextResult());
 
-                                    if (result.ResultSets.Count > 0)
-                                        result.BatchResults.Add(result.ResultSets[result.ResultSets.Count - 1].Rows[0][0]);
-                                }
-                            }
-                            else
-                            {
-                                var affected = cmd.ExecuteNonQuery();
-                                result.RecordsAffected.Add(affected);
-                                result.BatchResults.Add(affected);
-                            }
-
-                            var duration = DateTime.Now - timeStart;
-                            Log.Debug($"Query executed in {duration}.");
-                            Log.Verbose($"Execution completed. Records affected: {result.RecordsAffected.Last()}");
+                            if (result.ResultSets.Count > 0)
+                                result.BatchResults.Add(result.ResultSets[result.ResultSets.Count - 1].Rows[0][0]);
+                        }
+                        else
+                        {
+                            var affected = cmd.ExecuteNonQuery();
+                            result.RecordsAffected.Add(affected);
+                            result.BatchResults.Add(affected);
                         }
 
-                        result.Success = true;
-                        LastException = null;
+                        var duration = DateTime.Now - timeStart;
+                        Log.Debug($"Query executed in {duration}.");
+                        Log.Verbose($"Execution completed. Records affected: {result.RecordsAffected.Last()}");
                     }
+
+                    result.Success = true;
+                    LastException = null;
                 }
             }
             catch (Exception ex)
@@ -115,7 +109,7 @@ namespace ByteForge.Toolkit
                 result.Success = false;
                 result.LastException = ex;
                 LastException = ex;
-                Log.Error(ex, $"Error executing script in '{caller}'");
+                Log.Error("Error executing script in ExecuteScript", ex);
             }
 
             return result;

@@ -38,6 +38,18 @@ namespace ByteForge.Toolkit
         }
 
         /// <summary>
+        /// Populates an existing object of type <typeparamref name="T"/> with values from a <see cref="DataRow"/>.
+        /// This is a strongly-typed version of <see cref="PopulateObjectFromDataRow(DataRow, object)"/>.
+        /// </summary>
+        /// <typeparam name="T">The type of the object to populate.</typeparam>
+        /// <param name="row">The <see cref="DataRow"/> containing the data to populate the object.</param>
+        /// <param name="obj">The object whose properties will be populated.</param>
+        public static void PopulateObjectFromDataRow<T>(DataRow row, T obj) where T : class
+        {
+            PopulateObjectFromDataRow(row, (object)obj);
+        }
+
+        /// <summary>
         /// Populates the properties of an object with values from a <see cref="DataRow"/>.
         /// </summary>
         /// <param name="row">The <see cref="DataRow"/> containing the data to populate the object. Cannot be <see langword="null"/>.</param>
@@ -49,6 +61,7 @@ namespace ByteForge.Toolkit
         /// the property is set to the corresponding value from the <paramref name="row"/>.<br/> 
         /// Only properties with public or non-public instance accessors are considered. 
         /// The method uses a cached mapping of property-to-column names for performance optimization.
+        /// Supports custom converters specified in the <see cref="DBColumnAttribute"/>.
         /// </remarks>
         public static void PopulateObjectFromDataRow(DataRow row, object obj)
         {
@@ -62,6 +75,7 @@ namespace ByteForge.Toolkit
                 _typeCache[objType] = propertyColumnMap = objType
                                  .GetProperties(BindingFlags.Public |
                                                 BindingFlags.NonPublic |
+                                                BindingFlags.FlattenHierarchy |
                                                 BindingFlags.Instance)
                                  .Where(p => p.CanWrite)
                                  .ToDictionary(
@@ -76,10 +90,55 @@ namespace ByteForge.Toolkit
                 var colName = kvp.Value;
 
                 if (row.Table.Columns.Contains(colName))
+                    SetPropertyValue(obj, prop, row[colName], row.Table.TableName);
+            }
+        }
+
+        /// <summary>
+        /// Sets a property value with enhanced conversion support including custom converters.
+        /// </summary>
+        /// <param name="obj">The object whose property will be set.</param>
+        /// <param name="property">The property to set.</param>
+        /// <param name="columnValue">The raw value from the DataRow column.</param>
+        /// <param name="tableName">The name of the table for logging purposes.</param>
+        private static void SetPropertyValue(object obj, PropertyInfo property, object columnValue, string tableName)
+        {
+            try
+            {
+                var dbAttribute = property.GetCustomAttribute<DBColumnAttribute>();
+                var columnName = dbAttribute?.Name ?? property.Name;
+
+                // Handle DBNull and empty strings consistently
+                if (columnValue == DBNull.Value || 
+                    (columnValue is string strValue && string.IsNullOrWhiteSpace(strValue)))
                 {
-                    var value = ConvertTo(prop.PropertyType, row[colName]);
-                    prop.SetValue(obj, value);
+                    columnValue = null;
                 }
+
+                object convertedValue;
+
+                // Use custom converter from attribute if available
+                if (dbAttribute?.Converter != null)
+                    convertedValue = dbAttribute.Converter(columnValue);
+                else if (columnValue == null && property.PropertyType.IsValueType)
+                    convertedValue = Activator.CreateInstance(property.PropertyType);
+                else
+                    convertedValue = ConvertTo(property.PropertyType, columnValue);
+
+                if (property.PropertyType == typeof(string) && convertedValue == null)
+                    convertedValue = string.Empty;
+
+                property.SetValue(obj, convertedValue);
+            }
+            catch (Exception ex)
+            {
+                var columnName = property.GetCustomAttribute<DBColumnAttribute>()?.Name ?? property.Name;
+                Log.Warning($"Failed to set property '{property.Name}' from column '{tableName}.{columnName}' with value '{columnValue}' (type: {columnValue?.GetType().Name ?? "null"}). Using default value.", ex);
+                
+                // Set to default value on failure
+                var defaultValue = property.PropertyType == typeof(string) ? string.Empty :
+                                   property.PropertyType.IsValueType ? Activator.CreateInstance(property.PropertyType) : null;
+                property.SetValue(obj, defaultValue);
             }
         }
 

@@ -77,42 +77,20 @@ namespace ByteForge.Toolkit
             /*
              * String is omitted because it's the default type
              */
-            switch (type.Name)
+            prm.DbType = type.Name switch
             {
-                case "Boolean":
-                    prm.DbType = System.Data.DbType.Boolean;
-                    break;
-                case "Byte":
-                    prm.DbType = System.Data.DbType.Byte;
-                    break;
-                case "DateTime":
-                    prm.DbType = System.Data.DbType.DateTime;
-                    break;
-                case "Decimal":
-                    prm.DbType = System.Data.DbType.Decimal;
-                    break;
-                case "Double":
-                    prm.DbType = System.Data.DbType.Double;
-                    break;
-                case "Guid":
-                    prm.DbType = System.Data.DbType.Guid;
-                    break;
-                case "Int16":
-                    prm.DbType = System.Data.DbType.Int16;
-                    break;
-                case "Int32":
-                    prm.DbType = System.Data.DbType.Int32;
-                    break;
-                case "Int64":
-                    prm.DbType = System.Data.DbType.Int64;
-                    break;
-                case "Single":
-                    prm.DbType = System.Data.DbType.Single;
-                    break;
-                default:
-                    prm.DbType = System.Data.DbType.String;
-                    break;
-            }
+                "Boolean" => System.Data.DbType.Boolean,
+                "Byte" => System.Data.DbType.Byte,
+                "DateTime" => System.Data.DbType.DateTime,
+                "Decimal" => System.Data.DbType.Decimal,
+                "Double" => System.Data.DbType.Double,
+                "Guid" => System.Data.DbType.Guid,
+                "Int16" => System.Data.DbType.Int16,
+                "Int32" => System.Data.DbType.Int32,
+                "Int64" => System.Data.DbType.Int64,
+                "Single" => System.Data.DbType.Single,
+                _ => System.Data.DbType.String,
+            };
         }
     }
 }

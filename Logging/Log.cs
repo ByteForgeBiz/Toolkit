@@ -1,7 +1,6 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Web;
 using ByteForge.Toolkit.Logging;
 
@@ -170,117 +169,101 @@ namespace ByteForge.Toolkit
         /// Logs a trace message.
         /// </summary>
         /// <param name="message">The message to log.</param>
-        /// <param name="source">The source of the message. This is automatically set to the caller member name.</param>
-        public static void Trace(string message, [CallerMemberName] string source = "") => WriteToLog(LogLevel.Trace, message, null, source);
+        public static void Trace(string message) => WriteToLog(LogLevel.Trace, message, null);
 
         /// <summary>
         /// Logs a debug message.
         /// </summary>
         /// <param name="message">The message to log.</param>
-        /// <param name="source">The source of the message. This is automatically set to the caller member name.</param>
-        public static void Debug(string message, [CallerMemberName] string source = "") => WriteToLog(LogLevel.Debug, message, null, source);
+        public static void Debug(string message) => WriteToLog(LogLevel.Debug, message, null);
 
         /// <summary>
         /// Logs a verbose message.
         /// </summary>
         /// <param name="message">The message to log.</param>
-        /// <param name="source">The source of the message. This is automatically set to the caller member name.</param>
-        public static void Verbose(string message, [CallerMemberName] string source = "") => WriteToLog(LogLevel.Verbose, message, null, source);
+        public static void Verbose(string message) => WriteToLog(LogLevel.Verbose, message, null);
 
         /// <summary>
         /// Logs an informational message.
         /// </summary>
         /// <param name="message">The message to log.</param>
-        /// <param name="source">The source of the message. This is automatically set to the caller member name.</param>
-        public static void Info(string message, [CallerMemberName] string source = "") => WriteToLog(LogLevel.Info, message, null, source);
+        public static void Info(string message) => WriteToLog(LogLevel.Info, message, null);
 
         /// <summary>
         /// Logs a notice message.
         /// </summary>
         /// <param name="message">The message to log.</param>
-        /// <param name="source">The source of the message. This is automatically set to the caller member name.</param>
-        public static void Notice(string message, [CallerMemberName] string source = "") => WriteToLog(LogLevel.Notice, message, null, source);
+        public static void Notice(string message) => WriteToLog(LogLevel.Notice, message, null);
 
         /// <summary>
         /// Logs a warning message.
         /// </summary>
         /// <param name="message">The message to log.</param>
-        /// <param name="source">The source of the message. This is automatically set to the caller member name.</param>
-        public static void Warning(string message, [CallerMemberName] string source = "") => WriteToLog(LogLevel.Warning, message, null, source);
+        public static void Warning(string message) => WriteToLog(LogLevel.Warning, message, null);
 
         /// <summary>
         /// Logs a warning message with an exception.
         /// </summary>
         /// <param name="message">The message to log.</param>
         /// <param name="ex">The exception to log.</param>
-        /// <param name="source">The source of the message. This is automatically set to the caller member name.</param>
-        public static void Warning(string message, Exception ex, [CallerMemberName] string source = "") => WriteToLog(LogLevel.Warning, message, ex, source);
+        public static void Warning(string message, Exception ex) => WriteToLog(LogLevel.Warning, message, ex);
 
         /// <summary>
         /// Logs an error message.
         /// </summary>
         /// <param name="message">The message to log.</param>
-        /// <param name="source">The source of the message. This is automatically set to the caller member name.</param>
-        public static void Error(string message, [CallerMemberName] string source = "") => WriteToLog(LogLevel.Error, message, null, source);
+        public static void Error(string message) => WriteToLog(LogLevel.Error, message, null);
 
         /// <summary>
         /// Logs an error message with an exception.
         /// </summary>
         /// <param name="ex">The exception to log.</param>
-        /// <param name="source">The source of the message. This is automatically set to the caller member name.</param>
-        public static void Error(Exception ex, [CallerMemberName] string source = "") => WriteToLog(LogLevel.Error, ex.Message, ex, source);
+        public static void Error(Exception ex) => WriteToLog(LogLevel.Error, ex.Message, ex);
 
         /// <summary>
         /// Logs an error message with an exception and a custom message.
         /// </summary>
         /// <param name="message">The message to log.</param>
         /// <param name="ex">The exception to log.</param>
-        /// <param name="source">The source of the message. This is automatically set to the caller member name.</param>
-        public static void Error(string message, Exception ex, [CallerMemberName] string source = "") => WriteToLog(LogLevel.Error, message, ex, source);
+        public static void Error(string message, Exception ex) => WriteToLog(LogLevel.Error, message, ex);
 
         /// <summary>
         /// Logs a critical error message.
         /// </summary>
         /// <param name="message">The message to log.</param>
-        /// <param name="source">The source of the message. This is automatically set to the caller member name.</param>
-        public static void Critical(string message, [CallerMemberName] string source = "") => WriteToLog(LogLevel.Critical, message, null, source);
+        public static void Critical(string message) => WriteToLog(LogLevel.Critical, message, null);
 
         /// <summary>
         /// Logs a critical error message with an exception.
         /// </summary>
         /// <param name="ex">The exception to log.</param>
-        /// <param name="source">The source of the message. This is automatically set to the caller member name.</param>
-        public static void Critical(Exception ex, [CallerMemberName] string source = "") => WriteToLog(LogLevel.Critical, ex.Message, ex, source);
+        public static void Critical(Exception ex) => WriteToLog(LogLevel.Critical, ex.Message, ex);
 
         /// <summary>
         /// Logs a critical error message with an exception and a custom message.
         /// </summary>
         /// <param name="message">The message to log.</param>
         /// <param name="ex">The exception to log.</param>
-        /// <param name="source">The source of the message. This is automatically set to the caller member name.</param>
-        public static void Critical(string message, Exception ex, [CallerMemberName] string source = "") => WriteToLog(LogLevel.Critical, message, ex, source);
+        public static void Critical(string message, Exception ex) => WriteToLog(LogLevel.Critical, message, ex);
 
         /// <summary>
         /// Logs a fatal error message.
         /// </summary>
         /// <param name="message">The message to log.</param>
-        /// <param name="source">The source of the message. This is automatically set to the caller member name.</param>
-        public static void Fatal(string message, [CallerMemberName] string source = "") => WriteToLog(LogLevel.Fatal, message, null, source);
+        public static void Fatal(string message) => WriteToLog(LogLevel.Fatal, message, null);
 
         /// <summary>
         /// Logs a fatal error message with an exception.
         /// </summary>
         /// <param name="ex">The exception to log.</param>
-        /// <param name="source">The source of the message. This is automatically set to the caller member name.</param>
-        public static void Fatal(Exception ex, [CallerMemberName] string source = "") => WriteToLog(LogLevel.Fatal, ex.Message, ex, source);
+        public static void Fatal(Exception ex) => WriteToLog(LogLevel.Fatal, ex.Message, ex);
 
         /// <summary>
         /// Logs a fatal error message with an exception and a custom message.
         /// </summary>
         /// <param name="message">The message to log.</param>
         /// <param name="ex">The exception to log.</param>
-        /// <param name="source">The source of the message. This is automatically set to the caller member name.</param>
-        public static void Fatal(string message, Exception ex, [CallerMemberName] string source = "") => WriteToLog(LogLevel.Fatal, message, ex, source);
+        public static void Fatal(string message, Exception ex) => WriteToLog(LogLevel.Fatal, message, ex);
 
         /// <summary>
         /// Writes a message to a specified log file.
@@ -288,13 +271,13 @@ namespace ByteForge.Toolkit
         /// <param name="level">The trace level of the message.</param>
         /// <param name="message">The message to write.</param>
         /// <param name="ex"></param>
-        /// <param name="source">The source of the message.</param>
         /// 
-        private static void WriteToLog(LogLevel level, string message, Exception ex, string source)
+        /// 
+        private static void WriteToLog(LogLevel level, string message, Exception ex)
         {
             if (string.IsNullOrEmpty(message))
                 return;
-            Instance.WriteToLog(level, message.Split(Utils.arrCRLF, StringSplitOptions.RemoveEmptyEntries), ex, source);
+            Instance.WriteToLog(level, message.Split(Utils.arrCRLF, StringSplitOptions.RemoveEmptyEntries), ex);
         }
 
         /// <summary>
@@ -303,9 +286,9 @@ namespace ByteForge.Toolkit
         /// <param name="level">The trace level of the messages.</param>
         /// <param name="text">The messages to write.</param>
         /// <param name="ex"></param>
-        /// <param name="source">The source of the messages.</param>
         /// 
-        private void WriteToLog(LogLevel level, string[] text, Exception ex, string source)
+        /// 
+        private void WriteToLog(LogLevel level, string[] text, Exception ex)
         {
             if (text == null ||
                 text.Length == 0 ||
@@ -314,7 +297,7 @@ namespace ByteForge.Toolkit
 
             try
             {
-                Instance.Log(level, string.Join(Environment.NewLine, text), ex, source);
+                Instance.Log(level, string.Join(Environment.NewLine, text), ex);
             }
             catch (Exception ex2)
             {
@@ -323,8 +306,8 @@ namespace ByteForge.Toolkit
                  * So, we will attempt to write the error to a temporary file in the user's temp directory,
                  * as the user usually have write permissions there.
                  */
-                AlternateLogger.LogCritical("An error occurred while writing to the log file.", ex2, "Log.WriteToFile");
-                AlternateLogger.Log(level, string.Join("\n", text), ex, source);
+                AlternateLogger.LogCritical("An error occurred while writing to the log file.", ex2);
+                AlternateLogger.Log(level, string.Join("\n", text), ex);
             }
         }
 

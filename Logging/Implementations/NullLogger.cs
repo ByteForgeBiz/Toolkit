@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Runtime.CompilerServices;
 
 namespace ByteForge.Toolkit.Logging
 {
@@ -32,8 +31,7 @@ namespace ByteForge.Toolkit.Logging
         /// <param name="level">The log level.</param>
         /// <param name="message">The message to log.</param>
         /// <param name="ex">Optional exception associated with the log message.</param>
-        /// <param name="source">The source of the message.</param>
-        public void Log(LogLevel level, string message, Exception ex = null, [CallerMemberName] string source = "")
+                public void Log(LogLevel level, string message, Exception ex = null)
         {
             // Do nothing - this is a null logger
         }
@@ -42,8 +40,7 @@ namespace ByteForge.Toolkit.Logging
         /// Logs a trace message. This implementation does nothing.
         /// </summary>
         /// <param name="message">The message to log.</param>
-        /// <param name="source">The source of the message.</param>
-        public void LogTrace(string message, [CallerMemberName] string source = "")
+                public void LogTrace(string message)
         {
             // Do nothing - this is a null logger
         }
@@ -52,8 +49,7 @@ namespace ByteForge.Toolkit.Logging
         /// Logs a debug message. This implementation does nothing.
         /// </summary>
         /// <param name="message">The message to log.</param>
-        /// <param name="source">The source of the message.</param>
-        public void LogDebug(string message, [CallerMemberName] string source = "")
+                public void LogDebug(string message)
         {
             // Do nothing - this is a null logger
         }
@@ -62,8 +58,7 @@ namespace ByteForge.Toolkit.Logging
         /// Logs a verbose message. This implementation does nothing.
         /// </summary>
         /// <param name="message">The message to log.</param>
-        /// <param name="source">The source of the message.</param>
-        public void LogVerbose(string message, [CallerMemberName] string source = "")
+                public void LogVerbose(string message)
         {
             // Do nothing - this is a null logger
         }
@@ -72,8 +67,7 @@ namespace ByteForge.Toolkit.Logging
         /// Logs an informational message. This implementation does nothing.
         /// </summary>
         /// <param name="message">The message to log.</param>
-        /// <param name="source">The source of the message.</param>
-        public void LogInfo(string message, [CallerMemberName] string source = "")
+                public void LogInfo(string message)
         {
             // Do nothing - this is a null logger
         }
@@ -82,8 +76,7 @@ namespace ByteForge.Toolkit.Logging
         /// Logs a notice message. This implementation does nothing.
         /// </summary>
         /// <param name="message">The message to log.</param>
-        /// <param name="source">The source of the message.</param>
-        public void LogNotice(string message, [CallerMemberName] string source = "")
+                public void LogNotice(string message)
         {
             // Do nothing - this is a null logger
         }
@@ -92,8 +85,7 @@ namespace ByteForge.Toolkit.Logging
         /// Logs a warning message. This implementation does nothing.
         /// </summary>
         /// <param name="message">The message to log.</param>
-        /// <param name="source">The source of the message.</param>
-        public void LogWarning(string message, [CallerMemberName] string source = "")
+                public void LogWarning(string message)
         {
             // Do nothing - this is a null logger
         }
@@ -103,8 +95,7 @@ namespace ByteForge.Toolkit.Logging
         /// </summary>
         /// <param name="message">The message to log.</param>
         /// <param name="ex">Optional exception associated with the error.</param>
-        /// <param name="source">The source of the message.</param>
-        public void LogError(string message, Exception ex = null, [CallerMemberName] string source = "")
+                public void LogError(string message, Exception ex = null)
         {
             // Do nothing - this is a null logger
         }
@@ -114,8 +105,7 @@ namespace ByteForge.Toolkit.Logging
         /// </summary>
         /// <param name="message">The message to log.</param>
         /// <param name="ex">Optional exception associated with the critical error.</param>
-        /// <param name="source">The source of the message.</param>
-        public void LogCritical(string message, Exception ex = null, [CallerMemberName] string source = "")
+                public void LogCritical(string message, Exception ex = null)
         {
             // Do nothing - this is a null logger
         }
@@ -125,8 +115,7 @@ namespace ByteForge.Toolkit.Logging
         /// </summary>
         /// <param name="message">The message to log.</param>
         /// <param name="ex">Optional exception associated with the fatal error.</param>
-        /// <param name="source">The source of the message.</param>
-        public void LogFatal(string message, Exception ex = null, [CallerMemberName] string source = "")
+                public void LogFatal(string message, Exception ex = null)
         {
             // Do nothing - this is a null logger
         }

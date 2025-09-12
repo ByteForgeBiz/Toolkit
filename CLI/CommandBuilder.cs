@@ -47,7 +47,7 @@ namespace ByteForge.Toolkit.CommandLine
         {
             var commands = new List<Command>();
 
-            foreach (var type in assembly.GetTypes().Where(t => t.IsClass && !t.IsAbstract && t.IsPublic))
+            foreach (var type in assembly.GetTypes())
             {
                 // Build command group if class has a command attribute
                 var cmdAttr = type.GetCustomAttribute<CommandAttribute>();
@@ -282,7 +282,7 @@ namespace ByteForge.Toolkit.CommandLine
                 throw new ArgumentException("Arrays are not supported as command parameters");
 
             var optionType = typeof(Option<>).MakeGenericType(underlyingType);
-            var option = (Option)Activator.CreateInstance(optionType, new object[] { name, description });
+            var option = (Option)Activator.CreateInstance(optionType, name, description);
             return option;
         }
 

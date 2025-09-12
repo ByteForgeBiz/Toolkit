@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Runtime.CompilerServices;
 using System.Threading;
 
 namespace ByteForge.Toolkit.Logging
@@ -50,8 +49,7 @@ namespace ByteForge.Toolkit.Logging
         /// <param name="level">The log level.</param>
         /// <param name="message">The message to log.</param>
         /// <param name="ex">An optional exception to log.</param>
-        /// <param name="source">The source of the log message. Defaults to the caller member name.</param>
-        public void Log(LogLevel level, string message, Exception ex = null, [CallerMemberName] string source = "")
+        public void Log(LogLevel level, string message, Exception ex = null)
         {
             if (level < MinLogLevel) return;
 
@@ -60,7 +58,7 @@ namespace ByteForge.Toolkit.Logging
                 Timestamp = DateTime.Now,
                 Level = level,
                 Message = message,
-                Source = source,
+                Source = level.ToString(),
                 Exception = ex,
                 Properties = new Dictionary<string, object>
                     {
@@ -76,67 +74,58 @@ namespace ByteForge.Toolkit.Logging
         /// Logs a trace message.
         /// </summary>
         /// <param name="message">The message to log.</param>
-        /// <param name="source">The source of the log message. Defaults to the caller member name.</param>
-        public void LogTrace(string message, [CallerMemberName] string source = "") => Log(LogLevel.Trace, message, null, source);
+        public void LogTrace(string message) => Log(LogLevel.Trace, message, null);
 
         /// <summary>
         /// Logs a debug message.
         /// </summary>
         /// <param name="message">The message to log.</param>
-        /// <param name="source">The source of the log message. Defaults to the caller member name.</param>
-        public void LogDebug(string message, [CallerMemberName] string source = "") => Log(LogLevel.Debug, message, null, source);
+        public void LogDebug(string message) => Log(LogLevel.Debug, message, null);
 
         /// <summary>
         /// Logs a verbose message.
         /// </summary>
         /// <param name="message">The message to log.</param>
-        /// <param name="source">The source of the log message. Defaults to the caller member name.</param>
-        public void LogVerbose(string message, [CallerMemberName] string source = "") => Log(LogLevel.Verbose, message, null, source);
+        public void LogVerbose(string message) => Log(LogLevel.Verbose, message, null);
 
         /// <summary>
         /// Logs an informational message.
         /// </summary>
         /// <param name="message">The message to log.</param>
-        /// <param name="source">The source of the log message. Defaults to the caller member name.</param>
-        public void LogInfo(string message, [CallerMemberName] string source = "") => Log(LogLevel.Info, message, null, source);
+        public void LogInfo(string message) => Log(LogLevel.Info, message, null);
 
         /// <summary>
         /// Logs a notice message.
         /// </summary>
         /// <param name="message">The message to log.</param>
-        /// <param name="source">The source of the log message. Defaults to the caller member name.</param>
-        public void LogNotice(string message, [CallerMemberName] string source = "") => Log(LogLevel.Notice, message, null, source);
+        public void LogNotice(string message) => Log(LogLevel.Notice, message, null);
 
         /// <summary>
         /// Logs a warning message.
         /// </summary>
         /// <param name="message">The message to log.</param>
-        /// <param name="source">The source of the log message. Defaults to the caller member name.</param>
-        public void LogWarning(string message, [CallerMemberName] string source = "") => Log(LogLevel.Warning, message, null, source);
+        public void LogWarning(string message) => Log(LogLevel.Warning, message, null);
 
         /// <summary>
         /// Logs an error message.
         /// </summary>
         /// <param name="message">The message to log.</param>
         /// <param name="ex">An optional exception to log.</param>
-        /// <param name="source">The source of the log message. Defaults to the caller member name.</param>
-        public void LogError(string message, Exception ex = null, [CallerMemberName] string source = "") => Log(LogLevel.Error, message, ex, source);
+        public void LogError(string message, Exception ex = null) => Log(LogLevel.Error, message, ex);
 
         /// <summary>
         /// Logs a critical message.
         /// </summary>
         /// <param name="message">The message to log.</param>
         /// <param name="ex">An optional exception to log.</param>
-        /// <param name="source">The source of the log message. Defaults to the caller member name.</param>
-        public void LogCritical(string message, Exception ex = null, [CallerMemberName] string source = "") => Log(LogLevel.Critical, message, ex, source);
+        public void LogCritical(string message, Exception ex = null) => Log(LogLevel.Critical, message, ex);
 
         /// <summary>
         /// Logs a fatal message.
         /// </summary>
         /// <param name="message">The message to log.</param>
         /// <param name="ex">An optional exception to log.</param>
-        /// <param name="source">The source of the log message. Defaults to the caller member name.</param>
-        public void LogFatal(string message, Exception ex = null, [CallerMemberName] string source = "") => Log(LogLevel.Fatal, message, ex, source);
+        public void LogFatal(string message, Exception ex = null) => Log(LogLevel.Fatal, message, ex);
 
         // Helper Methods
 

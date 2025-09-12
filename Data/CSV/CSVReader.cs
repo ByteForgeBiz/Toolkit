@@ -49,12 +49,12 @@ namespace ByteForge.Toolkit
             /// The row was processed successfully.
             /// </summary>
             OK,
-            
+
             /// <summary>
             /// The row is malformed (e.g., incorrect field count).
             /// </summary>
             Malformed,
-            
+
             /// <summary>
             /// End of file reached.
             /// </summary>
@@ -88,6 +88,11 @@ namespace ByteForge.Toolkit
         /// <summary>
         /// Gets or sets the delegate to handle CSV rows with status information.
         /// </summary>
+        /// <remarks>
+        /// This delegate receives each row as a dictionary mapping column names to field values,
+        /// along with a status indicating if the row is OK, Malformed, or EOF, and the raw CSV line.<br/>
+        /// It should return <see langword="true"/> to continue processing further rows, or <see langword="false"/> to stop.
+        /// </remarks>
         public CSVRowProcessorDelegate RowHandler { get; set; }
 
         /// <summary>
@@ -155,7 +160,6 @@ namespace ByteForge.Toolkit
         /// </summary>
         /// <param name="stream">The stream to read from.</param>
         /// <param name="rowHandler">The handler to process each row.</param>
-        /// 
         public static void ReadStream(Stream stream, CSVRowProcessorDelegate rowHandler)
         {
             var reader = new CSVReader { RowHandler = rowHandler };
@@ -166,7 +170,6 @@ namespace ByteForge.Toolkit
         /// Reads the CSV file and processes the data.
         /// </summary>
         /// <param name="filePath">The path to the CSV file.</param>
-        /// 
         /// <exception cref="ArgumentNullException">Thrown when the file path or data processor is null.</exception>
         /// <exception cref="FileNotFoundException">Thrown when the file is not found.</exception>
         public void ReadFile(string filePath)
@@ -186,7 +189,6 @@ namespace ByteForge.Toolkit
         /// Reads the provided stream and processes the CSV data.
         /// </summary>
         /// <param name="stream">The stream to read from.</param>
-        /// 
         /// <exception cref="ArgumentNullException">Thrown when the stream or data processor is null.</exception>
         /// <exception cref="InvalidDataException">Thrown when the CSV file is empty or has inconsistent field counts (when throwExceptions is true).</exception>
         public void ReadStream(Stream stream)
@@ -256,7 +258,7 @@ namespace ByteForge.Toolkit
                 {
                     if (throwExceptions)
                         throw new InvalidDataException($"Inconsistent field count. Expected {columns.Length}, got {values.Length} at line: {line}");
-                    
+
                     // For non-throwing mode, call RowHandler with Malformed status
                     if (RowHandler != null)
                     {

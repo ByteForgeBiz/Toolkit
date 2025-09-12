@@ -151,9 +151,9 @@ namespace ByteForge.Toolkit
         /// timing out. This is particularly important in scenarios where network
         /// connectivity might be unreliable.
         /// </remarks>
-        [DefaultValue(60)]
+        [DefaultValue(10)]
         [ConfigName("iConnectionTimeout")]
-        public int ConnectionTimeout { get; set; } = 60;
+        public int ConnectionTimeout { get; set; } = 10;
 
         /// <summary>
         /// Gets or sets the command timeout duration in seconds.
@@ -225,7 +225,7 @@ namespace ByteForge.Toolkit
                     try { return Encryptor.Default.Decrypt(EncryptedUser); }
                     catch (Exception ex)
                     {
-                        Log.Error(ex, "Failed to decrypt database user");
+                        Log.Error("Failed to decrypt database user", ex);
                         throw;
                     }
                 }
@@ -257,7 +257,7 @@ namespace ByteForge.Toolkit
                     try { return Encryptor.Default.Decrypt(EncryptedPassword); }
                     catch (Exception ex)
                     {
-                        Log.Error(ex, "Failed to decrypt database password");
+                        Log.Error("Failed to decrypt database password", ex);
                         throw;
                     }
                 }
@@ -296,31 +296,26 @@ namespace ByteForge.Toolkit
 
             try
             {
-                switch (DatabaseType)
+                return DatabaseType switch
                 {
-                    case DBAccess.DataBaseType.SQLServer:
-                        return $"Server={Server};" +
-                               $"Database={DatabaseName};" +
-                               $"User ID={User};" +
-                               $"Password={Password};" +
-                               $"Encrypt={(UseEncryption ? "Optional" : "false")};" +
-                               $"Trusted_Connection={UseTrustedConnection.ToString().ToLowerInvariant()};" +
-                               $"Connection Timeout={ConnectionTimeout}";
-
-                    case DBAccess.DataBaseType.ODBC:
-                        return $"DSN={ServerDSN};" +
-                               $"SERVER={Server};" +
-                               $"DATABASE={DatabaseName};" +
-                               $"UID={User};" +
-                               $"PASSWORD={Password};";
-
-                    default:
-                        throw new NotSupportedException($"The database type {DatabaseType} is not supported.");
-                }
+                    DBAccess.DataBaseType.SQLServer => $"Server={Server};" +
+                                                       $"Database={DatabaseName};" +
+                                                       $"User ID={User};" +
+                                                       $"Password={Password};" +
+                                                       $"Encrypt={(UseEncryption ? "Optional" : "false")};" +
+                                                       $"Trusted_Connection={(UseTrustedConnection ? "true" : "false")};" +
+                                                       $"Connection Timeout={ConnectionTimeout}",
+                    DBAccess.DataBaseType.ODBC => $"DSN={ServerDSN};" +
+                                                  $"SERVER={Server};" +
+                                                  $"DATABASE={DatabaseName};" +
+                                                  $"UID={User};" +
+                                                  $"PASSWORD={Password};",
+                    _ => throw new NotSupportedException($"The database type {DatabaseType} is not supported."),
+                };
             }
             catch (Exception ex)
             {
-                Log.Error(ex, "Failed to build connection string");
+                Log.Error("Failed to build connection string", ex);
                 throw;
             }
         }

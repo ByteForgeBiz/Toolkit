@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Runtime.CompilerServices;
 
 namespace ByteForge.Toolkit.Logging
 {
@@ -42,50 +41,49 @@ namespace ByteForge.Toolkit.Logging
         /// <param name="level">The log level.</param>
         /// <param name="message">The message to log.</param>
         /// <param name="ex">Optional exception associated with the log message.</param>
-        /// <param name="source">The source of the message.</param>
-        public void Log(LogLevel level, string message, Exception ex = null, [CallerMemberName] string source = "")
+                public void Log(LogLevel level, string message, Exception ex = null)
         {
             // Delegate to the appropriate static Log method based on level
             switch (level)
             {
                 case LogLevel.Trace:
-                    ByteForge.Toolkit.Log.Trace(message, source);
+                    ByteForge.Toolkit.Log.Trace(message);
                     break;
                 case LogLevel.Debug:
-                    ByteForge.Toolkit.Log.Debug(message, source);
+                    ByteForge.Toolkit.Log.Debug(message);
                     break;
                 case LogLevel.Verbose:
-                    ByteForge.Toolkit.Log.Verbose(message, source);
+                    ByteForge.Toolkit.Log.Verbose(message);
                     break;
                 case LogLevel.Info:
-                    ByteForge.Toolkit.Log.Info(message, source);
+                    ByteForge.Toolkit.Log.Info(message);
                     break;
                 case LogLevel.Notice:
-                    ByteForge.Toolkit.Log.Notice(message, source);
+                    ByteForge.Toolkit.Log.Notice(message);
                     break;
                 case LogLevel.Warning:
                     if (ex != null)
-                        ByteForge.Toolkit.Log.Warning(message, ex, source);
+                        ByteForge.Toolkit.Log.Warning(message, ex);
                     else
-                        ByteForge.Toolkit.Log.Warning(message, source);
+                        ByteForge.Toolkit.Log.Warning(message);
                     break;
                 case LogLevel.Error:
                     if (ex != null)
-                        ByteForge.Toolkit.Log.Error(message, ex, source);
+                        ByteForge.Toolkit.Log.Error(message, ex);
                     else
-                        ByteForge.Toolkit.Log.Error(message, source);
+                        ByteForge.Toolkit.Log.Error(message);
                     break;
                 case LogLevel.Critical:
                     if (ex != null)
-                        ByteForge.Toolkit.Log.Critical(message, ex, source);
+                        ByteForge.Toolkit.Log.Critical(message, ex);
                     else
-                        ByteForge.Toolkit.Log.Critical(message, source);
+                        ByteForge.Toolkit.Log.Critical(message);
                     break;
                 case LogLevel.Fatal:
                     if (ex != null)
-                        ByteForge.Toolkit.Log.Fatal(message, ex, source);
+                        ByteForge.Toolkit.Log.Fatal(message, ex);
                     else
-                        ByteForge.Toolkit.Log.Fatal(message, source);
+                        ByteForge.Toolkit.Log.Fatal(message);
                     break;
             }
         }
@@ -94,60 +92,54 @@ namespace ByteForge.Toolkit.Logging
         /// Logs a trace message.
         /// </summary>
         /// <param name="message">The message to log.</param>
-        /// <param name="source">The source of the message.</param>
-        public void LogTrace(string message, [CallerMemberName] string source = "")
+                public void LogTrace(string message)
         {
-            ByteForge.Toolkit.Log.Trace(message, source);
+            ByteForge.Toolkit.Log.Trace(message);
         }
 
         /// <summary>
         /// Logs a debug message.
         /// </summary>
         /// <param name="message">The message to log.</param>
-        /// <param name="source">The source of the message.</param>
-        public void LogDebug(string message, [CallerMemberName] string source = "")
+                public void LogDebug(string message)
         {
-            ByteForge.Toolkit.Log.Debug(message, source);
+            ByteForge.Toolkit.Log.Debug(message);
         }
 
         /// <summary>
         /// Logs a verbose message.
         /// </summary>
         /// <param name="message">The message to log.</param>
-        /// <param name="source">The source of the message.</param>
-        public void LogVerbose(string message, [CallerMemberName] string source = "")
+                public void LogVerbose(string message)
         {
-            ByteForge.Toolkit.Log.Verbose(message, source);
+            ByteForge.Toolkit.Log.Verbose(message);
         }
 
         /// <summary>
         /// Logs an informational message.
         /// </summary>
         /// <param name="message">The message to log.</param>
-        /// <param name="source">The source of the message.</param>
-        public void LogInfo(string message, [CallerMemberName] string source = "")
+                public void LogInfo(string message)
         {
-            ByteForge.Toolkit.Log.Info(message, source);
+            ByteForge.Toolkit.Log.Info(message);
         }
 
         /// <summary>
         /// Logs a notice message.
         /// </summary>
         /// <param name="message">The message to log.</param>
-        /// <param name="source">The source of the message.</param>
-        public void LogNotice(string message, [CallerMemberName] string source = "")
+                public void LogNotice(string message)
         {
-            ByteForge.Toolkit.Log.Notice(message, source);
+            ByteForge.Toolkit.Log.Notice(message);
         }
 
         /// <summary>
         /// Logs a warning message.
         /// </summary>
         /// <param name="message">The message to log.</param>
-        /// <param name="source">The source of the message.</param>
-        public void LogWarning(string message, [CallerMemberName] string source = "")
+                public void LogWarning(string message)
         {
-            ByteForge.Toolkit.Log.Warning(message, source);
+            ByteForge.Toolkit.Log.Warning(message);
         }
 
         /// <summary>
@@ -155,13 +147,12 @@ namespace ByteForge.Toolkit.Logging
         /// </summary>
         /// <param name="message">The message to log.</param>
         /// <param name="ex">Optional exception associated with the error.</param>
-        /// <param name="source">The source of the message.</param>
-        public void LogError(string message, Exception ex = null, [CallerMemberName] string source = "")
+                public void LogError(string message, Exception ex = null)
         {
             if (ex != null)
-                ByteForge.Toolkit.Log.Error(message, ex, source);
+                ByteForge.Toolkit.Log.Error(message, ex);
             else
-                ByteForge.Toolkit.Log.Error(message, source);
+                ByteForge.Toolkit.Log.Error(message);
         }
 
         /// <summary>
@@ -169,13 +160,12 @@ namespace ByteForge.Toolkit.Logging
         /// </summary>
         /// <param name="message">The message to log.</param>
         /// <param name="ex">Optional exception associated with the critical error.</param>
-        /// <param name="source">The source of the message.</param>
-        public void LogCritical(string message, Exception ex = null, [CallerMemberName] string source = "")
+                public void LogCritical(string message, Exception ex = null)
         {
             if (ex != null)
-                ByteForge.Toolkit.Log.Critical(message, ex, source);
+                ByteForge.Toolkit.Log.Critical(message, ex);
             else
-                ByteForge.Toolkit.Log.Critical(message, source);
+                ByteForge.Toolkit.Log.Critical(message);
         }
 
         /// <summary>
@@ -183,13 +173,12 @@ namespace ByteForge.Toolkit.Logging
         /// </summary>
         /// <param name="message">The message to log.</param>
         /// <param name="ex">Optional exception associated with the fatal error.</param>
-        /// <param name="source">The source of the message.</param>
-        public void LogFatal(string message, Exception ex = null, [CallerMemberName] string source = "")
+                public void LogFatal(string message, Exception ex = null)
         {
             if (ex != null)
-                ByteForge.Toolkit.Log.Fatal(message, ex, source);
+                ByteForge.Toolkit.Log.Fatal(message, ex);
             else
-                ByteForge.Toolkit.Log.Fatal(message, source);
+                ByteForge.Toolkit.Log.Fatal(message);
         }
     }
 }

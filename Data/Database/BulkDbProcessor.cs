@@ -744,27 +744,27 @@ namespace ByteForge.Toolkit
             if (underlyingType.IsEnum)
                 return typeof(int);
 
-            switch (underlyingType.Name)
+            return underlyingType.Name switch
             {
-                case nameof(Boolean): return typeof(Boolean);
-                case nameof(Byte): return typeof(Byte);
-                case nameof(SByte): return typeof(SByte);
-                case nameof(DateTime): return typeof(DateTime);
-                case nameof(DateTimeOffset): return typeof(DateTimeOffset);
-                case nameof(TimeSpan): return typeof(TimeSpan);
-                case nameof(Decimal): return typeof(Decimal);
-                case nameof(Double): return typeof(Double);
-                case nameof(Single): return typeof(Single);
-                case nameof(Guid): return typeof(Guid);
-                case nameof(Int16): return typeof(Int16);
-                case nameof(UInt16): return typeof(UInt16);
-                case nameof(Int32): return typeof(Int32);
-                case nameof(UInt32): return typeof(UInt32);
-                case nameof(Int64): return typeof(Int64);
-                case nameof(UInt64): return typeof(UInt64);
-                case "Byte[]": return typeof(byte[]);
-                default: return typeof(String);
-            }
+                nameof(Boolean) => typeof(Boolean),
+                nameof(Byte) => typeof(Byte),
+                nameof(SByte) => typeof(SByte),
+                nameof(DateTime) => typeof(DateTime),
+                nameof(DateTimeOffset) => typeof(DateTimeOffset),
+                nameof(TimeSpan) => typeof(TimeSpan),
+                nameof(Decimal) => typeof(Decimal),
+                nameof(Double) => typeof(Double),
+                nameof(Single) => typeof(Single),
+                nameof(Guid) => typeof(Guid),
+                nameof(Int16) => typeof(Int16),
+                nameof(UInt16) => typeof(UInt16),
+                nameof(Int32) => typeof(Int32),
+                nameof(UInt32) => typeof(UInt32),
+                nameof(Int64) => typeof(Int64),
+                nameof(UInt64) => typeof(UInt64),
+                "Byte[]" => typeof(byte[]),
+                _ => typeof(String),
+            };
         }
 
         /// <summary>
@@ -814,29 +814,28 @@ namespace ByteForge.Toolkit
             }
 
             // Map other types - now handles all types from GetClrTypeFromDbType
-            switch (columnType.Name)
+            return columnType.Name switch
             {
-                case nameof(Boolean): return "bit" + colSuffix;
-                case nameof(Byte): return "tinyint" + colSuffix;
-                case nameof(SByte): return "tinyint" + colSuffix;  // SQL Server doesn't have signed tinyint
-                case nameof(DateTime): return "datetime" + colSuffix;
-                case nameof(DateTimeOffset): return "datetime" + colSuffix;  // SQL 2000 doesn't have datetimeoffset
-                case nameof(TimeSpan): return "datetime" + colSuffix;  // SQL 2000 doesn't have time type
-                case nameof(Decimal): return "decimal(18,4)" + colSuffix;
-                case nameof(Double): return "float" + colSuffix;
-                case nameof(Single): return "real" + colSuffix;
-                case nameof(Guid): return "uniqueidentifier" + colSuffix;
-                case nameof(Int16): return "smallint" + colSuffix;
-                case nameof(UInt16): return "int" + colSuffix;  // No unsigned types in SQL 2000
-                case nameof(Int32): return "int" + colSuffix;
-                case nameof(UInt32): return "bigint" + colSuffix;  // No unsigned types in SQL 2000
-                case nameof(Int64): return "bigint" + colSuffix;
-                case nameof(UInt64): return "decimal(20,0)" + colSuffix;  // No unsigned types in SQL 2000
-                case "Byte[]": return "varbinary(8000)" + colSuffix;
-                case nameof(Object): return "sql_variant" + colSuffix;
-                default:
-                    return $"varchar({DEFAULT_VARCHAR_LENGTH})" + colSuffix;
-            }
+                nameof(Boolean) => "bit" + colSuffix,
+                nameof(Byte) => "tinyint" + colSuffix,
+                nameof(SByte) => "tinyint" + colSuffix,// SQL Server doesn't have signed tinyint
+                nameof(DateTime) => "datetime" + colSuffix,
+                nameof(DateTimeOffset) => "datetime" + colSuffix,// SQL 2000 doesn't have datetimeoffset
+                nameof(TimeSpan) => "datetime" + colSuffix,// SQL 2000 doesn't have time type
+                nameof(Decimal) => "decimal(18,4)" + colSuffix,
+                nameof(Double) => "float" + colSuffix,
+                nameof(Single) => "real" + colSuffix,
+                nameof(Guid) => "uniqueidentifier" + colSuffix,
+                nameof(Int16) => "smallint" + colSuffix,
+                nameof(UInt16) => "int" + colSuffix,// No unsigned types in SQL 2000
+                nameof(Int32) => "int" + colSuffix,
+                nameof(UInt32) => "bigint" + colSuffix,// No unsigned types in SQL 2000
+                nameof(Int64) => "bigint" + colSuffix,
+                nameof(UInt64) => "decimal(20,0)" + colSuffix,// No unsigned types in SQL 2000
+                "Byte[]" => "varbinary(8000)" + colSuffix,
+                nameof(Object) => "sql_variant" + colSuffix,
+                _ => $"varchar({DEFAULT_VARCHAR_LENGTH})" + colSuffix,
+            };
         }
 
         /// <summary>

@@ -4,7 +4,6 @@ using System.Data.Common;
 using System.Data.Odbc;
 using System.Data.SqlClient;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 
 namespace ByteForge.Toolkit
@@ -23,21 +22,16 @@ namespace ByteForge.Toolkit
         /// </summary>
         /// <returns>The correct <see cref="IDbConnection"/> object.</returns>
         /// <exception cref="NotSupportedException">Thrown when the database type is not supported.</exception>
-        private IDbConnection CreateConnection([CallerMemberName] string caller = "")
+        private IDbConnection CreateConnection()
         {
             var conn = ConnectionString;
-            if (caller.ToLowerInvariant().Contains("async"))
-                conn += ";Asynchronous Processing=true;Async=true";
 
-            switch (DbType)
+            return DbType switch
             {
-                case DataBaseType.SQLServer:
-                    return new SqlConnection(conn);
-                case DataBaseType.ODBC:
-                    return new OdbcConnection(conn);
-                default:
-                    throw new NotSupportedException($"The database type {DbType} is not supported.");
-            }
+                DataBaseType.SQLServer => new SqlConnection(conn),
+                DataBaseType.ODBC => new OdbcConnection(conn),
+                _ => throw new NotSupportedException($"The database type {DbType} is not supported."),
+            };
         }
 
         /// <summary>
@@ -48,15 +42,12 @@ namespace ByteForge.Toolkit
         /// <exception cref="NotSupportedException">Thrown when the database type is not supported.</exception>
         private IDbDataAdapter CreateDataAdapter(IDbCommand command)
         {
-            switch (DbType)
+            return DbType switch
             {
-                case DataBaseType.SQLServer:
-                    return new SqlDataAdapter((SqlCommand)command);
-                case DataBaseType.ODBC:
-                    return new OdbcDataAdapter((OdbcCommand)command);
-                default:
-                    throw new NotSupportedException($"The database type {DbType} is not supported.");
-            }
+                DataBaseType.SQLServer => new SqlDataAdapter((SqlCommand)command),
+                DataBaseType.ODBC => new OdbcDataAdapter((OdbcCommand)command),
+                _ => throw new NotSupportedException($"The database type {DbType} is not supported."),
+            };
         }
 
         /// <summary>

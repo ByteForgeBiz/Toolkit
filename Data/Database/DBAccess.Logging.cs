@@ -19,8 +19,7 @@ namespace ByteForge.Toolkit
         /// <param name="ex">The exception that occurred.</param>
         /// <param name="query">The SQL query that was executed.</param>
         /// <param name="arguments">The arguments for the SQL query.</param>
-        /// <param name="caller">The name of the calling method.</param>
-        private void LogQueryError(Exception ex, string query, object[] arguments, string caller)
+        private void LogQueryError(Exception ex, string query, object[] arguments)
         {
             var msg = $"Error executing query";
             if (arguments != null && arguments.Length > 0)
@@ -29,7 +28,7 @@ namespace ByteForge.Toolkit
                     (a, p) => $"{p.Value} = '{a ?? "null"}'");
                 msg += $"\nArguments: {string.Join(Environment.NewLine, args)}";
             }
-            Log.Error(ex, msg);
+            Log.Error(msg, ex);
         }
     }
 }
