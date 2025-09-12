@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace ByteForge.Toolkit
 {
@@ -623,7 +624,7 @@ namespace ByteForge.Toolkit
         /// Returns an enumerable collection of elements in in-order traversal.
         /// </summary>
         /// <returns>An enumerable collection of elements in in-order.</returns>
-        public System.Collections.Generic.IEnumerable<T> GetInOrderTraversal()
+        public IEnumerable<T> GetInOrderTraversal()
         {
             return GetInOrderTraversal(root);
         }
@@ -633,7 +634,7 @@ namespace ByteForge.Toolkit
         /// </summary>
         /// <param name="node">The root of the subtree to traverse.</param>
         /// <returns>An enumerable collection of elements in in-order.</returns>
-        private System.Collections.Generic.IEnumerable<T> GetInOrderTraversal(Node node)
+        private IEnumerable<T> GetInOrderTraversal(Node node)
         {
             if (node != null)
             {
@@ -651,7 +652,7 @@ namespace ByteForge.Toolkit
         /// Returns an enumerable collection of elements in pre-order traversal.
         /// </summary>
         /// <returns>An enumerable collection of elements in pre-order.</returns>
-        public System.Collections.Generic.IEnumerable<T> GetPreOrderTraversal()
+        public IEnumerable<T> GetPreOrderTraversal()
         {
             return GetPreOrderTraversal(root);
         }
@@ -661,7 +662,7 @@ namespace ByteForge.Toolkit
         /// </summary>
         /// <param name="node">The root of the subtree to traverse.</param>
         /// <returns>An enumerable collection of elements in pre-order.</returns>
-        private System.Collections.Generic.IEnumerable<T> GetPreOrderTraversal(Node node)
+        private IEnumerable<T> GetPreOrderTraversal(Node node)
         {
             if (node != null)
             {
@@ -679,7 +680,7 @@ namespace ByteForge.Toolkit
         /// Returns an enumerable collection of elements in post-order traversal.
         /// </summary>
         /// <returns>An enumerable collection of elements in post-order.</returns>
-        public System.Collections.Generic.IEnumerable<T> GetPostOrderTraversal()
+        public IEnumerable<T> GetPostOrderTraversal()
         {
             return GetPostOrderTraversal(root);
         }
@@ -689,7 +690,7 @@ namespace ByteForge.Toolkit
         /// </summary>
         /// <param name="node">The root of the subtree to traverse.</param>
         /// <returns>An enumerable collection of elements in post-order.</returns>
-        private System.Collections.Generic.IEnumerable<T> GetPostOrderTraversal(Node node)
+        private IEnumerable<T> GetPostOrderTraversal(Node node)
         {
             if (node != null)
             {

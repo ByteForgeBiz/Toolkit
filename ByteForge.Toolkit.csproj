@@ -18,10 +18,8 @@
     <DocumentationFile>bin\ByteForge.Toolkit.xml</DocumentationFile>
     <NuGetPackageImportStamp>
     </NuGetPackageImportStamp>
-  </PropertyGroup>
-  <PropertyGroup>
     <Deterministic>true</Deterministic>
-    <PathMap>$(MSBuildProjectDirectory)=C:\ByteForge.Toolkit</PathMap>
+    <PathMap Condition=" '$(Configuration)' == 'Release' ">$(MSBuildProjectDirectory)=C:\ByteForge.Toolkit</PathMap>
     <SourceRevisionId>$(CommitHash)</SourceRevisionId>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">

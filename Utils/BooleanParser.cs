@@ -268,6 +268,34 @@ namespace ByteForge.Toolkit
             _falseValues.Add(value);
         }
 
+        /// <summary>
+        /// Removes a string value from the set of recognized true values.
+        /// </summary>
+        /// <param name="value">The string value to remove.</param>
+        /// <returns>True if the value was removed; false if it was not present.</returns>
+        /// <exception cref="ArgumentNullException">Thrown when the value is null.</exception>
+        public bool RemoveTrueValue(string value)
+        {
+            if (value == null)
+                throw new ArgumentNullException(nameof(value));
+            value = value.ToLowerInvariant().Trim();
+            return _trueValues.Remove(value);
+        }
+
+        /// <summary>
+        /// Removes a string value from the set of recognized false values.
+        /// </summary>
+        /// <param name="value">The string value to remove.</param>
+        /// <returns>True if the value was removed; false if it was not present.</returns>
+        /// <exception cref="ArgumentNullException">Thrown when the value is null.</exception>
+        public bool RemoveFalseValue(string value)
+        {
+            if (value == null)
+                throw new ArgumentNullException(nameof(value));
+            value = value.ToLowerInvariant().Trim();
+            return _falseValues.Remove(value);
+        }
+
         #region Static Methods
 
         /// <summary>
@@ -328,6 +356,28 @@ namespace ByteForge.Toolkit
         public static void RegisterFalseValue(string value)
         {
             Default.AddFalseValue(value);
+        }
+
+        /// <summary>
+        /// Removes a string value from the set of recognized true values (static).
+        /// </summary>
+        /// <param name="value">The string value to remove.</param>
+        /// <returns>True if the value was removed; false if it was not present.</returns>
+        /// <exception cref="ArgumentNullException">Thrown when the value is null.</exception>
+        public static bool UnegisterTrueValue(string value)
+        {
+            return Default.RemoveTrueValue(value);
+        }
+
+        /// <summary>
+        /// Removes a string value from the set of recognized false values (static).
+        /// </summary>
+        /// <param name="value">The string value to remove.</param>
+        /// <returns>True if the value was removed; false if it was not present.</returns>
+        /// <exception cref="ArgumentNullException">Thrown when the value is null.</exception>
+        public static bool UnegisterFalseValue(string value)
+        {
+            return Default.RemoveFalseValue(value);
         }
 
         #endregion

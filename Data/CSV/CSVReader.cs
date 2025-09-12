@@ -19,21 +19,10 @@ namespace ByteForge.Toolkit
     /// </summary>
     public class CSVReader
     {
-        private readonly ILogger _logger;
-
         /// <summary>
         /// Initializes a new instance of the <see cref="CSVReader"/> class with default logging.
         /// </summary>
-        public CSVReader() : this(null) { }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="CSVReader"/> class with a specified logger.
-        /// </summary>
-        /// <param name="logger">The logger to use. If null, will attempt to use the static Log class, or fall back to NullLogger.</param>
-        public CSVReader(ILogger logger)
-        {
-            _logger = logger ?? CreateDefaultLogger();
-        }
+        public CSVReader() { }
 
         /// <summary>
         /// Occurs to report the progress of the CSV reading process.
@@ -101,25 +90,6 @@ namespace ByteForge.Toolkit
         public CSVFormat Format { get; set; }
 
         /// <summary>
-        /// Creates a default logger that attempts to use the static Log class, falling back to NullLogger if initialization fails.
-        /// </summary>
-        /// <returns>An ILogger instance.</returns>
-        private static ILogger CreateDefaultLogger()
-        {
-            try
-            {
-                // Attempt to use the static Log instance, which implements ILogger indirectly
-                // We'll create a wrapper that delegates to the static Log methods
-                return new StaticLoggerAdapter();
-            }
-            catch
-            {
-                // If Log initialization fails (missing config, etc.), use NullLogger
-                return new NullLogger();
-            }
-        }
-
-        /// <summary>
         /// Reads the CSV file and processes the data.
         /// </summary>
         /// <param name="filePath">The path to the CSV file.</param>
@@ -179,7 +149,7 @@ namespace ByteForge.Toolkit
             if (!File.Exists(filePath))
                 throw new FileNotFoundException("File not found", filePath);
 
-            _logger.LogDebug($"Reading CSV file: {filePath}");
+            Log.Debug($"Reading CSV file: {filePath}");
 
             using var stream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.Read);
             ReadStream(stream);
@@ -209,14 +179,14 @@ namespace ByteForge.Toolkit
             var sample = bufferedReader.ReadSample();
             if (sample.Length == 0)
             {
-                _logger.LogWarning("CSV file appears to be empty.");
+                Log.Warning("CSV file appears to be empty.");
                 return;
             }
 
             var isFormatDetected = Format == null;
             Format ??= CSVFormat.DetectFormat(sample);
 
-            _logger.LogDebug($"CSV format: {Format}");
+            Log.Debug($"CSV format: {Format}");
 
             // Process header
             var headerLine = bufferedReader.ReadLine() ?? throw new InvalidDataException("Failed to read header line.");

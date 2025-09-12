@@ -19,7 +19,7 @@ namespace ByteForge.Toolkit
         /// <summary>
         /// Gets or sets the delimiter character.
         /// </summary>
-        public char Delimiter { get; set; }
+        public char Delimiter { get; set; } = ',';
 
         /// <summary>
         /// Gets or sets the quote character.

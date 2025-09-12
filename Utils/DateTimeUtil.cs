@@ -933,21 +933,13 @@ namespace ByteForge.Toolkit
                 return dateTime;
 
             // Convert based on the DateTime's Kind
-            switch (dateTime.Kind)
+            return dateTime.Kind switch
             {
-                case DateTimeKind.Utc:
-                    return TimeZoneInfo.ConvertTimeFromUtc(dateTime, destinationTimeZone);
-
-                case DateTimeKind.Local:
-                    return TimeZoneInfo.ConvertTime(dateTime, TimeZoneInfo.Local, destinationTimeZone);
-
-                case DateTimeKind.Unspecified:
-                    // Assume it's UTC for unspecified DateTimes
-                    return TimeZoneInfo.ConvertTimeFromUtc(DateTime.SpecifyKind(dateTime, DateTimeKind.Utc), destinationTimeZone);
-
-                default:
-                    throw new ArgumentException("Invalid DateTimeKind", nameof(dateTime));
-            }
+                DateTimeKind.Utc => TimeZoneInfo.ConvertTimeFromUtc(dateTime, destinationTimeZone),
+                DateTimeKind.Local => TimeZoneInfo.ConvertTime(dateTime, TimeZoneInfo.Local, destinationTimeZone),
+                DateTimeKind.Unspecified => TimeZoneInfo.ConvertTimeFromUtc(DateTime.SpecifyKind(dateTime, DateTimeKind.Utc), destinationTimeZone),// Assume it's UTC for unspecified DateTimes
+                _ => throw new ArgumentException("Invalid DateTimeKind", nameof(dateTime)),
+            };
         }
 
         /// <summary>

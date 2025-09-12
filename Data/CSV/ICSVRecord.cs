@@ -99,10 +99,10 @@
         /// </summary>
         /// <returns><see langword="true" /> if the record is valid; otherwise, <see langword="false" />.</returns>
         /// <remarks>
-        /// This method evaluates the record against validation rules defined by the
-        /// implementing class. If validation fails, the method should add appropriate
+        /// This method evaluates the record against validation rules defined in the 
+        /// <see cref="Validate"/> method. If validation fails, the method should add appropriate
         /// error messages to the <see cref="ValidationErrors"/> collection before
-        /// returning false.
+        /// returning <see langword="false"/>.
         /// <para>
         /// Implementations should typically clear any existing validation errors at the
         /// beginning of this method to ensure a clean validation state for each call.
@@ -118,5 +118,14 @@
         /// </para>
         /// </remarks>
         bool IsValid();
+
+        /// <summary>
+        /// Validates the current state of the object to ensure it meets the required conditions.
+        /// </summary>
+        /// <remarks>
+        /// This method checks the object's state and throws an exception if any validation rules are violated.<br/>
+        /// Call this method before performing operations that depend on the object's validity.
+        /// </remarks>
+        void Validate();
     }
 }

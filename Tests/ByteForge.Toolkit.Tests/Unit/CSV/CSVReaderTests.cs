@@ -58,7 +58,7 @@ namespace ByteForge.Toolkit.Tests.Unit.CSV
             // Arrange
             var csvContent = "Name,Age,Email\nJohn Doe,30,john@example.com\nJane Smith,25,jane@example.com";
             var filePath = TempFileHelper.CreateTempCsvFile(csvContent);
-            var reader = new CSVReader(new NullLogger());
+            var reader = new CSVReader();
             var processedRows = new List<(string[] columns, string[] values, string rawLine)>();
 
             reader.RowHandler = (row, status, rawLine) =>
@@ -98,7 +98,7 @@ namespace ByteForge.Toolkit.Tests.Unit.CSV
             // Arrange
             var csvContent = "Name;Age;Email\nJohn Doe;30;john@example.com\nJane Smith;25;jane@example.com";
             var filePath = TempFileHelper.CreateTempCsvFile(csvContent);
-            var reader = new CSVReader(new NullLogger());
+            var reader = new CSVReader();
             var processedRows = new List<(string[] columns, string[] values)>();
 
             reader.RowHandler = (row, status, rawLine) =>
@@ -132,7 +132,7 @@ namespace ByteForge.Toolkit.Tests.Unit.CSV
             // Arrange
             var csvContent = "Name\tAge\tEmail\nJohn Doe\t30\tjohn@example.com\nJane Smith\t25\tjane@example.com";
             var filePath = TempFileHelper.CreateTempCsvFile(csvContent);
-            var reader = new CSVReader(new NullLogger());
+            var reader = new CSVReader();
             var processedRows = new List<string[]>();
 
             reader.RowHandler = (row, status, rawLine) =>
@@ -164,7 +164,7 @@ namespace ByteForge.Toolkit.Tests.Unit.CSV
             // Arrange
             var csvContent = "\"Name\",\"Age\",\"Description\"\n\"John Doe\",\"30\",\"Software Engineer\"\n\"Jane Smith\",\"25\",\"Product Manager\"";
             var filePath = TempFileHelper.CreateTempCsvFile(csvContent);
-            var reader = new CSVReader(new NullLogger());
+            var reader = new CSVReader();
             var processedRows = new List<string[]>();
 
             reader.RowHandler = (row, status, rawLine) =>
@@ -197,7 +197,7 @@ namespace ByteForge.Toolkit.Tests.Unit.CSV
             // Arrange
             var csvContent = "\"Name\",\"Quote\"\n\"John \"\"Johnny\"\" Doe\",\"He said, \"\"Hello\"\"\"\n\"Jane O'Connor\",\"Single 'quote'\"";
             var filePath = TempFileHelper.CreateTempCsvFile(csvContent);
-            var reader = new CSVReader(new NullLogger());
+            var reader = new CSVReader();
             var processedRows = new List<string[]>();
 
             reader.RowHandler = (row, status, rawLine) =>
@@ -230,7 +230,7 @@ namespace ByteForge.Toolkit.Tests.Unit.CSV
             // Arrange
             var csvContent = "\"Name\",\"Description\"\n\"John Doe\",\"Line 1\nLine 2\"\n\"Jane Smith\",\"Single line\"";
             var filePath = TempFileHelper.CreateTempCsvFile(csvContent);
-            var reader = new CSVReader(new NullLogger());
+            var reader = new CSVReader();
             var processedRows = new List<string[]>();
 
             reader.RowHandler = (row, status, rawLine) =>
@@ -262,7 +262,7 @@ namespace ByteForge.Toolkit.Tests.Unit.CSV
         {
             // Arrange
             var filePath = TempFileHelper.CreateTempCsvFile("");
-            var reader = new CSVReader(new NullLogger());
+            var reader = new CSVReader();
             var processedRows = new List<string[]>();
 
             reader.RowHandler = (row, status, rawLine) =>
@@ -293,7 +293,7 @@ namespace ByteForge.Toolkit.Tests.Unit.CSV
             // Arrange
             var csvContent = "Name,Age,Email";
             var filePath = TempFileHelper.CreateTempCsvFile(csvContent);
-            var reader = new CSVReader(new NullLogger());
+            var reader = new CSVReader();
             var processedRows = new List<string[]>();
 
             reader.RowHandler = (row, status, rawLine) =>
@@ -322,7 +322,7 @@ namespace ByteForge.Toolkit.Tests.Unit.CSV
         public void ReadFile_NonExistentFile_ShouldThrowException()
         {
             // Arrange
-            var reader = new CSVReader(new NullLogger());
+            var reader = new CSVReader();
             var nonExistentPath = @"C:\NonExistent\File.csv";
 
             // Act & Assert
@@ -341,7 +341,7 @@ namespace ByteForge.Toolkit.Tests.Unit.CSV
             // Arrange
             var csvContent = "Name,Age\n" + string.Join("\n", Enumerable.Range(1, 100).Select(i => $"User{i},{20 + i}"));
             var filePath = TempFileHelper.CreateTempCsvFile(csvContent);
-            var reader = new CSVReader(new NullLogger());
+            var reader = new CSVReader();
             var progressReports = new List<double>();
 
             reader.Progress += (sender, args) =>
@@ -372,7 +372,7 @@ namespace ByteForge.Toolkit.Tests.Unit.CSV
             // Arrange
             var csvContent = "Name,Age,Email\nJohn Doe,30,john@example.com\nJane Smith,25,jane@example.com";
             var stream = new MemoryStream(Encoding.UTF8.GetBytes(csvContent));
-            var reader = new CSVReader(new NullLogger());
+            var reader = new CSVReader();
             var processedRows = new List<string[]>();
 
             reader.RowHandler = (row, status, rawLine) =>
@@ -402,7 +402,7 @@ namespace ByteForge.Toolkit.Tests.Unit.CSV
         public void ReadStream_NullStream_ShouldThrowException()
         {
             // Arrange
-            var reader = new CSVReader(new NullLogger());
+            var reader = new CSVReader();
 
             // Act & Assert
             AssertionHelpers.AssertThrows<ArgumentNullException>(() => reader.ReadStream(null));
@@ -420,7 +420,7 @@ namespace ByteForge.Toolkit.Tests.Unit.CSV
             // Arrange
             var csvContent = "Name|Age|Email\nJohn Doe|30|john@example.com";
             var filePath = TempFileHelper.CreateTempCsvFile(csvContent);
-            var reader = new CSVReader(new NullLogger());
+            var reader = new CSVReader();
             var customFormat = new CSVFormat { Delimiter = '|' };
             var processedRows = new List<string[]>();
 
@@ -454,7 +454,7 @@ namespace ByteForge.Toolkit.Tests.Unit.CSV
             // Arrange
             var csvContent = "Name,Description\n\"José González\",\"Español\"\n\"李小明\",\"中文\"\n\"🌍 Earth\",\"Unicode emoji\"";
             var filePath = TempFileHelper.CreateTempCsvFile(csvContent);
-            var reader = new CSVReader(new NullLogger());
+            var reader = new CSVReader();
             var processedRows = new List<string[]>();
 
             reader.RowHandler = (row, status, rawLine) =>
@@ -491,7 +491,7 @@ namespace ByteForge.Toolkit.Tests.Unit.CSV
             csvLines.AddRange(Enumerable.Range(1, rows).Select(i => $"User{i},{20 + i},user{i}@example.com"));
             var csvContent = string.Join("\n", csvLines);
             var filePath = TempFileHelper.CreateTempCsvFile(csvContent);
-            var reader = new CSVReader(new NullLogger());
+            var reader = new CSVReader();
             var processedRowCount = 0;
             var startTime = DateTime.UtcNow;
 
@@ -525,7 +525,7 @@ namespace ByteForge.Toolkit.Tests.Unit.CSV
             // Arrange
             var csvContent = "Name,Age\nJohn,30";
             var filePath = TempFileHelper.CreateTempCsvFile(csvContent);
-            var reader = new CSVReader(new NullLogger());
+            var reader = new CSVReader();
 
             // Act & Assert
             reader.Invoking(r => r.ReadFile(filePath))
@@ -544,7 +544,7 @@ namespace ByteForge.Toolkit.Tests.Unit.CSV
             // Arrange
             var csvContent = "Name,Age,Email\nJohn,,john@example.com\n,25,\n\"\",\"30\",\"\"";
             var filePath = TempFileHelper.CreateTempCsvFile(csvContent);
-            var reader = new CSVReader(new NullLogger());
+            var reader = new CSVReader();
             var processedRows = new List<string[]>();
 
             reader.RowHandler = (row, status, rawLine) =>
@@ -589,7 +589,7 @@ namespace ByteForge.Toolkit.Tests.Unit.CSV
             {
                 var bytes = encoding.GetBytes(csvContent);
                 var filePath = TempFileHelper.CreateTempFile(bytes, ".csv");
-                var reader = new CSVReader(new NullLogger());
+                var reader = new CSVReader();
                 var processedRows = new List<string[]>();
 
                 reader.RowHandler = (row, status, rawLine) =>
@@ -630,7 +630,7 @@ namespace ByteForge.Toolkit.Tests.Unit.CSV
             foreach (var (content, expectedDelimiter) in testCases)
             {
                 var filePath = TempFileHelper.CreateTempCsvFile(content);
-                var reader = new CSVReader(new NullLogger());
+                var reader = new CSVReader();
                 var detectedDelimiter = '\0';
 
                 reader.RowHandler = (row, status, rawLine) =>
@@ -663,7 +663,7 @@ namespace ByteForge.Toolkit.Tests.Unit.CSV
             // Arrange
             var csvContent = "Name,Age,Email\nJohn Doe,30,john@example.com\nJane Smith,25\nBob Wilson,35,bob@example.com,extra_field";
             var filePath = TempFileHelper.CreateTempCsvFile(csvContent);
-            var reader = new CSVReader(new NullLogger());
+            var reader = new CSVReader();
             var validRows = new List<IDictionary<string, string>>();
             var malformedRows = new List<string>();
 
@@ -704,7 +704,7 @@ namespace ByteForge.Toolkit.Tests.Unit.CSV
             // Arrange
             var csvContent = "Name,Age\nJohn,30\nJane,25\nBob,35";
             var filePath = TempFileHelper.CreateTempCsvFile(csvContent);
-            var reader = new CSVReader(new NullLogger());
+            var reader = new CSVReader();
             var processedRows = new List<IDictionary<string, string>>();
 
             reader.RowHandler = (row, status, rawLine) =>

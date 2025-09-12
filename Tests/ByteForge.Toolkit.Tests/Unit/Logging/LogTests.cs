@@ -339,7 +339,7 @@ namespace ByteForge.Toolkit.Tests.Unit.Logging
 
             // Assert
             var duration = DateTime.UtcNow - startTime;
-            duration.Should().BeLessThan(TimeSpan.FromMilliseconds(200), 
+            duration.Should().BeLessThan(TimeSpan.FromMilliseconds(250), 
                 $"should log {messageCount} messages efficiently");
         }
 

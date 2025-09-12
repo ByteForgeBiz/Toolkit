@@ -73,7 +73,7 @@ namespace ByteForge.Toolkit.Logging
             else
                 filePath = Environment.ExpandEnvironmentVariables(filePath);
 
-            Settings = options ?? Configuration.GetSection<FileLoggerOptions>("FileLogger") ?? new FileLoggerOptions();
+            Settings = options ?? (Configuration.IsInitialized ? Configuration.GetSection<FileLoggerOptions>("FileLogger") : null) ?? new FileLoggerOptions();
             _baseFilePath = filePath;
             _currentFileDate = DateTime.Now.Date;
             _currentFileIndex = 1;

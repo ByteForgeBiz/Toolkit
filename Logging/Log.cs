@@ -32,10 +32,19 @@ namespace ByteForge.Toolkit
         /// </summary>
         private Log() : base("ByteForge.Toolkit->Static Logger")
         {
+            if (!Configuration.IsInitialized)
+                Settings = new LogSettings();
+            else
+                Settings = Configuration.GetSection<LogSettings>("Logging");
+
             // Create the appropriate file logger based on configuration
             if (Settings.UseSessionLogging)
             {
-                var sessionOptions = Configuration.GetSection<SessionFileLoggerOptions>("FileLogger");
+                SessionFileLoggerOptions sessionOptions;
+                if (!Configuration.IsInitialized)
+                    sessionOptions = new SessionFileLoggerOptions();
+                else
+                    sessionOptions = Configuration.GetSection<SessionFileLoggerOptions>("FileLogger");
 
                 fileLogger = new SessionFileLogger(Settings.LogFilePath, sessionOptions)
                 {
@@ -72,7 +81,7 @@ namespace ByteForge.Toolkit
         /// <summary>
         /// Gets the session file logger instance if session logging is enabled.
         /// </summary>
-        public static SessionFileLogger SessionLogger => Instance.fileLogger as SessionFileLogger;
+        public static SessionFileLogger SessionLogger => Instance?.fileLogger as SessionFileLogger;
 
         /// <summary>
         /// Gets the current session's log file path if using session logging.
@@ -162,8 +171,7 @@ namespace ByteForge.Toolkit
         /// This property retrieves the logging options from the application's configuration. <br/> 
         /// If the options have not been initialized, they are loaded from the "Logging" section of the
         /// configuration.</remarks>
-        public LogSettings Settings => _options ??= Configuration.GetSection<LogSettings>("Logging");
-        private LogSettings _options;
+        public LogSettings Settings { get; }
 
         /// <summary>
         /// Logs a trace message.

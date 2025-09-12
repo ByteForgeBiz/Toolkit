@@ -578,5 +578,220 @@ namespace ByteForge.Toolkit.Tests.Unit.DataStructures
                 }
             }
         }
+
+        /// <summary>
+        /// Verifies that ToArray returns an empty array for an empty tree.
+        /// </summary>
+        /// <remarks>
+        /// Ensures ToArray handles empty trees correctly.
+        /// </remarks>
+        [TestMethod]
+        public void ToArray_EmptyTree_ShouldReturnEmptyArray()
+        {
+            // Arrange
+            var tree = new BinarySearchTree<int>();
+
+            // Act
+            var array = tree.ToArray();
+
+            // Assert
+            array.Should().NotBeNull();
+            array.Should().BeEmpty();
+            array.Length.Should().Be(0);
+        }
+
+        /// <summary>
+        /// Verifies that ToArray returns a single-element array for a tree with one node.
+        /// </summary>
+        /// <remarks>
+        /// Ensures ToArray correctly handles single-node trees.
+        /// </remarks>
+        [TestMethod]
+        public void ToArray_SingleNode_ShouldReturnSingleElementArray()
+        {
+            // Arrange
+            var tree = new BinarySearchTree<int>();
+            tree.Insert(42);
+
+            // Act
+            var array = tree.ToArray();
+
+            // Assert
+            array.Should().NotBeNull();
+            array.Length.Should().Be(1);
+            array[0].Should().Be(42);
+        }
+
+        /// <summary>
+        /// Verifies that ToArray returns a sorted array for a balanced tree.
+        /// </summary>
+        /// <remarks>
+        /// Ensures ToArray performs correct in-order traversal for balanced trees.
+        /// </remarks>
+        [TestMethod]
+        public void ToArray_BalancedTree_ShouldReturnSortedArray()
+        {
+            // Arrange
+            var tree = new BinarySearchTree<int>();
+            var values = new[] { 10, 5, 15, 3, 7, 12, 17 };
+            foreach (var value in values)
+            {
+                tree.Insert(value);
+            }
+
+            // Act
+            var array = tree.ToArray();
+
+            // Assert
+            array.Should().NotBeNull();
+            array.Length.Should().Be(values.Length);
+            array.Should().BeInAscendingOrder();
+            array.Should().BeEquivalentTo(values.OrderBy(x => x));
+        }
+
+        /// <summary>
+        /// Verifies that ToArray returns a sorted array for an unbalanced tree.
+        /// </summary>
+        /// <remarks>
+        /// Ensures ToArray works correctly regardless of tree balance.
+        /// </remarks>
+        [TestMethod]
+        public void ToArray_UnbalancedTree_ShouldReturnSortedArray()
+        {
+            // Arrange
+            var tree = new BinarySearchTree<int>();
+            var values = new[] { 1, 2, 3, 4, 5, 6, 7 }; // Sequential insertion creates right-heavy tree
+            foreach (var value in values)
+            {
+                tree.Insert(value);
+            }
+
+            // Act
+            var array = tree.ToArray();
+
+            // Assert
+            array.Should().NotBeNull();
+            array.Length.Should().Be(values.Length);
+            array.Should().BeInAscendingOrder();
+            array.Should().BeEquivalentTo(values);
+        }
+
+        /// <summary>
+        /// Verifies that ToArray handles duplicate insertions correctly.
+        /// </summary>
+        /// <remarks>
+        /// Ensures ToArray reflects the tree's duplicate handling policy.
+        /// </remarks>
+        [TestMethod]
+        public void ToArray_WithDuplicateAttempts_ShouldReturnUniqueValues()
+        {
+            // Arrange
+            var tree = new BinarySearchTree<int>();
+            tree.Insert(5);
+            tree.Insert(3);
+            tree.Insert(7);
+            tree.Insert(5); // Duplicate - should not be added
+            tree.Insert(3); // Duplicate - should not be added
+
+            // Act
+            var array = tree.ToArray();
+
+            // Assert
+            array.Should().NotBeNull();
+            array.Length.Should().Be(3, "duplicates should not be added to tree");
+            array.Should().BeInAscendingOrder();
+            array.Should().BeEquivalentTo(new[] { 3, 5, 7 });
+        }
+
+        /// <summary>
+        /// Verifies that ToArray works correctly with string values.
+        /// </summary>
+        /// <remarks>
+        /// Ensures ToArray supports generic types and lexicographic ordering.
+        /// </remarks>
+        [TestMethod]
+        public void ToArray_WithStrings_ShouldReturnSortedArray()
+        {
+            // Arrange
+            var tree = new BinarySearchTree<string>();
+            var values = new[] { "zebra", "apple", "banana", "cherry", "date" };
+            foreach (var value in values)
+            {
+                tree.Insert(value);
+            }
+
+            // Act
+            var array = tree.ToArray();
+
+            // Assert
+            array.Should().NotBeNull();
+            array.Length.Should().Be(values.Length);
+            array.Should().BeInAscendingOrder();
+            array.Should().BeEquivalentTo(values.OrderBy(x => x));
+        }
+
+        /// <summary>
+        /// Verifies that ToArray returns correct results after removals.
+        /// </summary>
+        /// <remarks>
+        /// Ensures ToArray reflects the current state of the tree after modifications.
+        /// </remarks>
+        [TestMethod]
+        public void ToArray_AfterRemovals_ShouldReturnUpdatedArray()
+        {
+            // Arrange
+            var tree = new BinarySearchTree<int>();
+            var values = new[] { 10, 5, 15, 3, 7, 12, 17 };
+            foreach (var value in values)
+            {
+                tree.Insert(value);
+            }
+
+            // Remove some values
+            tree.Remove(3);
+            tree.Remove(15);
+
+            // Act
+            var array = tree.ToArray();
+
+            // Assert
+            var expectedValues = values.Where(v => v != 3 && v != 15).OrderBy(x => x);
+            array.Should().NotBeNull();
+            array.Length.Should().Be(5);
+            array.Should().BeInAscendingOrder();
+            array.Should().BeEquivalentTo(expectedValues);
+        }
+
+        /// <summary>
+        /// Verifies that ToArray performance is acceptable for large trees.
+        /// </summary>
+        /// <remarks>
+        /// Ensures ToArray scales appropriately with tree size.
+        /// </remarks>
+        [TestMethod]
+        public void ToArray_LargeTree_ShouldPerformEfficiently()
+        {
+            // Arrange
+            var tree = new BinarySearchTree<int>();
+            var random = new Random(42);
+            var values = Enumerable.Range(1, 1000).OrderBy(x => random.Next()).ToArray();
+            
+            foreach (var value in values)
+            {
+                tree.Insert(value);
+            }
+
+            // Act
+            var stopwatch = System.Diagnostics.Stopwatch.StartNew();
+            var array = tree.ToArray();
+            stopwatch.Stop();
+
+            // Assert
+            array.Should().NotBeNull();
+            array.Length.Should().Be(1000);
+            array.Should().BeInAscendingOrder();
+            array.Should().BeEquivalentTo(Enumerable.Range(1, 1000));
+            stopwatch.ElapsedMilliseconds.Should().BeLessThan(100, "ToArray should complete quickly for 1000 elements");
+        }
     }
 }

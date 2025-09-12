@@ -63,18 +63,13 @@ namespace ByteForge.Toolkit.Logging
             };
         }
 
-        private bool HasConsole()
-        {
-            return GetConsoleWindow() != IntPtr.Zero;
-        }
-
         /// <summary>
         /// Records a log entry by writing it to the console with appropriate formatting and color.
         /// </summary>
         /// <param name="entry">The log entry to record.</param>
         protected internal override void RecordLogEntry(LogEntry entry)
         {
-            if (entry.Level < MinLogLevel || !HasConsole())
+            if (entry.Level < MinLogLevel || !ConsoleUtil.HasConsole())
                 return;
 
             lock (_lock)
@@ -103,8 +98,5 @@ namespace ByteForge.Toolkit.Logging
                 Console.ForegroundColor = originalColor;
             }
         }
-
-        [DllImport("kernel32.dll")]
-        private static extern IntPtr GetConsoleWindow();
     }
 }

@@ -25,6 +25,7 @@ namespace ByteForge.Toolkit
 
         /// <summary>
         /// Formats a US phone number to the format (XXX) XXX-XXXX.
+        /// Converts letters to their corresponding phone keypad numbers (A/B/C=2, D/E/F=3, etc.).
         /// </summary>
         /// <param name="phoneNumber">The phone number to format.</param>
         /// <returns>The formatted phone number, or the original input if it cannot be formatted.</returns>
@@ -33,8 +34,11 @@ namespace ByteForge.Toolkit
             if (string.IsNullOrWhiteSpace(phoneNumber))
                 return string.Empty;
 
+            // Convert letters to numbers based on phone keypad mapping
+            var normalizedPhone = ConvertPhoneLettersToNumbers(phoneNumber);
+
             // Remove all non-numeric characters
-            var digits = Regex.Replace(phoneNumber, @"\D", "");
+            var digits = Regex.Replace(normalizedPhone, @"\D", "");
 
             if (digits.Length == 11 && digits[0] == '1')
                 digits = digits.Substring(1);
@@ -48,6 +52,32 @@ namespace ByteForge.Toolkit
         }
 
         /// <summary>
+        /// Converts letters in a phone number to their corresponding numbers based on the phone keypad.
+        /// A/B/C=2, D/E/F=3, G/H/I=4, J/K/L=5, M/N/O=6, P/Q/R/S=7, T/U/V=8, W/X/Y/Z=9.
+        /// </summary>
+        /// <param name="phoneNumber">The phone number that may contain letters.</param>
+        /// <returns>The phone number with letters converted to numbers.</returns>
+        private static string ConvertPhoneLettersToNumbers(string phoneNumber)
+        {
+            if (string.IsNullOrEmpty(phoneNumber))
+                return phoneNumber;
+
+            var result = phoneNumber.ToUpperInvariant();
+            
+            // Phone keypad letter mappings
+            result = result.Replace('A', '2').Replace('B', '2').Replace('C', '2');
+            result = result.Replace('D', '3').Replace('E', '3').Replace('F', '3');
+            result = result.Replace('G', '4').Replace('H', '4').Replace('I', '4');
+            result = result.Replace('J', '5').Replace('K', '5').Replace('L', '5');
+            result = result.Replace('M', '6').Replace('N', '6').Replace('O', '6');
+            result = result.Replace('P', '7').Replace('Q', '7').Replace('R', '7').Replace('S', '7');
+            result = result.Replace('T', '8').Replace('U', '8').Replace('V', '8');
+            result = result.Replace('W', '9').Replace('X', '9').Replace('Y', '9').Replace('Z', '9');
+
+            return result;
+        }
+
+        /// <summary>
         /// Returns <c>null</c> if the provided string is null, empty, or whitespace; otherwise, returns the string itself.
         /// </summary>
         /// <param name="value">The string to check.</param>
@@ -55,35 +85,6 @@ namespace ByteForge.Toolkit
         public static string NullIfEmpty(string value)
         {
             return string.IsNullOrEmpty(value) || string.IsNullOrWhiteSpace(value) ? null : value;
-        }
-
-        /// <summary>
-        /// Removes all occurrences of a specified string from the current string.
-        /// </summary>
-        /// <param name="text">The string to remove from.</param>
-        /// <param name="value">The string to remove.</param>
-        /// <returns>A new string with all occurrences of the specified string removed.</returns>
-        public static string Remove(this string text, string value) => text.Replace(value, string.Empty);
-
-        /// <summary>
-        /// Removes all occurrences of a specified character from the current string.
-        /// </summary>
-        /// <param name="text">The string to remove from.</param>
-        /// <param name="value">The character to remove.</param>
-        /// <returns>A new string with all occurrences of the specified character removed.</returns>
-        public static string Remove(this string text, char value) => text.Remove(value.ToString());
-
-        /// <summary>
-        /// Removes all occurrences of the specified characters from the current string.
-        /// </summary>
-        /// <param name="text">The string to remove from.</param>
-        /// <param name="values">The array of characters to remove.</param>
-        /// <returns>A new string with all occurrences of the specified characters removed.</returns>
-        public static string Remove(this string text, char[] values)
-        {
-            foreach (var value in values)
-                text = text.Remove(value);
-            return text;
         }
 
         /// <summary>

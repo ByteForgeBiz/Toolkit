@@ -96,21 +96,18 @@ namespace ByteForge.Toolkit
             }
         }
 
-        /// <summary>
-        /// Determines whether the record is valid.
-        /// </summary>
-        /// <returns>
-        /// <see langword="true" /> if the record is valid; otherwise, <see langword="false" />.
-        /// </returns>
-        public virtual bool IsValid()
+        /// <inheritdoc/>
+        public bool IsValid()
         {
             ValidationErrors.Clear();
-            return true;
+            Validate();
+            return ValidationErrors.Count == 0;
         }
 
-        /// <summary>
-        /// Gets the validation errors for the record.
-        /// </summary>
+        /// <inheritdoc/>
+        public abstract void Validate();
+
+        /// <inheritdoc/>
         public ValidationErrors ValidationErrors { get; } = new ValidationErrors();
     }
 }

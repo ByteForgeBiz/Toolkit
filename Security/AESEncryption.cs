@@ -23,9 +23,7 @@ namespace ByteForge.Toolkit
     internal class AESEncryption
     {
 
-        private static readonly byte[] InCo = { 0xB, 0xD, 0x9, 0xE };
-        private static readonly long[] l2Power = { 1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192, 16384, 32768, 65536, 131072, 262144, 524288, 1048576, 2097152, 4194304, 8388608, 16777216, 33554432, 67108864, 134217728, 268435456, 536870912, 1073741824 };
-        private static readonly long[] lOnBits = { 1, 3, 7, 15, 31, 63, 127, 255, 511, 1023, 2047, 4095, 8191, 16383, 32767, 65535, 131071, 262143, 524287, 1048575, 2097151, 4194303, 8388607, 16777215, 33554431, 67108863, 134217727, 268435455, 536870911, 1073741823, 2147483647 };
+        private static readonly long packedInCo = BitConverter.ToInt32(new byte[] { 0xB, 0xD, 0x9, 0xE }, 0);
 
         private long m_Nk;
         private long m_Nb;
@@ -60,16 +58,30 @@ namespace ByteForge.Toolkit
              *             
              * and be done with it. However, the original VB6 implementation
              * of this function uses a custom logic that differs in key aspects.
-             * The following is a direct translation.
+             * The following is an optimized translation that replaces lookup
+             * array access with direct bit operations for better performance.
+             * 
+             * Original used: l2Power[iShiftBits] and lOnBits[31 - iShiftBits]
+             * Optimized uses: (1L << iShiftBits) and ((1L << bits) - 1)
              */
             if (iShiftBits == 0)
                 return lValue;
+
             if (iShiftBits == 31)
                 return (lValue & 1) == 0 ? 0x80000000 : 0;
-            if ((lValue & l2Power[31 - iShiftBits]) != 0)
-                return (lValue & lOnBits[31 - iShiftBits - 1]) * l2Power[iShiftBits] | 0x80000000;
 
-            return ((lValue & lOnBits[31 - iShiftBits]) * l2Power[iShiftBits]);
+            // Check if the bit that would move into the sign position is set
+            var signBitMask = 1L << (31 - iShiftBits);
+            if ((lValue & signBitMask) != 0)
+            {
+                // Mask off the upper bits that would overflow, shift, then set sign bit
+                var valueMask = (1L << (32 - iShiftBits)) - 1;
+                return ((lValue & valueMask) << iShiftBits) | 0x80000000;
+            }
+
+            // Normal shift with upper bits masked off
+            var normalMask = (1L << (32 - iShiftBits)) - 1;
+            return (lValue & normalMask) << iShiftBits;
         }
 
         /// <summary>
@@ -90,16 +102,27 @@ namespace ByteForge.Toolkit
              *             
              * and be done with it. However, the original VB6 implementation
              * of this function uses a custom logic that differs in key aspects.
-             * The following is a direct translation.
+             * The following is an optimized translation that replaces division
+             * by powers of 2 with right shift operations for better performance.
+             * 
+             * Original used: (lValue & 0x7FFFFFFE) / l2Power[iShiftBits]
+             * Optimized uses: (lValue & 0x7FFFFFFE) >> iShiftBits
+             * 
+             * Original used: (0x40000000 / l2Power[iShiftBits - 1])
+             * Optimized uses: 0x40000000 >> (iShiftBits - 1)
              */
             if (iShiftBits == 0)
                 return lValue;
+
             if (iShiftBits == 31)
                 return (lValue & 0x80000000) == 0 ? 1 : 0;
 
-            var rst = (lValue & 0x7FFFFFFE) / l2Power[iShiftBits];
+            // Replace division with right shift for the main calculation
+            var rst = (lValue & 0x7FFFFFFE) >> iShiftBits;
+
+            // If the sign bit was set, apply the VB6-specific adjustment
             if ((lValue & 0x80000000) != 0)
-                rst |= (0x40000000 / l2Power[iShiftBits - 1]);
+                rst |= 0x40000000L >> (iShiftBits - 1);
 
             return rst;
         }
@@ -319,7 +342,7 @@ namespace ByteForge.Toolkit
         private long InverseMixColumns(long X)
         {
             var B = new byte[4];
-            var M = Pack(InCo);
+            var M = packedInCo;
             for (var i = 3; i >= 0; i--)
             {
                 B[i] = (byte)Product(M, X);
@@ -372,7 +395,7 @@ namespace ByteForge.Toolkit
         /// </remarks>
         private void GenTables()
         {
-            byte[] B = new byte[4];
+            var B = new byte[4];
             m_ltab[0] = 0;
             m_ptab[0] = 1;
             m_ltab[1] = 0;
@@ -390,7 +413,7 @@ namespace ByteForge.Toolkit
 
             for (var I = 1; I <= 255; I++)
             {
-                byte Y = SubstituteByte((byte)I);
+                var Y = SubstituteByte((byte)I);
                 m_fbsub[I] = Y;
                 m_rbsub[Y] = (byte)I;
             }
@@ -404,7 +427,7 @@ namespace ByteForge.Toolkit
 
             for (var I = 0; I <= 255; I++)
             {
-                byte Y = m_fbsub[I];
+                var Y = m_fbsub[I];
                 B[3] = (byte)(Y ^ XTime(Y));
                 B[2] = Y;
                 B[1] = Y;
@@ -412,10 +435,10 @@ namespace ByteForge.Toolkit
                 m_ftable[I] = Pack(B);
 
                 Y = m_rbsub[I];
-                B[3] = ByteMultiplication(InCo[0], Y);
-                B[2] = ByteMultiplication(InCo[1], Y);
-                B[1] = ByteMultiplication(InCo[2], Y);
-                B[0] = ByteMultiplication(InCo[3], Y);
+                B[3] = ByteMultiplication(0xB, Y);
+                B[2] = ByteMultiplication(0xD, Y);
+                B[1] = ByteMultiplication(0x9, Y);
+                B[0] = ByteMultiplication(0xE, Y);
                 m_rtable[I] = Pack(B);
             }
         }
@@ -449,7 +472,7 @@ namespace ByteForge.Toolkit
         {
             long I, J, K, M, N;
             long C1, C2, C3;
-            long[] CipherKey = new long[8];
+            var CipherKey = new long[8];
             m_Nb = NB;
             m_Nk = NK;
             m_Nr = m_Nb >= m_Nk ? 6 + m_Nb : 6 + m_Nk;
@@ -548,6 +571,15 @@ namespace ByteForge.Toolkit
             var A = new long[8];
             var B = new long[8];
             long[] X, Y, T;
+
+            /*
+             * Optimization: Replaced byteMask with 0xFF constant
+             * Original used: byteMask (which equals 255)
+             * Optimized uses: 0xFF (same value, no array lookup)
+             * This eliminates multiple array accesses per encryption round.
+             */
+            const long byteMask = 0xFF;
+
             for (var I = 0; I < m_Nb; I++)
             {
                 A[I] = PackFrom(Buff, I * 4);
@@ -561,10 +593,10 @@ namespace ByteForge.Toolkit
                 for (var J = 0; J < m_Nb; J++)
                 {
                     var M = J * 3;
-                    Y[J] = m_fkey[K++] ^ m_ftable[X[J] & lOnBits[7]] ^
-                        RotateLeft(m_ftable[RShift(X[m_fi[M]], 8) & lOnBits[7]], 8) ^
-                        RotateLeft(m_ftable[RShift(X[m_fi[M + 1]], 16) & lOnBits[7]], 16) ^
-                        RotateLeft(m_ftable[RShift(X[m_fi[M + 2]], 24) & lOnBits[7]], 24);
+                    Y[J] = m_fkey[K++] ^ m_ftable[X[J] & byteMask] ^
+                        RotateLeft(m_ftable[RShift(X[m_fi[M]], 8) & byteMask], 8) ^
+                        RotateLeft(m_ftable[RShift(X[m_fi[M + 1]], 16) & byteMask], 16) ^
+                        RotateLeft(m_ftable[RShift(X[m_fi[M + 2]], 24) & byteMask], 24);
                 }
                 T = X;
                 X = Y;
@@ -573,10 +605,10 @@ namespace ByteForge.Toolkit
             for (var J = 0; J < m_Nb; J++)
             {
                 var M = J * 3;
-                Y[J] = m_fkey[K++] ^ m_fbsub[X[J] & lOnBits[7]] ^
-                    RotateLeft(m_fbsub[RShift(X[m_fi[M]], 8) & lOnBits[7]], 8) ^
-                    RotateLeft(m_fbsub[RShift(X[m_fi[M + 1]], 16) & lOnBits[7]], 16) ^
-                    RotateLeft(m_fbsub[RShift(X[m_fi[M + 2]], 24) & lOnBits[7]], 24);
+                Y[J] = m_fkey[K++] ^ m_fbsub[X[J] & byteMask] ^
+                    RotateLeft(m_fbsub[RShift(X[m_fi[M]], 8) & byteMask], 8) ^
+                    RotateLeft(m_fbsub[RShift(X[m_fi[M + 1]], 16) & byteMask], 16) ^
+                    RotateLeft(m_fbsub[RShift(X[m_fi[M + 2]], 24) & byteMask], 24);
             }
             for (var I = 0; I < m_Nb; I++)
             {
@@ -597,6 +629,15 @@ namespace ByteForge.Toolkit
             var A = new long[8];
             var B = new long[8];
             long[] X, Y, T;
+
+            /*
+             * Optimization: Replaced byteMask with 0xFF constant
+             * Original used: byteMask (which equals 255)
+             * Optimized uses: 0xFF (same value, no array lookup)
+             * This eliminates multiple array accesses per encryption round.
+             */
+            const long byteMask = 0xFF;
+
             for (var I = 0; I < m_Nb; I++)
             {
                 A[I] = PackFrom(Buff, I * 4);
@@ -610,10 +651,10 @@ namespace ByteForge.Toolkit
                 for (var J = 0; J < m_Nb; J++)
                 {
                     var M = J * 3;
-                    Y[J] = m_rkey[K++] ^ m_rtable[X[J] & lOnBits[7]] ^
-                        RotateLeft(m_rtable[RShift(X[m_ri[M]], 8) & lOnBits[7]], 8) ^
-                        RotateLeft(m_rtable[RShift(X[m_ri[M + 1]], 16) & lOnBits[7]], 16) ^
-                        RotateLeft(m_rtable[RShift(X[m_ri[M + 2]], 24) & lOnBits[7]], 24);
+                    Y[J] = m_rkey[K++] ^ m_rtable[X[J] & byteMask] ^
+                        RotateLeft(m_rtable[RShift(X[m_ri[M]], 8) & byteMask], 8) ^
+                        RotateLeft(m_rtable[RShift(X[m_ri[M + 1]], 16) & byteMask], 16) ^
+                        RotateLeft(m_rtable[RShift(X[m_ri[M + 2]], 24) & byteMask], 24);
                 }
                 T = X;
                 X = Y;
@@ -622,10 +663,10 @@ namespace ByteForge.Toolkit
             for (var J = 0; J < m_Nb; J++)
             {
                 var M = J * 3;
-                Y[J] = m_rkey[K++] ^ m_rbsub[X[J] & lOnBits[7]] ^
-                    RotateLeft(m_rbsub[RShift(X[m_ri[M]], 8) & lOnBits[7]], 8) ^
-                    RotateLeft(m_rbsub[RShift(X[m_ri[M + 1]], 16) & lOnBits[7]], 16) ^
-                    RotateLeft(m_rbsub[RShift(X[m_ri[M + 2]], 24) & lOnBits[7]], 24);
+                Y[J] = m_rkey[K++] ^ m_rbsub[X[J] & byteMask] ^
+                    RotateLeft(m_rbsub[RShift(X[m_ri[M]], 8) & byteMask], 8) ^
+                    RotateLeft(m_rbsub[RShift(X[m_ri[M + 1]], 16) & byteMask], 16) ^
+                    RotateLeft(m_rbsub[RShift(X[m_ri[M + 2]], 24) & byteMask], 24);
             }
             for (var I = 0; I < m_Nb; I++)
             {
@@ -819,11 +860,7 @@ namespace ByteForge.Toolkit
             /// <summary>
             /// Returns a random float between 0 (inclusive) and 1 (exclusive).
             /// </summary>
-            public float Next()
-            {
-                return VBMath.Rnd() * dummy;
-            }
-            private readonly int dummy = 1;
+            public float Next() => VBMath.Rnd();
 
             /// <summary>
             /// Generates a random integer that is within a specified range.

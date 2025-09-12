@@ -302,10 +302,7 @@ namespace ByteForge.Toolkit
         /// <summary>
         /// Flushes any buffered data to the underlying stream.
         /// </summary>
-        public void Flush()
-        {
-            _writer.Flush();
-        }
+        public void Flush() => _writer.Flush();
 
         /// <summary>
         /// Releases all resources used by the CSVWriter.

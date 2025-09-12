@@ -9,24 +9,72 @@ ByteForge.Toolkit is a modular .NET Framework 4.8 library providing high-perform
 ## Build Commands
 
 ### Building the Project
+
+**Recommended approach using the build script:**
 ```bash
-# Build in Debug mode (default)
-msbuild ByteForge.Toolkit.sln /p:Configuration=Debug
+# Build Debug configuration (default) - builds both AnyCPU and x86
+cd "Tests\ByteForge.Toolkit.Tests"
+BuildSolution.bat
 
-# Build in Release mode
-msbuild ByteForge.Toolkit.sln /p:Configuration=Release
-
-# Build specific platform (x86)
-msbuild ByteForge.Toolkit.sln /p:Configuration=Debug /p:Platform=x86
-
-# Or using dotnet (requires SDK)
-dotnet build ByteForge.Toolkit.sln
+# Build Release configuration
+BuildSolution.bat Release
 ```
+
+**Manual MSBuild commands (if needed):**
+```bash
+# Auto-detect and use appropriate MSBuild version
+# Build Debug AnyCPU
+msbuild ByteForge.Toolkit.sln /t:Restore /p:Configuration=Debug /p:Platform="Any CPU"
+msbuild ByteForge.Toolkit.sln /p:Configuration=Debug /p:Platform="Any CPU"
+
+# Build Release AnyCPU  
+msbuild ByteForge.Toolkit.sln /t:Restore /p:Configuration=Release /p:Platform="Any CPU"
+msbuild ByteForge.Toolkit.sln /p:Configuration=Release /p:Platform="Any CPU"
+
+# Build x86 versions
+msbuild ByteForge.Toolkit.sln /t:Restore /p:Configuration=Debug /p:Platform=x86
+msbuild ByteForge.Toolkit.sln /p:Configuration=Debug /p:Platform=x86
+```
+
+**Note:** The BuildSolution.bat script auto-detects Visual Studio installations and handles NuGet restore automatically. Build logs are saved to `Tests\ByteForge.Toolkit.Tests\bin\Debug\Build.log` or `bin\Release\Build.log`.
 
 ### Package Management
 - Uses PackageReference format in .csproj file
 - Package restoration: `nuget restore` or `dotnet restore`
 - No package.json or external package managers
+
+### Testing and Code Coverage
+
+**Prerequisites:** Build the solution first using BuildSolution.bat
+
+```bash
+# Run all tests (after building)
+dotnet test "Tests\ByteForge.Toolkit.Tests\ByteForge.Toolkit.Tests.csproj" --no-build
+
+# Run tests with code coverage using OpenCover
+# First, ensure packages are restored and project is built
+cd "Tests\ByteForge.Toolkit.Tests"
+BuildSolution.bat
+
+# Run coverage analysis
+packages\OpenCover.4.7.1221\tools\OpenCover.Console.exe -target:"dotnet.exe" -targetargs:"test ByteForge.Toolkit.Tests.csproj --no-build --configuration Debug" -output:coverage.xml -register:user -filter:"+[ByteForge.Toolkit*]*"
+
+# Generate HTML coverage report  
+packages\ReportGenerator.5.1.26\tools\net47\ReportGenerator.exe -reports:coverage.xml -targetdir:coverage-report -reporttypes:Html
+```
+
+**Alternative using MSTest runner:**
+```bash
+# After building with BuildSolution.bat
+dotnet test "Tests\ByteForge.Toolkit.Tests\ByteForge.Toolkit.Tests.csproj" --no-build --configuration Debug --logger:trx --collect:"XPlat Code Coverage"
+```
+
+The test project includes comprehensive tests for:
+- CSV processing functionality
+- Data structures (Binary Search Tree, URL utilities)
+- Logging system
+- Security (AES encryption)
+- Utility functions
 
 ### Build Artifacts
 - Output directory: `bin\Debug\` or `bin\Release\`
@@ -149,7 +197,6 @@ Key inter-module dependencies:
 
 ## Important Notes
 
-- No unit tests are present in this codebase
 - Project targets .NET Framework 4.8 specifically
 - Uses legacy packages.config alongside PackageReference
 - Designed for Windows environments (some features are Windows-specific)

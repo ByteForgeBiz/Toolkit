@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using System.Security.Cryptography;
 using ByteForge.Toolkit;
 using ByteForge.Toolkit.Tests.Helpers;
@@ -425,11 +426,11 @@ namespace ByteForge.Toolkit.Tests.Unit.Security
             var aes = new AESEncryption();
             var key = AESEncryption.GenerateKey(42, 16);
             var testText = "Performance test message for AES encryption";
-            var iterations = 500;
-            var startTime = DateTime.UtcNow;
+            var iterations = 5000;
+            var stopWatch = Stopwatch.StartNew();
 
             // Act
-            for (int i = 0; i < iterations; i++)
+            for (var i = 0; i < iterations; i++)
             {
                 var encrypted = aes.Encrypt(testText, key);
                 var decrypted = aes.Decrypt(encrypted, key);
@@ -442,9 +443,36 @@ namespace ByteForge.Toolkit.Tests.Unit.Security
             }
 
             // Assert
-            var duration = DateTime.UtcNow - startTime;
-            duration.Should().BeLessThan(TimeSpan.FromSeconds(3), 
+            stopWatch.Stop();
+            var duration = stopWatch.Elapsed;
+            duration.Should().BeLessThan(TimeSpan.FromSeconds(2), 
                 $"Should complete {iterations} encrypt/decrypt cycles in reasonable time");
+        }
+
+        /// <summary>
+        /// Verifies that the encryption implementation supports decrypting and re-encrypting 
+        /// legacy encrypted values, ensuring compatibility with previously encrypted data.
+        /// </summary>
+        /// <remarks>
+        /// This test ensures that the <see cref="AESEncryption"/> class can correctly decrypt a
+        /// legacy encrypted string and re-encrypt it to produce the same encrypted value.<br/>
+        /// Compatibility with legacy data is critical for maintaining seamless operation when 
+        /// transitioning to updated encryption workflows.
+        /// </remarks>
+        [TestMethod]
+        public void EncryptDecrypt_ShouldSupportLegacy()
+        {
+            var aes = new AESEncryption();
+            var key = AESEncryption.GenerateKey(13, 16);
+
+            var encryptedLegacy = "7A77D979A90B997E67338B66C1532B63A21DBBD911D99BD5A5013F11C50C239C";
+            var plaintext = "api_user";
+
+            var decrypted = aes.Decrypt(encryptedLegacy, key);
+            decrypted.Should().Be(plaintext, "decrypted legacy value should match expected plaintext");
+
+            var reEncrypted = aes.Encrypt(decrypted, key);
+            reEncrypted.Should().Be(encryptedLegacy, "re-encryption should match legacy encrypted value");
         }
 
         /// <summary>
@@ -457,19 +485,20 @@ namespace ByteForge.Toolkit.Tests.Unit.Security
         public void KeyGeneration_Performance_ShouldBeReasonablyFast()
         {
             // Arrange
-            var iterations = 1000;
-            var startTime = DateTime.UtcNow;
+            var iterations = 5000;
+            var stopWatch = Stopwatch.StartNew();
 
             // Act
-            for (int i = 0; i < iterations; i++)
+            for (var i = 0; i < iterations; i++)
             {
                 var key = AESEncryption.GenerateKey(i, 16);
                 key.Should().NotBeNullOrEmpty();
             }
 
             // Assert
-            var duration = DateTime.UtcNow - startTime;
-            duration.Should().BeLessThan(TimeSpan.FromSeconds(2), 
+            stopWatch.Stop();
+            var duration = stopWatch.Elapsed;
+            duration.Should().BeLessThan(TimeSpan.FromMilliseconds(50), 
                 $"Should generate {iterations} keys in reasonable time");
         }
 
@@ -513,13 +542,13 @@ namespace ByteForge.Toolkit.Tests.Unit.Security
 
             // Act
             var keys = new string[iterations];
-            for (int i = 0; i < iterations; i++)
+            for (var i = 0; i < iterations; i++)
             {
                 keys[i] = AESEncryption.GenerateKey(seed, size);
             }
 
             // Assert
-            for (int i = 1; i < iterations; i++)
+            for (var i = 1; i < iterations; i++)
             {
                 keys[i].Should().Be(keys[0], $"key generation should be deterministic (iteration {i})");
             }

@@ -19,20 +19,19 @@ namespace ByteForge.Toolkit
         public string Name { get; }
 
         /// <summary>
-        /// Gets the type of the database column.
+        /// Initializes a new instance of the <see cref="CSVColumnAttribute"/> class with the specified column name.
         /// </summary>
-        public Type DbType { get; }
+        /// <param name="name">The name of the CSV column associated with this attribute. Cannot be null or empty.</param>
+        public CSVColumnAttribute(string name) : this(-1, name) { }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="CSVColumnAttribute"/> class.
+        /// Specifies metadata for a column in a CSV file, including its index and optional name.
         /// </summary>
-        /// <param name="name">The name of the CSV column.</param>
-        /// <param name="dbType">The type of the database column.</param>
-        /// <param name="index">The index of the column in the CSV file. Default is -1, which means the index is not specified.</param>
-        public CSVColumnAttribute(string name = null, Type dbType = null, int index = -1)
+        /// <param name="index">The zero-based index of the column in the CSV file. Must be a non-negative integer.</param>
+        /// <param name="name">The optional name of the column. If not provided, the column will be identified by its index.</param>
+        public CSVColumnAttribute(int index, string name = null)
         {
             Name = name;
-            DbType = dbType;
             Index = index;
         }
     }
