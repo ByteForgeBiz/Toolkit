@@ -126,7 +126,19 @@ ValueConverterRegistry.RegisterConverter("CurrencyFormat", value =>
 - Prefer `Utils.RunSync` over `Task.Result` for async-to-sync conversion
 - Cache parsed values when possible rather than re-parsing repeatedly
 
-### 🔗 Related Modules
-- [CSV](../Data/CSV/readme.md)
-- [Logging](../Logging/readme.md)
-- [Configuration](../Configuration/readme.md)
+---
+
+## 📚 Modules
+
+| Module | Description |
+|--------|-------------|
+| [🏠 Home](../readme.md) | ByteForge.Toolkit main documentation |
+| [CommandLine](../CLI/readme.md) | Attribute-based CLI parsing with aliasing, typo correction, and plugin support |
+| [Configuration](../Configuration/readme.md) | INI-based configuration system with typed section support |
+| [Data](../Data/readme.md) | Comprehensive data processing with CSV, Database, Audio, and Exception handling |
+| [DataStructures](../DataStructures/readme.md) | AVL tree and URL utility classes |
+| [Logging](../Logging/readme.md) | Thread-safe logging system with async file/console output |
+| [Mail](../Mail/readme.md) | Email utility with HTML support and attachment handling |
+| [Security](../Security/readme.md) | AES-based string encryption with key generation and Galois Field logic |
+| [Utils](../Utils/readme.md) | Miscellaneous helpers: timing, path utilities, progress bar |
+| [Zip](../Zip/readme.md) | Advanced ZIP library with multi-part archives, self-extracting executables, and AES encryption |

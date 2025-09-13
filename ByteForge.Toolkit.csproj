@@ -233,6 +233,8 @@
     <Compile Include="Zip\ExtractExistingFileAction.cs" />
     <Compile Include="Zip\FileSelector.cs" />
     <Compile Include="Zip\OffsetStream.cs" />
+    <None Include="Data\readme.md" />
+    <None Include="Zip\readme.md" />
     <None Include="Zip\Resources\CommandLineSelfExtractorStub.cs" />
     <None Include="Zip\Resources\FolderBrowserDialogEx.cs">
       <SubType>Component</SubType>
@@ -305,15 +307,6 @@
     <None Include="Logging\readme.md" />
     <None Include="Mail\readme.md" />
     <None Include="readme.md" />
-    <None Include="Documentation\CLI.md" />
-    <None Include="Documentation\Configuration.md" />
-    <None Include="Documentation\DataStructures.md" />
-    <None Include="Documentation\Data_CSV.md" />
-    <None Include="Documentation\Data_Database.md" />
-    <None Include="Documentation\Logging.md" />
-    <None Include="Documentation\ByteForge.Toolkit.md" />
-    <None Include="Documentation\Security.md" />
-    <None Include="Documentation\Utils.md" />
     <None Include="Security\readme.md" />
     <None Include="Utils\readme.md" />
     <None Include="Zip\BZip2\BZip2 DLL.csproj" />
@@ -323,7 +316,6 @@
   <ItemGroup>
     <Content Include=".gitignore" />
     <Content Include="FodyWeavers.xml" />
-    <Content Include="ILLink\ILLink.Descriptors.LibraryBuild.xml" />
     <Content Include="Zip\BZip2\NOTICE.txt" />
     <None Include="Zip\Resources\zippedFile.ico" />
   </ItemGroup>
