@@ -18,7 +18,7 @@ namespace ByteForge.Toolkit
     /// included and the sequential part number.
     /// <para>
     /// PartInfo objects are typically created by the <see cref="EmailAttachmentHandler"/> when
-    /// using the <see cref="ProcessingMethod.CompressedAndSplit"/> method and are returned
+    /// using the <see cref="ProcessingMethod.MultiPart"/> method and are returned
     /// in the <see cref="AttachmentProcessResult.PartDistribution"/> property.
     /// </para>
     /// <para>

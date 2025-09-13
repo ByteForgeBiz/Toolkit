@@ -19,6 +19,12 @@ namespace ByteForge.Toolkit
         public string Name { get; }
 
         /// <summary>
+        /// Initializes a new instance of the <see cref="CSVColumnAttribute"/> class with default values.
+        /// </summary>
+        /// <remarks>This constructor sets the column index to -1 and the column name to <see langword="null"/>.</remarks>
+        public CSVColumnAttribute() : this(-1, null) { }
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="CSVColumnAttribute"/> class with the specified column name.
         /// </summary>
         /// <param name="name">The name of the CSV column associated with this attribute. Cannot be null or empty.</param>

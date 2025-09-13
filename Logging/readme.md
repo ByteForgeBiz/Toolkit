@@ -251,7 +251,6 @@ var options = new FileLoggerOptions
 | [Mail](../Mail/readme.md) | Email utility with HTML support and attachment handling |
 | [Security](../Security/readme.md) | AES-based string encryption with key generation and Galois Field logic |
 | [Utils](../Utils/readme.md) | Miscellaneous helpers: timing, path utilities, progress bar |
-| [Zip](../Zip/readme.md) | Advanced ZIP library with multi-part archives, self-extracting executables, and AES encryption |
 
 ### Disposal and Cleanup
 ```csharp

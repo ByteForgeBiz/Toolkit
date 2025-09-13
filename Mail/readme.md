@@ -13,17 +13,16 @@ The Mail module provides comprehensive email processing capabilities with intell
 
 ### Intelligent Attachment Processing
 - **Size-Aware Processing**: Automatically handles files based on total size constraints
-- **Automatic Compression**: Compresses large files into ZIP archives when needed
-- **Multi-Part Splitting**: Splits very large attachments into multiple manageable parts
+- **Automatic Compression**: Creates ZIP archives for files exceeding size limits
 - **File Renaming**: Support for custom attachment names while preserving original files
 - **Skipped File Handling**: Graceful handling of missing or inaccessible files
+- **Automatic Cleanup**: Uses `TempFileAttachment` for self-managing temporary files
 - **Comprehensive Result Reporting**: Detailed feedback on processing outcomes
 
 ### Processing Strategies
 1. **Direct Attachment** (≤5MB total): Files attached directly to email
-2. **Compressed** (>5MB, ≤5MB compressed): Files compressed into single ZIP
-3. **Compressed and Split** (>5MB compressed, ≤20MB total): Files split into multiple ZIP parts
-4. **Failed** (>20MB total): Processing fails with descriptive error
+2. **Compressed** (>5MB): Files compressed into a single ZIP archive
+3. **Failed** (>20MB total): Processing fails with descriptive error
 
 ## Main Classes
 
@@ -43,12 +42,12 @@ Core class for processing email attachments with size restrictions and compressi
 
 **Key Methods:**
 - `ProcessAttachments(email, filesToAttach, fileNameMap, addAttachmentSummary)` - Process files for attachment
-- `CleanupTempFiles(result)` - Clean up temporary files created during processing
 
 **Features:**
 - Implements `IDisposable` for proper resource cleanup
 - Automatic temporary directory management
-- Intelligent file distribution for multi-part archives
+- Uses `TempFileAttachment` for self-cleaning temporary files
+- ZIP compression for large file handling
 
 ### MailServerSettings
 Configuration class for SMTP server settings.
@@ -66,18 +65,17 @@ Configuration class for SMTP server settings.
 Result object containing detailed processing information.
 
 **Properties:**
-- `ProcessingMethod` - How attachments were processed
-- `TempFiles` - List of temporary files created
-- `SkippedFiles` - Files that couldn't be processed
-- `PartDistribution` - Information about multi-part archive distribution
+- `ProcessingMethod` - How attachments were processed (None, DirectAttachment, Compressed, Failed)
+- `SkippedFiles` - Files that couldn't be processed with reasons
+- `PartDistribution` - Information about multi-part archives (for future use)
 - `Error` - Error message if processing failed
 - `Success` - Boolean indicating processing success
 
 ### Supporting Classes
-- **ProcessingMethod** - Enum defining processing strategies
-- **PartInfo** - Information about individual parts in multi-part archives
+- **TempFileAttachment** - Self-cleaning attachment class that deletes temp files on disposal
+- **ProcessingMethod** - Enum defining processing strategies (None, DirectAttachment, Compressed, MultiPart, Failed)
+- **PartInfo** - Information about individual parts in multi-part archives (reserved for future use)
 - **SkippedFile** - Details about files that couldn't be processed
-- **FileBucket** - Internal class for file distribution optimization
 
 ## Usage Examples
 
@@ -132,10 +130,7 @@ if (result.Success)
             Console.WriteLine("Files attached directly");
             break;
         case ProcessingMethod.Compressed:
-            Console.WriteLine("Files compressed into ZIP");
-            break;
-        case ProcessingMethod.CompressedAndSplit:
-            Console.WriteLine($"Files split into {result.PartDistribution.Count} parts");
+            Console.WriteLine("Files compressed into ZIP archive");
             break;
     }
 }
@@ -144,8 +139,8 @@ else
     Console.WriteLine($"Processing failed: {result.Error}");
 }
 
-// Always cleanup temporary files
-handler.CleanupTempFiles(result);
+// Temporary files are automatically cleaned up when email is disposed
+// or when TempFileAttachment objects are disposed
 ```
 
 ### Handling Large Files
@@ -169,26 +164,18 @@ var result = handler.ProcessAttachments(email, largeFiles);
 
 if (result.Success)
 {
-    if (result.ProcessingMethod == ProcessingMethod.CompressedAndSplit)
+    if (result.ProcessingMethod == ProcessingMethod.Compressed)
     {
-        // Files were split into multiple parts
-        Console.WriteLine("Files split into multiple ZIP archives:");
-        foreach (var part in result.PartDistribution)
-        {
-            Console.WriteLine($"Part {part.PartNumber}: {part.FileCount} files");
-            foreach (var file in part.Files)
-            {
-                Console.WriteLine($"  - {file}");
-            }
-        }
+        // Files were compressed into a ZIP archive
+        Console.WriteLine("Files compressed into ZIP archive");
+        Console.WriteLine($"ZIP attachment: {email.Attachments[0].Name}");
     }
     
     // Email body automatically includes processing notes
     // and attachment summaries
 }
 
-// Cleanup
-handler.CleanupTempFiles(result);
+// Temporary ZIP files are automatically cleaned up when email is disposed
 ```
 
 ## Configuration
@@ -222,21 +209,19 @@ Console.WriteLine($"Username: {settings.User}");
 ### File Size Constraints
 - **Individual Direct Attachment Limit**: 5MB per file
 - **Total Direct Attachment Limit**: 5MB combined
-- **Maximum Total Size**: 20MB (after compression/splitting)
-- **Single Compressed Archive Limit**: 5MB
+- **Maximum Total Size**: 20MB (after compression)
+- **ZIP Archive Limit**: Single archive approach
 
 ### Processing Decision Tree
 1. **Total size ≤ 5MB**: Direct attachment
-2. **Total size > 5MB**: Create compressed ZIP
-3. **Compressed ZIP ≤ 5MB**: Attach single ZIP
-4. **Compressed ZIP > 5MB but ≤ 20MB**: Split into multiple ZIP parts
-5. **Total size > 20MB**: Fail with error message
+2. **Total size > 5MB and ≤ 20MB**: Compress into ZIP archive
+3. **Total size > 20MB**: Fail with error message
 
-### Multi-Part Archive Strategy
-- Files are sorted by size (largest first)
-- Greedy distribution algorithm ensures balanced part sizes
-- Each part is a complete, independently extractable ZIP archive
-- Part naming follows pattern: `Attachments_TIMESTAMP_Part1of3.zip`
+### Compression Strategy
+- Files exceeding 5MB total are compressed into a single ZIP archive
+- ZIP file is created in temporary directory with timestamp naming
+- `TempFileAttachment` automatically handles cleanup when email is disposed
+- ZIP naming follows pattern: `Attachments_YYYYMMDDHHMMSS.zip`
 
 ## Dependencies
 
@@ -275,15 +260,15 @@ if (result.SkippedFiles.Count > 0)
 ### Common Error Scenarios
 - **File Not Found**: Files missing from disk
 - **Access Denied**: Insufficient permissions to read files
-- **Size Exceeded**: Files too large for processing limits
+- **Size Exceeded**: Files too large for processing limits (>20MB)
 - **Compression Failed**: Issues creating ZIP archives
 - **SMTP Errors**: Network or authentication problems
 
 ### Automatic Email Notifications
 The system automatically adds processing notifications to email bodies:
 - Compression notices for ZIP attachments
-- Multi-part split notifications with part counts
 - Skipped file warnings with reasons
+- Attachment summaries with file names and sizes
 
 ## Best Practices
 
@@ -296,14 +281,14 @@ using var email = new MailMessage();
 try
 {
     var result = handler.ProcessAttachments(email, files);
-    // Process result...
+    
+    if (result.Success)
+    {
+        // Send email - temp files will be cleaned up automatically
+        smtp.Send(email);
+    }
 }
-finally
-{
-    // Cleanup is handled automatically by using statements
-    // But you can also manually cleanup temp files
-    handler.CleanupTempFiles(result);
-}
+// TempFileAttachment objects automatically clean up when email is disposed
 ```
 
 ### Security Considerations
@@ -311,13 +296,13 @@ finally
 - Validate all email addresses before sending
 - Use secure protocols (TLS 1.2 or higher)
 - Implement proper logging for audit trails
-- Clean up temporary files to avoid data exposure
+- Temporary files are automatically cleaned up by `TempFileAttachment`
 
 ### Performance Optimization
 - Process attachments once and reuse results for multiple recipients
 - Use file name mapping to avoid file system operations
-- Consider async patterns for large file processing
-- Monitor temporary disk space usage for large operations
+- ZIP compression is efficient for multiple files
+- Monitor temporary disk space usage for large compression operations
 
 ### File Naming Strategy
 ```csharp
@@ -364,19 +349,19 @@ Log.Warning($"Invalid email addresses removed: {string.Join(", ", invalidAddrs)}
 
 The module includes comprehensive unit tests covering:
 - **Direct attachment scenarios** with various file sizes
-- **Compression functionality** with file name mapping
-- **Multi-part archive creation** and distribution
+- **ZIP compression functionality** with file name mapping
+- **Large file compression** with automatic ZIP creation
 - **Error handling** for missing files and size limits
-- **File cleanup** and resource management
+- **Automatic cleanup** through `TempFileAttachment` disposal
 - **Performance testing** with multiple operations
 - **Edge cases** and boundary conditions
 
 Test categories: `Unit`, `Mail`
 
 Key test files:
-- `EmailAttachmentHandlerTests.cs` - Comprehensive test suite with 25+ test methods
+- `EmailAttachmentHandlerTests.cs` - Comprehensive test suite with 20+ test methods covering all processing scenarios
 
-This Mail module provides a robust, enterprise-ready email solution with intelligent attachment handling that automatically adapts to file sizes and constraints while maintaining security and providing detailed feedback on all operations.
+This Mail module provides a robust, enterprise-ready email solution with intelligent attachment handling that automatically adapts to file sizes using ZIP compression while maintaining security and providing detailed feedback on all operations.
 
 ---
 
@@ -393,4 +378,3 @@ This Mail module provides a robust, enterprise-ready email solution with intelli
 | [Mail](../Mail/readme.md) | Email utility with HTML support and attachment handling |
 | [Security](../Security/readme.md) | AES-based string encryption with key generation and Galois Field logic |
 | [Utils](../Utils/readme.md) | Miscellaneous helpers: timing, path utilities, progress bar |
-| [Zip](../Zip/readme.md) | Advanced ZIP library with multi-part archives, self-extracting executables, and AES encryption |

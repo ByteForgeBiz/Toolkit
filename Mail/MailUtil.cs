@@ -157,7 +157,7 @@ namespace ByteForge.Toolkit
                 }
 
                 // Add notification if needed based on processing method
-                if (result.ProcessingMethod == ProcessingMethod.CompressedAndSplit)
+                if (result.ProcessingMethod == ProcessingMethod.MultiPart)
                 {
                     email.Body += "\n\nNote: Due to size constraints, the attachments in this email have been ";
                     email.Body += $"compressed and split into {result.PartDistribution.Count} parts. ";

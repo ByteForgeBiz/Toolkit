@@ -173,10 +173,10 @@
     <Compile Include="Logging\Models\SessionFileLoggerOptions.cs" />
     <Compile Include="Mail\AttachmentProcessResult.cs" />
     <Compile Include="Mail\EmailAttachmentHandler.cs" />
-    <Compile Include="Mail\FileBucket.cs" />
     <Compile Include="Mail\PartInfo.cs" />
     <Compile Include="Mail\ProcessingMethod.cs" />
     <Compile Include="Mail\SkippedFile.cs" />
+    <Compile Include="Mail\TempFileAttachment.cs" />
     <Compile Include="Utils\BooleanParser.cs" />
     <Compile Include="CLI\ConsoleSpinner.cs" />
     <Compile Include="Utils\DateTimeUtil.cs" />
@@ -219,80 +219,7 @@
     <Compile Include="Logging\Models\FileLoggerOptions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Utils\ValueConverterRegistry.cs" />
-    <Compile Include="Zip\BZip2\BitWriter.cs" />
-    <Compile Include="Zip\BZip2\BZip2Compressor.cs" />
-    <Compile Include="Zip\BZip2\BZip2InputStream.cs" />
-    <Compile Include="Zip\BZip2\BZip2OutputStream.cs" />
-    <Compile Include="Zip\BZip2\ParallelBZip2OutputStream.cs" />
-    <Compile Include="Zip\BZip2\Rand.cs" />
-    <Compile Include="Zip\ComHelper.cs" />
-    <Compile Include="Zip\CRC32.cs" />
-    <Compile Include="Zip\EncryptionAlgorithm.cs" />
-    <Compile Include="Zip\Events.cs" />
-    <Compile Include="Zip\Exceptions.cs" />
-    <Compile Include="Zip\ExtractExistingFileAction.cs" />
-    <Compile Include="Zip\FileSelector.cs" />
-    <Compile Include="Zip\OffsetStream.cs" />
     <None Include="Data\readme.md" />
-    <None Include="Zip\readme.md" />
-    <None Include="Zip\Resources\CommandLineSelfExtractorStub.cs" />
-    <None Include="Zip\Resources\FolderBrowserDialogEx.cs">
-      <SubType>Component</SubType>
-    </None>
-    <None Include="Zip\Resources\PasswordDialog.cs">
-      <SubType>Form</SubType>
-    </None>
-    <None Include="Zip\Resources\PasswordDialog.Designer.cs">
-      <DependentUpon>PasswordDialog.cs</DependentUpon>
-    </None>
-    <None Include="Zip\Resources\WinFormsSelfExtractorStub.cs">
-      <SubType>Form</SubType>
-    </None>
-    <None Include="Zip\Resources\WinFormsSelfExtractorStub.Designer.cs">
-      <DependentUpon>WinFormsSelfExtractorStub.cs</DependentUpon>
-    </None>
-    <None Include="Zip\Resources\ZipContentsDialog.cs">
-      <SubType>Form</SubType>
-    </None>
-    <None Include="Zip\Resources\ZipContentsDialog.Designer.cs">
-      <DependentUpon>ZipContentsDialog.cs</DependentUpon>
-    </None>
-    <Compile Include="Zip\Shared.cs" />
-    <Compile Include="Zip\WinZipAes.cs" />
-    <Compile Include="Zip\ZipConstants.cs" />
-    <Compile Include="Zip\ZipCrypto.cs" />
-    <Compile Include="Zip\ZipDirEntry.cs" />
-    <Compile Include="Zip\ZipEntry.cs" />
-    <Compile Include="Zip\ZipEntry.Extract.cs" />
-    <Compile Include="Zip\ZipEntry.Read.cs" />
-    <Compile Include="Zip\ZipEntry.Write.cs" />
-    <Compile Include="Zip\ZipEntrySource.cs" />
-    <Compile Include="Zip\ZipErrorAction.cs" />
-    <Compile Include="Zip\ZipFile.AddUpdate.cs" />
-    <Compile Include="Zip\ZipFile.Check.cs" />
-    <Compile Include="Zip\ZipFile.cs" />
-    <Compile Include="Zip\ZipFile.Events.cs" />
-    <Compile Include="Zip\ZipFile.Extract.cs" />
-    <Compile Include="Zip\ZipFile.Read.cs" />
-    <Compile Include="Zip\ZipFile.Save.cs" />
-    <Compile Include="Zip\ZipFile.SaveSelfExtractor.cs" />
-    <Compile Include="Zip\ZipFile.Selector.cs" />
-    <Compile Include="Zip\ZipFile.x-IEnumerable.cs" />
-    <Compile Include="Zip\ZipInputStream.cs" />
-    <Compile Include="Zip\ZipOutputStream.cs" />
-    <Compile Include="Zip\ZipSegmentedStream.cs" />
-    <Compile Include="Zip\Zlib\Deflate.cs" />
-    <Compile Include="Zip\Zlib\DeflateStream.cs" />
-    <Compile Include="Zip\Zlib\GZipStream.cs" />
-    <Compile Include="Zip\Zlib\Inflate.cs" />
-    <Compile Include="Zip\Zlib\InfTree.cs" />
-    <Compile Include="Zip\Zlib\ParallelDeflateOutputStream.cs" />
-    <Compile Include="Zip\Zlib\Tree.cs" />
-    <Compile Include="Zip\Zlib\Zlib.cs" />
-    <Compile Include="Zip\Zlib\ZlibBaseStream.cs" />
-    <Compile Include="Zip\Zlib\ZlibCodec.cs" />
-    <Compile Include="Zip\Zlib\ZlibConstants.cs" />
-    <Compile Include="Zip\Zlib\ZlibStream.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
@@ -309,18 +236,13 @@
     <None Include="readme.md" />
     <None Include="Security\readme.md" />
     <None Include="Utils\readme.md" />
-    <None Include="Zip\BZip2\BZip2 DLL.csproj" />
-    <None Include="Zip\PackResources.targets" />
-    <EmbeddedResource Include="Zip\Resources\zippedResources.zip" />
   </ItemGroup>
   <ItemGroup>
     <Content Include=".gitignore" />
     <Content Include="FodyWeavers.xml" />
-    <Content Include="Zip\BZip2\NOTICE.txt" />
-    <None Include="Zip\Resources\zippedFile.ico" />
   </ItemGroup>
   <Import Project="..\packages\NETStandard.Library.2.0.3\build\netstandard2.0\NETStandard.Library.targets" Condition="Exists('..\packages\NETStandard.Library.2.0.3\build\netstandard2.0\NETStandard.Library.targets')" />
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" Condition="Exists('$(MSBuildToolsPath)\Microsoft.CSharp.targets')" />
   <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
   <!--  ___           _        _    _ _                        __  __      _     _                               -->
   <!-- | _ ) ___ __ _(_)_ _   | |  (_) |__ _ _ __ _ _ _ _  _  |  \/  |__ _(_)_ _| |_ ___ _ _  __ _ _ _  __ ___   -->
@@ -329,28 +251,20 @@
   <!--          |___/                                   |__/                                                     -->
   <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
   <PropertyGroup>
-    <!--
-      Property group for various project settings.
-      Parameters:
-        - CleanupAfterCopy: Indicates whether to clean up after copying files.
-    -->
-    <CleanupAfterCopy>true</CleanupAfterCopy>
     <CentralLocationPath>$([System.IO.Path]::GetFullPath('$(ProjectDir)..\..\ByteForge.Toolkit'))</CentralLocationPath>
   </PropertyGroup>
   <ItemGroup>
     <AsmInfo Include="Properties\AssemblyInfo.cs" Visible="False" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Zip\Resources\PasswordDialog.resx">
-      <DependentUpon>PasswordDialog.cs</DependentUpon>
-    </None>
-    <None Include="Zip\Resources\WinFormsSelfExtractorStub.resx">
-      <DependentUpon>WinFormsSelfExtractorStub.cs</DependentUpon>
-    </None>
-    <None Include="Zip\Resources\ZipContentsDialog.resx">
-      <DependentUpon>ZipContentsDialog.cs</DependentUpon>
-    </None>
+    <Folder Include="Zip\" />
   </ItemGroup>
+  <Target Name="Messages" BeforeTargets="PrepareForBuild">
+    <Message Text="CentralLocationPath: '$(CentralLocationPath)'" Importance="high" />
+    <Message Text="Importing ByteForge.Tasks.targets..." Importance="high" Condition="Exists('$(CentralLocationPath)\ByteForge.Tasks.targets')" />
+    <Message Text="NOT Importing ByteForge.Tasks.targets..." Importance="high" Condition="!Exists('$(CentralLocationPath)\ByteForge.Tasks.targets')" />
+    <Message Text="Importing PackResources.targets..." Importance="high" Condition="Exists('Zip\PackResources.targets')" />
+    <Message Text="NOT Importing PackResources.targets..." Importance="high" Condition="!Exists('Zip\PackResources.targets')" />
+  </Target>
   <Import Project="$(CentralLocationPath)\ByteForge.Tasks.targets" Condition="Exists('$(CentralLocationPath)\ByteForge.Tasks.targets')" />
-  <Import Project="Zip\PackResources.targets" Condition="Exists('Zip\PackResources.targets')" />
 </Project>

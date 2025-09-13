@@ -8,6 +8,8 @@
 :: 21 Dec 2024
 ::
 
+	/XO		:: eXclude Older files.
+
 ::
 :: Exclude These Directories :
 ::
@@ -16,6 +18,7 @@
 		.vs
 		bin
 		obj
+        TestResults
 
 ::
 :: Exclude These Files :
@@ -28,11 +31,10 @@
 		*.sln
         *.user
         *.rcj
-	/XO		:: eXclude Older files.
 ::
 :: Copy options :
 ::
-	/S		:: copy Subdirectories, but not empty ones.
+	/S		    :: copy Subdirectories, but not empty ones.
 	/DCOPY:DA	:: what to COPY for directories (default is /DCOPY:DA).
 	/COPY:DAT	:: what to COPY for files (default is /COPY:DAT).
 

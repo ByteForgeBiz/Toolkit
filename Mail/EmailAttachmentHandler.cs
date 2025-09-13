@@ -19,13 +19,31 @@ namespace ByteForge.Toolkit
     /// </summary>
     public partial class EmailAttachmentHandler : IDisposable
     {
-        private const long MaxIndividualFileSizeMB = 5;
-        private const long MaxTotalSizeMB = 20;
+        /// <summary>
+        /// Maximum allowed size for an individual file in megabytes.
+        /// </summary>
+        private const int MaxIndividualFileSizeMB = 5;
+
+        /// <summary>
+        /// Maximum allowed total size for all attachments in megabytes.
+        /// </summary>
+        private const int MaxTotalSizeMB = 20;
+
+        /// <summary>
+        /// Path to the temporary directory used for storing compressed files.
+        /// </summary>
         private readonly string TempDirectory = Path.Combine(Path.GetTempPath(), "TempEmailAttachments");
 
-        // Convert MB to bytes for comparisons
-        private const long MaxIndividualFileSizeBytes = MaxIndividualFileSizeMB * 1024 * 1024;
-        private const long MaxTotalSizeBytes = MaxTotalSizeMB * 1024 * 1024;
+        /// <summary>
+        /// Maximum allowed size for an individual file in bytes.
+        /// </summary>
+        private const int MaxIndividualFileSizeBytes = MaxIndividualFileSizeMB * 1024 * 1024;
+
+        /// <summary>
+        /// Maximum allowed total size for all attachments in bytes.
+        /// </summary>
+        private const int MaxTotalSizeBytes = MaxTotalSizeMB * 1024 * 1024;
+
         private bool _disposed;
 
         /// <summary>
@@ -56,17 +74,62 @@ namespace ByteForge.Toolkit
         {
             var result = new AttachmentProcessResult();
 
-            // Validate inputs
-            if (filesToAttach == null || filesToAttach.Count == 0)
+            if (!ValidateInputs(email, filesToAttach))
                 return result;
+
+            var fileInfos = GetValidFileInfos(filesToAttach, result);
+            var totalSize = fileInfos.Sum(fi => fi.Length);
+
+            if (totalSize <= MaxIndividualFileSizeBytes)
+                return AttachFilesDirectly(email, fileInfos, fileNameMap, addAttachmentSummary, result);
+
+            EnsureTempDirectoryExists();
+
+            var timeStamp = DateTime.Now.ToString("yyyyMMddHHmmss");
+            var zipFileName = Path.Combine(TempDirectory, $"Attachments_{timeStamp}.zip");
+
+            if (!TryCompressFiles(filesToAttach, zipFileName, fileNameMap, result))
+                return result;
+
+            var files = GetCompressedFiles(zipFileName);
+            var totalCompressedSize = files.Sum(f => f.Length);
+
+            if (!ValidateCompressedSize(totalCompressedSize, result))
+                return result;
+
+            AttachCompressedFiles(email, files, fileNameMap, addAttachmentSummary);
+
+            result.Error = null;
+            result.ProcessingMethod = files.Length > 1 ? ProcessingMethod.MultiPart : ProcessingMethod.Compressed;
+            return result;
+        }
+
+        /// <summary>
+        /// Validates the input parameters for attachment processing.
+        /// </summary>
+        /// <param name="email">The email message to attach files to.</param>
+        /// <param name="filesToAttach">List of file paths to attach.</param>
+        /// <returns>True if inputs are valid; otherwise, false.</returns>
+        private bool ValidateInputs(MailMessage email, List<string> filesToAttach)
+        {
+            if (filesToAttach == null || filesToAttach.Count == 0)
+                return false;
 
             if (email == null)
                 throw new ArgumentNullException(nameof(email));
 
-            // Check total size of all files
-            long totalSize = 0;
-            var fileInfos = new List<FileInfo>();
+            return true;
+        }
 
+        /// <summary>
+        /// Gets valid file information objects for the files to attach.
+        /// </summary>
+        /// <param name="filesToAttach">List of file paths to attach.</param>
+        /// <param name="result">The result object to update with skipped files.</param>
+        /// <returns>List of valid <see cref="FileInfo"/> objects.</returns>
+        private List<FileInfo> GetValidFileInfos(List<string> filesToAttach, AttachmentProcessResult result)
+        {
+            var fileInfos = new List<FileInfo>();
             foreach (var file in filesToAttach)
             {
                 if (!File.Exists(file))
@@ -74,120 +137,143 @@ namespace ByteForge.Toolkit
                     result.SkippedFiles.Add(new SkippedFile { FilePath = file, Reason = "File not found" });
                     continue;
                 }
-
-                var fileInfo = new FileInfo(file);
-                fileInfos.Add(fileInfo);
-                totalSize += fileInfo.Length;
+                fileInfos.Add(new FileInfo(file));
             }
+            return fileInfos;
+        }
 
-            // If total size is under limit, attach files directly
-            if (totalSize <= MaxIndividualFileSizeBytes)
+        /// <summary>
+        /// Attaches files directly to the email message.
+        /// </summary>
+        /// <param name="email">The email message to attach files to.</param>
+        /// <param name="fileInfos">List of valid <see cref="FileInfo"/> objects.</param>
+        /// <param name="fileNameMap">Optional dictionary mapping file paths to desired attachment names.</param>
+        /// <param name="addAttachmentSummary">If true, adds a summary of attachments to the email body.</param>
+        /// <param name="result">The result object to update.</param>
+        /// <returns>The updated <see cref="AttachmentProcessResult"/>.</returns>
+        private AttachmentProcessResult AttachFilesDirectly(
+            MailMessage email,
+            List<FileInfo> fileInfos,
+            Dictionary<string, string> fileNameMap,
+            bool addAttachmentSummary,
+            AttachmentProcessResult result)
+        {
+            var attachedFiles = new List<FileInfo>();
+            foreach (var fileInfo in fileInfos)
             {
-                var attachedFiles = new List<FileInfo>();
-                foreach (var file in filesToAttach)
+                var attachment = new Attachment(fileInfo.FullName)
                 {
-                    if (File.Exists(file))
-                    {
-                        var attachment = new Attachment(file)
-                        {
-                            Name = GetDisplayName(file, fileNameMap)
-                        };
-
-                        email.Attachments.Add(attachment);
-                        attachedFiles.Add(new FileInfo(file));
-                    }
-                }
-
-                if (addAttachmentSummary)
-                    AddDirectAttachmentSummary(email, attachedFiles, fileNameMap);
-
-                result.ProcessingMethod = ProcessingMethod.DirectAttachment;
-                return result;
+                    Name = GetDisplayName(fileInfo.FullName, fileNameMap)
+                };
+                email.Attachments.Add(attachment);
+                attachedFiles.Add(fileInfo);
             }
 
-            // Create temp directory for processing if it doesn't exist
+            if (addAttachmentSummary)
+                AddDirectAttachmentSummary(email, attachedFiles, fileNameMap);
+
+            result.ProcessingMethod = ProcessingMethod.DirectAttachment;
+            return result;
+        }
+
+        /// <summary>
+        /// Ensures the temporary directory exists for storing compressed files.
+        /// </summary>
+        private void EnsureTempDirectoryExists()
+        {
             if (!Directory.Exists(TempDirectory))
                 Directory.CreateDirectory(TempDirectory);
+        }
 
-            var timeStamp = DateTime.Now.ToString("yyyyMMddHHmmss");
-
-            // If we need compression, try to compress all files first to see if it's enough
-            var zipFileName = Path.Combine(TempDirectory, $"Attachments_{timeStamp}.zip");
+        /// <summary>
+        /// Attempts to compress files into a zip archive.
+        /// </summary>
+        /// <param name="filesToAttach">List of file paths to attach.</param>
+        /// <param name="zipFileName">The output zip file path.</param>
+        /// <param name="fileNameMap">Optional dictionary mapping file paths to desired names in the archive.</param>
+        /// <param name="result">The result object to update with errors.</param>
+        /// <returns>True if compression succeeded; otherwise, false.</returns>
+        private bool TryCompressFiles(
+            List<string> filesToAttach,
+            string zipFileName,
+            Dictionary<string, string> fileNameMap,
+            AttachmentProcessResult result)
+        {
             try
             {
                 CompressFiles(filesToAttach.Where(f => File.Exists(f)).ToList(), zipFileName, fileNameMap);
-                result.TempFiles.Add(zipFileName);
                 result.ProcessingMethod = ProcessingMethod.Compressed;
+                return true;
             }
             catch (Exception ex)
             {
                 result.Error = $"Failed to compress files: {ex.Message}";
-                return result;
-            }
-
-            // Check if compressed file is still too large
-            var zipFileInfo = new FileInfo(zipFileName);
-
-            if (zipFileInfo.Length <= MaxIndividualFileSizeBytes)
-            {
-                // Compressed file is under the limit, attach it
-
-                var zipAttachment = new Attachment(zipFileName);
-                if (filesToAttach.Count == 1 && fileNameMap.Count == 1)
-                    zipAttachment.Name = Path.ChangeExtension(GetDisplayName(filesToAttach[0], fileNameMap), ".zip");
-
-                email.Attachments.Add(zipAttachment);
-
-                if (addAttachmentSummary)
-                    AddCompressedAttachmentSummary(email, fileInfos, zipAttachment, fileNameMap);
-            }
-            else if (zipFileInfo.Length <= MaxTotalSizeBytes)
-            {
-                // Need to create multi-part archives
-                result.ProcessingMethod = ProcessingMethod.CompressedAndSplit;
-
-                // Delete the single zip file since we'll create multiple ones
-                File.Delete(zipFileName);
-                result.TempFiles.Remove(zipFileName);
-
-                // Calculate optimal number of parts for balanced splitting
-                var optimalPartCount = (int)Math.Ceiling((double)totalSize / MaxIndividualFileSizeBytes);
-                if (optimalPartCount > MaxTotalSizeMB / MaxIndividualFileSizeMB)
-                    optimalPartCount = (int)(MaxTotalSizeMB / MaxIndividualFileSizeMB);
-
-                // Create multi-part zip files
-                var multiPartZips = CreateMultiPartZipArchives(fileInfos, optimalPartCount, timeStamp, fileNameMap, out var buckets);
-
-                foreach (var partZip in multiPartZips)
-                {
-                    email.Attachments.Add(new Attachment(partZip));
-                    result.TempFiles.Add(partZip);
-                }
-
-                if (addAttachmentSummary)
-                    AddMultiPartAttachmentSummary(email, fileInfos, multiPartZips, buckets, fileNameMap);
-
-                result.PartDistribution = buckets.Select(b => new PartInfo
-                {
-                    PartNumber = b.Index + 1,
-                    FileCount = b.Files.Count,
-                    Files = b.Files.Select(f => GetDisplayName(f.FullName, fileNameMap)).ToList()
-                }).ToList();
-            }
-            else
-            {
-                // Even after compression, total size exceeds max allowed
-                result.Error = "Files too large to attach even after compression and splitting.";
                 result.ProcessingMethod = ProcessingMethod.Failed;
+                return false;
+            }
+        }
 
-                // Clean up the zip file
-                if (File.Exists(zipFileName))
-                    File.Delete(zipFileName);
+        /// <summary>
+        /// Gets the compressed files from the temporary directory.
+        /// </summary>
+        /// <param name="zipFileName">The base zip file name.</param>
+        /// <returns>Array of <see cref="FileInfo"/> objects for the compressed files.</returns>
+        private FileInfo[] GetCompressedFiles(string zipFileName)
+        {
+            var zipSearch = Path.GetFileName(Path.ChangeExtension(zipFileName, ".z*"));
+            var di = new DirectoryInfo(TempDirectory);
+            return di.GetFiles(zipSearch);
+        }
 
-                result.TempFiles.Remove(zipFileName);
+        /// <summary>
+        /// Validates the total size of compressed files.
+        /// </summary>
+        /// <param name="totalCompressedSize">Total size of compressed files in bytes.</param>
+        /// <param name="result">The result object to update with errors.</param>
+        /// 
+        /// <returns>True if compressed size is valid; otherwise, false.</returns>
+        private bool ValidateCompressedSize(long totalCompressedSize, AttachmentProcessResult result)
+        {
+            if (totalCompressedSize == 0)
+            {
+                // Probably will never happen, but just in case
+                result.Error = "Compression resulted in zero-size files.";
+                result.ProcessingMethod = ProcessingMethod.Failed;
+                return false;
+            }
+            else if (totalCompressedSize > MaxTotalSizeBytes)
+            {
+                // Even after compression, files are too large
+                result.Error = "Files too large to attach even after compression.";
+                result.ProcessingMethod = ProcessingMethod.Failed;
+                return false;
+            }
+            return true;
+        }
+
+        /// <summary>
+        /// Attaches compressed files to the email message.
+        /// </summary>
+        /// <param name="email">The email message to attach files to.</param>
+        /// <param name="files">Array of compressed <see cref="FileInfo"/> objects.</param>
+        /// <param name="fileNameMap">Optional dictionary mapping file paths to desired attachment names.</param>
+        /// 
+        private void AttachCompressedFiles(
+            MailMessage email,
+            FileInfo[] files,
+            Dictionary<string, string> fileNameMap,
+            bool addAttachmentSummary)
+        {
+            foreach (var file in files)
+            {
+                var attachment = new TempFileAttachment(file.FullName);
+                if (fileNameMap != null && fileNameMap.Count == 1)
+                    attachment.Name = Path.ChangeExtension(fileNameMap.Values.First(), Path.GetExtension(file.Name));
+                email.Attachments.Add(attachment);
             }
 
-            return result;
+            if (addAttachmentSummary)
+                AddCompressedAttachmentSummary(email, files.ToList(), email.Attachments[email.Attachments.Count - 1], fileNameMap);
         }
 
         /// <summary>
@@ -198,75 +284,25 @@ namespace ByteForge.Toolkit
         /// <param name="fileNameMap">Optional dictionary mapping file paths to desired names in the archive.</param>
         private void CompressFiles(List<string> files, string outputZipFile, Dictionary<string, string> fileNameMap = null)
         {
-            using var zipArchive = ZipFile.Open(outputZipFile, ZipArchiveMode.Create);
-            foreach (var file in files)
-                if (File.Exists(file))
-                {
-                    var entryName = GetDisplayName(file, fileNameMap);
-                    _ = zipArchive.CreateEntryFromFile(file, entryName);
-                }
-            zipArchive.Dispose(); // Ensure the archive is finalized
-        }
-
-        /// <summary>
-        /// Creates multiple ZIP files with the contents distributed evenly.
-        /// Each ZIP is a valid archive with a subset of the files.
-        /// </summary>
-        /// <param name="files">The list of files to distribute.</param>
-        /// <param name="partCount">The number of parts to create.</param>
-        /// <param name="timeStamp">The timestamp to use in the file names.</param>
-        /// <param name="fileNameMap">Optional dictionary mapping file paths to desired names in the archive.</param>
-        /// <param name="buckets">The output list of file buckets.</param>
-        /// <returns>The list of created zip file paths.</returns>
-        private List<string> CreateMultiPartZipArchives(List<FileInfo> files, int partCount, string timeStamp,
-            Dictionary<string, string> fileNameMap, out List<FileBucket> buckets)
-        {
-            var zipFiles = new List<string>();
-            buckets = new List<FileBucket>();
-
-            if (files.Count == 0 || partCount <= 0)
-                return zipFiles;
-
-            // Sort files by size (descending) for better distribution
-            var sortedFiles = files.OrderByDescending(f => f.Length).ToList();
-
-            // Create buckets for each part
-            buckets = new List<FileBucket>();
-            for (var i = 0; i < partCount; i++)
-                buckets.Add(new FileBucket { Index = i });
-
-            // Distribute files using a greedy approach (place largest files first)
-            foreach (var file in sortedFiles)
+#pragma warning disable IDE0063 
+            /*
+             * VS says to use simple 'using' statement.
+             * But for some reason, that doesn't work with ZipArchive.
+             */
+            using (var fileStream = new FileStream(outputZipFile, FileMode.Create))
             {
-                // Find the bucket with the smallest current size
-                var smallestBucket = buckets.OrderBy(b => b.TotalSize).First();
-                smallestBucket.Files.Add(file);
-                smallestBucket.TotalSize += file.Length;
-            }
-
-
-            // Create a zip file for each bucket
-            for (var i = 0; i < buckets.Count; i++)
-            {
-                var bucket = buckets[i];
-                if (bucket.Files.Count == 0)
-                    continue;
-
-                var zipName = Path.Combine(TempDirectory, $"Attachments_{timeStamp}_Part{i + 1}of{partCount}.zip");
-
-                using (var zipArchive = ZipFile.Open(zipName, ZipArchiveMode.Create))
+                using (var zip = new ZipArchive(fileStream, ZipArchiveMode.Create))
                 {
-                    foreach (var file in bucket.Files)
-                    {
-                        var entryName = GetDisplayName(file.FullName, fileNameMap);
-                        zipArchive.CreateEntryFromFile(file.FullName, entryName);
-                    }
+                    foreach (var file in files)
+                        if (File.Exists(file))
+                        {
+                            var entryName = GetDisplayName(file, fileNameMap);
+                            _ = zip.CreateEntryFromFile(file, entryName, CompressionLevel.Optimal);
+                        }
+
                 }
-
-                zipFiles.Add(zipName);
             }
-
-            return zipFiles;
+#pragma warning restore IDE0063
         }
 
         /// <summary>
@@ -278,33 +314,16 @@ namespace ByteForge.Toolkit
         private string GetDisplayName(string filePath, Dictionary<string, string> fileNameMap)
         {
             var key = Path.GetFileName(filePath);
-            if (fileNameMap != null && fileNameMap.ContainsKey(key))
-                return fileNameMap[key];
+            if (fileNameMap != null)
+            {
+                if (fileNameMap.ContainsKey(key))
+                    return fileNameMap[key];
+                if (fileNameMap.ContainsKey(filePath))
+                    return fileNameMap[filePath];
+            }
+
 
             return Path.GetFileName(filePath);
-        }
-
-        /// <summary>
-        /// Cleans up temporary files created during processing.
-        /// </summary>
-        /// <param name="result">The result of the attachment processing operation.</param>
-        public void CleanupTempFiles(AttachmentProcessResult result)
-        {
-            if (result?.TempFiles != null)
-            {
-                foreach (var file in result.TempFiles)
-                {
-                    try
-                    {
-                        if (File.Exists(file))
-                            File.Delete(file);
-                    }
-                    catch
-                    {
-                        // Ignore cleanup errors
-                    }
-                }
-            }
         }
 
         /// <summary>
@@ -357,46 +376,6 @@ namespace ByteForge.Toolkit
             {
                 var displayName = GetDisplayName(file.FullName, fileNameMap);
                 summary.AppendLine($"       - {displayName}");
-            }
-
-            email.Body += summary.ToString();
-        }
-
-        /// <summary>
-        /// Adds a summary of multi-part attachments to the email body.
-        /// </summary>
-        /// <param name="email">The email message to add the summary to.</param>
-        /// <param name="originalFiles">The list of original files.</param>
-        /// <param name="zipParts">The list of zip part file paths.</param>
-        /// <param name="buckets">The list of file buckets.</param>
-        /// <param name="fileNameMap">Optional dictionary mapping file paths to desired names.</param>
-        private void AddMultiPartAttachmentSummary(MailMessage email, List<FileInfo> originalFiles,
-                                                  List<string> zipParts, List<FileBucket> buckets, Dictionary<string, string> fileNameMap = null)
-        {
-            if (originalFiles is null) throw new ArgumentNullException(nameof(originalFiles));
-            if (zipParts == null || zipParts.Count == 0)
-                return;
-
-            var summary = new System.Text.StringBuilder();
-            summary.AppendLine();
-            summary.AppendLine("----");
-            summary.AppendLine("Attached:");
-
-            for (var i = 0; i < zipParts.Count; i++)
-            {
-                var zipInfo = new FileInfo(zipParts[i]);
-                var zipSizeStr = FormatFileSize(zipInfo.Length);
-                summary.AppendLine($"   - {Path.GetFileName(zipParts[i])} ({zipSizeStr})");
-
-                var bucket = buckets.FirstOrDefault(b => b.Index == i);
-                if (bucket != null)
-                {
-                    foreach (var file in bucket.Files)
-                    {
-                        var displayName = GetDisplayName(file.FullName, fileNameMap);
-                        summary.AppendLine($"       - {displayName}");
-                    }
-                }
             }
 
             email.Body += summary.ToString();

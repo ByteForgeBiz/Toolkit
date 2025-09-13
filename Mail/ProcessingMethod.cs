@@ -30,7 +30,7 @@
         /// <summary>
         /// Files were compressed and split into multiple archives.
         /// </summary>
-        CompressedAndSplit,
+        MultiPart,
 
         /// <summary>
         /// Processing failed.

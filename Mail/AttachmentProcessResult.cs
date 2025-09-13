@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Collections.ObjectModel;
 
 namespace ByteForge.Toolkit
 {
@@ -33,7 +34,7 @@ namespace ByteForge.Toolkit
     /// 
     /// if (result.Success)
     /// {
-    ///     // Use result.TempFilesCreated for email attachments
+    ///     // Use result._tempFilesCreated for email attachments
     ///     // Check result.ProcessingMethod to determine how to construct email subject/body
     /// }
     /// else
@@ -56,19 +57,6 @@ namespace ByteForge.Toolkit
         public ProcessingMethod ProcessingMethod { get; set; } = ProcessingMethod.None;
 
         /// <summary>
-        /// Gets the list of temporary files created during processing.
-        /// </summary>
-        /// <remarks>
-        /// Contains paths to any temporary files created, such as compressed archives.
-        /// These are the files that should be attached to the email, not the original input files.
-        /// <para>
-        /// Note: These files may need to be cleaned up after the email is sent to avoid
-        /// consuming disk space unnecessarily.
-        /// </para>
-        /// </remarks>
-        public List<string> TempFiles { get; } = new List<string>();
-
-        /// <summary>
         /// Gets or sets the list of files that were skipped during processing.
         /// </summary>
         /// <remarks>
@@ -84,7 +72,7 @@ namespace ByteForge.Toolkit
         /// Gets or sets the distribution of parts in a multi-part archive.
         /// </summary>
         /// <remarks>
-        /// When using <see cref="ProcessingMethod.CompressedAndSplit"/>, this provides
+        /// When using <see cref="ProcessingMethod.MultiPart"/>, this provides
         /// information about which original files were included in each archive part.
         /// <para>
         /// This information can be useful for generating email content that explains

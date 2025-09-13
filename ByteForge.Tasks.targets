@@ -1,6 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <!-- Verify required properties and items are set -->
+  
+  <!-- ===== KEEP ALL YOUR EXISTING INFRASTRUCTURE ===== -->
+  
+  <Target Name="DisplayProjectInfo" BeforeTargets="PrepareForBuild">
+    <Message Text="Project Dir: '$(ProjectDir)'" Importance="high" />
+  </Target>
+  
   <PropertyGroup>
       <RequiredProperties>ProjectDir</RequiredProperties>
   </PropertyGroup>
@@ -9,8 +15,6 @@
     <ParentDir>$([System.IO.Path]::GetFullPath('$(ProjectDir)\..'))</ParentDir>
     <CentralLocationPath Condition="'$(CentralLocationPath)' == ''">$([System.IO.Path]::GetDirectoryName('$(MSBuildThisFile)'))</CentralLocationPath>
     <CopyFiles>$([System.String]::new($(ParentDir)).EndsWith('TelecomInc').Equals(False))</CopyFiles>
-    <CmdCopyTo>Call CopyFiles.bat "$(ProjectDir)" "$(CentralLocationPath)"</CmdCopyTo>
-    <CmdCopyFrom>Call CopyFiles.bat "$(CentralLocationPath)" "$(ProjectDir)" fromcentral</CmdCopyFrom>
     <CentralVersionFile>$(CentralLocationPath)\version.txt</CentralVersionFile>
     <CleanupUnusedFilesAfterBuild Condition="'$(CleanupUnusedFilesAfterBuild)' == ''">true</CleanupUnusedFilesAfterBuild>
   </PropertyGroup>
@@ -25,23 +29,247 @@
   
   <Target Name="DebugProperties" BeforeTargets="VerifyRequiredProperties">
     <Message Importance="high" Text="*** Debugging Properties Values ***" />
-    <Message Importance="high" Text="CentralLocationPath = '$(CentralLocationPath)'" />
-    <Message Importance="high" Text="CopyFiles = '$(CopyFiles)'" />
-    <Message Importance="high" Text="CmdCopyTo = '$(CmdCopyTo)'" />
-    <Message Importance="high" Text="CmdCopyFrom = '$(CmdCopyFrom)'" />
-    <Message Importance="high" Text="CentralVersionFile = '$(CentralVersionFile)'" />
+    <Message Importance="high" Text="CentralLocationPath          = '$(CentralLocationPath)'" />
+    <Message Importance="high" Text="CopyFiles                    = '$(CopyFiles)'" />
+    <Message Importance="high" Text="CentralVersionFile           = '$(CentralVersionFile)'" />
     <Message Importance="high" Text="CleanupUnusedFilesAfterBuild = '$(CleanupUnusedFilesAfterBuild)'" />
-    <Message Importance="high" Text="Non-project files will be deleted."      Condition="'$(CleanupUnusedFilesAfterBuild)' == 'true' or '$(CleanupUnusedFilesAfterBuild)' == ''"/>
-    <Message Importance="high" Text="Non-project files will NOT be deleted."  Condition="'$(CleanupUnusedFilesAfterBuild)' != 'true'"/>
+    <Message Importance="high" Text="                               Non-project files will be deleted."      Condition="'$(CleanupUnusedFilesAfterBuild)' == 'true' or '$(CleanupUnusedFilesAfterBuild)' == ''"/>
+    <Message Importance="high" Text="                               Non-project files will NOT be deleted."  Condition="'$(CleanupUnusedFilesAfterBuild)' != 'true'"/>
     <Message Importance="high" Text="*** --------------------------- ***" />
   </Target>
 
-  <!-- Task Definitions -->
+  <!-- ===== BIDIRECTIONAL SMART SYNC TASK ===== -->
+  
+  <UsingTask 
+    TaskName="BidirectionalSyncTask" 
+    TaskFactory="RoslynCodeTaskFactory" 
+    AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.Core.dll">
+    <ParameterGroup>
+      <SourcePath ParameterType="System.String" Required="true" />
+      <TargetPath ParameterType="System.String" Required="true" />
+      <SyncDirection ParameterType="System.String" Required="true" /> <!-- "ToProject" or "ToCentral" -->
+      <ExcludeFolders ParameterType="System.String[]" Required="false" />
+      <ExcludeFiles ParameterType="System.String[]" Required="false" />
+      <ExcludePatterns ParameterType="System.String[]" Required="false" />
+      <FilesCopied ParameterType="System.Int32" Output="true" />
+      <FilesSkipped ParameterType="System.Int32" Output="true" />
+    </ParameterGroup>
+    <Task>
+      <Using Namespace="System" />
+      <Using Namespace="System.IO" />
+      <Using Namespace="System.Linq" />
+      <Using Namespace="System.Collections.Generic" />
+      <Code Type="Fragment" Language="cs"><![CDATA[
+try
+{
+    // Initialize counters
+    int copiedCount = 0;
+    int skippedCount = 0;
+    
+    // Normalize paths
+    var sourcePath = Path.GetFullPath(SourcePath.TrimEnd('\\', '/'));
+    var targetPath = Path.GetFullPath(TargetPath.TrimEnd('\\', '/'));
+    
+    var directionIcon = SyncDirection == "ToProject" ? "📥" : "📤";
+    var directionText = SyncDirection == "ToProject" ? "Central → Project" : "Project → Central";
+    
+    Log.LogMessage(MessageImportance.High, $"{directionIcon} Bidirectional Sync: {directionText}");
+    Log.LogMessage(MessageImportance.High, $"   Source: {sourcePath}");
+    Log.LogMessage(MessageImportance.High, $"   Target: {targetPath}");
+    
+    if (!Directory.Exists(sourcePath))
+    {
+        Log.LogMessage(MessageImportance.High, $"⏩ Source directory does not exist, skipping sync");
+        FilesCopied = 0;
+        FilesSkipped = 0;
+        return true;
+    }
+    
+    // Create target directory if needed
+    if (!Directory.Exists(targetPath))
+    {
+        Directory.CreateDirectory(targetPath);
+        Log.LogMessage(MessageImportance.High, $"📁 Created target directory: {targetPath}");
+    }
+    
+    // Setup exclusion lists with defaults
+    var excludeFoldersList = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+    {
+        ".git", ".vs", "bin", "obj", "TestResults", ".vscode", "packages"
+    };
+    if (ExcludeFolders != null)
+        foreach (var folder in ExcludeFolders)
+            excludeFoldersList.Add(folder);
+    
+    var excludeFilesList = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+    {
+        ".robocopy_status", "version.txt", "CopyFiles.bat", "ByteForge.Tasks.targets"
+    };
+    if (ExcludeFiles != null)
+        foreach (var file in ExcludeFiles)
+            excludeFilesList.Add(file);
+    
+    var excludePatternsList = new List<string>();
+    if (ExcludePatterns != null)
+        excludePatternsList.AddRange(ExcludePatterns);
+    
+    // Add default patterns
+    excludePatternsList.AddRange(new[] { "*.sln", "*.user", "*.rcj", "*.tmp", "*~" });
+    
+    // Helper function to check if path should be excluded
+    Func<string, bool> isExcluded = (string relativePath) =>
+    {
+        var pathParts = relativePath.Split(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+        
+        // Check folder exclusions
+        if (pathParts.Any(part => excludeFoldersList.Contains(part)))
+            return true;
+        
+        var fileName = Path.GetFileName(relativePath);
+        
+        // Check file exclusions
+        if (excludeFilesList.Contains(fileName))
+            return true;
+        
+        // Check pattern exclusions
+        foreach (var pattern in excludePatternsList)
+        {
+            if (fileName.EndsWith(pattern.TrimStart('*'), StringComparison.OrdinalIgnoreCase))
+                return true;
+        }
+        
+        return false;
+    };
+    
+    // Helper function to get relative path (compatible with .NET Framework 4.8)
+    Func<string, string, string> getRelativePath = (string fromPath, string toPath) =>
+    {
+        if (string.IsNullOrEmpty(fromPath)) throw new ArgumentNullException("fromPath");
+        if (string.IsNullOrEmpty(toPath)) throw new ArgumentNullException("toPath");
+
+        Uri fromUri = new Uri(fromPath.EndsWith(Path.DirectorySeparatorChar.ToString()) ? fromPath : fromPath + Path.DirectorySeparatorChar);
+        Uri toUri = new Uri(toPath);
+
+        if (fromUri.Scheme != toUri.Scheme) { return toPath; }
+
+        Uri relativeUri = fromUri.MakeRelativeUri(toUri);
+        string relativePath = Uri.UnescapeDataString(relativeUri.ToString());
+
+        if (toUri.Scheme.Equals("file", StringComparison.InvariantCultureIgnoreCase))
+        {
+            relativePath = relativePath.Replace('/', Path.DirectorySeparatorChar);
+        }
+
+        return relativePath;
+    };
+    
+    // Get all files from source
+    var sourceFiles = Directory.EnumerateFiles(sourcePath, "*", SearchOption.AllDirectories)
+        .Where(file => 
+        {
+            var relativePath = getRelativePath(sourcePath, file);
+            return !isExcluded(relativePath);
+        })
+        .ToList();
+    
+    Log.LogMessage(MessageImportance.High, $"📊 Found {sourceFiles.Count} files to evaluate");
+    
+    // Process each file - ONLY copy if source is newer
+    foreach (var sourceFile in sourceFiles)
+    {
+        try
+        {
+            var relativePath = getRelativePath(sourcePath, sourceFile);
+            var targetFile = Path.Combine(targetPath, relativePath);
+            var targetDir = Path.GetDirectoryName(targetFile);
+            
+            // Create target directory if needed
+            if (!Directory.Exists(targetDir))
+            {
+                Directory.CreateDirectory(targetDir);
+            }
+            
+            var sourceInfo = new FileInfo(sourceFile);
+            bool shouldCopy = false;
+            
+            if (!File.Exists(targetFile))
+            {
+                // Target doesn't exist, copy it
+                shouldCopy = true;
+                Log.LogMessage(MessageImportance.Normal, $"➕ New: {relativePath}");
+            }
+            else
+            {
+                var targetInfo = new FileInfo(targetFile);
+                
+                // Only copy if source is newer than target
+                if (sourceInfo.LastWriteTime > targetInfo.LastWriteTime)
+                {
+                    shouldCopy = true;
+                    Log.LogMessage(MessageImportance.Normal, $"🔄 Newer: {relativePath} ({sourceInfo.LastWriteTime:HH:mm:ss} > {targetInfo.LastWriteTime:HH:mm:ss})");
+                }
+                else
+                {
+                    skippedCount++;
+                    Log.LogMessage(MessageImportance.Low, $"⏩ Skip: {relativePath} (target is newer or same)");
+                }
+            }
+            
+            if (shouldCopy)
+            {
+                // Remove read-only attribute if needed
+                if (File.Exists(targetFile))
+                {
+                    var targetInfo = new FileInfo(targetFile);
+                    if ((targetInfo.Attributes & FileAttributes.ReadOnly) != 0)
+                    {
+                        File.SetAttributes(targetFile, targetInfo.Attributes & ~FileAttributes.ReadOnly);
+                    }
+                }
+                
+                File.Copy(sourceFile, targetFile, true);
+                
+                // Preserve timestamps
+                File.SetLastWriteTime(targetFile, sourceInfo.LastWriteTime);
+                File.SetLastAccessTime(targetFile, sourceInfo.LastAccessTime);
+                File.SetCreationTime(targetFile, sourceInfo.CreationTime);
+                
+                copiedCount++;
+            }
+        }
+        catch (Exception ex)
+        {
+            Log.LogWarning($"⚠️ Failed to sync {sourceFile}: {ex.Message}");
+        }
+    }
+    
+    // Set output parameters
+    FilesCopied = copiedCount;
+    FilesSkipped = skippedCount;
+    
+    // Summary
+    Log.LogMessage(MessageImportance.High, $"📋 {directionText} Summary:");
+    Log.LogMessage(MessageImportance.High, $"   📁 Files copied: {copiedCount}");
+    Log.LogMessage(MessageImportance.High, $"   ⏩ Files skipped: {skippedCount}");
+    Log.LogMessage(MessageImportance.High, $"   ✅ Total evaluated: {copiedCount + skippedCount}");
+    
+    return true;
+}
+catch (Exception ex)
+{
+    Log.LogError($"💥 Bidirectional Sync failed: {ex.Message}");
+    Log.LogError($"Stack trace: {ex.StackTrace}");
+    return false;
+}
+]]></Code>
+    </Task>
+  </UsingTask>
+
+  <!-- ===== KEEP ALL YOUR EXISTING TASKS ===== -->
   
   <Target Name="CleanupUnusedFiles" AfterTargets="ForceCleanupFiles" Condition="'$(CleanupUnusedFilesAfterBuild)' == 'true' or '$(CleanupUnusedFilesAfterBuild)' == ''">
     <Message Text="Starting cleanup of files not included in the project..." Importance="high" />
     
-    <!-- Get all files not in the project -->
     <ItemGroup>
       <FilesToDelete 
         Include="$(MSBuildProjectDirectory)\**\*.*" 
@@ -60,16 +288,13 @@
                  $(MSBuildProjectDirectory)\**\*.md" />
     </ItemGroup>
     
-    <!-- Output files to be deleted -->
     <Message Text="Files to be deleted:" Importance="high" />
     <Message Text="  %(FilesToDelete.Identity)" Importance="high" />
     
-    <!-- Delete the files -->
     <Delete Files="@(FilesToDelete)" ContinueOnError="true">
       <Output TaskParameter="DeletedFiles" ItemName="DeletedFilesList" />
     </Delete>
     
-    <!-- Report results -->
     <Message Text="Successfully deleted the files listed above." Importance="high" Condition="'@(DeletedFilesList)' != ''" />
     <Message Text="No files were deleted." Importance="high" Condition="'@(DeletedFilesList)' == ''" />
   </Target>
@@ -78,18 +303,6 @@
     TaskName="WriteFileTask" 
     TaskFactory="CodeTaskFactory" 
     AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.Core.dll">
-    <!--
-       - __      __   _ _       ___ _ _    _____        _   
-       - \ \    / / _(_) |_ ___| __(_) |__|_   _|_ _ __| |__
-       -  \ \/\/ / '_| |  _/ -_) _|| | / -_)| |/ _` (_-< / /
-       -   \_/\_/|_| |_|\__\___|_| |_|_\___||_|\__,_/__/_\_\
-       -                                                    
-
-      Task to write lines to a file with ASCII encoding.
-      Parameters:
-        - FileName: The name of the file to write to.
-        - Lines: An array of strings representing the lines to write to the file.
-    -->
     <ParameterGroup>
       <FileName ParameterType="System.String" Required="true" />
       <Lines ParameterType="System.String[]" Required="true" />
@@ -107,19 +320,6 @@
     TaskName="FileUpdate" 
     TaskFactory="RoslynCodeTaskFactory" 
     AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.Core.dll">
-    <!--
-       -  ___ _ _     _   _          _      _       
-       - | __(_) |___| | | |_ __  __| |__ _| |_ ___ 
-       - | _|| | / -_) |_| | '_ \/ _` / _` |  _/ -_)
-       - |_| |_|_\___|\___/| .__/\__,_\__,_|\__\___|
-       -                   |_|                      
-
-      Task to update file content based on a regex pattern.
-      Parameters:
-        - Files: The files to be updated.
-        - Pattern: The regex pattern to find in the file.
-        - ReplacementText: The text to replace the pattern with.
-       -->
     <ParameterGroup>
       <Files ParameterType="Microsoft.Build.Framework.ITaskItem[]" Required="true" />
       <Pattern ParameterType="System.String" Required="true" />
@@ -154,31 +354,19 @@ catch (Exception ex)
     TaskName="UpdateSmartVersionTask" 
     TaskFactory="CodeTaskFactory" 
     AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.Core.dll">
-    <!--
-       -  _   _          _      _       ___                _ __   __          _        _____        _   
-       - | | | |_ __  __| |__ _| |_ ___/ __|_ __  __ _ _ _| |\ \ / /__ _ _ __(_)___ _ |_   _|_ _ __| |__
-       - | |_| | '_ \/ _` / _` |  _/ -_)__ \ '  \/ _` | '_|  _\ V / -_) '_(_-< / _ \ ' \| |/ _` (_-< / /
-       -  \___/| .__/\__,_\__,_|\__\___|___/_|_|_\__,_|_|  \__|\_/\___|_| /__/_\___/_||_|_|\__,_/__/_\_\
-       -       |_|                                                                                      
-
-      Task to update the version file based on the result of a file copy operation.
-      Parameters:
-        - CentralVersionFile: The path to the central version file.
-        - RobocopyErrorLevel: The error level returned by the robocopy command.
-      -->
     <ParameterGroup>
       <CentralVersionFile ParameterType="System.String" Required="true" />
-      <RobocopyErrorLevel ParameterType="System.Int32" Required="true" />
+      <ChangesMade ParameterType="System.Int32" Required="true" />
+      <NewFilesCopied ParameterType="System.Int32" Required="false" />
     </ParameterGroup>
     <Task>
       <Using Namespace="System" />
       <Using Namespace="System.IO" />
       <Code Type="Fragment" Language="cs"><![CDATA[
 try {
-    // Only process if files were actually copied
-    bool filesCopied = (RobocopyErrorLevel & 1) != 0;
-    if (!filesCopied) {
-        Log.LogMessage(MessageImportance.High, "No files were copied, skipping version update");
+    // Only process if files were actually changed
+    if (ChangesMade == 0) {
+        Log.LogMessage(MessageImportance.High, "No files were changed, skipping version update");
         return true;
     }
 
@@ -199,8 +387,8 @@ try {
                         
     Log.LogMessage(MessageImportance.High, "Current Library Version: {0}", oldVersion);
                         
-    // Check if new files were added (robocopy return code 2)
-    bool newFilesAdded = (RobocopyErrorLevel & 2) != 0;
+    // Check if new files were added
+    bool newFilesAdded = NewFilesCopied > 0;
                         
     if (newFilesAdded) {
         Log.LogMessage(MessageImportance.High, "New files added to the library. Incrementing Minor.");
@@ -226,7 +414,6 @@ try {
     }
         
     // Updating version file
-        
     var newVersion = string.Format("{0}.{1}.{2}.{3:MMdd}", intMajor, intMinor, intPatch, DateTime.Now);
                         
     // Save updated version
@@ -249,20 +436,6 @@ catch (Exception ex) {
     TaskName="CleanupCentralLocationTask" 
     TaskFactory="RoslynCodeTaskFactory" 
     AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.Core.dll">
-    <!--
-         -   ___ _                         ___         _            _ _                 _   _        _____        _   
-         -  / __| |___ __ _ _ _ _  _ _ __ / __|___ _ _| |_ _ _ __ _| | |   ___  __ __ _| |_(_)___ _ |_   _|_ _ __| |__
-         - | (__| / -_) _` | ' \ || | '_ \ (__/ -_) ' \  _| '_/ _` | | |__/ _ \/ _/ _` |  _| / _ \ ' \| |/ _` (_-< / /
-         -  \___|_\___\__,_|_||_\_,_| .__/\___\___|_||_\__|_| \__,_|_|____\___/\__\__,_|\__|_\___/_||_|_|\__,_/__/_\_\
-         -                          |_|                                                                               
-
-         Task to clean up obsolete files in the central location.
-         Parameters:
-           - CentralPath: The path to the central location.
-           - ProjectItems: The items from the project to compare against.
-           - ExcludeFolders: Optional folder names to exclude from deletion. Wildcards are not supported.
-           - ExcludeFiles: Optional file names to exclude from deletion. Wildcards are not supported.
-      -->
     <ParameterGroup>
       <LocalPath ParameterType="System.String" Required="true" />
       <CentralPath ParameterType="System.String" Required="true" />
@@ -302,7 +475,7 @@ try
         ".git",
         ".vs",
         "tests"
-    }.Concat(ExcludeFolders ?? Array.Empty<string>())
+    }.Concat(ExcludeFolders ?? new string[0])
      .Select(f => Path.GetFileName(f.TrimEnd('\\', '/')))
      .Distinct()
      .ToList();
@@ -325,7 +498,7 @@ try
         "version.txt",
         "packages.config",
         "ByteForge.Toolkit.sln"
-    }.Concat(ExcludeFiles ?? Array.Empty<string>())
+    }.Concat(ExcludeFiles ?? new string[0])
      .Select(f => Path.GetFileName(f))
      .Distinct()
      .ToList();
@@ -436,189 +609,124 @@ catch (Exception ex)
     </Task>
   </UsingTask>
 
-  <!-- Properties -->
-  <PropertyGroup>
-    <!--
-       -   ___               ___ _ _          _          _   
-       -  / __|___ _ __ _  _| __(_) |___ ___ | |__  __ _| |_ 
-       - | (__/ _ \ '_ \ || | _|| | / -_)_-<_| '_ \/ _` |  _|
-       -  \___\___/ .__/\_, |_| |_|_\___/__(_)_.__/\__,_|\__|
-       -          |_|   |__/                                 
-       -->
-    <BatchFileLines>
-@echo off
-setlocal enabledelayedexpansion
+  <!-- ===== NEW BIDIRECTIONAL SYNC TARGETS ===== -->
 
-Call :RemoveQuotes %1
-set _source=%rst%
-
-Call :RemoveQuotes %2
-set _destination=%rst%
-
-echo.Source     : %_source%
-echo.Destination: %_destination%
-
-if not exist %_destination% mk %_destination%
-
-rem Delete any existing status file to prevent it from being copied
-if exist "%~dp0.robocopy_status" del "%~dp0.robocopy_status"
-
-if "%3"=="fromcentral" (
-  robocopy %_source% %_destination% /job:"%_source%\robo.rcj"
-) else (
-  robocopy %_source% %_destination% /job:"%_destination%\robo.rcj" /XF Properties\AssemblyInfo.cs *.user
-)
-
-set /a rc = %ERRORLEVEL%
-set /a _NoCopy   = "(%rc% &amp;  0)"
-set /a _Copy     = "(%rc% &amp;  1)"
-set /a _Extra    = "(%rc% &amp;  2)"
-set /a _Mismatch = "(%rc% &amp;  4)"
-set /a _Failed   = "(%rc% &amp;  8)"
-set /a _Serious  = "(%rc% &amp; 16)"
-
-if %_Copy%     NEQ 0 echo One or more files were copied successfully (that is, new files have arrived).
-if %_Extra%    NEQ 0 echo Some extra files or directories were detected. No files were copied. Examine the output log for details.
-if %_Mismatch% NEQ 0 echo Some mismatched files or directories were detected. Examine the output log. Housekeeping might be required.
-if %_Failed%   NEQ 0 echo Some files or directories could not be copied. Copy errors occurred, and the retry limit was exceeded. Check these errors further.
-if %_Serious%  NEQ 0 echo Serious error. Robocopy did not copy any files. Either a usage error or an error due to insufficient access privileges on the source or destination directories.
-if %rc%        EQU 0 echo No errors occurred, and no copying was done. The source and destination directory trees are completely synchronized.
-
-rem Write the actual error level to the project directory using %~dp0 (batch file location)
-echo %rc% &gt; "%~dp0.robocopy_status"
-
-if %rc% LEQ 3 ( exit /b 0 ) else ( exit /b %rc% )
-
-:RemoveQuotes
-rem setlocal enabledelayedexpansion
-set bk=\
-set qt=%1
-set tst=%qt:~0,1% -- %qt:~-1,1%
-if %tst% EQU " -- " (set qt2=%qt:~1,-1%) else (set qt2=%qt%)
-set tst2=%qt2:~-1,1%
-if %tst2% EQU %bk% (set qt2=%qt2:~0,-1%)
-set rst="%qt2%"
-exit /b 0
-    </BatchFileLines>
-  </PropertyGroup>
-
-  <!-- Targets -->
-  <Target Name="CreateCopyBatFile" BeforeTargets="PrepareForBuild">
-    <!--
-      Target to create the CopyFiles.bat file before the build process.
-      This batch file is used to copy files between directories.
-      Parameters:
-        - FileName: The name of the batch file to create.
-        - Lines: The content of the batch file.
-    -->
-    <WriteFileTask FileName="CopyFiles.bat" Lines="$(BatchFileLines)" />
+  <Target Name="SyncFromCentral" BeforeTargets="PrepareForBuild" Condition="$(CopyFiles) AND Exists($(CentralLocationPath))">
+    <Message Importance="high" Text="🔄 Phase 1: Checking for updates from central location..." />
+    
+    <BidirectionalSyncTask 
+        SourcePath="$(CentralLocationPath)" 
+        TargetPath="$(ProjectDir)"
+        SyncDirection="ToProject">
+        <Output TaskParameter="FilesCopied" PropertyName="CopiedFromCentral" />
+        <Output TaskParameter="FilesSkipped" PropertyName="SkippedFromCentral" />
+    </BidirectionalSyncTask>
+    
+    <Message Importance="high" Text="✅ Phase 1 complete: Ready for build" 
+             Condition="$(CopiedFromCentral) > 0" />
+    <Message Importance="high" Text="✅ Phase 1 complete: No updates needed" 
+             Condition="$(CopiedFromCentral) == 0" />
   </Target>
 
-  <Target Name="MessageTarget" BeforeTargets="CopyFromCentral">
-    <!--
-      Target to display messages before copying files from the central location.
-      Displays whether the project must be copied and the path to the central version file.
-      Parameters:
-        - ProjectName: The name of the project.
-        - CopyFiles: Condition to check if files should be copied.
-        - CentralVersionFile: The path to the central version file.
-    -->
-    <Message Importance="high" Text="$(ProjectName) must be copied." Condition="$(CopyFiles)" />
-    <Message Importance="high" Text="$(ProjectName) will not be copied." Condition="!$(CopyFiles)" />
-    <Message Importance="high" Text="Central Version File: $(CentralVersionFile)" />
+  <Target Name="SyncToCentral" AfterTargets="AfterBuild" Condition="$(CopyFiles)">
+    <Message Importance="high" Text="🔄 Phase 2: Checking for updates to push to central..." />
+    
+    <BidirectionalSyncTask 
+        SourcePath="$(ProjectDir)" 
+        TargetPath="$(CentralLocationPath)"
+        SyncDirection="ToCentral">
+        <Output TaskParameter="FilesCopied" PropertyName="CopiedToCentral" />
+        <Output TaskParameter="FilesSkipped" PropertyName="SkippedToCentral" />
+    </BidirectionalSyncTask>
+    
+    <!-- Set properties for version management -->
+    <PropertyGroup>
+      <SyncToCentralSuccess>true</SyncToCentralSuccess>
+      <TotalChangesToCentral>$(CopiedToCentral)</TotalChangesToCentral>
+    </PropertyGroup>
+    
+    <Message Importance="high" Text="✅ Phase 2 complete: Changes pushed to central" 
+             Condition="$(CopiedToCentral) > 0" />
+    <Message Importance="high" Text="✅ Phase 2 complete: No changes to push" 
+             Condition="$(CopiedToCentral) == 0" />
   </Target>
 
-  <Target Name="CopyFromCentral" BeforeTargets="PrepareForBuild" Condition="$(CopyFiles) AND Exists($(CentralLocationPath))">
-    <!--
-      Target to copy updated files from the central location before the build process.
-      Executes the command to copy files from the central location to the project directory.
-      Parameters:
-        - CmdCopyFrom: The command to copy files from the central location.
-    -->
-    <Message Importance="high" Text="Copying updated files from $(CentralLocationPath)" />
-    <Message Importance="high" Text="Executing: $(CmdCopyFrom)" />
-    <Exec Command="$(CmdCopyFrom)" />
-  </Target>
-
-  <Target Name="CopyFromActive" AfterTargets="AfterBuild" Condition="$(CopyFiles)">
-    <!--
-      Target to copy source files to the central location after the build process.
-      Executes the command to copy files from the project directory to the central location.
-      Parameters:
-        - CmdCopyTo: The command to copy files to the central location.
-    -->
-    <Message Importance="high" Text="Copying source files to $(CentralLocationPath)" />
-    <Message Importance="high" Text="Executing: $(CmdCopyTo)" />
-    <Exec Command="$(CmdCopyTo)" />
-  </Target>
-
-  <Target Name="GetRobocopyStatus" BeforeTargets="UpdateSmartVersion">
-    <!--
-      Target to read the status of the robocopy command before updating the version.
-      Reads the robocopy status from a file and deletes the status file afterwards.
-      Parameters:
-        - ProjectDir: The project directory.
-        - RobocopyStatus: The status of the robocopy command.
-    -->
-    <ReadLinesFromFile File="$(ProjectDir).robocopy_status">
-      <Output TaskParameter="Lines" PropertyName="RobocopyStatus" />
-    </ReadLinesFromFile>
-    <Message Importance="high" Text="Robocopy Status: $(RobocopyStatus)" />
-  </Target>
-
-  <Target Name="CleanupCentral" AfterTargets="CopyFromActive" BeforeTargets="GetRobocopyStatus">
-    <!--
-    Target to clean up obsolete files from the central location.
-    Executes after copying new files but before version update.
-    Parameters:
-      - CentralPath: The target folder path
-      - ProjectItems: All source files from the project
-  -->
-    <Message Importance="high" Text="Cleaning up obsolete files in central location" />
+  <!-- Enhanced cleanup that only runs on successful sync -->
+  <Target Name="SafeCleanupCentral" AfterTargets="SyncToCentral" BeforeTargets="UpdateSmartVersion">
+    <Message Importance="high" Text="🧹 Phase 3: Safe cleanup of central location..." />
+    
+    <!-- Collect all source files from the project -->
     <ItemGroup>
-      <!-- Collect all source files from the project -->
       <ProjectSourceFiles Include="@(Compile)" />
       <ProjectSourceFiles Include="@(Content)" />
       <ProjectSourceFiles Include="@(None)" />
       <ProjectSourceFiles Include="@(EmbeddedResource)" />
       <ProjectSourceFiles Include="@(Resource)" />
       <ProjectSourceFiles Include="$(MSBuildProjectFile)" />
-      <!-- Add any other item types that should NOT be preserved -->
       <ExcludeFiles Include="**/*.config" Exclude="bin/**/*.config; obj/**/*.config" />
       <ExcludeFiles Include="**/*.md"  Exclude="bin/**/*.md; obj/**/*.md" />
     </ItemGroup>
+    
+    <!-- Only cleanup if sync was successful and files were actually changed -->
     <CleanupCentralLocationTask 
         LocalPath="$(ProjectDir)" 
         CentralPath="$(CentralLocationPath)" 
         ProjectItems="@(ProjectSourceFiles)" 
-        ExcludeFiles="@(ExcludeFiles)" />
+        ExcludeFiles="@(ExcludeFiles)"
+        Condition="'$(SyncToCentralSuccess)' == 'true' AND $(TotalChangesToCentral) > 0" />
+        
+    <Message Importance="high" Text="⏩ Phase 3 skipped: No files were synced to central" 
+             Condition="$(TotalChangesToCentral) == 0" />
+             
+    <Message Importance="high" Text="✅ Phase 3 complete: Central location cleaned" 
+             Condition="'$(SyncToCentralSuccess)' == 'true' AND $(TotalChangesToCentral) > 0" />
   </Target>
 
-  <Target Name="UpdateSmartVersion" AfterTargets="CopyFromActive">
-    <!--
-      Target to update the version file after copying source files to the central location.
-      Calls the UpdateSmartVersionTask to update the version file based on the robocopy status.
-      Updates the AssemblyInfo.cs file with the new version and deletes the batch file.
-      Parameters:
-        - CentralVersionFile: The path to the central version file.
-        - RobocopyStatus: The status of the robocopy command.
-        - FileVersion: The new version to update in the AssemblyInfo.cs file.
-        - ProjectDir: The project directory.
-        - AsmInfo: The AssemblyInfo.cs file.
-    -->
-    <Message Importance="high" Text="Calling UpdateSmartVersionTask" />
-    <UpdateSmartVersionTask CentralVersionFile="$(CentralVersionFile)" RobocopyErrorLevel="$(RobocopyStatus)" Condition="$(RobocopyStatus) != '0'" />
-    <ReadLinesFromFile File="$(CentralVersionFile)">
+  <Target Name="UpdateSmartVersion" AfterTargets="SyncToCentral">
+    <Message Importance="high" Text="🔢 Phase 4: Updating version information..." />
+    
+    <!-- Update version only if changes were made to central -->
+    <UpdateSmartVersionTask 
+        CentralVersionFile="$(CentralVersionFile)" 
+        ChangesMade="$(TotalChangesToCentral)"
+        NewFilesCopied="$(CopiedToCentral)"
+        Condition="$(TotalChangesToCentral) > 0" />
+        
+    <!-- Update AssemblyInfo.cs with new version -->
+    <ItemGroup>
+      <AsmInfo Include="Properties\AssemblyInfo.cs" Visible="False" />
+    </ItemGroup>
+    
+    <ReadLinesFromFile File="$(CentralVersionFile)" Condition="Exists('$(CentralVersionFile)')">
       <Output TaskParameter="Lines" PropertyName="FileVersion" />
     </ReadLinesFromFile>
-    <FileUpdate Files="$(ProjectDir)Properties\AssemblyInfo.cs" Pattern="Version\(&quot;.+?&quot;\)" ReplacementText="Version(&quot;$(FileVersion)&quot;)" />
-    <Copy SkipUnchangedFiles="True" SourceFiles="@(AsmInfo)" DestinationFolder="$(CentralLocationPath)\Properties" />
+    
+    <FileUpdate Files="$(ProjectDir)Properties\AssemblyInfo.cs" 
+                Pattern="Version\(&quot;.+?&quot;\)" 
+                ReplacementText="Version(&quot;$(FileVersion)&quot;)"
+                Condition="'$(FileVersion)' != '' AND $(TotalChangesToCentral) > 0" />
+                
+    <Copy SkipUnchangedFiles="True" 
+          SourceFiles="@(AsmInfo)" 
+          DestinationFolder="$(CentralLocationPath)\Properties"
+          Condition="'$(FileVersion)' != '' AND $(TotalChangesToCentral) > 0" />
+    
+    <Message Importance="high" Text="✅ Phase 4 complete: Version updated to $(FileVersion)" 
+             Condition="'$(FileVersion)' != '' AND $(TotalChangesToCentral) > 0" />
+    <Message Importance="high" Text="⏩ Phase 4 skipped: No version update needed" 
+             Condition="$(TotalChangesToCentral) == 0" />
   </Target>
 
+  <!-- Clean up any obsolete files from old system -->
   <Target Name="ForceCleanupFiles" AfterTargets="UpdateSmartVersion">
-    <Message Importance="high" Text="Force cleaning up temporary files" />
-    <Delete Files="$(ProjectDir)CopyFiles.bat" ContinueOnError="true" TreatErrorsAsWarnings="true" />
-    <Delete Files="$(ProjectDir).robocopy_status" ContinueOnError="true" TreatErrorsAsWarnings="true" />
+    <Message Importance="high" Text="🗑️ Phase 5: Cleaning up temporary files..." />
+    
+    <!-- Remove any lingering batch files from the old ROBOCOPY system -->
+    <Delete Files="$(ProjectDir)CopyFiles.bat;$(ProjectDir).robocopy_status;$(ProjectDir)robo.rcj" 
+            ContinueOnError="true" 
+            TreatErrorsAsWarnings="true" />
+            
+    <Message Importance="high" Text="✅ Phase 5 complete: Cleanup finished" />
   </Target>
 
 </Project>
