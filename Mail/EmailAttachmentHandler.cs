@@ -197,15 +197,13 @@ namespace ByteForge.Toolkit
         /// <param name="fileNameMap">Optional dictionary mapping file paths to desired names in the archive.</param>
         private void CompressFiles(List<string> files, string outputZipFile, Dictionary<string, string> fileNameMap = null)
         {
-            using (var zipArchive = ZipFile.Open(outputZipFile, ZipArchiveMode.Create))
+            using var zipArchive = ZipFile.Open(outputZipFile, ZipArchiveMode.Create);
+            foreach (var file in files)
             {
-                foreach (var file in files)
+                if (File.Exists(file))
                 {
-                    if (File.Exists(file))
-                    {
-                        var entryName = GetDisplayName(file, fileNameMap);
-                        zipArchive.CreateEntryFromFile(file, entryName);
-                    }
+                    var entryName = GetDisplayName(file, fileNameMap);
+                    zipArchive.CreateEntryFromFile(file, entryName);
                 }
             }
         }

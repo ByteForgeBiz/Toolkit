@@ -3,7 +3,7 @@ using System.IO;
 
 namespace ByteForge.Toolkit
 {
-public partial class EmailAttachmentHandler
+    public partial class EmailAttachmentHandler
     {
         /*
          *  ___ _ _     ___         _       _   
