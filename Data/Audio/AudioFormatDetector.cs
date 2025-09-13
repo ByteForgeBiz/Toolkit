@@ -136,25 +136,17 @@
         /// </returns>
         public static string GetFileExtension(AudioFormat format)
         {
-            switch (format)
+            return format switch
             {
-                case AudioFormat.MP3:
-                    return ".mp3";
-                case AudioFormat.WAV:
-                    return ".wav";
-                case AudioFormat.FLAC:
-                    return ".flac";
-                case AudioFormat.OGG:
-                    return ".ogg";
-                case AudioFormat.M4A:
-                    return ".m4a";
-                case AudioFormat.WMA:
-                    return ".wma";
-                case AudioFormat.AIFF:
-                    return ".aiff";
-                default:
-                    return ".bin";
-            }
+                AudioFormat.MP3 => ".mp3",
+                AudioFormat.WAV => ".wav",
+                AudioFormat.FLAC => ".flac",
+                AudioFormat.OGG => ".ogg",
+                AudioFormat.M4A => ".m4a",
+                AudioFormat.WMA => ".wma",
+                AudioFormat.AIFF => ".aiff",
+                _ => ".bin",
+            };
         }
 
         /// <summary>
@@ -166,25 +158,17 @@
         /// </returns>
         public static string GetMimeType(AudioFormat format)
         {
-            switch (format)
+            return format switch
             {
-                case AudioFormat.MP3:
-                    return "audio/mpeg";
-                case AudioFormat.WAV:
-                    return "audio/wav";
-                case AudioFormat.FLAC:
-                    return "audio/flac";
-                case AudioFormat.OGG:
-                    return "audio/ogg";
-                case AudioFormat.M4A:
-                    return "audio/mp4";
-                case AudioFormat.WMA:
-                    return "audio/x-ms-wma";
-                case AudioFormat.AIFF:
-                    return "audio/aiff";
-                default:
-                    return "application/octet-stream";
-            }
+                AudioFormat.MP3 => "audio/mpeg",
+                AudioFormat.WAV => "audio/wav",
+                AudioFormat.FLAC => "audio/flac",
+                AudioFormat.OGG => "audio/ogg",
+                AudioFormat.M4A => "audio/mp4",
+                AudioFormat.WMA => "audio/x-ms-wma",
+                AudioFormat.AIFF => "audio/aiff",
+                _ => "application/octet-stream",
+            };
         }
     }
 }
