@@ -103,7 +103,7 @@ namespace ByteForge.Toolkit
         /// <value>
         /// <see langword="true" /> if console logging is enabled; otherwise, <see langword="false" />.
         /// </value>
-        public static bool IsConsoleLoggingEnabled => Instance.consoleLogger.MinLogLevel != LogLevel.None;
+        public static bool IsConsoleLoggingEnabled => Instance?.consoleLogger.MinLogLevel != LogLevel.None;
 
         /// <summary>
         /// Gets the alternate logger instance, which logs to a temporary file.

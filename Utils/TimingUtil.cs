@@ -18,7 +18,7 @@ namespace ByteForge.Toolkit
     /// </summary>
     public class TimingUtil
     {
-        private ILogger logger;
+        private readonly ILogger logger;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="TimingUtil"/> class.
@@ -26,12 +26,7 @@ namespace ByteForge.Toolkit
         /// </summary>
         public TimingUtil()
         {
-            var asm = Assembly.GetEntryAssembly() ?? Assembly.GetCallingAssembly() ?? Assembly.GetExecutingAssembly();
-            var logFile = Path.Combine(Path.GetDirectoryName(asm.Location), $"{asm.GetName().Name}.log");
-            logger = new FileLogger(logFile)
-            {
-                MinLogLevel = Logging.LogLevel.Debug
-            };
+            logger = Log.Instance;
         }
 
         /// <summary>
@@ -41,7 +36,7 @@ namespace ByteForge.Toolkit
         public TimingUtil(ILogger logger)
         {
             this.logger = logger;
-            logger.MinLogLevel = Logging.LogLevel.Debug;
+            logger.MinLogLevel = LogLevel.Debug;
         }
 
         /// <summary>
@@ -51,7 +46,7 @@ namespace ByteForge.Toolkit
         public TimingUtil(string logFile)
         {
             this.logger = new FileLogger(logFile);
-            logger.MinLogLevel = Logging.LogLevel.Debug;
+            logger.MinLogLevel = LogLevel.Debug;
         }
 
         /// <summary>
