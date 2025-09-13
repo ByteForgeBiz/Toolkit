@@ -17,15 +17,16 @@ namespace ByteForge.Toolkit
     /// <summary>
     /// Handles email attachments with size restrictions, compression, and splitting capabilities.
     /// </summary>
-    public partial class EmailAttachmentHandler
+    public partial class EmailAttachmentHandler : IDisposable
     {
         private const long MaxIndividualFileSizeMB = 5;
         private const long MaxTotalSizeMB = 20;
-        private const string TempDirectory = "TempEmailAttachments";
+        private readonly string TempDirectory = Path.Combine(Path.GetTempPath(), "TempEmailAttachments");
 
         // Convert MB to bytes for comparisons
         private const long MaxIndividualFileSizeBytes = MaxIndividualFileSizeMB * 1024 * 1024;
         private const long MaxTotalSizeBytes = MaxTotalSizeMB * 1024 * 1024;
+        private bool _disposed;
 
         /// <summary>
         /// Processes files for email attachment with size limiting, compression, and splitting if needed.
@@ -115,7 +116,7 @@ namespace ByteForge.Toolkit
             try
             {
                 CompressFiles(filesToAttach.Where(f => File.Exists(f)).ToList(), zipFileName, fileNameMap);
-                result.TempFilesCreated.Add(zipFileName);
+                result.TempFiles.Add(zipFileName);
                 result.ProcessingMethod = ProcessingMethod.Compressed;
             }
             catch (Exception ex)
@@ -147,7 +148,7 @@ namespace ByteForge.Toolkit
 
                 // Delete the single zip file since we'll create multiple ones
                 File.Delete(zipFileName);
-                result.TempFilesCreated.Remove(zipFileName);
+                result.TempFiles.Remove(zipFileName);
 
                 // Calculate optimal number of parts for balanced splitting
                 var optimalPartCount = (int)Math.Ceiling((double)totalSize / MaxIndividualFileSizeBytes);
@@ -160,7 +161,7 @@ namespace ByteForge.Toolkit
                 foreach (var partZip in multiPartZips)
                 {
                     email.Attachments.Add(new Attachment(partZip));
-                    result.TempFilesCreated.Add(partZip);
+                    result.TempFiles.Add(partZip);
                 }
 
                 if (addAttachmentSummary)
@@ -183,7 +184,7 @@ namespace ByteForge.Toolkit
                 if (File.Exists(zipFileName))
                     File.Delete(zipFileName);
 
-                result.TempFilesCreated.Remove(zipFileName);
+                result.TempFiles.Remove(zipFileName);
             }
 
             return result;
@@ -199,13 +200,12 @@ namespace ByteForge.Toolkit
         {
             using var zipArchive = ZipFile.Open(outputZipFile, ZipArchiveMode.Create);
             foreach (var file in files)
-            {
                 if (File.Exists(file))
                 {
                     var entryName = GetDisplayName(file, fileNameMap);
-                    zipArchive.CreateEntryFromFile(file, entryName);
+                    _ = zipArchive.CreateEntryFromFile(file, entryName);
                 }
-            }
+            zipArchive.Dispose(); // Ensure the archive is finalized
         }
 
         /// <summary>
@@ -243,6 +243,7 @@ namespace ByteForge.Toolkit
                 smallestBucket.Files.Add(file);
                 smallestBucket.TotalSize += file.Length;
             }
+
 
             // Create a zip file for each bucket
             for (var i = 0; i < buckets.Count; i++)
@@ -289,9 +290,9 @@ namespace ByteForge.Toolkit
         /// <param name="result">The result of the attachment processing operation.</param>
         public void CleanupTempFiles(AttachmentProcessResult result)
         {
-            if (result?.TempFilesCreated != null)
+            if (result?.TempFiles != null)
             {
-                foreach (var file in result.TempFilesCreated)
+                foreach (var file in result.TempFiles)
                 {
                     try
                     {
@@ -419,6 +420,51 @@ namespace ByteForge.Toolkit
 
             string[] suffixes = { "B", "KB", "MB", "GB", "TB" };
             return $"{number:n1} {suffixes[counter]}";
+        }
+
+        /// <summary>
+        /// Releases the unmanaged resources used by the object and optionally releases the managed resources.
+        /// </summary>
+        /// <param name="disposing">A value indicating whether to release both managed and unmanaged resources (<see langword="true"/>) or only unmanaged resources (<see langword="false"/>).</param>
+        /// <remarks>
+        /// This method is called by the public <see cref="Dispose()"/> method and the finalizer.<br/>
+        /// When <paramref name="disposing"/> is <see langword="true"/>, this method releases all resources held 
+        /// by managed objects that the object references. Override this method to release resources specific  
+        /// to your derived class.
+        /// </remarks>
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!_disposed)
+            {
+                if (disposing)
+                {
+                    // Cleanup temporary directory
+                    try
+                    {
+                        if (Directory.Exists(TempDirectory))
+                            Directory.Delete(TempDirectory, recursive: true);
+                    }
+                    catch
+                    {
+                        // Ignore cleanup errors
+                    }
+                    _disposed = true;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Releases the resources used by the current instance of the class.
+        /// </summary>
+        /// <remarks>
+        /// This method should be called when the instance is no longer needed to ensure that all
+        /// unmanaged resources are properly released.<br/>
+        /// It suppresses finalization to optimize garbage collection.</remarks>
+        public void Dispose()
+        {
+            // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
+            Dispose(disposing: true);
+            GC.SuppressFinalize(this);
         }
     }
 }

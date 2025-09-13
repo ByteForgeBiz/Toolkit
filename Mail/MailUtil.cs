@@ -150,8 +150,11 @@ namespace ByteForge.Toolkit
                     email.Body = body;
                 }
 
-                var attachmentHandler = new EmailAttachmentHandler();
-                var result = attachmentHandler.ProcessAttachments(email, filesToAttach.ToList(), fileNameMap, true);
+                AttachmentProcessResult result;
+                using (var attachmentHandler = new EmailAttachmentHandler())
+                {
+                    result = attachmentHandler.ProcessAttachments(email, filesToAttach.ToList(), fileNameMap, true);
+                }
 
                 // Add notification if needed based on processing method
                 if (result.ProcessingMethod == ProcessingMethod.CompressedAndSplit)

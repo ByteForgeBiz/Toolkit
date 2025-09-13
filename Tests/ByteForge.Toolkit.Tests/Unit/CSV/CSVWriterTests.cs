@@ -19,8 +19,6 @@ namespace ByteForge.Toolkit.Tests.Unit.CSV
         /// </summary>
         public class TestRecord : CSVRecord
         {
-            public ValidationErrors ValidationErrors { get; } = new ValidationErrors();
-
             [CSVColumn(0, "Name")]
             public string Name { get; set; }
 

@@ -56,7 +56,7 @@ namespace ByteForge.Toolkit
         public ProcessingMethod ProcessingMethod { get; set; } = ProcessingMethod.None;
 
         /// <summary>
-        /// Gets or sets the list of temporary files created during processing.
+        /// Gets the list of temporary files created during processing.
         /// </summary>
         /// <remarks>
         /// Contains paths to any temporary files created, such as compressed archives.
@@ -66,7 +66,7 @@ namespace ByteForge.Toolkit
         /// consuming disk space unnecessarily.
         /// </para>
         /// </remarks>
-        public List<string> TempFilesCreated { get; set; } = new List<string>();
+        public List<string> TempFiles { get; } = new List<string>();
 
         /// <summary>
         /// Gets or sets the list of files that were skipped during processing.

@@ -1,12 +1,13 @@
+using ByteForge.Toolkit;
+using FluentAssertions;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Net.Mail;
-using ByteForge.Toolkit;
-using FluentAssertions;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System.Reflection;
 
 namespace ByteForge.Toolkit.Tests.Unit.Mail
 {
@@ -18,7 +19,6 @@ namespace ByteForge.Toolkit.Tests.Unit.Mail
         private EmailAttachmentHandler _handler = null!;
         private string _testDirectory = null!;
         private List<string> _testFiles = null!;
-        private const string TestFileContent = "This is test file content for email attachment testing.";
 
         [TestInitialize]
         public void Setup()
@@ -71,8 +71,7 @@ namespace ByteForge.Toolkit.Tests.Unit.Mail
             _testFiles.Add(largeFile);
 
             // Extra large file (10MB) - exceeds individual limit
-            var extraLargeFile = Path.Combine(_testDirectory, "extralarge.txt");
-            File.WriteAllText(extraLargeFile, new string('D', 10 * 1024 * 1024));
+            var extraLargeFile = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "TestData", "largeDummy.file");
             _testFiles.Add(extraLargeFile);
         }
 
@@ -151,7 +150,7 @@ namespace ByteForge.Toolkit.Tests.Unit.Mail
             result.Should().NotBeNull("should return a result object");
             result.Success.Should().BeTrue("should succeed with empty file list");
             result.ProcessingMethod.Should().Be(ProcessingMethod.None, "should use None processing method");
-            result.TempFilesCreated.Should().BeEmpty("should not create any temp files");
+            result.TempFiles.Should().BeEmpty("should not create any temp files");
         }
 
         /// <summary>
@@ -174,7 +173,7 @@ namespace ByteForge.Toolkit.Tests.Unit.Mail
             result.Should().NotBeNull("should return a result object");
             result.Success.Should().BeTrue("should succeed with empty file list");
             result.ProcessingMethod.Should().Be(ProcessingMethod.None, "should use None processing method");
-            result.TempFilesCreated.Should().BeEmpty("should not create any temp files");
+            result.TempFiles.Should().BeEmpty("should not create any temp files");
         }
 
         #endregion
@@ -201,7 +200,7 @@ namespace ByteForge.Toolkit.Tests.Unit.Mail
             result.Should().NotBeNull("should return a result object");
             result.Success.Should().BeTrue("should succeed with small files");
             result.ProcessingMethod.Should().Be(ProcessingMethod.DirectAttachment, "should use direct attachment");
-            result.TempFilesCreated.Should().BeEmpty("should not create temp files for direct attachment");
+            result.TempFiles.Should().BeEmpty("should not create temp files for direct attachment");
             result.SkippedFiles.Should().BeEmpty("should not skip any existing files");
             
             email.Attachments.Should().HaveCount(2, "should attach both files");
@@ -296,15 +295,15 @@ namespace ByteForge.Toolkit.Tests.Unit.Mail
             result.Should().NotBeNull("should return a result object");
             result.Success.Should().BeTrue("should succeed with compression");
             result.ProcessingMethod.Should().Be(ProcessingMethod.Compressed, "should use compression");
-            result.TempFilesCreated.Should().HaveCount(1, "should create one zip file");
-            result.TempFilesCreated[0].Should().EndWith(".zip", "should create zip file");
+            result.TempFiles.Should().HaveCount(1, "should create one zip file");
+            result.TempFiles[0].Should().EndWith(".zip", "should create zip file");
             
             email.Attachments.Should().HaveCount(1, "should attach one zip file");
             email.Body.Should().Contain("Attached:", "should add attachment summary");
             email.Body.Should().Contain("large.txt", "should list original file in summary");
 
             // Verify temp file exists and is a valid zip
-            var zipFile = result.TempFilesCreated[0];
+            var zipFile = result.TempFiles[0];
             File.Exists(zipFile).Should().BeTrue("zip file should exist");
 
             // Verify zip contents
@@ -339,7 +338,7 @@ namespace ByteForge.Toolkit.Tests.Unit.Mail
             result.ProcessingMethod.Should().Be(ProcessingMethod.Compressed, "should use compression");
             
             // Verify zip contents use custom names
-            var zipFile = result.TempFilesCreated[0];
+            var zipFile = result.TempFiles[0];
             using (var archive = ZipFile.OpenRead(zipFile))
             {
                 archive.Entries[0].Name.Should().Be("custom_large.txt", "zip should use custom file name");
@@ -372,11 +371,11 @@ namespace ByteForge.Toolkit.Tests.Unit.Mail
             result.Should().NotBeNull("should return a result object");
             result.Success.Should().BeTrue("should succeed with multi-part archives");
             result.ProcessingMethod.Should().Be(ProcessingMethod.CompressedAndSplit, "should use compressed and split method");
-            result.TempFilesCreated.Should().NotBeEmpty("should create zip files");
+            result.TempFiles.Should().NotBeEmpty("should create zip files");
             result.PartDistribution.Should().NotBeEmpty("should provide part distribution info");
             
             // All temp files should be zip files
-            foreach (var file in result.TempFilesCreated)
+            foreach (var file in result.TempFiles)
             {
                 file.Should().EndWith(".zip", "should create zip files");
                 file.Should().Contain("Part", "should indicate part number");
@@ -532,17 +531,18 @@ namespace ByteForge.Toolkit.Tests.Unit.Mail
             var result = _handler.ProcessAttachments(email, files, [], true);
             
             // Verify temp files exist before cleanup
-            result.TempFilesCreated.Should().NotBeEmpty("should have created temp files");
-            foreach (var file in result.TempFilesCreated)
+            result.TempFiles.Should().NotBeEmpty("should have created temp files");
+            foreach (var file in result.TempFiles)
             {
                 File.Exists(file).Should().BeTrue($"temp file {file} should exist before cleanup");
             }
 
             // Act
+            email.Dispose(); // Dispose email to release any file locks
             _handler.CleanupTempFiles(result);
 
             // Assert
-            foreach (var file in result.TempFilesCreated)
+            foreach (var file in result.TempFiles)
             {
                 File.Exists(file).Should().BeFalse($"temp file {file} should be deleted after cleanup");
             }
@@ -573,7 +573,7 @@ namespace ByteForge.Toolkit.Tests.Unit.Mail
         {
             // Arrange
             var result = new AttachmentProcessResult();
-            result.TempFilesCreated.Add(Path.Combine(_testDirectory, "nonexistent.zip"));
+            result.TempFiles.Add(Path.Combine(_testDirectory, "nonexistent.zip"));
 
             // Act & Assert
             _handler.Invoking(h => h.CleanupTempFiles(result))

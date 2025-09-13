@@ -23,6 +23,10 @@
       "Bash(del:*)"
     ],
     "deny": [],
-    "ask": []
+    "ask": [],
+    "additionalDirectories": [
+      "C:\\Users\\pauls",
+      "C:\\c\\Users\\pauls\\source\\repos"
+    ]
   }
 }

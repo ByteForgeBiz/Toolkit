@@ -8,36 +8,82 @@ Includes a self-balancing AVL tree and a URL utility class.
 ### 🚀 Features
 
 #### BinarySearchTree<T>
-- AVL-based self-balancing tree
-- Insert, Delete, Search, In-order traversal
-- Thread-safe count tracking
-- Conversion to array
+- **AVL-based self-balancing**: Maintains O(log n) performance for all operations
+- **Core operations**: Insert, Delete, Search, In-order traversal
+- **Thread-safe count tracking**: Accurate node count with concurrent access
+- **Array conversion**: Efficient sorted array generation via in-order traversal
+- **Generic constraint**: Works with any `IComparable<T>` type
 
 #### Url
-- Safe combination of multiple URL segments
-- Extract domain from full URL
-- Handles duplicate slashes, nulls, and FTP/HTTP
+- **Safe URL combination**: Intelligently combines multiple URL segments
+- **Domain extraction**: Extracts domain from full URLs with protocol handling
+- **Robust parsing**: Handles duplicate slashes, nulls, empty strings, and various protocols (HTTP/HTTPS/FTP)
+- **Cross-platform**: Works with both forward and backward slashes
 
 ### 🧪 Tree Usage
 ```csharp
+// Create and populate a binary search tree
 var tree = new BinarySearchTree<int>();
 tree.Insert(5);
 tree.Insert(3);
-tree.Contains(3); // true
-tree.Remove(3);
-int[] sorted = tree.ToArray();
+tree.Insert(8);
+tree.Insert(1);
+tree.Insert(7);
+
+// Search operations
+bool exists = tree.Contains(3); // true
+int count = tree.Count;         // 5
+
+// Remove elements
+bool removed = tree.Remove(3);  // true
+
+// Get sorted array (in-order traversal)
+int[] sorted = tree.ToArray();  // [1, 5, 7, 8]
+
+// Works with strings too
+var stringTree = new BinarySearchTree<string>();
+stringTree.Insert("banana");
+stringTree.Insert("apple");
+stringTree.Insert("cherry");
+string[] sortedFruits = stringTree.ToArray(); // ["apple", "banana", "cherry"]
 ```
 
 ### 🧪 URL Usage
 ```csharp
+// Basic URL combination
 string url = Url.Combine("http://example.com", "api", "v1");
-string domain = Url.GetDomain(url);
+// Result: "http://example.com/api/v1"
+
+// Handle multiple segments
+string apiUrl = Url.Combine("https://api.service.com/", "/users/", "123/", "/profile");
+// Result: "https://api.service.com/users/123/profile"
+
+// Extract domain from URLs
+string domain1 = Url.GetDomain("https://www.example.com/path/page.html");
+// Result: "www.example.com"
+
+string domain2 = Url.GetDomain("ftp://files.company.org/documents/");
+// Result: "files.company.org"
+
+// Handle edge cases gracefully
+string safe1 = Url.Combine("", "path/to/resource");      // "path/to/resource"
+string safe2 = Url.Combine("http://base.com", "");       // "http://base.com"
+string safe3 = Url.Combine(null, "relative/path");       // "relative/path"
 ```
 
 ### ✅ Best Practices
-- Use `ToArray()` for sorted output
-- Validate inputs when using `Url.GetDomain`
-- Ensure `T : IComparable<T>` for BST
+
+#### Binary Search Tree
+- Ensure your type implements `IComparable<T>` for custom objects
+- Use `ToArray()` when you need sorted output from the tree
+- Consider the tree for scenarios requiring frequent insertions/deletions with sorted access
+- The tree maintains balance automatically, so no manual rebalancing is needed
+
+#### URL Utilities
+- Always validate inputs when using `Url.GetDomain()` with user-provided URLs
+- Use `Url.Combine()` instead of string concatenation for URL building
+- The utilities handle null/empty inputs gracefully, but validate business logic requirements
+- Test URL combinations with your specific use cases, especially with different protocols
 
 ### 🔗 Related Modules
 - [Utils](../Utils/readme.md)
