@@ -257,7 +257,7 @@ namespace ByteForge.Toolkit
         /// <param name="email">The email message to attach files to.</param>
         /// <param name="files">Array of compressed <see cref="FileInfo"/> objects.</param>
         /// <param name="fileNameMap">Optional dictionary mapping file paths to desired attachment names.</param>
-        /// 
+        /// <param name="addAttachmentSummary">If true, adds a summary of attachments to the email body.</param>
         private void AttachCompressedFiles(
             MailMessage email,
             FileInfo[] files,

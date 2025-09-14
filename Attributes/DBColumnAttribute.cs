@@ -66,7 +66,13 @@ namespace ByteForge.Toolkit
         /// <summary>
         /// Gets the maximum length for string/binary columns. If null, length will be determined dynamically or use defaults.
         /// </summary>
-        public int? MaxLength { get; set; }
+        public int MaxLength { get; set; }
+
+        public DBColumnAttribute(string name) : this(name, false, false, false) { }
+
+        public DBColumnAttribute(bool isPrimaryKey) : this(null, isPrimaryKey, false, false) { }
+
+        public DBColumnAttribute(string name, bool isPrimaryKey) : this(name, isPrimaryKey, false, false) { }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DBColumnAttribute"/> class.

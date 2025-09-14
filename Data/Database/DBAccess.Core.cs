@@ -64,7 +64,7 @@ namespace ByteForge.Toolkit
         /// <summary>
         /// Initializes a new instance of the <see cref="DBAccess"/> class using the selected database from the configuration.
         /// </summary>
-        public DBAccess() : this(null) { }
+        public DBAccess() : this("") { }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DBAccess"/> class using the specified database section from the configuration.
@@ -75,7 +75,7 @@ namespace ByteForge.Toolkit
         /// <exception cref="ArgumentException">Thrown when the database section contains a colon or does not exist in the configuration, or the database type is not supported.</exception>
         public DBAccess(string dbSection)
         {
-            if (Configuration.Root == null)
+            if (!Configuration.IsInitialized)
                 throw new InvalidOperationException("The configuration has not been initialized.");
             if (string.IsNullOrEmpty(dbSection))
             {
@@ -88,6 +88,16 @@ namespace ByteForge.Toolkit
                 throw new ArgumentException($"The database section '{dbSection}' does not exist.", nameof(dbSection));
 
             Options = Configuration.GetSection<DatabaseOptions>(dbSection);
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="DBAccess"/> class with the specified database options.
+        /// </summary>
+        /// <param name="options">The configuration options for the database connection. This parameter cannot be <see langword="null"/>.</param>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="options"/> is <see langword="null"/>.</exception>
+        public DBAccess(DatabaseOptions options)
+        {
+            Options = options ?? throw new ArgumentNullException(nameof(options));
         }
 
         /// <summary>

@@ -506,8 +506,8 @@ namespace ByteForge.Toolkit
                 var column = dt.Columns.Add(ColumnMap[prop], columnType);
 
                 // Set MaxLength if specified in the attribute and it's a string column
-                if (columnType == typeof(string) && columnAttr?.MaxLength != null)
-                    column.MaxLength = columnAttr.MaxLength.Value;
+                if (columnType == typeof(string) && columnAttr?.MaxLength != 0)
+                    column.MaxLength = columnAttr.MaxLength;
 
                 if (columnAttr != null)
                 {
@@ -593,8 +593,8 @@ namespace ByteForge.Toolkit
                 var column = dt.Columns.Add(keyColumn, columnType);
 
                 // Set MaxLength if specified in the attribute and it's a string column
-                if (columnType == typeof(string) && columnAttr?.MaxLength != null)
-                    column.MaxLength = columnAttr.MaxLength.Value;
+                if (columnType == typeof(string) && columnAttr?.MaxLength != 0)
+                    column.MaxLength = columnAttr.MaxLength;
 
                 column.AllowDBNull = false; // Key columns shouldn't be null
             }

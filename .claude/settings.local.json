@@ -1,32 +1,9 @@
 {
   "permissions": {
     "allow": [
-      "Bash(dotnet restore:*)",
-      "Bash(dotnet test:*)",
-      "Bash(dotnet build:*)",
-      "Bash(msbuild:*)",
-      "Bash(nuget restore:*)",
-      "Bash(BuildSolution.bat)",
-      "Bash(.BuildSolution.bat)",
-      "Bash(\"Tests\\ByteForge.Toolkit.Tests\\BuildSolution.bat\")",
-      "Bash(copy:*)",
-      "Bash(cp:*)",
-      "Bash(cmd /c:*)",
-      "Bash(\"C:\\Users\\pauls\\source\\TelecomInc\\ByteForge.Toolkit\\Tests\\ByteForge.Toolkit.Tests\\BuildSolution.bat\")",
-      "Bash(dir:*)",
-      "Bash(packagesOpenCover.4.7.1221toolsOpenCover.Console.exe -target:\"dotnet.exe\" -targetargs:\"test ByteForge.Toolkit.Tests.csproj --no-build --configuration Debug\" -output:coverage.xml -register:user -filter:\"+[ByteForge.Toolkit]*\" -excludebyfile:\"*\\Tests\\*\")",
-      "Bash(dotnet tool install:*)",
-      "Bash(reportgenerator:*)",
-      "Bash(del \"C:\\Users\\pauls\\source\\TelecomInc\\ByteForge.Toolkit\\.vscode\\settings.json\")",
-      "Bash(rm:*)",
-      "Bash(powershell:*)",
-      "Bash(del:*)"
+      "Bash(mkdir:*)"
     ],
     "deny": [],
-    "ask": [],
-    "additionalDirectories": [
-      "C:\\Users\\pauls",
-      "C:\\c\\Users\\pauls\\source\\repos"
-    ]
+    "ask": []
   }
 }

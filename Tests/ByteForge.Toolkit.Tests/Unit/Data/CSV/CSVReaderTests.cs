@@ -1,17 +1,12 @@
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
-using ByteForge.Toolkit;
-using ByteForge.Toolkit.Logging;
 using ByteForge.Toolkit.Tests.Helpers;
 using FluentAssertions;
+using System.Text;
 
-namespace ByteForge.Toolkit.Tests.Unit.CSV
+namespace ByteForge.Toolkit.Tests.Unit.Data.CSV
 {
     [TestClass]
     [TestCategory("Unit")]
+    [TestCategory("Data")]
     [TestCategory("CSV")]
     public class CSVReaderTests
     {
@@ -138,9 +133,7 @@ namespace ByteForge.Toolkit.Tests.Unit.CSV
             reader.RowHandler = (row, status, rawLine) =>
             {
                 if (status == CSVReader.CSVRowStatus.OK)
-                {
                     processedRows.Add([.. row.Values]);
-                }
                 return true;
             };
 
@@ -170,9 +163,7 @@ namespace ByteForge.Toolkit.Tests.Unit.CSV
             reader.RowHandler = (row, status, rawLine) =>
             {
                 if (status == CSVReader.CSVRowStatus.OK)
-                {
                     processedRows.Add([.. row.Values]);
-                }
                 return true;
             };
 
@@ -203,9 +194,7 @@ namespace ByteForge.Toolkit.Tests.Unit.CSV
             reader.RowHandler = (row, status, rawLine) =>
             {
                 if (status == CSVReader.CSVRowStatus.OK)
-                {
                     processedRows.Add([.. row.Values]);
-                }
                 return true;
             };
 
@@ -236,9 +225,7 @@ namespace ByteForge.Toolkit.Tests.Unit.CSV
             reader.RowHandler = (row, status, rawLine) =>
             {
                 if (status == CSVReader.CSVRowStatus.OK)
-                {
                     processedRows.Add([.. row.Values]);
-                }
                 return true;
             };
 
@@ -268,9 +255,7 @@ namespace ByteForge.Toolkit.Tests.Unit.CSV
             reader.RowHandler = (row, status, rawLine) =>
             {
                 if (status == CSVReader.CSVRowStatus.OK)
-                {
                     processedRows.Add([.. row.Values]);
-                }
                 return true;
             };
 
@@ -299,9 +284,7 @@ namespace ByteForge.Toolkit.Tests.Unit.CSV
             reader.RowHandler = (row, status, rawLine) =>
             {
                 if (status == CSVReader.CSVRowStatus.OK)
-                {
                     processedRows.Add([.. row.Values]);
-                }
                 return true;
             };
 
@@ -378,9 +361,7 @@ namespace ByteForge.Toolkit.Tests.Unit.CSV
             reader.RowHandler = (row, status, rawLine) =>
             {
                 if (status == CSVReader.CSVRowStatus.OK)
-                {
                     processedRows.Add([.. row.Values]);
-                }
                 return true;
             };
 
@@ -428,9 +409,7 @@ namespace ByteForge.Toolkit.Tests.Unit.CSV
             reader.RowHandler = (row, status, rawLine) =>
             {
                 if (status == CSVReader.CSVRowStatus.OK)
-                {
                     processedRows.Add([.. row.Values]);
-                }
                 return true;
             };
 
@@ -460,9 +439,7 @@ namespace ByteForge.Toolkit.Tests.Unit.CSV
             reader.RowHandler = (row, status, rawLine) =>
             {
                 if (status == CSVReader.CSVRowStatus.OK)
-                {
                     processedRows.Add([.. row.Values]);
-                }
                 return true;
             };
 
@@ -498,9 +475,7 @@ namespace ByteForge.Toolkit.Tests.Unit.CSV
             reader.RowHandler = (row, status, rawLine) =>
             {
                 if (status == CSVReader.CSVRowStatus.OK)
-                {
                     processedRowCount++;
-                }
                 return true;
             };
 
@@ -550,9 +525,7 @@ namespace ByteForge.Toolkit.Tests.Unit.CSV
             reader.RowHandler = (row, status, rawLine) =>
             {
                 if (status == CSVReader.CSVRowStatus.OK)
-                {
                     processedRows.Add([.. row.Values]);
-                }
                 return true;
             };
 
@@ -595,9 +568,7 @@ namespace ByteForge.Toolkit.Tests.Unit.CSV
                 reader.RowHandler = (row, status, rawLine) =>
                 {
                     if (status == CSVReader.CSVRowStatus.OK)
-                    {
                         processedRows.Add([.. row.Values]);
-                    }
                     return true;
                 };
 
@@ -637,9 +608,7 @@ namespace ByteForge.Toolkit.Tests.Unit.CSV
                 {
                     // Check if format was detected correctly by ensuring proper parsing
                     if (status == CSVReader.CSVRowStatus.OK && row.Count == 3 && row.Values.First() == "John")
-                    {
                         detectedDelimiter = expectedDelimiter; // Infer from successful parsing
-                    }
                     return true;
                 };
 
@@ -670,9 +639,7 @@ namespace ByteForge.Toolkit.Tests.Unit.CSV
             reader.RowHandler = (row, status, rawLine) =>
             {
                 if (status == CSVReader.CSVRowStatus.OK)
-                {
                     validRows.Add(row);
-                }
                 else if (status == CSVReader.CSVRowStatus.Malformed)
                 {
                     malformedRows.Add(rawLine);

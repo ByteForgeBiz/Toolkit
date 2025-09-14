@@ -233,6 +233,7 @@
     </None>
     <None Include="Logging\readme.md" />
     <None Include="Mail\readme.md" />
+    <None Include="Properties\CHANGELOG.md" />
     <None Include="readme.md" />
     <None Include="Security\readme.md" />
     <None Include="Utils\readme.md" />

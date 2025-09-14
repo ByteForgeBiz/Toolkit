@@ -3,11 +3,10 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
-using ByteForge.Toolkit;
 using ByteForge.Toolkit.Tests.Helpers;
 using FluentAssertions;
 
-namespace ByteForge.Toolkit.Tests.Unit.CSV
+namespace ByteForge.Toolkit.Tests.Unit.Data.CSV
 {
     [TestClass]
     [TestCategory("Unit")]

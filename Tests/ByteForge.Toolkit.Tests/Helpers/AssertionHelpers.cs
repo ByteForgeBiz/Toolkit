@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using ByteForge.Toolkit;
 using FluentAssertions;
+using FluentAssertions.Execution;
+using FluentAssertions.Primitives;
 
 namespace ByteForge.Toolkit.Tests.Helpers
 {
