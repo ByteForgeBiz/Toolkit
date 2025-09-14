@@ -116,6 +116,124 @@ namespace ByteForge.Toolkit.Tests.Helpers
 
         #endregion
 
+        #region Access Database Configuration Factory Methods
+
+        /// <summary>
+        /// The name of the test Access database file.
+        /// </summary>
+        public const string TestAccessDatabaseName = "TestUnitDB.accdb";
+        
+        /// <summary>
+        /// The ODBC Data Source Name for the test Access database.
+        /// </summary>
+        public const string TestAccessDSN = "TestAccessDB";
+        
+        /// <summary>
+        /// The full path to the test Access database file.
+        /// </summary>
+        public static readonly string TestAccessDatabasePath = 
+            System.IO.Path.Combine(System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location), 
+                                  "TestData", TestAccessDatabaseName);
+
+        /// <summary>
+        /// Creates a standard test Access database configuration using direct file path (recommended).
+        /// </summary>
+        /// <returns>A configured <see cref="DatabaseOptions"/> instance for Access testing.</returns>
+        public static DatabaseOptions CreateTestAccessDatabaseOptions()
+        {
+            var fullPath = System.IO.Path.GetFullPath(TestAccessDatabasePath);
+            return new DatabaseOptions
+            {
+                DatabaseType = DBAccess.DataBaseType.ODBC,
+                Server = "", // Not used for ODBC file connections
+                DatabaseName = "", // Not used for ODBC file connections
+                ConnectionString = $"Driver={{Microsoft Access Driver (*.mdb, *.accdb)}};Dbq={fullPath};",
+                UseTrustedConnection = false,
+                UseEncryption = false,
+                ConnectionTimeout = TestConnectionTimeout,
+                CommandTimeout = TestCommandTimeout,
+                AutoTrimStrings = true
+            };
+        }
+
+        /// <summary>
+        /// Creates a test Access database configuration using ODBC DSN (requires DSN setup).
+        /// </summary>
+        /// <returns>A configured <see cref="DatabaseOptions"/> instance using DSN-based connection.</returns>
+        public static DatabaseOptions CreateTestAccessDatabaseOptionsWithDSN()
+        {
+            return new DatabaseOptions
+            {
+                DatabaseType = DBAccess.DataBaseType.ODBC,
+                Server = "", // Not used for ODBC DSN connections
+                DatabaseName = "", // Not used for ODBC DSN connections
+                ConnectionString = $"DSN={TestAccessDSN};",
+                UseTrustedConnection = false,
+                UseEncryption = false,
+                ConnectionTimeout = TestConnectionTimeout,
+                CommandTimeout = TestCommandTimeout,
+                AutoTrimStrings = true
+            };
+        }
+
+        /// <summary>
+        /// Creates a test Access database configuration with custom settings.
+        /// </summary>
+        /// <param name="connectionTimeout">Custom connection timeout.</param>
+        /// <param name="commandTimeout">Custom command timeout.</param>
+        /// <param name="autoTrimStrings">Whether to auto-trim strings.</param>
+        /// <returns>A configured <see cref="DatabaseOptions"/> instance.</returns>
+        public static DatabaseOptions CreateTestAccessDatabaseOptions(
+            int connectionTimeout, 
+            int commandTimeout, 
+            bool autoTrimStrings = true)
+        {
+            var fullPath = System.IO.Path.GetFullPath(TestAccessDatabasePath);
+            return new DatabaseOptions
+            {
+                DatabaseType = DBAccess.DataBaseType.ODBC,
+                Server = "",
+                DatabaseName = "",
+                ConnectionString = $"Driver={{Microsoft Access Driver (*.mdb, *.accdb)}};Dbq={fullPath};",
+                UseTrustedConnection = false,
+                UseEncryption = false,
+                ConnectionTimeout = connectionTimeout,
+                CommandTimeout = commandTimeout,
+                AutoTrimStrings = autoTrimStrings
+            };
+        }
+
+        /// <summary>
+        /// Creates an invalid Access database configuration for error testing.
+        /// </summary>
+        /// <returns>A <see cref="DatabaseOptions"/> instance with invalid ODBC settings.</returns>
+        public static DatabaseOptions CreateInvalidAccessDatabaseOptions()
+        {
+            return new DatabaseOptions
+            {
+                DatabaseType = DBAccess.DataBaseType.ODBC,
+                Server = "",
+                DatabaseName = "",
+                ConnectionString = "DSN=NonExistentAccessDSN;",
+                UseTrustedConnection = false,
+                UseEncryption = false,
+                ConnectionTimeout = 5,
+                CommandTimeout = 30,
+                AutoTrimStrings = true
+            };
+        }
+
+        /// <summary>
+        /// Creates a test Access DBAccess instance with standard ODBC configuration.
+        /// </summary>
+        /// <returns>A configured <see cref="DBAccess"/> instance for Access testing.</returns>
+        public static DBAccess CreateTestAccessDBAccess()
+        {
+            return new DBAccess(CreateTestAccessDatabaseOptions());
+        }
+
+        #endregion
+
         #region Database Connection Validation
 
         /// <summary>
@@ -153,6 +271,53 @@ namespace ByteForge.Toolkit.Tests.Helpers
         {
             VerifyTestDatabaseSetup(dbAccess).Should().BeTrue(
                 "test database should be properly set up with required tables and data. Please run the TestUnitDB setup scripts.");
+        }
+
+        /// <summary>
+        /// Verifies that the test Access database is accessible and contains expected test data.
+        /// </summary>
+        /// <param name="dbAccess">The database access instance to test.</param>
+        /// <returns>True if the Access database is properly configured and accessible.</returns>
+        public static bool VerifyAccessDatabaseSetup(DBAccess dbAccess)
+        {
+            try
+            {
+                // Test basic connectivity
+                if (!dbAccess.TestConnection())
+                    return false;
+
+                // Verify test tables exist and have data (Access may have different counts than SQL Server)
+                var entityCount = dbAccess.GetValue<int>("SELECT COUNT(*) FROM TestEntities");
+                var dataTypeCount = dbAccess.GetValue<int>("SELECT COUNT(*) FROM TestDataTypes");
+                var bulkEntityCount = dbAccess.GetValue<int>("SELECT COUNT(*) FROM BulkTestEntities");
+
+                // Expected minimum counts based on Access seed data (may be different from SQL Server)
+                return entityCount >= 3 && dataTypeCount >= 1 && bulkEntityCount >= 3;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Asserts that the test Access database is properly set up, failing the test if not.
+        /// </summary>
+        /// <param name="dbAccess">The database access instance to verify.</param>
+        public static void AssertAccessDatabaseSetup(DBAccess dbAccess)
+        {
+            VerifyAccessDatabaseSetup(dbAccess).Should().BeTrue(
+                $"test Access database should be properly set up with required tables and data. Expected database path: {TestAccessDatabasePath}");
+        }
+
+        /// <summary>
+        /// Verifies that the Access database file exists at the expected location.
+        /// </summary>
+        /// <returns>True if the database file exists; otherwise, false.</returns>
+        public static bool VerifyAccessDatabaseFileExists()
+        {
+            var fullPath = System.IO.Path.GetFullPath(TestAccessDatabasePath);
+            return System.IO.File.Exists(fullPath);
         }
 
         #endregion

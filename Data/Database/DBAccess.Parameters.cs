@@ -76,21 +76,42 @@ namespace ByteForge.Toolkit
 
             /*
              * String is omitted because it's the default type
+             * Special handling for ODBC which has more restrictive type mappings
              */
-            prm.DbType = type.Name switch
+            if (Options.DatabaseType == DataBaseType.ODBC)
             {
-                "Boolean" => System.Data.DbType.Boolean,
-                "Byte" => System.Data.DbType.Byte,
-                "DateTime" => System.Data.DbType.DateTime,
-                "Decimal" => System.Data.DbType.Decimal,
-                "Double" => System.Data.DbType.Double,
-                "Guid" => System.Data.DbType.Guid,
-                "Int16" => System.Data.DbType.Int16,
-                "Int32" => System.Data.DbType.Int32,
-                "Int64" => System.Data.DbType.Int64,
-                "Single" => System.Data.DbType.Single,
-                _ => System.Data.DbType.String,
-            };
+                prm.DbType = type.Name switch
+                {
+                    "Boolean" => System.Data.DbType.Boolean,
+                    "Byte" => System.Data.DbType.Byte,
+                    "DateTime" => System.Data.DbType.DateTime,
+                    "Decimal" => System.Data.DbType.Double, // Use Double for ODBC compatibility with Access Currency
+                    "Double" => System.Data.DbType.Double,
+                    "Guid" => System.Data.DbType.String, // GUID as string for ODBC
+                    "Int16" => System.Data.DbType.Int16,
+                    "Int32" => System.Data.DbType.Int32,
+                    "Int64" => System.Data.DbType.Int32, // Access doesn't have BigInt, use Int32
+                    "Single" => System.Data.DbType.Single,
+                    _ => System.Data.DbType.String,
+                };
+            }
+            else
+            {
+                prm.DbType = type.Name switch
+                {
+                    "Boolean" => System.Data.DbType.Boolean,
+                    "Byte" => System.Data.DbType.Byte,
+                    "DateTime" => System.Data.DbType.DateTime,
+                    "Decimal" => System.Data.DbType.Decimal,
+                    "Double" => System.Data.DbType.Double,
+                    "Guid" => System.Data.DbType.Guid,
+                    "Int16" => System.Data.DbType.Int16,
+                    "Int32" => System.Data.DbType.Int32,
+                    "Int64" => System.Data.DbType.Int64,
+                    "Single" => System.Data.DbType.Single,
+                    _ => System.Data.DbType.String,
+                };
+            }
         }
     }
 }

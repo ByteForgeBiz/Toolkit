@@ -9,15 +9,15 @@ using FluentAssertions;
 namespace ByteForge.Toolkit.Tests.Unit.Data.Database
 {
     /// <summary>
-    /// Unit tests for the query and data retrieval methods of the <see cref="DBAccess"/> class.
+    /// Unit tests for the query and data retrieval methods of the <see cref="DBAccess"/> class using SQL Server.
     /// </summary>
     /// <remarks>
     /// These tests focus on the core database operation methods including GetValue, GetRecord,
-    /// GetRecords, ExecuteQuery, and their async variants. Tests use the TestUnitDB database
-    /// with real data to ensure proper integration and data handling.
+    /// GetRecords, ExecuteQuery, and their async variants. Tests use the TestUnitDB SQL Server database
+    /// with real data to ensure proper integration and data handling for SQL Server connections.
     /// </remarks>
     [TestClass]
-    public class DBAccessMethodsTests
+    public class DBAccessMethodsSQLServerTests
     {
         #region Test Fields and Setup
 
@@ -115,8 +115,8 @@ namespace ByteForge.Toolkit.Tests.Unit.Data.Database
             var count = _dbAccess.GetValue<int>("SELECT COUNT(*) FROM TestEntities");
 
             // Assert
+            _dbAccess.LastException.Should().BeNull($"should not have thrown exception: {_dbAccess.LastException}");
             count.Should().BeGreaterThan(0, "should return a positive count of test entities");
-            _dbAccess.LastException.Should().BeNull();
         }
 
         /// <summary>
@@ -130,8 +130,8 @@ namespace ByteForge.Toolkit.Tests.Unit.Data.Database
                 "SELECT COUNT(*) FROM TestEntities WHERE IsActive = @active", true);
 
             // Assert
+            _dbAccess.LastException.Should().BeNull($"should not have thrown exception: {_dbAccess.LastException}");
             activeCount.Should().BeGreaterThan(0, "should return active entities count");
-            _dbAccess.LastException.Should().BeNull();
         }
 
         /// <summary>
@@ -145,8 +145,8 @@ namespace ByteForge.Toolkit.Tests.Unit.Data.Database
                 "SELECT Name FROM TestEntities WHERE Id = @id", -9999);
 
             // Assert
+            _dbAccess.LastException.Should().BeNull($"should not have thrown exception: {_dbAccess.LastException}");
             name.Should().BeNull("should return null for non-existent record");
-            _dbAccess.LastException.Should().BeNull();
         }
 
         /// <summary>
@@ -159,9 +159,9 @@ namespace ByteForge.Toolkit.Tests.Unit.Data.Database
             var success = _dbAccess.TryGetValue<int>(out var count, "SELECT COUNT(*) FROM TestEntities");
 
             // Assert
+            _dbAccess.LastException.Should().BeNull($"should not have thrown exception: {_dbAccess.LastException}");
             success.Should().BeTrue("TryGetValue should return true for valid query");
             count.Should().BeGreaterThan(0, "should return a positive count");
-            _dbAccess.LastException.Should().BeNull();
         }
 
         /// <summary>
@@ -174,9 +174,9 @@ namespace ByteForge.Toolkit.Tests.Unit.Data.Database
             var success = _dbAccess.TryGetValue<int>(out var count, "SELECT * FROM NonExistentTable");
 
             // Assert
+            _dbAccess.LastException.Should().NotBeNull("should have thrown exception for invalid query");
             success.Should().BeFalse("TryGetValue should return false for invalid query");
             count.Should().Be(0, "should return default value");
-            _dbAccess.LastException.Should().NotBeNull();
         }
 
         /// <summary>
@@ -189,6 +189,7 @@ namespace ByteForge.Toolkit.Tests.Unit.Data.Database
             var count = await _dbAccess.GetValueAsync<int>("SELECT COUNT(*) FROM TestEntities");
 
             // Assert
+            _dbAccess.LastException.Should().BeNull($"should not have thrown exception: {_dbAccess.LastException}");
             count.Should().BeGreaterThan(0, "async GetValue should return positive count");
         }
 
@@ -202,6 +203,7 @@ namespace ByteForge.Toolkit.Tests.Unit.Data.Database
             var (success, count) = await _dbAccess.TryGetValueAsync<int>("SELECT COUNT(*) FROM TestEntities");
 
             // Assert
+            _dbAccess.LastException.Should().BeNull($"should not have thrown exception: {_dbAccess.LastException}");
             success.Should().BeTrue("async TryGetValue should return true for valid query");
             count.Should().BeGreaterThan(0, "should return positive count");
         }
@@ -220,10 +222,10 @@ namespace ByteForge.Toolkit.Tests.Unit.Data.Database
             var record = _dbAccess.GetRecord("SELECT TOP 1 * FROM TestEntities WHERE IsActive = @active", true);
 
             // Assert
+            _dbAccess.LastException.Should().BeNull($"should not have thrown exception: {_dbAccess.LastException}");
             record.Should().NotBeNull("should return a DataRow");
             record.Table.Columns.Count.Should().BeGreaterThan(0, "DataRow should have columns");
             record["Name"].Should().NotBeNull("should have Name column");
-            _dbAccess.LastException.Should().BeNull();
         }
 
         /// <summary>
@@ -236,8 +238,8 @@ namespace ByteForge.Toolkit.Tests.Unit.Data.Database
             var record = _dbAccess.GetRecord("SELECT * FROM TestEntities WHERE Id = @id", -9999);
 
             // Assert
+            _dbAccess.LastException.Should().BeNull($"should not have thrown exception: {_dbAccess.LastException}");
             record.Should().BeNull("should return null for non-existent record");
-            _dbAccess.LastException.Should().BeNull();
         }
 
         /// <summary>
@@ -250,6 +252,7 @@ namespace ByteForge.Toolkit.Tests.Unit.Data.Database
             var record = await _dbAccess.GetRecordAsync("SELECT TOP 1 * FROM TestEntities WHERE IsActive = 1");
 
             // Assert
+            _dbAccess.LastException.Should().BeNull($"should not have thrown exception: {_dbAccess.LastException}");
             record.Should().NotBeNull("async GetRecord should return a DataRow");
             record.Table.Columns.Count.Should().BeGreaterThan(0, "DataRow should have columns");
         }
@@ -268,9 +271,9 @@ namespace ByteForge.Toolkit.Tests.Unit.Data.Database
             var records = _dbAccess.GetRecords("SELECT * FROM TestEntities WHERE IsActive = @active", true);
 
             // Assert
+            _dbAccess.LastException.Should().BeNull($"should not have thrown exception: {_dbAccess.LastException}");
             records.Should().NotBeNull("should return DataRowCollection");
             records.Count.Should().BeGreaterThan(0, "should return multiple records");
-            _dbAccess.LastException.Should().BeNull();
         }
 
         /// <summary>
@@ -283,8 +286,8 @@ namespace ByteForge.Toolkit.Tests.Unit.Data.Database
             var records = _dbAccess.GetRecords("SELECT * FROM TestEntities WHERE Name = @name", "NonExistentEntity");
 
             // Assert
-            records.Should().NotBeNull("Should return an empty DataRowCollection instead of null");
             _dbAccess.LastException.Should().BeNull("No exception should occur for no results");
+            records.Should().NotBeNull("Should return an empty DataRowCollection instead of null");
         }
 
         /// <summary>
@@ -297,6 +300,7 @@ namespace ByteForge.Toolkit.Tests.Unit.Data.Database
             var records = await _dbAccess.GetRecordsAsync("SELECT * FROM TestEntities WHERE IsActive = 1");
 
             // Assert
+            _dbAccess.LastException.Should().BeNull($"should not have thrown exception: {_dbAccess.LastException}");
             records.Should().NotBeNull("async GetRecords should return DataRowCollection");
             records.Count.Should().BeGreaterThan(0, "should return multiple records");
         }
@@ -323,9 +327,9 @@ namespace ByteForge.Toolkit.Tests.Unit.Data.Database
                     testName, testDesc, true, 123.45m);
 
                 // Assert
+                _dbAccess.LastException.Should().BeNull($"should not have thrown exception: {_dbAccess.LastException}");
                 result.Should().BeTrue("ExecuteQuery should return true for successful INSERT");
                 _dbAccess.RecordsAffected.Should().Be(1, "should affect exactly 1 record");
-                _dbAccess.LastException.Should().BeNull();
 
                 // Verify the record was inserted
                 var insertedName = _dbAccess.GetValue<string>("SELECT Name FROM TestEntities WHERE Name = @name", testName);
@@ -361,9 +365,9 @@ namespace ByteForge.Toolkit.Tests.Unit.Data.Database
                     updatedDesc, testName);
 
                 // Assert
+                _dbAccess.LastException.Should().BeNull($"should not have thrown exception: {_dbAccess.LastException}");
                 result.Should().BeTrue("ExecuteQuery should return true for successful UPDATE");
                 _dbAccess.RecordsAffected.Should().Be(1, "should affect exactly 1 record");
-                _dbAccess.LastException.Should().BeNull();
 
                 // Verify the record was updated
                 var actualDesc = _dbAccess.GetValue<string>("SELECT Description FROM TestEntities WHERE Name = @name", testName);
@@ -392,9 +396,9 @@ namespace ByteForge.Toolkit.Tests.Unit.Data.Database
             var result = _dbAccess.ExecuteQuery("DELETE FROM TestEntities WHERE Name = @name", testName);
 
             // Assert
+            _dbAccess.LastException.Should().BeNull($"should not have thrown exception: {_dbAccess.LastException}");
             result.Should().BeTrue("ExecuteQuery should return true for successful DELETE");
             _dbAccess.RecordsAffected.Should().Be(1, "should affect exactly 1 record");
-            _dbAccess.LastException.Should().BeNull();
 
             // Verify the record was deleted
             var count = _dbAccess.GetValue<int>("SELECT COUNT(*) FROM TestEntities WHERE Name = @name", testName);
@@ -411,8 +415,8 @@ namespace ByteForge.Toolkit.Tests.Unit.Data.Database
             var result = _dbAccess.ExecuteQuery("INVALID SQL STATEMENT");
 
             // Assert
-            result.Should().BeFalse("ExecuteQuery should return false for invalid SQL");
             _dbAccess.LastException.Should().NotBeNull("exception should be set for invalid SQL");
+            result.Should().BeFalse("ExecuteQuery should return false for invalid SQL");
         }
 
         /// <summary>
@@ -432,6 +436,7 @@ namespace ByteForge.Toolkit.Tests.Unit.Data.Database
                     testName, "Async test record", true);
 
                 // Assert
+                _dbAccess.LastException.Should().BeNull($"should not have thrown exception: {_dbAccess.LastException}");
                 result.Should().BeTrue("async ExecuteQuery should return true for valid statement");
                 _dbAccess.RecordsAffected.Should().Be(1, "should affect exactly 1 record");
             }
@@ -458,8 +463,8 @@ namespace ByteForge.Toolkit.Tests.Unit.Data.Database
                 true, 0m, 1000m);
 
             // Assert
+            _dbAccess.LastException.Should().BeNull($"should not have thrown exception: {_dbAccess.LastException}");
             count.Should().BeGreaterOrEqualTo(0, "should return a valid count");
-            _dbAccess.LastException.Should().BeNull();
         }
 
         /// <summary>
@@ -470,12 +475,11 @@ namespace ByteForge.Toolkit.Tests.Unit.Data.Database
         {
             // Act
             var count = _dbAccess.GetValue<int>(
-                "SELECT COUNT(*) FROM TestEntities WHERE Description = @desc OR @desc IS NULL",
-                (object)null);
+                "SELECT COUNT(*) FROM TestEntities WHERE Description = @desc OR @desc IS NULL", [null]);
 
             // Assert
+            _dbAccess.LastException.Should().BeNull($"should not be thrown exception: {_dbAccess.LastException}");
             count.Should().BeGreaterThan(0, "should handle null parameters correctly");
-            _dbAccess.LastException.Should().BeNull();
         }
 
         /// <summary>
@@ -500,9 +504,9 @@ namespace ByteForge.Toolkit.Tests.Unit.Data.Database
                     testName, "Data type test", testBool, testDecimal, testGuid, testDate);
 
                 // Assert
+                _dbAccess.LastException.Should().BeNull($"should not have thrown exception: {_dbAccess.LastException}");
                 result.Should().BeTrue("should handle various data types as parameters");
                 _dbAccess.RecordsAffected.Should().Be(1);
-                _dbAccess.LastException.Should().BeNull();
 
                 // Verify values were stored correctly
                 var record = _dbAccess.GetRecord("SELECT * FROM TestEntities WHERE Name = @name", testName);
@@ -575,8 +579,8 @@ namespace ByteForge.Toolkit.Tests.Unit.Data.Database
                 "SELECT COUNT(*) FROM TestEntities WHERE Name = @name OR @name = ''", "");
 
             // Assert
+            _dbAccess.LastException.Should().BeNull($"should not have thrown exception: {_dbAccess.LastException}");
             count.Should().BeGreaterOrEqualTo(0, "should handle empty string parameters");
-            _dbAccess.LastException.Should().BeNull();
         }
 
         /// <summary>
@@ -590,8 +594,8 @@ namespace ByteForge.Toolkit.Tests.Unit.Data.Database
                 "SELECT TOP 1 Description FROM TestEntities WHERE Description IS NULL");
 
             // Assert
+            _dbAccess.LastException.Should().BeNull($"should not have thrown exception: {_dbAccess.LastException}");
             result.Should().BeNull("should return null for DBNull values");
-            _dbAccess.LastException.Should().BeNull();
         }
 
         /// <summary>
@@ -610,8 +614,8 @@ namespace ByteForge.Toolkit.Tests.Unit.Data.Database
             var count = _dbAccess.GetValue<int>(longQuery);
 
             // Assert
+            _dbAccess.LastException.Should().BeNull($"should not have thrown exception: {_dbAccess.LastException}");
             count.Should().Be(0, "should handle long query strings");
-            _dbAccess.LastException.Should().BeNull();
         }
 
         #endregion
