@@ -54,7 +54,7 @@ namespace ByteForge.Toolkit
         /// </summary>
         /// <remarks>
         /// The converter function is retrieved from the <see cref="ValueConverterRegistry"/> 
-        /// using the <see cref="ConverterName"/>. If no converter is found, null.
+        /// using the <see cref="ConverterName"/>. If no converter is found, null is returned.
         /// </remarks>
         public Func<object, object> Converter => ValueConverterRegistry.GetConverter(ConverterName);
 
@@ -68,10 +68,23 @@ namespace ByteForge.Toolkit
         /// </summary>
         public int MaxLength { get; set; }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="DBColumnAttribute"/> class with the specified column name.
+        /// </summary>
+        /// <param name="name">The name of the database column.</param>
         public DBColumnAttribute(string name) : this(name, false, false, false) { }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="DBColumnAttribute"/> class with the specified primary key flag.
+        /// </summary>
+        /// <param name="isPrimaryKey">Indicates whether the column is a primary key.</param>
         public DBColumnAttribute(bool isPrimaryKey) : this(null, isPrimaryKey, false, false) { }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="DBColumnAttribute"/> class with the specified column name and primary key flag.
+        /// </summary>
+        /// <param name="name">The name of the database column.</param>
+        /// <param name="isPrimaryKey">Indicates whether the column is a primary key.</param>
         public DBColumnAttribute(string name, bool isPrimaryKey) : this(name, isPrimaryKey, false, false) { }
 
         /// <summary>

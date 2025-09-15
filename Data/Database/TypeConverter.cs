@@ -162,15 +162,19 @@ namespace ByteForge.Toolkit
             if (targetType == null)
                 throw new ArgumentNullException(nameof(targetType));
 
+            // Handle nullable types
+            var isNullable = false;
+            if (targetType.IsGenericType && targetType.GetGenericTypeDefinition() == typeof(Nullable<>))
+            {
+                targetType = Nullable.GetUnderlyingType(targetType);
+                isNullable = true;
+            }
+
             // Handle null values
             if (value == null || value == DBNull.Value)
-                return targetType.IsValueType ? Activator.CreateInstance(targetType) : null;
+                return (isNullable && !targetType.IsValueType) ? null : Activator.CreateInstance(targetType);
 
             var sourceType = value.GetType();
-
-            // Handle nullable types
-            if (targetType.IsGenericType && targetType.GetGenericTypeDefinition() == typeof(Nullable<>))
-                targetType = Nullable.GetUnderlyingType(targetType);
 
             // If source and target types are the same, return directly
             if (sourceType == targetType)

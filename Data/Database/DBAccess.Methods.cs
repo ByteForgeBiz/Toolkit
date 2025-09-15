@@ -350,10 +350,25 @@ namespace ByteForge.Toolkit
         private T TimeFunc<T>(Func<T> func)
         {
             var start = DateTime.Now;
-            var result = func();
-            var elapsed = DateTime.Now - start;
-            Log.Verbose($"Query executed in {elapsed}.");
-            return result;
+            var hasError = false;
+            try
+            {
+                var result = func();
+                return result;
+            }
+            catch
+            {
+                hasError = true;
+                throw;
+            }
+            finally
+            {
+                var elapsed = DateTime.Now - start;
+                if (hasError)
+                    Log.Warning($"Query failed after {elapsed}.");
+                else
+                    Log.Verbose($"Query executed in {elapsed}.");
+            }
         }
     }
 }

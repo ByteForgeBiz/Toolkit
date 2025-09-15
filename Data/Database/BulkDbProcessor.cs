@@ -506,7 +506,7 @@ namespace ByteForge.Toolkit
                 var column = dt.Columns.Add(ColumnMap[prop], columnType);
 
                 // Set MaxLength if specified in the attribute and it's a string column
-                if (columnType == typeof(string) && columnAttr?.MaxLength != 0)
+                if (columnType == typeof(string) && columnAttr?.MaxLength > 0)
                     column.MaxLength = columnAttr.MaxLength;
 
                 if (columnAttr != null)
@@ -593,7 +593,7 @@ namespace ByteForge.Toolkit
                 var column = dt.Columns.Add(keyColumn, columnType);
 
                 // Set MaxLength if specified in the attribute and it's a string column
-                if (columnType == typeof(string) && columnAttr?.MaxLength != 0)
+                if (columnType == typeof(string) && columnAttr?.MaxLength > 0)
                     column.MaxLength = columnAttr.MaxLength;
 
                 column.AllowDBNull = false; // Key columns shouldn't be null
@@ -1043,7 +1043,7 @@ namespace ByteForge.Toolkit
         private void ValidateUpsertSupport()
         {
             // Check for non-identity primary key
-            var hasValidPrimaryKey = false;
+            var hasNonIdentityPk = false;
             if (PrimaryKeys.Length > 0)
             {
                 // Check if any primary key column is an identity column
@@ -1053,13 +1053,13 @@ namespace ByteForge.Toolkit
                     .Select(p => ColumnMap[p])
                     .ToArray();
 
-                hasValidPrimaryKey = identityPkColumns.Length == 0;
+                hasNonIdentityPk = identityPkColumns.Length == 0;
             }
 
             // Check for unique indexes
             var hasUniqueIndex = UniqueIndexes.Length > 0;
 
-            if (!hasValidPrimaryKey && !hasUniqueIndex)
+            if (!hasNonIdentityPk && !hasUniqueIndex)
             {
                 throw new InvalidOperationException(
                     $"Type {typeof(T).Name} must have either non-identity primary key(s) or unique index(es) for upsert operations. " +
