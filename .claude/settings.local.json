@@ -4,7 +4,14 @@
       "Bash(mkdir:*)",
       "Bash(move:*)",
       "Bash(rename:*)",
-      "Bash(powershell:*)"
+      "Bash(powershell:*)",
+      "Bash(BuildSolution.bat)",
+      "Bash(cmd /c:*)",
+      "Bash(dotnet test:*)",
+      "Bash(dotnet restore:*)",
+      "Bash(msbuild:*)",
+      "Bash(BuildSolution.bat Debug)",
+      "Bash(\"C:\\Users\\pauls\\source\\TelecomInc\\ByteForge.Toolkit\\Tests\\ByteForge.Toolkit.Tests\\BuildSolution.bat\" Debug)"
     ],
     "deny": [],
     "ask": []

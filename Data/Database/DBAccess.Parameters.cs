@@ -109,6 +109,10 @@ namespace ByteForge.Toolkit
             var set = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             var parameters = new List<string>();
 
+            // Handle null or empty queries
+            if (string.IsNullOrWhiteSpace(query))
+                return parameters;
+
             // Remove /* */ style comments
             var noBlockComments = Regex.Replace(query, @"/\*.*?\*/", "", RegexOptions.Singleline);
 
