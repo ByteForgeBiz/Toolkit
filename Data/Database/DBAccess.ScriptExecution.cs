@@ -149,7 +149,7 @@ namespace ByteForge.Toolkit
                 if (trimmedLine.StartsWith("--")) continue;
 
                 // Check if the line is just GO (case insensitive and allowing spaces)
-                if (Regex.IsMatch(trimmedLine, @"^GO\s*$", RegexOptions.IgnoreCase))
+                if (Regex.IsMatch(trimmedLine, @"^GO\s*(--.*)?$", RegexOptions.IgnoreCase))
                 {
                     if (currentBatch.Length > 0)
                     {

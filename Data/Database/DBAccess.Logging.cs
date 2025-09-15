@@ -21,7 +21,7 @@ namespace ByteForge.Toolkit
         /// <param name="arguments">The arguments for the SQL query.</param>
         private void LogQueryError(Exception ex, string query, object[] arguments)
         {
-            var prms = ParseParameters(query, allowRepetition: Options.DatabaseType == DataBaseType.ODBC);
+            var prms = ParseParameters(query);
             var msg = $"Error executing query";
             if (arguments != null && arguments.Length > 0)
             {

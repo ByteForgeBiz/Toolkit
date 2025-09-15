@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Text;
@@ -41,6 +42,7 @@ namespace ByteForge.Toolkit
                 { typeof(Version), value => Version.Parse(value) },
                 { typeof(Type), value => Type.GetType(value) },
                 { typeof(bool), value => BooleanParser.Parse(value) },
+                { typeof(byte), value => byte.Parse(value) },
                 { typeof(byte[]), value => Convert.FromBase64String(value) },
                 { typeof(char), value => value[0] },
                 { typeof(char[]), value => value.ToCharArray() },
@@ -125,7 +127,7 @@ namespace ByteForge.Toolkit
             }
             catch
             {
-                result = default(T);
+                result = default;
                 return false;
             }
         }

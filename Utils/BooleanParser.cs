@@ -139,7 +139,7 @@ namespace ByteForge.Toolkit
         {
             input = input?.Trim();
 
-            if (input == null)
+            if (string.IsNullOrWhiteSpace(input))
                 return false;
 
             if (_trueValues.Contains(input))

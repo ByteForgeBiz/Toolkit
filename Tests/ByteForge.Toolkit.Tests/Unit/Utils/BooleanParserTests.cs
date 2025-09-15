@@ -133,7 +133,7 @@ namespace ByteForge.Toolkit.Tests.Unit.Utils
         {
             // Arrange
             var parser = new BooleanParser();
-            var invalidInputs = new[] { "invalid", "maybe", "abc", "2.5", "true1", "false0", "" };
+            var invalidInputs = new[] { "invalid", "maybe", "abc", "2.5", "true1", "false0" };
 
             // Act & Assert
             foreach (var input in invalidInputs)
@@ -186,7 +186,7 @@ namespace ByteForge.Toolkit.Tests.Unit.Utils
         {
             // Arrange
             var parser = new BooleanParser();
-            var invalidInputs = new[] { "invalid", "maybe", "abc", "", "2.5" };
+            var invalidInputs = new[] { "invalid", "maybe", "abc", "2.5" };
 
             // Act & Assert
             foreach (var input in invalidInputs)

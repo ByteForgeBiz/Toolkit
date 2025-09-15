@@ -24,35 +24,10 @@ namespace ByteForge.Toolkit
         /// <param name="query">The SQL batch containing the parameters.</param>
         /// <param name="arguments">The arguments to be added as parameters.</param>
         /// <exception cref="ParamArgumentsMismatchException">Thrown when the number of parameters does not match the number of arguments.</exception>
-        private void AddParameters(IDbCommand cmd, string query, object[] arguments)
-        {
-            var parameters = ParseParameters(query);
-            if (parameters.Count != arguments.Length)
-                throw new ParamArgumentsMismatchException(
-                    $"The number of parameters ({parameters.Count}) does not match " +
-                    $"the number of arguments ({arguments.Length}).");
-
-            for (var i = 0; i < parameters.Count; i++)
-            {
-                var prm = cmd.CreateParameter();
-                prm.ParameterName = parameters[i];
-                prm.Value = arguments[i] ?? DBNull.Value;
-                DefineDbType(prm, prm.Value);
-                cmd.Parameters.Add(prm);
-            }
-        }
-
-        /// <summary>
-        /// Adds parameters to a command if applicable.
-        /// </summary>
-        /// <param name="cmd">The command to which parameters will be added.</param>
-        /// <param name="query">The SQL batch containing the parameters.</param>
-        /// <param name="arguments">The arguments to be added as parameters.</param>
-        /// <exception cref="ParamArgumentsMismatchException">Thrown when the number of parameters does not match the number of arguments.</exception>
         private void AddParametersToCommand(IDbCommand cmd, string query, object[] arguments)
         {
             arguments ??= Array.Empty<object>();
-            var matches = ParseParameters(query, allowRepetition: true);
+            var matches = ParseParameters(query);
             var distinctParams = matches.Distinct().ToList();
 
             if (distinctParams.Count != arguments.Length)
@@ -112,11 +87,9 @@ namespace ByteForge.Toolkit
         /// Extracts parameter names from a SQL query string, optionally allowing duplicates.
         /// </summary>
         /// <param name="query">The SQL query string to parse. The query may contain parameters prefixed with '@'.</param>
-        /// <param name="allowRepetition">A <see langword="bool"/> value indicating whether duplicate parameter names should be included in the result.<br/>
-        /// If <see langword="true"/>, duplicate parameter names are added to the result; otherwise, duplicates are ignored.</param>
         /// <returns>
         /// A list of parameter names found in the query string.<br/>
-        /// The list may include duplicates if <paramref name="allowRepetition"/> is <see langword="true"/>.<br/>
+        /// The list may include duplicates if the class is set to operate in <see cref="DataBaseType.SQLServer"/>.<br/>
         /// If no parameters are found, an empty list is returned.
         /// </returns>
         /// <remarks>
@@ -124,9 +97,15 @@ namespace ByteForge.Toolkit
         /// before extracting parameter names. Parameters within string literals are ignored.
         /// Parameter names are case-insensitive and must start with '@', followed by a letter and 
         /// then alphanumeric characters or underscores.
+        /// <para>
+        /// For SQL Server databases, this method recognizes named parameter assignment syntax 
+        /// (e.g., '@paramName = @valueParam') and only includes the value parameters (@valueParam) 
+        /// in the result, treating the parameter names (@paramName) as literal SQL text.
+        /// </para>
         /// </remarks>
-        private static List<string> ParseParameters(string query, bool allowRepetition = false)
+        private List<string> ParseParameters(string query)
         {
+            var allowRepetition = Options.DatabaseType == DataBaseType.ODBC;
             var set = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             var parameters = new List<string>();
 
@@ -136,12 +115,52 @@ namespace ByteForge.Toolkit
             // Remove -- style comments
             var noComments = Regex.Replace(noBlockComments, @"--.+?$", "", RegexOptions.Multiline);
 
-            // Find parameters (excluding those in string literals)
-            var matches = Regex.Matches(noComments, @"(?<![a-zA-Z0-9_.])@[A-Za-z]\w*(?=(?:[^']*'[^']*')*[^']*$)");
+            if (Options.DatabaseType == DataBaseType.ODBC)
+            {
+                // Original logic for non-SQL Server databases
+                var matches = Regex.Matches(noComments, @"(?<![a-zA-Z0-9_.])@[A-Za-z]\w*(?=(?:[^']*'[^']*')*[^']*$)");
 
-            foreach (Match match in matches)
-                if (set.Add(match.Value) || allowRepetition)
-                    parameters.Add(match.Value);
+                foreach (Match match in matches)
+                    if (set.Add(match.Value) || allowRepetition)
+                        parameters.Add(match.Value);
+
+                return parameters;
+            }
+
+            // For SQL Server, handle named parameter assignment syntax (@paramName = @valueParam)
+
+            // Find named parameter assignments and extract only the value parameters (right side of =)
+            var namedAssignments = Regex.Matches(noComments, @"@[A-Za-z]\w*\s*=\s*(@[A-Za-z]\w*)(?=(?:[^']*'[^']*')*[^']*$)");
+            var assignedParams = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+            foreach (Match match in namedAssignments)
+            {
+                var valueParam = match.Groups[1].Value;
+                assignedParams.Add(valueParam);
+                if (set.Add(valueParam) || allowRepetition)
+                    parameters.Add(valueParam);
+            }
+
+            // Find standalone parameters (not part of named assignments)
+            var allMatches = Regex.Matches(noComments, @"(?<![a-zA-Z0-9_.])@[A-Za-z]\w*(?=(?:[^']*'[^']*')*[^']*$)");
+
+            foreach (Match match in allMatches)
+            {
+                var param = match.Value;
+                // Skip if this parameter is already handled as a value parameter in named assignment
+                if (assignedParams.Contains(param))
+                    continue;
+
+                // Skip if this parameter is the left side of a named assignment
+                var isLeftSideOfAssignment = Regex.IsMatch(noComments,
+                    Regex.Escape(param) + @"\s*=\s*@[A-Za-z]\w*(?=(?:[^']*'[^']*')*[^']*$)");
+                if (isLeftSideOfAssignment)
+                    continue;
+
+                // This is a standalone parameter
+                if (set.Add(param) || allowRepetition)
+                    parameters.Add(param);
+            }
 
             return parameters;
         }
@@ -170,7 +189,7 @@ namespace ByteForge.Toolkit
                 if (!(prm is SqlParameter sqlParam))
                     throw new NotSupportedException("Only SQL Server supports table-valued parameters.");
                 sqlParam.SqlDbType = SqlDbType.Structured;
-                sqlParam.TypeName = $"dbo.{dt.TableName}";
+                sqlParam.TypeName = dt.TableName;
                 return;
             }
 

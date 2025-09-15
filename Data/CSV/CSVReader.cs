@@ -51,15 +51,6 @@ namespace ByteForge.Toolkit
         }
 
         /// <summary>
-        /// Delegate for processing CSV data rows (obsolete).
-        /// </summary>
-        /// <param name="columns">The column headers.</param>
-        /// <param name="values">The field values for the current row.</param>
-        /// <param name="rawLine">The raw CSV line.</param>
-        [Obsolete("Use RowHandler instead. DataProcessor will be removed in a future version.")]
-        public delegate void CSVDataProcessorDelegate(string[] columns, string[] values, string rawLine);
-
-        /// <summary>
         /// Delegate for handling CSV rows with status information.
         /// </summary>
         /// <param name="row">Dictionary mapping column names to field values.</param>
@@ -67,13 +58,6 @@ namespace ByteForge.Toolkit
         /// <param name="rawLine">The raw CSV line.</param>
         /// <returns>True to continue processing, false to stop.</returns>
         public delegate bool CSVRowProcessorDelegate(IDictionary<string, string> row, CSVRowStatus status, string rawLine);
-
-        /// <summary>
-        /// Gets or sets the delegate to process the data (obsolete).
-        /// </summary>
-        [Obsolete("Use RowHandler instead. DataProcessor will be removed in a future version.")]
-        public CSVDataProcessorDelegate DataProcessor { get; set; }
-
         /// <summary>
         /// Gets or sets the delegate to handle CSV rows with status information.
         /// </summary>
@@ -90,18 +74,6 @@ namespace ByteForge.Toolkit
         public CSVFormat Format { get; set; }
 
         /// <summary>
-        /// Reads the CSV file and processes the data.
-        /// </summary>
-        /// <param name="filePath">The path to the CSV file.</param>
-        /// <param name="dataProcessor">The action to process the data.</param>
-        [Obsolete("Use ReadFile with RowHandler instead. This method will be removed in a future version.")]
-        public static void ReadFile(string filePath, CSVDataProcessorDelegate dataProcessor)
-        {
-            var reader = new CSVReader { DataProcessor = dataProcessor };
-            reader.ReadFile(filePath);
-        }
-
-        /// <summary>
         /// Reads the CSV file and processes the data using the new RowHandler.
         /// </summary>
         /// <param name="filePath">The path to the CSV file.</param>
@@ -110,18 +82,6 @@ namespace ByteForge.Toolkit
         {
             var reader = new CSVReader { RowHandler = rowHandler };
             using var stream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.Read);
-            reader.ReadStream(stream);
-        }
-
-        /// <summary>
-        /// Reads the provided stream and processes the CSV data.
-        /// </summary>
-        /// <param name="stream">The stream to read from.</param>
-        /// <param name="dataProcessor">The action to process the data.</param>
-        [Obsolete("Use ReadStream with RowHandler instead. This method will be removed in a future version.")]
-        public static void ReadStream(Stream stream, CSVDataProcessorDelegate dataProcessor)
-        {
-            var reader = new CSVReader { DataProcessor = dataProcessor };
             reader.ReadStream(stream);
         }
 
@@ -165,10 +125,8 @@ namespace ByteForge.Toolkit
         {
             if (stream == null)
                 throw new ArgumentNullException(nameof(stream));
-#pragma warning disable CS0618 // Keept for backward compatibility
-            if (DataProcessor == null && RowHandler == null)
-                throw new InvalidOperationException("Either DataProcessor or RowHandler delegate must be set before reading.");
-#pragma warning restore CS0618 // Type or member is obsolete
+            if (RowHandler == null)
+                throw new InvalidOperationException("RowHandler delegate must be set before reading.");
 
             // If using RowHandler, we can choose to not throw on malformed rows
             var throwExceptions = RowHandler == null;
@@ -242,18 +200,9 @@ namespace ByteForge.Toolkit
                 // Process valid row
                 try
                 {
-                    if (RowHandler != null)
-                    {
-                        var row = BuildRowDictionary(columns, values);
-                        if (!RowHandler(row, CSVRowStatus.OK, line))
-                            break; // Stop processing if handler returns false
-                    }
-                    else
-                    {
-#pragma warning disable CS0618 // Keep for backward compatibility
-                        DataProcessor?.Invoke(columns, values, line);
-#pragma warning restore CS0618 // Type or member is obsolete
-                    }
+                    var row = BuildRowDictionary(columns, values);
+                    if (!RowHandler(row, CSVRowStatus.OK, line))
+                        break; // Stop processing if handler returns false
                 }
                 catch (Exception ex)
                 {
@@ -277,7 +226,7 @@ namespace ByteForge.Toolkit
         /// <returns>A dictionary mapping column names to field values.</returns>
         private static IDictionary<string, string> BuildRowDictionary(string[] columns, string[] values)
         {
-            var row = new Dictionary<string, string>();
+            var row = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
             for (var i = 0; i < columns.Length; i++)
             {
                 row[columns[i]] = i < values.Length ? values[i] : string.Empty;
