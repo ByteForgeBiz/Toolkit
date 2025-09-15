@@ -39,9 +39,9 @@ namespace ByteForge.Toolkit
         /// <param name="script">The SQL script to execute.</param>
         /// <param name="arguments">Optional. The arguments for the SQL script.</param>
         /// <param name="captureResults">Indicates whether to capture the results of the script execution.</param>
-                /// <returns>The result of the script execution.</returns>
+        /// <returns>The result of the script execution.</returns>
         /// <remarks>
-        /// Use <c>ExecuteScript</c> when you need to execute a complex SQL script that may contain multiple batches of commands separated by "GO".
+        /// Use <see cref="ExecuteScript(string, object[], bool)"/> when you need to execute a complex SQL script that may contain multiple batches of commands separated by "GO".
         /// This method is suitable for running DDL (Data Definition Language) statements, complex transactions, or scripts that require capturing multiple result sets.
         /// It returns a <see cref="ScriptExecutionResult"/> object containing detailed information about the execution, including success status, result sets, and any exceptions encountered.
         /// </remarks>
@@ -61,15 +61,14 @@ namespace ByteForge.Toolkit
 
                     using (var cmd = dbConn.CreateCommand())
                     {
-                        cmd.CommandTimeout = 240;
+                        cmd.CommandTimeout = Options.CommandTimeout;
                         cmd.CommandText = batch;
 
                         // Only process parameters for non-DDL statements
                         if (arguments != null && !IsDDLStatement(batch))
-                            AddParameters(cmd, batch, arguments);
+                            AddParametersToCommand(cmd, batch, arguments);
 
                         Log.Verbose($"Executing query:{Environment.NewLine}{batch}");
-                        Log.Debug(string.Join(", ", cmd.Parameters.Cast<SqlParameter>().Select(p => $"{p.ParameterName} = '{p.Value}'").ToArray()));
                         var timeStart = DateTime.Now;
 
                         if (captureResults)
@@ -165,31 +164,6 @@ namespace ByteForge.Toolkit
             // Return the last batch if there is one
             if (currentBatch.Length > 0)
                 yield return currentBatch.ToString();
-        }
-
-        /// <summary>
-        /// Parses the parameters from a SQL batch.
-        /// </summary>
-        /// <param name="sqlBatch">The SQL batch to parse for parameters.</param>
-        /// <returns>A list of parameter names found in the SQL batch.</returns>
-        private static List<string> ParseParameters(string sqlBatch)
-        {
-            var parameters = new List<string>();
-
-            // Remove /* */ style comments
-            var noBlockComments = Regex.Replace(sqlBatch, @"/\*.*?\*/", "", RegexOptions.Singleline);
-
-            // Remove -- style comments
-            var noComments = Regex.Replace(noBlockComments, @"--.+?$", "", RegexOptions.Multiline);
-
-            // Find parameters (excluding those in string literals)
-            var matches = Regex.Matches(noComments, @"(?<![a-zA-Z0-9_.])@[A-Za-z]\w*(?=(?:[^']*'[^']*')*[^']*$)");
-
-            foreach (Match match in matches)
-                if (!parameters.Contains(match.Value))
-                    parameters.Add(match.Value);
-
-            return parameters;
         }
     }
 }

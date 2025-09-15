@@ -172,7 +172,7 @@ namespace ByteForge.Toolkit
 
             // Handle null values
             if (value == null || value == DBNull.Value)
-                return (isNullable && !targetType.IsValueType) ? null : Activator.CreateInstance(targetType);
+                return (isNullable || !targetType.IsValueType) ? null : Activator.CreateInstance(targetType);
 
             var sourceType = value.GetType();
 

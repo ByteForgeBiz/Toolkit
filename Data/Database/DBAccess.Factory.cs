@@ -59,70 +59,15 @@ namespace ByteForge.Toolkit
         /// <returns>The created command.</returns>
         private IDbCommand CreateCommand(IDbConnection connection, string query, object[] arguments)
         {
-            arguments ??= Array.Empty<object>();
-            var matches = rxParam.Matches(query).Cast<Match>().Select(x => x.Value).ToList();
-            var prms = matches.Distinct().ToList();
-            if (prms.Count != arguments.Length)
-                throw new ParamArgumentsMismatchException(
-                    $"The number of parameters ({prms.Count}) does not match " +
-                    $"the number of arguments ({arguments.Length}).");
-
-            /*
-             * In SQL Server we can reuse the same parameter multiple times in a query
-             */
-            if (Options.DatabaseType == DataBaseType.SQLServer)
-                matches = prms;
-
             var cmd = connection.CreateCommand();
             cmd.CommandTimeout = Options.CommandTimeout;
             cmd.CommandText = query;
 
-            foreach(var m in matches)
-            {
-                var idx = prms.IndexOf(m);
-                var arg = arguments[idx];
-                var prm = CreateParameter(cmd, m, arg);
-                cmd.Parameters.Add(prm);
-
-                if (Options.DatabaseType == DataBaseType.ODBC)
-                {
-                    /*
-                     * ODBC does not support named parameters, 
-                     * so we need to replace the parameter name with a question mark
-                     */
-                    cmd.CommandText = cmd.CommandText.Replace(m, "?");
-                }
-            }
+            AddParametersToCommand(cmd, query, arguments);
 
             Log.Verbose($"Command created for query:{Environment.NewLine}{query}");
-            if (cmd.Parameters.Count > 0)
-                Log.Debug(string.Join(", " + Environment.NewLine, cmd.Parameters.Cast<DbParameter>().Select(p => $"{p.ParameterName} = '{p.Value}'")));
 
             return cmd;
-        }
-
-        /// <summary>
-        /// Creates and configures a new database parameter for the specified command.
-        /// </summary>
-        /// <param name="cmd">The database command to which the parameter will be added. Must not be <see langword="null"/>.</param>
-        /// <param name="name">The name of the parameter. Must not be <see langword="null"/> or empty.</param>
-        /// <param name="value">The value to assign to the parameter. Can be <see langword="null"/>.</param>
-        /// <returns>A configured <see cref="IDataParameter"/> instance with the specified name and value.</returns>
-        /// <remarks>
-        /// If the <paramref name="value"/> is a string and the <c>AutoTrimStrings</c> option is enabled, 
-        /// leading and trailing whitespace will be removed from the string before assigning it to the
-        /// parameter.<br/>
-        /// The method also determines and sets the appropriate database type for the parameter based on its value.
-        /// </remarks>
-        private IDataParameter CreateParameter(IDbCommand cmd, string name, object value)
-        {
-            var prm = cmd.CreateParameter();
-            prm.ParameterName = name;
-            prm.Value = value ?? DBNull.Value;
-            if (Options.AutoTrimStrings && prm.Value is string str)
-                prm.Value = str.Trim();
-            DefineDbType(prm, prm.Value);
-            return prm;
         }
     }
 }
