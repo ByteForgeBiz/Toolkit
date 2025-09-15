@@ -349,7 +349,7 @@ namespace ByteForge.Toolkit
         /// <returns>The result of the function execution.</returns>
         private T TimeFunc<T>(Func<T> func)
         {
-            var start = DateTime.Now;
+            var watch = new System.Diagnostics.Stopwatch();
             var hasError = false;
             try
             {
@@ -363,7 +363,8 @@ namespace ByteForge.Toolkit
             }
             finally
             {
-                var elapsed = DateTime.Now - start;
+                watch.Stop();
+                var elapsed = watch.Elapsed;
                 if (hasError)
                     Log.Warning($"Query failed after {elapsed}.");
                 else

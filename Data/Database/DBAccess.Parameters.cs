@@ -20,12 +20,12 @@ namespace ByteForge.Toolkit
         /// Adds parameters to a command if applicable.
         /// </summary>
         /// <param name="cmd">The command to which parameters will be added.</param>
-        /// <param name="batch">The SQL batch containing the parameters.</param>
+        /// <param name="query">The SQL batch containing the parameters.</param>
         /// <param name="arguments">The arguments to be added as parameters.</param>
         /// <exception cref="ParamArgumentsMismatchException">Thrown when the number of parameters does not match the number of arguments.</exception>
-        private void AddParameters(IDbCommand cmd, string batch, object[] arguments)
+        private void AddParameters(IDbCommand cmd, string query, object[] arguments)
         {
-            var parameters = ParseParameters(batch);
+            var parameters = ParseParameters(query);
             if (parameters.Count != arguments.Length)
                 throw new ParamArgumentsMismatchException(
                     $"The number of parameters ({parameters.Count}) does not match " +
