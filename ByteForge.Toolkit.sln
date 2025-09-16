@@ -10,7 +10,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		.gitignore = .gitignore
 		ByteForge.Tasks.targets = ByteForge.Tasks.targets
 		CLAUDE.md = CLAUDE.md
-		robo.rcj = robo.rcj
+		.claude\settings.local.json = .claude\settings.local.json
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ByteForge.Toolkit.Tests", "Tests\ByteForge.Toolkit.Tests\ByteForge.Toolkit.Tests.csproj", "{571B41CC-0319-4F27-ABF6-CCEFBEBC6FC4}"
