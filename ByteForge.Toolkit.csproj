@@ -158,7 +158,10 @@
     <Compile Include="Data\CSV\CSVRecord.cs" />
     <Compile Include="Data\CSV\ICSVRecord.cs" />
     <Compile Include="Data\CSV\ValidationErrors.cs" />
-    <Compile Include="Data\Database\BulkDbProcessor.cs" />
+    <Compile Include="Data\Database\BulkDbProcessor.Core.cs" />
+    <Compile Include="Data\Database\BulkDbProcessor.Operations.cs" />
+    <Compile Include="Data\Database\BulkDbProcessor.SqlGeneration.cs" />
+    <Compile Include="Data\Database\BulkDbProcessor.TableManagement.cs" />
     <Compile Include="Data\Database\DBAccess.Factory.cs" />
     <Compile Include="Data\Database\DBAccess.Logging.cs" />
     <Compile Include="Data\Database\DBAccess.Methods.cs" />

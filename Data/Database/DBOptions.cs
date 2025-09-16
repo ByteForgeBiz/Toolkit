@@ -207,7 +207,6 @@ namespace ByteForge.Toolkit
         [ConfigName("bAutoTrimStrings")]
         public bool AutoTrimStrings { get; set; } = true;
 
-
         /// <summary>
         /// Gets or sets a value indicating whether null strings are allowed.
         /// </summary>
