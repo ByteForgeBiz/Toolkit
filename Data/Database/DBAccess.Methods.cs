@@ -210,7 +210,7 @@ namespace ByteForge.Toolkit
         public T GetRecord<T>(string query, params object[] arguments) where T : class, new()
         {
             var row = GetRecord(query, arguments);
-            return TypeConverter.ConvertDataRowTo<T>(row);
+            return TypeConverter.ConvertDataRowTo<T>(row, Options.AllowNullStrings);
         }
 
         /// <summary>
@@ -242,7 +242,7 @@ namespace ByteForge.Toolkit
         public T[] GetRecords<T>(string query, params object[] arguments) where T : class, new()
         {
             var rows = GetRecords(query, arguments);
-            return rows?.Count > 0 ? rows.Cast<DataRow>().Select(r => TypeConverter.ConvertDataRowTo<T>(r)).ToArray() : Array.Empty<T>();
+            return rows?.Count > 0 ? rows.Cast<DataRow>().Select(r => TypeConverter.ConvertDataRowTo<T>(r, Options.AllowNullStrings)).ToArray() : Array.Empty<T>();
         }
 
         /// <summary>

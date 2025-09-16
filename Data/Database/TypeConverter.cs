@@ -29,11 +29,12 @@ namespace ByteForge.Toolkit
         /// </summary>
         /// <typeparam name="T">The type to convert the DataRow to. Must be a class with a parameterless constructor.</typeparam>
         /// <param name="row">The <see cref="DataRow"/> to convert.</param>
+        /// <param name="allowNullStrings">If <see langword="true"/>, string properties will be set to null if the corresponding <see cref="DataRow"/> column is <see cref="DBNull"/>; otherwise, they will be set to an empty string.</param>
         /// <returns>An instance of <typeparamref name="T"/> with properties set from the DataRow.</returns>
-        public static T ConvertDataRowTo<T>(DataRow row) where T : class, new()
+        public static T ConvertDataRowTo<T>(DataRow row, bool allowNullStrings = false) where T : class, new()
         {
             var obj = new T();
-            PopulateObjectFromDataRow(row, obj);
+            PopulateObjectFromDataRow(row, obj, allowNullStrings);
             return obj;
         }
 
@@ -44,9 +45,10 @@ namespace ByteForge.Toolkit
         /// <typeparam name="T">The type of the object to populate.</typeparam>
         /// <param name="row">The <see cref="DataRow"/> containing the data to populate the object.</param>
         /// <param name="obj">The object whose properties will be populated.</param>
-        public static void PopulateObjectFromDataRow<T>(DataRow row, T obj) where T : class
+        /// <param name="allowNullStrings">If <see langword="true"/>, string properties will be set to null if the corresponding <see cref="DataRow"/> column is <see cref="DBNull"/>; otherwise, they will be set to an empty string.</param>
+        public static void PopulateObjectFromDataRow<T>(DataRow row, T obj, bool allowNullStrings = false) where T : class
         {
-            PopulateObjectFromDataRow(row, (object)obj);
+            PopulateObjectFromDataRow(row, (object)obj, allowNullStrings);
         }
 
         /// <summary>
@@ -54,6 +56,7 @@ namespace ByteForge.Toolkit
         /// </summary>
         /// <param name="row">The <see cref="DataRow"/> containing the data to populate the object. Cannot be <see langword="null"/>.</param>
         /// <param name="obj">The object whose properties will be populated. Cannot be <see langword="null"/>.</param>
+        /// <param name="allowNullStrings">If <see langword="true"/>, string properties will be set to null if the corresponding <see cref="DataRow"/> column is <see cref="DBNull"/>; otherwise, they will be set to an empty string.</param>
         /// <remarks>
         /// This method maps the columns in the <paramref name="row"/> to the properties of the <paramref name="obj"/><br/>
         /// based on the property names or the <see cref="DBColumnAttribute"/> applied to the properties.<br/>  
@@ -63,7 +66,7 @@ namespace ByteForge.Toolkit
         /// The method uses a cached mapping of property-to-column names for performance optimization.
         /// Supports custom converters specified in the <see cref="DBColumnAttribute"/>.
         /// </remarks>
-        public static void PopulateObjectFromDataRow(DataRow row, object obj)
+        public static void PopulateObjectFromDataRow(DataRow row, object obj, bool allowNullStrings = false)
         {
             if (row == null || obj == null)
                 return;
@@ -90,7 +93,7 @@ namespace ByteForge.Toolkit
                 var colName = kvp.Value;
 
                 if (row.Table.Columns.Contains(colName))
-                    SetPropertyValue(obj, prop, row[colName], row.Table.TableName);
+                    SetPropertyValue(obj, prop, row[colName], row.Table.TableName, allowNullStrings);
             }
         }
 
@@ -101,7 +104,8 @@ namespace ByteForge.Toolkit
         /// <param name="property">The property to set.</param>
         /// <param name="columnValue">The raw value from the DataRow column.</param>
         /// <param name="tableName">The name of the table for logging purposes.</param>
-        private static void SetPropertyValue(object obj, PropertyInfo property, object columnValue, string tableName)
+        /// <param name="allowNullStrings">If <see langword="true"/>, string properties will be set to null if the corresponding <see cref="DataRow"/> column is <see cref="DBNull"/>; otherwise, they will be set to an empty string.</param>
+        private static void SetPropertyValue(object obj, PropertyInfo property, object columnValue, string tableName, bool allowNullStrings)
         {
             try
             {
@@ -125,7 +129,7 @@ namespace ByteForge.Toolkit
                 else
                     convertedValue = ConvertTo(property.PropertyType, columnValue);
 
-                if (property.PropertyType == typeof(string) && convertedValue == null)
+                if (property.PropertyType == typeof(string) && convertedValue == null && !allowNullStrings)
                     convertedValue = string.Empty;
 
                 property.SetValue(obj, convertedValue);
@@ -148,7 +152,7 @@ namespace ByteForge.Toolkit
         /// <typeparam name="T">The type to convert the value to.</typeparam>
         /// <param name="value">The value to convert.</param>
         /// <returns>The converted value of type <typeparamref name="T"/>.</returns>
-        public static T ConvertTo<T>(object value) => (T)ConvertTo(typeof(T), value);
+        public static T ConvertTo<T>(object value, bool allowNullString = false) => (T)ConvertTo(typeof(T), value);
 
         /// <summary>
         /// Converts the specified value to the specified <see cref="Type"/>.
@@ -157,7 +161,7 @@ namespace ByteForge.Toolkit
         /// <param name="targetType">The type to convert the value to.</param>
         /// <param name="value">The value to convert.</param>
         /// <returns>The converted value as an object.</returns>
-        public static object ConvertTo(Type targetType, object value)
+        public static object ConvertTo(Type targetType, object value, bool allowNullString = false)
         {
             if (targetType == null)
                 throw new ArgumentNullException(nameof(targetType));

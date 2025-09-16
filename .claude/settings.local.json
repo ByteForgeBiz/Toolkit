@@ -11,7 +11,8 @@
       "Bash(dotnet restore:*)",
       "Bash(msbuild:*)",
       "Bash(BuildSolution.bat Debug)",
-      "Bash(\"C:\\Users\\pauls\\source\\TelecomInc\\ByteForge.Toolkit\\Tests\\ByteForge.Toolkit.Tests\\BuildSolution.bat\" Debug)"
+      "Bash(\"C:\\Users\\pauls\\source\\TelecomInc\\ByteForge.Toolkit\\Tests\\ByteForge.Toolkit.Tests\\BuildSolution.bat\" Debug)",
+      "Bash(sqlcmd:*)"
     ],
     "deny": [],
     "ask": []

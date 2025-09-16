@@ -57,7 +57,8 @@ namespace ByteForge.Toolkit.Tests.Helpers
                 UseEncryption = false,
                 ConnectionTimeout = TestConnectionTimeout,
                 CommandTimeout = TestCommandTimeout,
-                AutoTrimStrings = true
+                AutoTrimStrings = true,
+                AllowNullStrings = true
             };
         }
 

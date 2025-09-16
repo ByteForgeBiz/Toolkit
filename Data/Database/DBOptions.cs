@@ -207,6 +207,20 @@ namespace ByteForge.Toolkit
         [ConfigName("bAutoTrimStrings")]
         public bool AutoTrimStrings { get; set; } = true;
 
+
+        /// <summary>
+        /// Gets or sets a value indicating whether null strings are allowed.
+        /// </summary>
+        /// <value>
+        /// <see langword="true" /> if null strings are allowed; otherwise, <see langword="false" />. Defaults to <see langword="false" />."
+        /// </value>
+        /// <remarks>
+        /// When enabled, string properties can be set to null and will be stored as NULL in the database.
+        /// </remarks>
+        [DefaultValue(false)]
+        [ConfigName("bAllowNullStrings")]
+        public bool AllowNullStrings { get; set; } = false;
+
         /// <summary>
         /// Gets or sets the database user name in a clear format.
         /// </summary>

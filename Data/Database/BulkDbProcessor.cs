@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using static ByteForge.Toolkit.DBAccess;
 using System.Threading;
+using System.Diagnostics;
 
 namespace ByteForge.Toolkit
 {
@@ -438,7 +439,7 @@ namespace ByteForge.Toolkit
                 if (propType == typeof(string))
                 {
                     var columnAttr = prop.GetCustomAttribute<DBColumnAttribute>();
-                    if (columnAttr?.MaxLength == null)
+                    if (columnAttr?.MaxLength <= 0)
                     {
                         var column = dt.Columns[mappedColumn];
                         column.MaxLength = Math.Max(column.MaxLength, (propValue?.ToString() ?? "").Length);
@@ -624,6 +625,11 @@ namespace ByteForge.Toolkit
 
         private string GenerateCreateTableSql(DataTable dt, string tableName, bool dropTable)
         {
+            if (string.IsNullOrWhiteSpace(tableName))
+                throw new ArgumentException("Table name cannot be null or empty", nameof(tableName));
+
+            tableName = EscapeObjectName(tableName);
+
             var sql = new StringBuilder();
             // Drop the table if it already exists
             if (dropTable)
@@ -638,6 +644,8 @@ namespace ByteForge.Toolkit
             sql.AppendLine("BEGIN");
             sql.AppendLine($"CREATE TABLE {tableName}");
             sql.AppendLine("(");
+
+            var colList = dt.Columns.Cast<DataColumn>().Select(c => c.ColumnName);
 
             var columnDefinitions = new StringBuilder();
             foreach (DataColumn column in dt.Columns)
@@ -654,24 +662,176 @@ namespace ByteForge.Toolkit
             sql.AppendLine(")");
 
             // Add primary key constraint if defined
-            tableName = tableName.Replace("[", "").Replace("]", "").Substring(tableName.LastIndexOf('.') + 1);
+            var tableSuffix = ConvertToSuffix(tableName);
 
             if (PrimaryKeys.Length > 0)
-                sql.AppendLine($"ALTER TABLE {tableName} ADD CONSTRAINT PK_{tableName} PRIMARY KEY ({string.Join(", ", PrimaryKeys)})");
+                sql.AppendLine($"ALTER TABLE {tableName} ADD CONSTRAINT PK_{tableSuffix} PRIMARY KEY ({string.Join(", ", PrimaryKeys)})");
 
             // Add unique constraints if defined
-            foreach (var uniqueCol in UniqueIndexes)
-                sql.AppendLine($"CREATE UNIQUE INDEX IX_{tableName}_{uniqueCol} ON {tableName} ({uniqueCol})");
+            foreach (var uniqueCol in UniqueIndexes.Intersect(colList))
+                sql.AppendLine($"CREATE UNIQUE INDEX IX_{tableSuffix}_{uniqueCol} ON {tableName} ({uniqueCol})");
 
             // Add indexes if defined
-            foreach (var indexCol in Indexes)
-                sql.AppendLine($"CREATE INDEX IX_{tableName}_{indexCol} ON {tableName} ({indexCol})");
+            foreach (var indexCol in Indexes.Intersect(colList))
+                sql.AppendLine($"CREATE INDEX IX_{tableSuffix}_{indexCol} ON {tableName} ({indexCol})");
 
             sql.AppendLine("END");
             sql.AppendLine("GO");
             var sqlScript = sql.ToString();
             return sqlScript;
         }
+
+        public static string EscapeObjectName(string objectName)
+        {
+            if (string.IsNullOrEmpty(objectName))
+                throw new ArgumentException("Object name cannot be null or empty", nameof(objectName));
+
+            var parts = ParseObjectName(objectName);
+            return string.Join(".", parts.Select(EscapeIdentifier));
+        }
+
+        public static string ConvertToSuffix(string objectName)
+        {
+            if (string.IsNullOrEmpty(objectName))
+                throw new ArgumentException("Object name cannot be null or empty", nameof(objectName));
+
+            var parts = ParseObjectName(objectName);
+            // Use the last part (table name) for the suffix
+            string tableName = parts.LastOrDefault() ?? "";
+
+            if (string.IsNullOrEmpty(tableName))
+                return "";
+
+            var result = new StringBuilder();
+
+            foreach (char c in tableName)
+            {
+                if (char.IsLetterOrDigit(c))
+                {
+                    result.Append(c);
+                }
+                else if (char.IsWhiteSpace(c) || c == '-' || c == '.' || c == '[' || c == ']')
+                {
+                    // Convert common separators to underscore
+                    if (result.Length > 0 && result[result.Length - 1] != '_')
+                        result.Append('_');
+                }
+                // Skip other special characters entirely
+            }
+
+            // Clean up the result
+            string suffix = result.ToString().Trim('_');
+
+            // Ensure it starts with a letter or underscore
+            if (!string.IsNullOrEmpty(suffix) && char.IsDigit(suffix[0]))
+                suffix = "_" + suffix;
+
+            // If result is empty or invalid, provide a fallback
+            if (string.IsNullOrEmpty(suffix) || !IsValidIdentifier(suffix))
+                suffix = "Table";
+
+            return suffix;
+        }
+
+        private static bool IsValidIdentifier(string identifier)
+        {
+            if (string.IsNullOrEmpty(identifier))
+                return false;
+
+            // First character must be letter or underscore
+            if (!char.IsLetter(identifier[0]) && identifier[0] != '_')
+                return false;
+
+            // Remaining characters must be letters, digits, or underscores
+            return identifier.Skip(1).All(c => char.IsLetterOrDigit(c) || c == '_');
+        }
+
+        private static List<string> ParseObjectName(string objectName)
+        {
+            var parts = new List<string>();
+            var currentPart = new StringBuilder();
+            var inBrackets = false;
+
+            for (var i = 0; i < objectName.Length; i++)
+            {
+                var c = objectName[i];
+
+                if (c == '[' && !inBrackets)
+                {
+                    inBrackets = true;
+                    // Don't include the opening bracket in the part
+                }
+                else if (c == ']' && inBrackets)
+                {
+                    // Check for escaped bracket ]]
+                    if (i + 1 < objectName.Length && objectName[i + 1] == ']')
+                    {
+                        currentPart.Append(']'); // Add single bracket to result
+                        i++; // Skip the second bracket
+                    }
+                    else
+                    {
+                        inBrackets = false;
+                        // Don't include the closing bracket in the part
+                    }
+                }
+                else if (c == '.' && !inBrackets)
+                {
+                    // This is a separator
+                    parts.Add(currentPart.ToString());
+                    currentPart.Clear();
+                }
+                else
+                {
+                    currentPart.Append(c);
+                }
+            }
+
+            // Add the last part
+            if (currentPart.Length > 0)
+                parts.Add(currentPart.ToString());
+
+            return parts;
+        }
+
+        private static string EscapeIdentifier(string identifier)
+        {
+            if (string.IsNullOrEmpty(identifier))
+                return identifier;
+
+            // Escape any existing square brackets by doubling them
+            string escaped = identifier.Replace("[", "[[").Replace("]", "]]");
+
+            // Always wrap in square brackets for safety
+            return $"[{escaped}]";
+        }
+
+        /*
+        // Usage examples and tests:
+        public static void TestEscapeFunction()
+        {
+            Console.WriteLine("=== Simple Names ===");
+            Console.WriteLine(EscapeObjectName("Users"));                           // [Users]
+            Console.WriteLine(EscapeObjectName("My Table"));                        // [My Table]
+
+            Console.WriteLine("\n=== Two-Part Names ===");
+            Console.WriteLine(EscapeObjectName("dbo.Users"));                       // [dbo].[Users]
+            Console.WriteLine(EscapeObjectName("[dbo].Users"));                     // [dbo].[Users]
+            Console.WriteLine(EscapeObjectName("dbo.[User Table]"));                // [dbo].[User Table]
+            Console.WriteLine(EscapeObjectName("[dbo].[User Table]"));              // [dbo].[User Table]
+
+            Console.WriteLine("\n=== Three-Part Names ===");
+            Console.WriteLine(EscapeObjectName("MyDB.dbo.Users"));                  // [MyDB].[dbo].[Users]
+            Console.WriteLine(EscapeObjectName("[My DB].[dbo].[Users]"));           // [My DB].[dbo].[Users]
+            Console.WriteLine(EscapeObjectName("MyDB.[dbo].[User Table]"));         // [MyDB].[dbo].[User Table]
+
+            Console.WriteLine("\n=== Complex Cases ===");
+            Console.WriteLine(EscapeObjectName("[Table[With]Brackets]"));           // [Table[[With]]Brackets]
+            Console.WriteLine(EscapeObjectName("DB.[Schema].[Table[Bracket]]"));    // [DB].[Schema].[Table[[Bracket]]]
+            Console.WriteLine(EscapeObjectName("[DB.With.Dots].[dbo].[Table]"));    // [DB.With.Dots].[dbo].[Table]
+            Console.WriteLine(EscapeObjectName("[Tricky]]Name].dbo.Table"));        // [Tricky]]]]Name].[dbo].[Table]
+        }
+        */
 
         /// <summary>
         /// Gets the CLR type that corresponds to the specified DbType.
@@ -805,7 +965,7 @@ namespace ByteForge.Toolkit
                 // Check if MaxLength is explicitly set in the attribute first
                 var explicitMaxLength = columnAttr?.MaxLength;
 
-                var maxLength = explicitMaxLength ?? column.MaxLength;
+                var maxLength = explicitMaxLength > 0 ? explicitMaxLength : column.MaxLength;
                 if (maxLength <= 0)
                     return $"varchar({DEFAULT_VARCHAR_LENGTH})" + colSuffix;
                 if (maxLength > SQL2000_TEXT_THRESHOLD)
