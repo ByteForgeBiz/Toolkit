@@ -31,13 +31,13 @@ namespace ByteForge.Toolkit.Tests.Models
         /// Gets or sets the name of the bulk test entity.
         /// </summary>
         [DBColumn("Name", MaxLength = 200)]
-        public string Name { get; set; }
+        public string? Name { get; set; }
 
         /// <summary>
         /// Gets or sets the category of the bulk test entity.
         /// </summary>
         [DBColumn("Category", MaxLength = 100)]
-        public string Category { get; set; }
+        public string? Category { get; set; }
 
         /// <summary>
         /// Gets or sets the value associated with the bulk test entity.

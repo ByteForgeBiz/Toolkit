@@ -1,12 +1,8 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using ByteForge.Toolkit.Tests.Helpers;
 using ByteForge.Toolkit.Tests.Models;
 using FluentAssertions;
+
+#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
 
 namespace ByteForge.Toolkit.Tests.Unit.Data.Database
 {
@@ -25,6 +21,8 @@ namespace ByteForge.Toolkit.Tests.Unit.Data.Database
         private DBAccess _dbAccess;
         private const string BulkTestTableName = "BulkTestTempTable";
 
+#pragma warning disable IDE0060 // Called by test framework
+
         /// <summary>
         /// Verifies that the test database is properly configured before running tests.
         /// </summary>
@@ -35,6 +33,9 @@ namespace ByteForge.Toolkit.Tests.Unit.Data.Database
             var dbAccess = DatabaseTestHelper.CreateTestDBAccess();
             DatabaseTestHelper.AssertTestDatabaseSetup(dbAccess);
         }
+
+#pragma warning restore IDE0060
+
 
         /// <summary>
         /// Sets up a fresh DBAccess instance for each test.
@@ -155,7 +156,7 @@ namespace ByteForge.Toolkit.Tests.Unit.Data.Database
             processor.ProgressChanged += progress => progressReports.Add(progress);
 
             // Act
-            var result = processor.BulkInsert(_dbAccess, new[] { entity });
+            var result = processor.BulkInsert(_dbAccess, [entity]);
 
             // Assert
             result.Should().BeTrue();
@@ -216,7 +217,7 @@ namespace ByteForge.Toolkit.Tests.Unit.Data.Database
             processor.ProgressChanged += progress => progressReports.Add(progress);
 
             // Act
-            var result = processor.BulkInsert(_dbAccess, new BulkTestEntity[0]);
+            var result = processor.BulkInsert(_dbAccess, []);
 
             // Assert
             result.Should().BeTrue();
@@ -242,7 +243,7 @@ namespace ByteForge.Toolkit.Tests.Unit.Data.Database
             var entity = BulkTestEntity.Create("CREATE001", "Create Test Entity");
 
             // Act
-            var result = processor.BulkInsert(_dbAccess, new[] { entity });
+            var result = processor.BulkInsert(_dbAccess, [entity]);
 
             // Assert
             result.Should().BeTrue();
@@ -339,7 +340,7 @@ namespace ByteForge.Toolkit.Tests.Unit.Data.Database
             var mixedEntities = new List<BulkTestEntity>();
             
             // Add 3 updated versions of existing records
-            for (int i = 0; i < 3; i++)
+            for (var i = 0; i < 3; i++)
             {
                 mixedEntities.Add(existingEntities[i].CreateUpdatedCopy($"Updated {existingEntities[i].Name}", 999m));
             }
@@ -471,7 +472,7 @@ namespace ByteForge.Toolkit.Tests.Unit.Data.Database
             processor.BulkInsert(_dbAccess, entities);
 
             // Act
-            var result = processor.BulkDelete(_dbAccess, new BulkTestEntity[0]);
+            var result = processor.BulkDelete(_dbAccess, []);
 
             // Assert
             result.Should().BeTrue();
@@ -647,7 +648,7 @@ namespace ByteForge.Toolkit.Tests.Unit.Data.Database
             processor.ErrorOccurred += (message, ex) => errorMessages.Add(message);
 
             // Act
-            var result = processor.BulkInsert(_dbAccess, new[] { entity });
+            var result = processor.BulkInsert(_dbAccess, [entity]);
 
             // Assert - Should fail because table doesn't exist and won't be created
             result.Should().BeFalse();
@@ -664,7 +665,7 @@ namespace ByteForge.Toolkit.Tests.Unit.Data.Database
             // First create the table with some data
             var initialProcessor = new BulkDbProcessor<BulkTestEntity>(BulkTestTableName);
             var initialEntity = BulkTestEntity.Create("PRESERVE001", "Preserve Test");
-            initialProcessor.BulkInsert(_dbAccess, new[] { initialEntity });
+            initialProcessor.BulkInsert(_dbAccess, [initialEntity]);
 
             // Create new processor that won't drop the table
             var processor = new BulkDbProcessor<BulkTestEntity>(BulkTestTableName)
@@ -674,7 +675,7 @@ namespace ByteForge.Toolkit.Tests.Unit.Data.Database
             var newEntity = BulkTestEntity.Create("PRESERVE002", "Preserve Test 2");
 
             // Act
-            var result = processor.BulkInsert(_dbAccess, new[] { newEntity });
+            var result = processor.BulkInsert(_dbAccess, [newEntity]);
 
             // Assert
             result.Should().BeTrue();

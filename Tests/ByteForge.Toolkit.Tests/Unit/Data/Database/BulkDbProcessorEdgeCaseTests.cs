@@ -1,12 +1,9 @@
-using System;
-using System.Collections.Generic;
-using System.Data;
-using System.Linq;
-using System.Reflection;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using ByteForge.Toolkit.Tests.Helpers;
 using ByteForge.Toolkit.Tests.Models;
 using FluentAssertions;
+using System.Reflection;
+
+#pragma warning disable CS8602 // Dereference of a possibly null reference.
 
 namespace ByteForge.Toolkit.Tests.Unit.Data.Database
 {
@@ -22,8 +19,12 @@ namespace ByteForge.Toolkit.Tests.Unit.Data.Database
     {
         #region Test Setup and Cleanup
 
+#pragma warning disable CS8618
+        // Non-nullable field must contain a non-null value when exiting constructor.
+        // Consider adding the 'required' modifier or declaring as nullable.
         private DBAccess _dbAccess;
         private const string EdgeCaseTableName = "EdgeCaseTempTable";
+#pragma warning restore CS8618
 
         /// <summary>
         /// Verifies that the test database is properly configured before running tests.
@@ -154,7 +155,7 @@ namespace ByteForge.Toolkit.Tests.Unit.Data.Database
             var entity = new NoKeyEntity { Id = 1, Name = "Test" };
 
             // Act & Assert
-            var action = new Action(() => processor.BulkUpsert(_dbAccess, new[] { entity }));
+            var action = new Action(() => processor.BulkUpsert(_dbAccess, [entity]));
             
             action.Should().Throw<InvalidOperationException>()
                   .And.Message.Should().Contain("must have either non-identity primary key(s) or unique index(es) for upsert operations");
@@ -171,7 +172,7 @@ namespace ByteForge.Toolkit.Tests.Unit.Data.Database
             var entity = new NoKeyEntity { Id = 1, Name = "Test" };
 
             // Act & Assert
-            var action = new Action(() => processor.BulkDelete(_dbAccess, new[] { entity }));
+            var action = new Action(() => processor.BulkDelete(_dbAccess, [entity]));
             
             action.Should().Throw<InvalidOperationException>()
                   .And.Message.Should().Contain("must have either non-identity primary key(s) or unique index(es) for upsert operations");
@@ -204,7 +205,7 @@ namespace ByteForge.Toolkit.Tests.Unit.Data.Database
             var entity = new IdentityOnlyEntity { Id = 1, Name = "Test" };
 
             // Act & Assert
-            var action = new Action(() => processor.BulkUpsert(_dbAccess, new[] { entity }));
+            var action = new Action(() => processor.BulkUpsert(_dbAccess, [entity]));
             
             action.Should().Throw<InvalidOperationException>()
                   .And.Message.Should().Contain("must have either non-identity primary key(s) or unique index(es) for upsert operations");
@@ -251,7 +252,7 @@ namespace ByteForge.Toolkit.Tests.Unit.Data.Database
             try
             {
                 // Act
-                var result = processor.BulkInsert(_dbAccess, new[] { entity });
+                var result = processor.BulkInsert(_dbAccess, [entity]);
 
                 // Assert
                 result.Should().BeTrue();
@@ -312,7 +313,7 @@ namespace ByteForge.Toolkit.Tests.Unit.Data.Database
             };
 
             // Act
-            var result = processor.BulkInsert(_dbAccess, new[] { entity });
+            var result = processor.BulkInsert(_dbAccess, [entity]);
 
             // Assert
             result.Should().BeTrue();
@@ -346,7 +347,7 @@ namespace ByteForge.Toolkit.Tests.Unit.Data.Database
             };
 
             // Act
-            var result = processor.BulkInsert(_dbAccess, new[] { entity });
+            var result = processor.BulkInsert(_dbAccess, [entity]);
 
             // Assert
             result.Should().BeTrue();
@@ -409,7 +410,7 @@ namespace ByteForge.Toolkit.Tests.Unit.Data.Database
             processor.ErrorOccurred += (message, ex) => errorMessages.Add(message);
 
             // Act
-            var result = processor.BulkInsert(_dbAccess, new[] { entity });
+            var result = processor.BulkInsert(_dbAccess, [entity]);
 
             // Assert
             result.Should().BeTrue();
@@ -430,7 +431,7 @@ namespace ByteForge.Toolkit.Tests.Unit.Data.Database
             var entity = BulkTestEntity.Create("NULLEVENT001", "Null Event Test");
 
             // Act & Assert - Should not throw even with null events
-            var action = new Action(() => processor.BulkInsert(_dbAccess, new[] { entity }));
+            var action = new Action(() => processor.BulkInsert(_dbAccess, [entity]));
             action.Should().NotThrow();
 
             // Verify operation completed successfully
@@ -456,7 +457,7 @@ namespace ByteForge.Toolkit.Tests.Unit.Data.Database
             try
             {
                 // Act
-                var result = processor.BulkInsert(_dbAccess, new[] { entity });
+                var result = processor.BulkInsert(_dbAccess, [entity]);
 
                 // Assert
                 result.Should().BeTrue();

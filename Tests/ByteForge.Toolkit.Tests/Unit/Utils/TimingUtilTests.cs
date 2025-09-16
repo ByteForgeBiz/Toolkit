@@ -26,16 +26,16 @@ namespace ByteForge.Toolkit.Tests.Unit.Utils
             public LogLevel LastLogLevel { get; private set; }
             public int LogCallCount { get; private set; }
 
-            public void Log(LogLevel level, string message, Exception ex = null) => LogMessage(level, ex == null ? message : $"{message} - {ex.Message}");
+            public void Log(LogLevel level, string message, Exception ex) => LogMessage(level, ex == null ? message : $"{message} - {ex.Message}");
             public void LogTrace(string message) => LogMessage(LogLevel.Trace, message);
             public void LogDebug(string message) => LogMessage(LogLevel.Debug, message);
             public void LogVerbose(string message) => LogMessage(LogLevel.Verbose, message);
             public void LogInfo(string message) => LogMessage(LogLevel.Info, message);
             public void LogNotice(string message) => LogMessage(LogLevel.Notice, message);
             public void LogWarning(string message) => LogMessage(LogLevel.Warning, message);
-            public void LogError(string message, Exception ex = null) => LogMessage(LogLevel.Error, ex == null ? message : $"{message} - {ex.Message}");
-            public void LogCritical(string message, Exception ex = null) => LogMessage(LogLevel.Critical, ex == null ? message : $"{message} - {ex.Message}");
-            public void LogFatal(string message, Exception ex = null) => LogMessage(LogLevel.Fatal, ex == null ? message : $"{message} - {ex.Message}");
+            public void LogError(string message, Exception ex) => LogMessage(LogLevel.Error, ex == null ? message : $"{message} - {ex.Message}");
+            public void LogCritical(string message, Exception ex) => LogMessage(LogLevel.Critical, ex == null ? message : $"{message} - {ex.Message}");
+            public void LogFatal(string message, Exception ex) => LogMessage(LogLevel.Fatal, ex == null ? message : $"{message} - {ex.Message}");
 
             private void LogMessage(LogLevel level, string message)
             {

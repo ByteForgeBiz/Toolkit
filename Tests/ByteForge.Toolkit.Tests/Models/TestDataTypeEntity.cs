@@ -22,7 +22,7 @@ namespace ByteForge.Toolkit.Tests.Models
         /// Gets or sets the string value for testing various string scenarios.
         /// </summary>
         [DBColumn("StringValue", MaxLength = 500)]
-        public string StringValue { get; set; }
+        public string? StringValue { get; set; }
 
         /// <summary>
         /// Gets or sets the integer value for testing 32-bit integer conversion.
@@ -104,7 +104,7 @@ namespace ByteForge.Toolkit.Tests.Models
         /// Gets or sets the binary value for testing binary data conversion.
         /// </summary>
         [DBColumn("BinaryValue")]
-        public byte[] BinaryValue { get; set; }
+        public byte[]? BinaryValue { get; set; }
 
         /// <summary>
         /// Gets or sets the XML value for testing XML data conversion.
@@ -113,7 +113,7 @@ namespace ByteForge.Toolkit.Tests.Models
         /// SQL Server XML type typically maps to string in .NET applications.
         /// </remarks>
         [DBColumn("XmlValue")]
-        public string XmlValue { get; set; }
+        public string? XmlValue { get; set; }
 
         /// <summary>
         /// Gets or sets the money value for testing currency conversion.
@@ -155,7 +155,7 @@ namespace ByteForge.Toolkit.Tests.Models
                 DateValue = new DateTime(2023, 12, 1),
                 TimeValue = new TimeSpan(14, 30, 45),
                 GuidValue = Guid.NewGuid(),
-                BinaryValue = new byte[] { 0x48, 0x65, 0x6C, 0x6C, 0x6F }, // "Hello" in bytes
+                BinaryValue = "Hello"u8.ToArray(), // "Hello" in bytes
                 XmlValue = "<test><value>123</value></test>",
                 MoneyValue = 1234.56m,
                 SmallMoneyValue = 567.89m
@@ -239,7 +239,7 @@ namespace ByteForge.Toolkit.Tests.Models
                 DateValue = DateTime.MinValue.Date,
                 TimeValue = TimeSpan.MinValue,
                 GuidValue = Guid.Empty,
-                BinaryValue = new byte[0],
+                BinaryValue = [],
                 XmlValue = "",
                 MoneyValue = -922337203685477.58m, // SQL Server money min value
                 SmallMoneyValue = -214748.36m // SQL Server smallmoney min value
@@ -267,7 +267,7 @@ namespace ByteForge.Toolkit.Tests.Models
                 DateValue = new DateTime(2023, 6, 15),
                 TimeValue = new TimeSpan(12, 0, 0),
                 GuidValue = Guid.NewGuid(),
-                BinaryValue = new byte[] { 0x54, 0x65, 0x73, 0x74, 0xDA, 0xA1, 0xB2 }, // "Test" + some binary
+                BinaryValue = [0x54, 0x65, 0x73, 0x74, 0xDA, 0xA1, 0xB2], // "Test" + some binary
                 XmlValue = "<test>Unicode: 中文测试</test>",
                 MoneyValue = 999.99m,
                 SmallMoneyValue = 123.45m

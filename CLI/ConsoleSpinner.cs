@@ -328,6 +328,9 @@ namespace ByteForge.Toolkit
             {
                 _isSpinning = false;
 
+                // It wasn't spinning, nothing to clear
+                if (IsConsoleRedirected) return;
+
                 // Clear the spinner character at the fixed position
                 lock (_globalConsoleLock)
                 {

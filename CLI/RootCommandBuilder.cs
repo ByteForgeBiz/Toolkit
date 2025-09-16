@@ -16,6 +16,7 @@ namespace ByteForge.Toolkit.CommandLine
     {
         private readonly RootCommand _rootCommand;
         private readonly HashSet<string> _loadedAssemblies = new HashSet<string>();
+        private readonly List<GlobalOption> _globalOptions = new List<GlobalOption>();
 
         /// <summary>
         /// Gets or sets a value indicating whether help is enabled for the command line parser.
@@ -61,6 +62,22 @@ namespace ByteForge.Toolkit.CommandLine
         /// Gets or sets a value indicating whether case sensitivity is enabled for command parsing.
         /// </summary>
         public bool EnableCaseSensitivity { get; set; }
+
+        /// <summary>
+        /// Gets or sets the action to be executed to display a banner before command parsing.
+        /// </summary>
+        public Action BannerAction { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether parameter explanation is enabled.
+        /// When enabled, details about parsed commands and arguments are displayed to the user.
+        /// </summary>
+        public bool EnableParameterExplanation { get; set; }
+
+        /// <summary>
+        /// Gets the collection of global options configured for this command builder.
+        /// </summary>
+        public IReadOnlyList<GlobalOption> GlobalOptions => _globalOptions.AsReadOnly();
 
         /// <summary>
         /// Initializes a new instance of the <see cref="RootCommandBuilder"/> class.
@@ -153,6 +170,76 @@ namespace ByteForge.Toolkit.CommandLine
         public RootCommandBuilder AddCommand(Command command)
         {
             _rootCommand.AddCommand(command);
+            return this;
+        }
+
+        /// <summary>
+        /// Configures a banner action to be executed before command parsing.
+        /// </summary>
+        /// <param name="bannerAction">The action to execute to display the banner.</param>
+        /// <returns>The current <see cref="RootCommandBuilder"/> instance, allowing for method chaining.</returns>
+        public RootCommandBuilder WithBanner(Action bannerAction)
+        {
+            BannerAction = bannerAction;
+            return this;
+        }
+
+        /// <summary>
+        /// Enables parameter explanation functionality that displays parsed command details.
+        /// </summary>
+        /// <param name="enable">Whether to enable parameter explanation.</param>
+        /// <returns>The current <see cref="RootCommandBuilder"/> instance, allowing for method chaining.</returns>
+        public RootCommandBuilder UseParameterExplanation(bool enable = true)
+        {
+            EnableParameterExplanation = enable;
+            return this;
+        }
+
+        /// <summary>
+        /// Adds a global option that is processed before command parsing and available to all commands.
+        /// </summary>
+        /// <param name="name">The name of the global option (without dashes).</param>
+        /// <param name="description">The description of the global option.</param>
+        /// <param name="action">The action to execute when the option is encountered.</param>
+        /// <param name="aliases">Custom aliases for the option.</param>
+        /// <returns>The current <see cref="RootCommandBuilder"/> instance, allowing for method chaining.</returns>
+        public RootCommandBuilder AddGlobalOption(string name, string description, Action action, params string[] aliases)
+        {
+            var option = new GlobalOption(name, description, action, false, aliases);
+            _globalOptions.Add(option);
+            return this;
+        }
+
+        /// <summary>
+        /// Adds a global option that expects a value and is processed before command parsing.
+        /// </summary>
+        /// <param name="name">The name of the global option (without dashes).</param>
+        /// <param name="description">The description of the global option.</param>
+        /// <param name="action">The action to execute when the option is encountered, receiving the option value.</param>
+        /// <param name="aliases">Custom aliases for the option.</param>
+        /// <returns>The current <see cref="RootCommandBuilder"/> instance, allowing for method chaining.</returns>
+        public RootCommandBuilder AddGlobalOption(string name, string description, Action<string> action, params string[] aliases)
+        {
+            var option = new GlobalOption(name, description, action, true, aliases);
+            _globalOptions.Add(option);
+            return this;
+        }
+
+        /// <summary>
+        /// Adds common global options for console logging control.
+        /// Adds --console/-c to enable console logging and --quiet/-q to disable it.
+        /// </summary>
+        /// <param name="enableConsoleAction">Action to execute when console logging should be enabled.</param>
+        /// <param name="disableConsoleAction">Action to execute when console logging should be disabled.</param>
+        /// <returns>The current <see cref="RootCommandBuilder"/> instance, allowing for method chaining.</returns>
+        public RootCommandBuilder AddConsoleLoggingOptions(Action enableConsoleAction = null, Action disableConsoleAction = null)
+        {
+            if (enableConsoleAction != null)
+                AddGlobalOption("console", "Enable console logging output", enableConsoleAction, "c");
+            
+            if (disableConsoleAction != null)
+                AddGlobalOption("quiet", "Suppress all console logging except errors", disableConsoleAction, "q");
+            
             return this;
         }
 
@@ -263,6 +350,13 @@ namespace ByteForge.Toolkit.CommandLine
         /// <returns>The configured parser.</returns>
         public CommandParser Build()
         {
+            // Generate aliases for global options
+            var usedNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            foreach (var globalOption in _globalOptions)
+            {
+                globalOption.GenerateAliases(usedNames);
+            }
+
             var builder = new CommandLineBuilder(_rootCommand);
 
             if (EnableHelp)
@@ -298,7 +392,7 @@ namespace ByteForge.Toolkit.CommandLine
             if (EnableCaseSensitivity)
                 tokenList = new ReadOnlyDictionary<string, string>(new Dictionary<string, string>());
 
-            return new CommandParser(systemParser, tokenList);
+            return new CommandParser(this, systemParser, tokenList);
         }
     }
 }

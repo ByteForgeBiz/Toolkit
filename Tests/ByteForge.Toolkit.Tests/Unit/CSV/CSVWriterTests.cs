@@ -7,6 +7,8 @@ using ByteForge.Toolkit;
 using ByteForge.Toolkit.Tests.Helpers;
 using FluentAssertions;
 
+#pragma warning disable CS8600 // Converting null literal or possible null value to non-nullable type.
+
 namespace ByteForge.Toolkit.Tests.Unit.CSV
 {
     [TestClass]

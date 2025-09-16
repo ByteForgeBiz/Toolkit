@@ -38,12 +38,12 @@ namespace ByteForge.Toolkit.Tests.Unit.Data.Database
         /// <param name="dbAccess">The DBAccess instance.</param>
         /// <param name="query">The SQL query to parse.</param>
         /// <returns>List of parameter names found in the query.</returns>
-        private List<string> InvokeParseParameters(DBAccess dbAccess, string query)
+        private List<string> InvokeParseParameters(DBAccess dbAccess, string? query)
         {
             var method = typeof(DBAccess).GetMethod("ParseParameters", BindingFlags.NonPublic | BindingFlags.Instance);
             method.Should().NotBeNull("ParseParameters method should exist");
             
-            var result = method.Invoke(dbAccess, new object[] { query });
+            var result = method.Invoke(dbAccess, [query]);
             return result as List<string>;
         }
 

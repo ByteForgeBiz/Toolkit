@@ -40,7 +40,7 @@ namespace ByteForge.Toolkit
 
         /// <summary>
         /// Populates an existing object of type <typeparamref name="T"/> with values from a <see cref="DataRow"/>.
-        /// This is a strongly-typed version of <see cref="PopulateObjectFromDataRow(DataRow, object)"/>.
+        /// This is a strongly-typed version of <see cref="PopulateObjectFromDataRow"/>.
         /// </summary>
         /// <typeparam name="T">The type of the object to populate.</typeparam>
         /// <param name="row">The <see cref="DataRow"/> containing the data to populate the object.</param>
@@ -152,7 +152,7 @@ namespace ByteForge.Toolkit
         /// <typeparam name="T">The type to convert the value to.</typeparam>
         /// <param name="value">The value to convert.</param>
         /// <returns>The converted value of type <typeparamref name="T"/>.</returns>
-        public static T ConvertTo<T>(object value, bool allowNullString = false) => (T)ConvertTo(typeof(T), value);
+        public static T ConvertTo<T>(object value) => (T)ConvertTo(typeof(T), value);
 
         /// <summary>
         /// Converts the specified value to the specified <see cref="Type"/>.
@@ -161,7 +161,7 @@ namespace ByteForge.Toolkit
         /// <param name="targetType">The type to convert the value to.</param>
         /// <param name="value">The value to convert.</param>
         /// <returns>The converted value as an object.</returns>
-        public static object ConvertTo(Type targetType, object value, bool allowNullString = false)
+        public static object ConvertTo(Type targetType, object value)
         {
             if (targetType == null)
                 throw new ArgumentNullException(nameof(targetType));

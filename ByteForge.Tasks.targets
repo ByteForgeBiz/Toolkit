@@ -12,9 +12,11 @@
   </PropertyGroup>
 
   <PropertyGroup>
+    <ThisDir>$([System.IO.Path]::GetDirectoryName('$(MSBuildThisFile)'))</ThisDir>
     <ParentDir>$([System.IO.Path]::GetFullPath('$(ProjectDir)\..'))</ParentDir>
-    <CentralLocationPath Condition="'$(CentralLocationPath)' == ''">$([System.IO.Path]::GetDirectoryName('$(MSBuildThisFile)'))</CentralLocationPath>
-    <CopyFiles>$([System.String]::new($(ParentDir)).EndsWith('TelecomInc').Equals(False))</CopyFiles>
+    <CentralLocationPath Condition="'$(CentralLocationPath)' == ''">$(ThisDir)</CentralLocationPath>
+    <CopyFiles>True</CopyFiles>
+    <CopyFiles Condition=" '$(ThisDir)' == '$(CentralLocationPath)' ">False</CopyFiles>
     <CentralVersionFile>$(CentralLocationPath)\version.txt</CentralVersionFile>
     <CleanupUnusedFilesAfterBuild Condition="'$(CleanupUnusedFilesAfterBuild)' == ''">true</CleanupUnusedFilesAfterBuild>
   </PropertyGroup>
@@ -281,8 +283,7 @@ catch (Exception ex)
                  @(Resource);
                  $(MSBuildProjectFile);
                  $(MSBuildProjectFile).user;
-                 $(MSBuildProjectDirectory)\.vs\**\*.*;
-                 $(MSBuildProjectDirectory)\.vscode\**\*.*;
+                 $(MSBuildProjectDirectory)\.*\**\*.*;
                  $(MSBuildProjectDirectory)\bin\**\*.*;
                  $(MSBuildProjectDirectory)\obj\**\*.*;
                  $(MSBuildProjectDirectory)\**\*.md" />

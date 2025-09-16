@@ -1,10 +1,7 @@
-using System;
-using System.Data;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using ByteForge.Toolkit.Tests.Helpers;
 using FluentAssertions;
+
+#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
 
 namespace ByteForge.Toolkit.Tests.Unit.Data.Database
 {
@@ -23,6 +20,8 @@ namespace ByteForge.Toolkit.Tests.Unit.Data.Database
 
         private DBAccess _dbAccess;
 
+#pragma warning disable IDE0060 // Called by test framework
+
         /// <summary>
         /// Verifies that the test database is properly configured before running tests.
         /// </summary>
@@ -33,6 +32,8 @@ namespace ByteForge.Toolkit.Tests.Unit.Data.Database
             var dbAccess = DatabaseTestHelper.CreateTestDBAccess();
             DatabaseTestHelper.AssertTestDatabaseSetup(dbAccess);
         }
+
+#pragma warning restore IDE0060
 
         /// <summary>
         /// Sets up a fresh DBAccess instance for each test.

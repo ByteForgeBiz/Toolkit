@@ -61,8 +61,8 @@ namespace ByteForge.Toolkit.Tests.Helpers
         /// <param name="because">The reason for the assertion.</param>
         public static void AssertCollectionsEquivalent<T>(IEnumerable<T> expected, IEnumerable<T> actual, string because = "")
         {
-            var expectedList = expected?.ToList() ?? new List<T>();
-            var actualList = actual?.ToList() ?? new List<T>();
+            var expectedList = expected?.ToList() ?? [];
+            var actualList = actual?.ToList() ?? [];
             
             actualList.Should().BeEquivalentTo(expectedList, because);
         }
@@ -132,7 +132,7 @@ namespace ByteForge.Toolkit.Tests.Helpers
         /// <param name="action">The action that should throw.</param>
         /// <param name="expectedMessage">The expected exception message (optional).</param>
         /// <returns>The thrown exception for further assertions.</returns>
-        public static TException AssertThrows<TException>(Action action, string expectedMessage = null) 
+        public static TException AssertThrows<TException>(Action action, string? expectedMessage = null) 
             where TException : Exception
         {
             var exception = action.Should().Throw<TException>().Which;

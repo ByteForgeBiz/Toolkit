@@ -49,7 +49,7 @@ namespace ByteForge.Toolkit.Tests.Helpers
         /// <param name="arrayItems">The array items.</param>
         /// <param name="additionalValues">Additional key-value pairs for the main section.</param>
         /// <returns>The path to the created configuration file.</returns>
-        public static string CreateConfigWithArray(string sectionName, string arrayName, string[] arrayItems, Dictionary<string, object> additionalValues = null)
+        public static string CreateConfigWithArray(string sectionName, string arrayName, string[] arrayItems, Dictionary<string, object>? additionalValues = null)
         {
             var sb = new StringBuilder();
             

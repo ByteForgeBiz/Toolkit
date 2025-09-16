@@ -520,7 +520,7 @@ ROLLBACK TRANSACTION;";
         /// <param name="operation">The operation that should throw an exception.</param>
         /// <param name="message">Optional message for the assertion.</param>
         /// <returns>The thrown exception for further validation.</returns>
-        public static TException AssertThrows<TException>(Action operation, string message = null)
+        public static TException AssertThrows<TException>(Action operation, string? message = null)
             where TException : Exception
         {
             var action = new Action(operation);

@@ -108,7 +108,6 @@ namespace ByteForge.Toolkit
         /// <returns>A configured <see cref="DataTable"/> with the appropriate schema.</returns>
         /// <remarks>
         /// The DataTable is configured based on the properties decorated with <see cref="DBColumnAttribute"/>,
-
         /// respecting column types, maximum lengths, auto-increment settings, and constraints.
         /// </remarks>
         protected virtual DataTable CreateDataTable()

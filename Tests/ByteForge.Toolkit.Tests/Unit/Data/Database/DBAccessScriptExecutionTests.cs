@@ -1,9 +1,7 @@
-using System;
-using System.Data;
-using System.Linq;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using FluentAssertions;
 using ByteForge.Toolkit.Tests.Helpers;
+using FluentAssertions;
+
+#pragma warning disable CS8602 // Dereference of a possibly null reference.
 
 namespace ByteForge.Toolkit.Tests.Unit.Data.Database
 {
