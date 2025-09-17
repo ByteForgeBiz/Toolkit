@@ -20,23 +20,11 @@ BuildSolution.bat
 BuildSolution.bat Release
 ```
 
-**Manual MSBuild commands (if needed):**
-```bash
-# Auto-detect and use appropriate MSBuild version
-# Build Debug AnyCPU
-msbuild ByteForge.Toolkit.sln /t:Restore /p:Configuration=Debug /p:Platform="Any CPU"
-msbuild ByteForge.Toolkit.sln /p:Configuration=Debug /p:Platform="Any CPU"
+**Manual MSBuild commands:**
 
-# Build Release AnyCPU  
-msbuild ByteForge.Toolkit.sln /t:Restore /p:Configuration=Release /p:Platform="Any CPU"
-msbuild ByteForge.Toolkit.sln /p:Configuration=Release /p:Platform="Any CPU"
-
-# Build x86 versions
-msbuild ByteForge.Toolkit.sln /t:Restore /p:Configuration=Debug /p:Platform=x86
-msbuild ByteForge.Toolkit.sln /p:Configuration=Debug /p:Platform=x86
-```
-
-**Note:** The BuildSolution.bat script auto-detects Visual Studio installations and handles NuGet restore automatically. Build logs are saved to `Tests\ByteForge.Toolkit.Tests\bin\Debug\Build.log` or `bin\Release\Build.log`.
+**DO NOT USE!** 
+The BuildSolution.bat script auto-detects Visual Studio installations and handles NuGet restore automatically. 
+Build logs are saved to `Tests\ByteForge.Toolkit.Tests\bin\Debug\Build.log` or `bin\Release\Build.log`.
 
 ### Package Management
 - Uses PackageReference format in .csproj file
@@ -108,6 +96,7 @@ The library is organized into focused modules, each with its own namespace and d
 #### Partial Classes
 Large classes are split into focused partial classes:
 - `DBAccess` is split into Core, Factory, Methods, ScriptExecution, TypeConverter, Logging, and Parameters
+- `BulkDbProcessor<T>` is split into Core, Operations, TableManagement, and SqlGeneration
 - Each partial class handles a specific concern
 
 #### Attribute-Based Configuration
@@ -193,7 +182,7 @@ Key inter-module dependencies:
 - Each module has its own directory with readme.md documentation
 - Attributes are in dedicated Attributes/ subdirectories
 - Models and interfaces are in dedicated subdirectories
-- Comprehensive documentation in Documentation/ directory
+- Comprehensive documentation in readme.md files for each module
 
 ## Important Notes
 

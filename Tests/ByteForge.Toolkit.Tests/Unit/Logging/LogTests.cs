@@ -15,7 +15,7 @@ namespace ByteForge.Toolkit.Tests.Unit.Logging
         static LogTests()
         {
             var configPath = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "TestData", "Configuration", "basic_config.ini");
-            Configuration.Initialize(configPath);
+            ByteForge.Toolkit.Configuration.Initialize(configPath);
         }
 
         [TestInitialize]

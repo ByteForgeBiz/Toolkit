@@ -94,34 +94,42 @@ The configuration system supports arrays and collections through the `[Array]` a
 - **Override**: Set value in INI file to use different section name
 
 #### Flexible Array Key Format:
-Array sections support any key format - the system reads values in file order, but normalizes to numeric indices when saved:
+Array sections support any key format, but **keys are sorted alphabetically by the underlying INI provider**:
 
 ```ini
-# All of these create the same array:
+# Keys are sorted alphabetically, NOT by file order:
 
-# Numeric indices:
+# Input file order:
 [MyArray]
-0=First
-1=Second
-2=Third
+99=NinetyNine
+abc=AlphaBetaCharlie  
+0=Zero
+xyz=ExWhyZed
 
-# Named keys:
-[MyArray]
-Primary=First
-Secondary=Second
-Backup=Third
+# Actual array order (alphabetically sorted):
+# [0] = "Zero"        (key "0")
+# [1] = "NinetyNine"  (key "99") 
+# [2] = "AlphaBetaCharlie" (key "abc")
+# [3] = "ExWhyZed"    (key "xyz")
 
-# Mixed keys:
+# After saving, normalized to numeric indices:
 [MyArray]
-99=First
-abc=Second
-xyz=Third
+0=Zero
+1=NinetyNine
+2=AlphaBetaCharlie
+3=ExWhyZed
+```
 
-# After saving, all formats become:
+**⚠️ CRITICAL: Array order is determined by alphabetical key sorting, not file order!**
+
+For predictable ordering, use zero-padded numeric keys:
+```ini
 [MyArray]
-0=First
-1=Second
-2=Third
+00=First
+01=Second  
+02=Third
+10=Tenth
+99=NinetyNinth
 ```
 
 ### 🧭 Globalization Example
@@ -172,6 +180,21 @@ public class AdvancedConfig
 
 ### ⚠️ Important Considerations
 
+#### Array Key Ordering:
+**Arrays are sorted alphabetically by key, NOT by file order!** This is due to the underlying Microsoft.Extensions.Configuration.Ini provider behavior:
+
+```ini
+# File order != Array order
+[Items]
+z=Last    # Becomes array[0] (alphabetically first key)
+a=First   # Becomes array[1] (alphabetically second key)  
+m=Middle  # Becomes array[2] (alphabetically third key)
+
+# Result: ["Last", "First", "Middle"] - NOT file order!
+```
+
+Use zero-padded numeric keys for predictable ordering: `00`, `01`, `02`, etc.
+
 #### Array Section Sharing:
 Be cautious when multiple sections reference the same array section name, as this creates a shared resource that the last-saved section will overwrite:
 
@@ -192,12 +215,14 @@ Use unique section names or the `[Array]` attribute's default naming to avoid co
 ### ✅ Best Practices
 - Initialize configuration early in application lifecycle
 - Use `[Array]` for collections and let the system generate section names
+- **Use zero-padded numeric keys (`00`, `01`, `02`) for arrays when order matters** - keys are sorted alphabetically!
 - Use `[DoNotPersist]` for runtime data that should load but not save (timestamps, calculated values)
 - Use `[Ignore]` for computed properties that should be completely bypassed (preserves any existing INI entries)
 - Use `[ConfigName]` when INI key names must differ from property names
 - Consider private storage properties with `[Array]` and public `[Ignore]` wrapper properties for complex scenarios
 - Validate file paths and section names during initialization
 - Consider using `DefaultValueProvider` for complex default value logic
+- **Test array ordering** if using non-numeric or inconsistent key formats
 
 ---
 

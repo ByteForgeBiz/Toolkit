@@ -189,6 +189,7 @@
     <Compile Include="Utils\Parser.cs" />
     <Compile Include="Utils\DateTimeParser.cs" />
     <Compile Include="Configuration\Interfaces\IConfigSection.cs" />
+    <Compile Include="Configuration\Interfaces\IConfigurationManager.cs" />
     <Compile Include="Configuration\Models\ConfigSection.cs" />
     <Compile Include="Logging\Implementations\BaseLogger.cs" />
     <Compile Include="Configuration\Models\GlobalizationInfo.cs" />

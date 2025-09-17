@@ -75,47 +75,110 @@ namespace ByteForge.Toolkit
         /// </summary>
         void IConfigSection.LoadFromConfiguration()
         {
+            // Thread-safety lock ensures only one thread can modify the configuration at a time
             lock (_lock)
             {
+                // Get the specified section from the configuration root
+                // This creates a virtual view into the configuration data - not a copy
                 var section = _root.GetSection(_sectionName);
-                foreach (var prop in _properties)
+                
+                // Iterate through all properties that weren't decorated with IgnoreAttribute
+                // Skip properties that are read-only since we can't set their values
+                foreach (var prop in _properties.Where(p=>p.CanWrite))
                 {
-                    if (!prop.CanWrite) continue;
-
+                    // Check for custom configuration name through ConfigNameAttribute
+                    // This allows for different property names in code versus config files
                     var attr = prop.GetCustomAttribute<ConfigNameAttribute>();
+                    
+                    // Handle nullable types by getting the underlying type if needed
+                    // This allows proper parsing of nullable value types like int?, double?, etc.
                     var propType = Nullable.GetUnderlyingType(prop.PropertyType) ?? prop.PropertyType;
+                    
+                    // Use the attribute name if provided, otherwise use the property name
                     var name = attr?.Name ?? prop.Name;
+                    
+                    // Get the raw string value from the configuration
                     var value = section[name];
+                    
+                    // Normalize value by trimming whitespace and converting empty strings to null
+                    // This helps with consistent parsing behavior
                     value = string.IsNullOrWhiteSpace(value) ? null : value?.Trim();
 
+                    // SPECIAL CASE: Array/Collection properties handling
+                    // Properties decorated with ArrayAttribute are stored differently in config
                     var arrayAttr = prop.GetCustomAttribute<ArrayAttribute>();
                     if (arrayAttr != null)
                     {
+                        // Determine the array section name through a cascading priority:
+                        // 1. Use the value from the config (if present)
+                        // 2. Use the SectionName from the attribute (if specified)
+                        // 3. Fall back to a default naming convention based on property name
                         var arrName = value ?? arrayAttr.SectionName ?? $"{name}Array";
+                        
+                        // Cache the array section name for later use during saving
                         if (!_arrayNames.ContainsKey(name))
                             _arrayNames[name] = arrName;
 
+                        // Create appropriate collection instance based on property type
                         (var list, var elementType) = CreateListFromPropertyType(prop.PropertyType);
+                        
+                        // Get the array-specific section from configuration
                         var arraySection = _root.GetSection(arrName);
+                        
+                        // Populate the list with values from the array section
+                        // Each child of the section represents one array element
                         foreach (var child in arraySection?.GetChildren())
                         {
                             var elementValue = child.Value;
+                            // Stop processing if we encounter an empty element
                             if (string.IsNullOrWhiteSpace(elementValue))
                                 break;
-                            list.Add(Parser.Parse(elementType, elementValue));
+
+                            // Use the Parser utility to convert string to the correct element type
+                            try
+                            {
+                                var element = Parser.Parse(elementType, elementValue);
+                                list.Add(element);
+                            }
+                            catch (Exception ex)
+                            {
+                                throw new FormatException($"Failed to parse array element '{elementValue}' for property '{prop.Name}' of type '{elementType.FullName}'.", ex);
+                            }
                         }
 
+                        // Set the property value with the appropriate array/collection type
                         SetArrayValue(prop, list);
                         continue;
                     }
 
+                    // IMPORTANT CASE: Handle missing or empty configuration values
                     if (string.IsNullOrEmpty(value))
                     {
-                        prop.SetValue(Value, prop.GetValue(Value) ?? DefaultValueHelper.ResolveDefaultValue(prop));
+                        // Get the current property value
+                        var propValue = prop.GetValue(Value);
+                        
+                        // Resolve the default value for this property based on attributes or type
+                        var defaultValue = DefaultValueHelper.ResolveDefaultValue(prop);
+                        
+                        // Only reset to default if the current value differs from the default
+                        // This avoids unnecessary property updates
+                        if (Equals(propValue, defaultValue) == false)
+                            prop.SetValue(Value, defaultValue);
                         continue;
                     }
 
-                    prop.SetValue(Value, Parser.Parse(propType, value));
+                    // STANDARD CASE: Parse the string value to the property's type and set it
+                    // The Parser utility handles conversion for various data types
+                    // including primitives, DateTime, enums, and custom registered types
+                    try
+                    {
+                        var parsedValue = Parser.Parse(propType, value);
+                        prop.SetValue(Value, parsedValue);
+                    }
+                    catch (Exception ex)
+                    {
+                        throw new FormatException($"Failed to parse value '{value}' for property '{prop.Name}' of type '{propType.FullName}'.", ex);
+                    }
                 }
             }
         }
@@ -215,10 +278,11 @@ namespace ByteForge.Toolkit
                         var i = 0;
                         if (propValue is IEnumerable enumerable)
                         {
+                            var num = enumerable.Cast<object>().Count().ToString().Length;
                             foreach (var item in enumerable)
                             {
                                 if (item == null) continue;
-                                _root[$"{arraySectionName}:{i++}"] = item.ToString();
+                                _root[$"{arraySectionName}:{(i++).ToString().PadLeft(num, '0')}"] = item.ToString();
                             }
                         }
 

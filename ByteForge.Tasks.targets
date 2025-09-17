@@ -61,7 +61,8 @@
       <Using Namespace="System.IO" />
       <Using Namespace="System.Linq" />
       <Using Namespace="System.Collections.Generic" />
-      <Code Type="Fragment" Language="cs"><![CDATA[
+      <Code Type="Fragment" Language="cs">
+        <![CDATA[
 try
 {
     // Initialize counters
@@ -97,7 +98,7 @@ try
     // Setup exclusion lists with defaults
     var excludeFoldersList = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
     {
-        ".git", ".vs", "bin", "obj", "TestResults", ".vscode", "packages"
+        ".git", ".vs", "bin", "obj", "TestResults", ".vscode", "packages", ".claude"
     };
     if (ExcludeFolders != null)
         foreach (var folder in ExcludeFolders)
@@ -105,7 +106,7 @@ try
     
     var excludeFilesList = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
     {
-        ".robocopy_status", "version.txt", "CopyFiles.bat", "ByteForge.Tasks.targets"
+        "version.txt", "ByteForge.Tasks.targets"
     };
     if (ExcludeFiles != null)
         foreach (var file in ExcludeFiles)
@@ -116,7 +117,7 @@ try
         excludePatternsList.AddRange(ExcludePatterns);
     
     // Add default patterns
-    excludePatternsList.AddRange(new[] { "*.sln", "*.user", "*.rcj", "*.tmp", "*~" });
+    excludePatternsList.AddRange(new[] { "*.sln", "*.user", "*.json", "*.config", "*.tmp", "*~" });
     
     // Helper function to check if path should be excluded
     Func<string, bool> isExcluded = (string relativePath) =>

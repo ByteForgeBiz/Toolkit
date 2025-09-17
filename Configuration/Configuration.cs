@@ -22,31 +22,21 @@ namespace ByteForge.Toolkit
     /// <summary>
     /// Provides access to configuration settings.
     /// </summary>
-    public class Configuration
+    public class Configuration : IConfigurationManager
     {
         // ===========================
         // Private Static Fields
         // ===========================
 
         /// <summary>
-        /// Singleton instance of <see cref="Configuration"/>.
+        /// Default instance for static access.
         /// </summary>
-        private static readonly Lazy<Configuration> _instance = new Lazy<Configuration>();
+        private static IConfigurationManager _defaultInstance;
 
         /// <summary>
-        /// Lazy-loaded globalization info section.
+        /// Gets the default configuration instance for static access.
         /// </summary>
-        private static readonly Lazy<GlobalizationInfo> _globalizationInfo = new Lazy<GlobalizationInfo>(() => GetSection<GlobalizationInfo>("Globalization"));
-
-        /// <summary>
-        /// Lock object for thread safety.
-        /// </summary>
-        private static readonly object _lock = new object();
-
-        /// <summary>
-        /// Indicates whether the configuration was manually initialized.
-        /// </summary>
-        private static bool _manuallyInitialized;
+        private static IConfigurationManager DefaultInstance => _defaultInstance ??= new Configuration();
 
         // ===========================
         // Public Static Properties
@@ -55,22 +45,22 @@ namespace ByteForge.Toolkit
         /// <summary>
         /// Gets the globalization information.
         /// </summary>
-        public static GlobalizationInfo Globalization => _globalizationInfo.Value;
+        public static GlobalizationInfo Globalization => DefaultInstance.Globalization;
 
         /// <summary>
         /// Gets the dynamic object that provides access to the configuration settings.
         /// </summary>
-        public static Configuration Obj => _instance.Value;
+        public static Configuration Obj => (Configuration)DefaultInstance;
 
         /// <summary>
         /// Gets the root of the configuration.
         /// </summary>
-        public static IConfigurationRoot Root => Obj.InternalRoot;
+        public static IConfigurationRoot Root => DefaultInstance.Root;
 
         /// <summary>
         /// Gets a value indicating whether the configuration has been initialized.
         /// </summary>
-        public static bool IsInitialized { get; private set; }
+        public static bool IsInitialized => DefaultInstance.IsInitialized;
 
         // ===========================
         // Public Static Methods
@@ -82,7 +72,7 @@ namespace ByteForge.Toolkit
         /// <typeparam name="T">The type of the section to add.</typeparam>
         /// <param name="sectionName">The name of the section. If null, uses the type name.</param>
         /// <returns>The added section instance.</returns>
-        public static T AddSection<T>(string sectionName = null) where T : class, new() => Obj.InternalAddSection<T>(sectionName);
+        public static T AddSection<T>(string sectionName = null) where T : class, new() => DefaultInstance.AddSection<T>(sectionName);
 
         /// <summary>
         /// Gets a section of the configuration.
@@ -90,19 +80,13 @@ namespace ByteForge.Toolkit
         /// <typeparam name="T">The type of the section to get.</typeparam>
         /// <param name="sectionName">The name of the section. If null, uses the type name.</param>
         /// <returns>The section instance.</returns>
-        public static T GetSection<T>(string sectionName = null) where T : class, new()
-        {
-            sectionName = sectionName ?? typeof(T).Name;
-            if (Obj._sections.TryGetValue(sectionName, out var section))
-                return (T)((IConfigSection<T>)section).Value;
-            return AddSection<T>(sectionName);
-        }
+        public static T GetSection<T>(string sectionName = null) where T : class, new() => DefaultInstance.GetSection<T>(sectionName);
 
         /// <summary>
         /// Initializes the configuration settings by loading the INI file from the specified path.
         /// </summary>
         /// <param name="path">The path to the INI file.</param>
-        public static void Initialize(string path) => Initialize(Path.GetDirectoryName(path), Path.GetFileName(path));
+        public static void Initialize(string path) => DefaultInstance.Initialize(path);
 
         /// <summary>
         /// Initializes the configuration settings by loading the INI file from the specified directory and file name.
@@ -111,30 +95,17 @@ namespace ByteForge.Toolkit
         /// <param name="fileName">The INI file name.</param>
         /// <exception cref="ArgumentNullException">Thrown if directory or fileName is null or empty.</exception>
         /// <exception cref="InvalidOperationException">Thrown if already initialized.</exception>
-        public static void Initialize(string directory, string fileName)
-        {
-            if (string.IsNullOrEmpty(directory))
-                throw new ArgumentNullException(nameof(directory));
-            if (string.IsNullOrEmpty(fileName))
-                throw new ArgumentNullException(nameof(fileName));
-            if (IsInitialized)
-                throw new InvalidOperationException("The configuration settings have already been initialized.");
-
-            _manuallyInitialized = true;
-            Obj._configDirectory = directory;
-            Obj._configFile = fileName;
-            Obj.InternalInitialize();
-        }
+        public static void Initialize(string directory, string fileName) => DefaultInstance.Initialize(directory, fileName);
 
         /// <summary>
         /// Initializes the configuration settings by loading the default INI file.
         /// </summary>
-        public static void Initialize() => Obj.InternalInitialize();
+        public static void Initialize() => DefaultInstance.Initialize();
 
         /// <summary>
         /// Saves the current configuration settings to the INI file.
         /// </summary>
-        public static void Save() => Obj.SaveInternal();
+        public static void Save() => DefaultInstance.Save();
 
         // ===========================
         // Private Instance Fields
@@ -164,6 +135,26 @@ namespace ByteForge.Toolkit
         /// The root configuration object.
         /// </summary>
         private volatile IConfigurationRoot _root;
+
+        /// <summary>
+        /// Indicates whether this instance has been initialized.
+        /// </summary>
+        private bool _isInitialized;
+
+        /// <summary>
+        /// Indicates whether this instance was manually initialized.
+        /// </summary>
+        private bool _manuallyInitialized;
+
+        /// <summary>
+        /// Lazy-loaded globalization info for this instance.
+        /// </summary>
+        private Lazy<GlobalizationInfo> _globalizationInfo;
+
+        /// <summary>
+        /// Lock object for thread safety on this instance.
+        /// </summary>
+        private readonly object _instanceLock = new object();
 
         // ==========================
         // Public Instance Properties
@@ -200,10 +191,10 @@ namespace ByteForge.Toolkit
             {
                 if (_root == null)
                 {
-                    lock (_lock)
+                    lock (_instanceLock)
                     {
                         if (_root == null) // Double-check pattern
-                            Initialize();
+                            ((IConfigurationManager)this).Initialize();
                     }
                 }
                 return _root;
@@ -215,71 +206,163 @@ namespace ByteForge.Toolkit
         // ===========================
 
         /// <summary>
-        /// Adds a new section to the configuration.
-        /// </summary>
-        /// <typeparam name="T">The type of the section to add.</typeparam>
-        /// <param name="sectionName">The name of the section. If null, uses the type name.</param>
-        /// <returns>The added section instance.</returns>
-        /// <exception cref="InvalidOperationException">Thrown if the section already exists.</exception>
-        private T InternalAddSection<T>(string sectionName = null) where T : class, new()
-        {
-            sectionName = sectionName ?? typeof(T).Name;
-            var section = new ConfigSection<T>(sectionName, InternalRoot, _arraySectionNames);
-            if (_sections.TryAdd(sectionName, section))
-                return (T)section.Value;
-            throw new InvalidOperationException($"The section '{sectionName}' already exists.");
-        }
-
-        /// <summary>
         /// Gets the appropriate default INI filename based on the application type.
         /// </summary>
         /// <returns>The default INI file name.</returns>
         private string GetDefaultConfigFile()
         {
+            // For web applications, use a standard "local.ini" file
             if (HttpContext.Current != null)
                 return "local.ini";
 
+            // For desktop/service applications, use the executable name as the INI name
+            // This creates a natural association between the app and its config
             var assembly = Assembly.GetEntryAssembly() ?? Assembly.GetCallingAssembly() ?? Assembly.GetExecutingAssembly();
+    
+            // Assembly.GetEntryAssembly() might return null in certain scenarios:
+            // 1. Code running in a non-.NET executable (COM interop)
+            // 2. Code running in SQL CLR
+            // 3. Code in a dynamically generated assembly
+            // So we use a fallback chain to get the most appropriate assembly
             var exeName = Path.GetFileNameWithoutExtension(assembly.Location);
             return $"{exeName}.ini";
         }
 
+        // ===========================
+        // Explicit Interface Implementation
+        // ===========================
+
         /// <summary>
-        /// Initializes the configuration settings by loading the INI file.
+        /// Gets a value indicating whether the configuration has been initialized.
         /// </summary>
-        /// <exception cref="InvalidOperationException">Thrown if already initialized.</exception>
-        /// <exception cref="DirectoryNotFoundException">Thrown if the configuration directory does not exist.</exception>
-        /// <exception cref="FileNotFoundException">Thrown if the configuration file does not exist.</exception>
-        private void InternalInitialize()
+        bool IConfigurationManager.IsInitialized => _isInitialized;
+
+        /// <summary>
+        /// Gets the root configuration object built from the INI file.
+        /// </summary>
+        IConfigurationRoot IConfigurationManager.Root => InternalRoot;
+
+        /// <summary>
+        /// Gets the globalization information for culture-aware formatting.
+        /// </summary>
+        GlobalizationInfo IConfigurationManager.Globalization => _globalizationInfo?.Value ?? new GlobalizationInfo();
+
+        /// <summary>
+        /// Initializes the configuration settings by loading the INI file from the specified path.
+        /// </summary>
+        /// <param name="path">The full path to the INI file.</param>
+        void IConfigurationManager.Initialize(string path)
         {
-            lock (_lock)
+            if (string.IsNullOrEmpty(path))
+                throw new ArgumentNullException(nameof(path));
+
+            var directory = Path.GetDirectoryName(path);
+            var fileName = Path.GetFileName(path);
+            ((IConfigurationManager)this).Initialize(directory, fileName);
+        }
+
+        /// <summary>
+        /// Initializes the configuration settings by loading the INI file from the specified directory and file name.
+        /// </summary>
+        /// <param name="directory">The directory containing the INI file.</param>
+        /// <param name="fileName">The INI file name.</param>
+        void IConfigurationManager.Initialize(string directory, string fileName)
+        {
+            if (string.IsNullOrEmpty(directory))
+                throw new ArgumentNullException(nameof(directory));
+            if (string.IsNullOrEmpty(fileName))
+                throw new ArgumentNullException(nameof(fileName));
+
+            _manuallyInitialized = true;
+            _configDirectory = directory;
+            _configFile = fileName;
+            ((IConfigurationManager)this).Initialize();
+        }
+
+        /// <summary>
+        /// Initializes the configuration settings by loading the default INI file.
+        /// </summary>
+        void IConfigurationManager.Initialize()
+        {
+            // Thread synchronization to prevent multiple initialization attempts
+            lock (_instanceLock)
             {
-                if (IsInitialized)
+                // Prevent re-initialization which could cause inconsistent state
+                if (_isInitialized)
                     throw new InvalidOperationException("The configuration settings have already been initialized.");
 
+                // If not manually initialized and no config file specified, determine the default
                 if (!_manuallyInitialized && string.IsNullOrEmpty(_configFile))
                     _configFile = GetDefaultConfigFile();
 
+                // Verify directory exists before attempting to load configuration
+                // This provides a more specific error than what would happen at file load
                 if (!Directory.Exists(ConfigDirectory))
                     throw new DirectoryNotFoundException($@"The following directory was not found: {ConfigDirectory}");
 
+                // Build the full path and verify the file exists
                 var path = Path.Combine(ConfigDirectory, _configFile);
                 if (!File.Exists(path))
                     throw new FileNotFoundException($@"The file was not found: {path}");
 
+                // Use Microsoft.Extensions.Configuration to build the configuration
+                // This leverages the standard configuration provider model
                 var builder = new ConfigurationBuilder()
                     .SetBasePath(ConfigDirectory)
                     .AddIniFile(_configFile);
 
+                // Store the root and mark initialization complete
                 _root = builder.Build();
-                IsInitialized = true;
+                _isInitialized = true;
+
+                // Initialize globalization info lazily - this avoids overhead when not needed
+                // The Lazy<T> pattern defers creation until first access
+                _globalizationInfo = new Lazy<GlobalizationInfo>(() => ((IConfigurationManager)this).GetSection<GlobalizationInfo>("Globalization"));
             }
+        }
+
+        /// <summary>
+        /// Adds a new section to the configuration.
+        /// </summary>
+        /// <typeparam name="T">The type of the section to add.</typeparam>
+        /// <param name="sectionName">The name of the section. If null, uses the type name.</param>
+        /// <returns>The added section instance.</returns>
+        T IConfigurationManager.AddSection<T>(string sectionName)
+        {
+            // If no section name is provided, use the type name as a convention
+            sectionName = sectionName ?? typeof(T).Name;
+
+            // Create a wrapper that binds the configuration section to the concrete type
+            // This enables strongly-typed access to configuration values
+            var section = new ConfigSection<T>(sectionName, InternalRoot, _arraySectionNames);
+
+            // Thread-safe addition to the concurrent dictionary
+            // Only add if the key doesn't already exist
+            if (_sections.TryAdd(sectionName, section))
+                return (T)section.Value;
+
+            // Section with this name already exists - prevent duplicates to avoid confusion
+            throw new InvalidOperationException($"The section '{sectionName}' already exists.");
+        }
+
+        /// <summary>
+        /// Gets a section of the configuration.
+        /// </summary>
+        /// <typeparam name="T">The type of the section to get.</typeparam>
+        /// <param name="sectionName">The name of the section. If null, uses the type name.</param>
+        /// <returns>The section instance.</returns>
+        T IConfigurationManager.GetSection<T>(string sectionName)
+        {
+            sectionName = sectionName ?? typeof(T).Name;
+            if (_sections.TryGetValue(sectionName, out var section))
+                return (T)((IConfigSection<T>)section).Value;
+            return ((IConfigurationManager)this).AddSection<T>(sectionName);
         }
 
         /// <summary>
         /// Saves the current configuration settings to the INI file.
         /// </summary>
-        private void SaveInternal()
+        void IConfigurationManager.Save()
         {
             var section = string.Empty;
             var iniData = new List<string>();
@@ -288,35 +371,47 @@ namespace ByteForge.Toolkit
             var sectionEndPositions = new Dictionary<string, int>(StringComparer.InvariantCultureIgnoreCase);
             var currentPosition = 0;
 
+            // Get the full path to the INI file
             var iniFilePath = Path.Combine(_configDirectory, _configFile);
+            
+            // Read all lines from the existing file to preserve comments and structure
             var iniLines = File.ReadAllLines(iniFilePath);
 
+            // First, ensure all sections are saved to the configuration root
+            // This updates the in-memory configuration with any changes made to section objects
             foreach (var s in _sections.Values.Cast<IConfigSection>())
                 s.SaveToConfiguration();
 
+            // Process the existing INI file line by line, preserving structure and comments
             foreach (var line in iniLines)
             {
                 var trimmedLine = line.Trim();
                 currentPosition = iniData.Count;
 
+                // Preserve comments and empty lines as-is
                 if (string.IsNullOrEmpty(trimmedLine) || trimmedLine.StartsWith(";") || trimmedLine.StartsWith("#"))
                 {
                     iniData.Add(line);
                     continue;
                 }
 
+                // Detect section headers [SectionName]
                 if (trimmedLine.StartsWith("[") && trimmedLine.EndsWith("]"))
                 {
+                    // Extract section name without brackets
                     section = trimmedLine.Trim('[', ']');
                     iniData.Add(line);
                     existingSections.Add(section);
+                    // Track where this section ends for later insertion of new keys
                     sectionEndPositions[section] = currentPosition + 1;
                     continue;
                 }
 
+                // Skip array section values - these are handled specially
                 if (_arraySectionNames.Contains(section))
                     continue;
 
+                // Process key-value pairs
                 var equalsIndex = trimmedLine.IndexOf('=');
                 if (equalsIndex == -1)
                 {
@@ -327,47 +422,58 @@ namespace ByteForge.Toolkit
                 var key = trimmedLine.Substring(0, equalsIndex).Trim();
                 var value = trimmedLine.Substring(equalsIndex + 1).Trim();
 
+                // Build the fully qualified configuration key (section:key)
                 var configKey = $"{section}:{key}";
                 var configValue = _root?.GetSection(configKey).Value;
 
                 if (configValue != null)
                 {
+                    // Update the value if it changed in memory
                     if (value != configValue)
                         value = configValue;
                 }
                 else
                 {
-                    // ConfigSection set this to null (likely a default value), skip it
+                    // Skip keys that were set to null (likely default values)
                     continue;
                 }
 
+                // Track that we've processed this key
                 existingKeys.Add(configKey);
                 iniData.Add($"{key}={value}");
 
+                // Update the end position of the current section
                 if (!string.IsNullOrEmpty(section))
                     sectionEndPositions[section] = currentPosition;
             }
 
+            // Update the last section's end position
             if (!string.IsNullOrEmpty(section))
                 sectionEndPositions[section] = iniData.Count;
 
+            // Process all sections in the configuration root
             foreach (var configSection in _root.GetChildren())
             {
+                // Add new sections that don't exist in the file yet
                 if (!existingSections.Contains(configSection.Key))
                 {
+                    // Add a blank line before new sections for readability
                     iniData.Add(string.Empty);
                     iniData.Add($"[{configSection.Key}]");
 
+                    // Add all keys in this new section
                     foreach (var child in configSection.GetChildren())
                     {
                         if (!string.IsNullOrEmpty(child.Value))
                             iniData.Add($"{child.Key}={child.Value}");
                     }
 
+                    // Add a blank line after new sections for readability
                     iniData.Add(string.Empty);
                 }
                 else
                 {
+                    // For existing sections, add any new keys not already in the file
                     var insertPosition = sectionEndPositions[configSection.Key];
                     var keysAdded = 0;
 
@@ -378,6 +484,7 @@ namespace ByteForge.Toolkit
                             iniData.Insert(insertPosition + (keysAdded++), $"{child.Key}={child.Value}");
                     }
 
+                    // If we added keys, update the section end positions that come after
                     if (keysAdded > 0)
                     {
                         foreach (var kvp in sectionEndPositions.Where(x => x.Value >= insertPosition).ToList())
@@ -386,6 +493,7 @@ namespace ByteForge.Toolkit
                 }
             }
 
+            // Write the updated INI data back to the file
             File.WriteAllLines(iniFilePath, iniData);
         }
     }
