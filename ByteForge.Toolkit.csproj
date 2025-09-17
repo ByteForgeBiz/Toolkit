@@ -183,6 +183,7 @@
     <Compile Include="Mail\TempFileAttachment.cs" />
     <Compile Include="Utils\BooleanParser.cs" />
     <Compile Include="CLI\ConsoleSpinner.cs" />
+    <Compile Include="CLI\ProgressSpinner.cs" />
     <Compile Include="Utils\DateTimeUtil.cs" />
     <Compile Include="Utils\EnumExtensions.cs" />
     <Compile Include="Utils\Parser.cs" />
@@ -266,7 +267,7 @@
   </ItemGroup>
   <Target Name="Messages" BeforeTargets="PrepareForBuild">
     <Message Text="CentralLocationPath: '$(CentralLocationPath)'" Importance="high" />
-    <Message Text="Importing ByteForge.Tasks.targets..."     Importance="high" Condition="Exists('$(CentralLocationPath)\ByteForge.Tasks.targets')" />
+    <Message Text="Importing ByteForge.Tasks.targets..." Importance="high" Condition="Exists('$(CentralLocationPath)\ByteForge.Tasks.targets')" />
     <Message Text="NOT Importing ByteForge.Tasks.targets..." Importance="high" Condition="!Exists('$(CentralLocationPath)\ByteForge.Tasks.targets')" />
   </Target>
   <Import Project="$(CentralLocationPath)\ByteForge.Tasks.targets" Condition="Exists('$(CentralLocationPath)\ByteForge.Tasks.targets')" />

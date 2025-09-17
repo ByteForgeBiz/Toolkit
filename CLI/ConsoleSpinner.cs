@@ -87,11 +87,6 @@ namespace ByteForge.Toolkit
         public int Delay { get; }
 
         /// <summary>
-        /// Gets a value indicating whether the console output or error streams are redirected.
-        /// </summary>
-        private bool IsConsoleRedirected => Console.IsOutputRedirected || Console.IsErrorRedirected;
-
-        /// <summary>
         /// Gets a value indicating whether Unicode is supported on the current platform.
         /// </summary>
         private static bool IsUnicodeSupported => Environment.OSVersion.Platform == PlatformID.Unix || Environment.OSVersion.Platform == PlatformID.MacOSX || Console.OutputEncoding.BodyName == "utf-8";
@@ -329,7 +324,7 @@ namespace ByteForge.Toolkit
                 _isSpinning = false;
 
                 // It wasn't spinning, nothing to clear
-                if (IsConsoleRedirected) return;
+                if (!ConsoleUtil.IsConsoleAvailable) return;
 
                 // Clear the spinner character at the fixed position
                 lock (_globalConsoleLock)
@@ -349,7 +344,7 @@ namespace ByteForge.Toolkit
         private void Spin()
         {
             // No need to spin if console is redirected
-            if (IsConsoleRedirected) return;
+            if (!ConsoleUtil.IsConsoleAvailable) return;
 
             var index = 0;
 
@@ -363,12 +358,12 @@ namespace ByteForge.Toolkit
                     lock (_globalConsoleLock)
                     {
                         // Save current cursor position
-                        var currentLeft = Console.CursorLeft;
                         var currentTop = Console.CursorTop;
+                        var currentLeft = Console.CursorLeft;
                         var originalColor = Console.ForegroundColor;
 
-                        var x = PositionX == -1 ? Console.WindowLeft : PositionX;
                         var y = PositionY == -1 ? Console.CursorTop : PositionY;
+                        var x = PositionX == -1 ? Console.WindowLeft : PositionX;
 
                         // Move to spinner position and draw
                         Console.ForegroundColor = Color ?? originalColor;

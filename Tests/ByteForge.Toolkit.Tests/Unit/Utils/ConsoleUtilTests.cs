@@ -23,7 +23,7 @@ namespace ByteForge.Toolkit.Tests.Unit.Utils
         public void ConsoleUtil_HasConsole_ShouldReturnFalse_WhenNoConsoleIsPresent()
         {
             // Act & Assert
-            ConsoleUtil.HasConsole().Should().BeFalse();
+            ConsoleUtil.IsConsoleAvailable.Should().BeFalse();
         }
 
         [TestMethod]

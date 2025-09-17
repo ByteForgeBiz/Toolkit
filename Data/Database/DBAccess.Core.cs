@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Data;
 using System.Threading.Tasks;
+using System.Web;
 
 namespace ByteForge.Toolkit
 {
@@ -75,8 +76,6 @@ namespace ByteForge.Toolkit
         /// <exception cref="ArgumentException">Thrown when the database section contains a colon or does not exist in the configuration, or the database type is not supported.</exception>
         public DBAccess(string dbSection)
         {
-            if (!Configuration.IsInitialized)
-                throw new InvalidOperationException("The configuration has not been initialized.");
             if (string.IsNullOrEmpty(dbSection))
             {
                 var _rootOptions = Configuration.GetSection<DatabaseRootOptions>("Data Source");

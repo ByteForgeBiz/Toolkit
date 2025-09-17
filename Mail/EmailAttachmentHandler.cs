@@ -413,22 +413,20 @@ namespace ByteForge.Toolkit
         /// </remarks>
         protected virtual void Dispose(bool disposing)
         {
-            if (!_disposed)
+            if (_disposed) return;
+            if (disposing)
             {
-                if (disposing)
+                // Cleanup temporary directory
+                try
                 {
-                    // Cleanup temporary directory
-                    try
-                    {
-                        if (Directory.Exists(TempDirectory))
-                            Directory.Delete(TempDirectory, recursive: true);
-                    }
-                    catch
-                    {
-                        // Ignore cleanup errors
-                    }
-                    _disposed = true;
+                    if (Directory.Exists(TempDirectory))
+                        Directory.Delete(TempDirectory, recursive: true);
                 }
+                catch
+                {
+                    // Ignore cleanup errors
+                }
+                _disposed = true;
             }
         }
 

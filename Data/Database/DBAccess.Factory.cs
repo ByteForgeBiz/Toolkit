@@ -63,9 +63,8 @@ namespace ByteForge.Toolkit
             cmd.CommandTimeout = Options.CommandTimeout;
             cmd.CommandText = query;
 
-            AddParametersToCommand(cmd, query, arguments);
-
             Log.Verbose($"Command created for query:{Environment.NewLine}{query}");
+            AddParametersToCommand(cmd, query, arguments);
 
             return cmd;
         }

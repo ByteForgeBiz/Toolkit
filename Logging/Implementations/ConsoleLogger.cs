@@ -69,7 +69,7 @@ namespace ByteForge.Toolkit.Logging
         /// <param name="entry">The log entry to record.</param>
         protected internal override void RecordLogEntry(LogEntry entry)
         {
-            if (entry.Level < MinLogLevel || !ConsoleUtil.HasConsole())
+            if (!ConsoleUtil.IsConsoleAvailable || entry.Level < MinLogLevel)
                 return;
 
             lock (_lock)

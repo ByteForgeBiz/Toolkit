@@ -64,11 +64,11 @@ namespace ByteForge.Toolkit
                         cmd.CommandTimeout = Options.CommandTimeout;
                         cmd.CommandText = batch;
 
+                        Log.Verbose($"Executing query:{Environment.NewLine}{batch}");
                         // Only process parameters for non-DDL statements
                         if (arguments != null && !IsDDLStatement(batch))
                             AddParametersToCommand(cmd, batch, arguments);
 
-                        Log.Verbose($"Executing query:{Environment.NewLine}{batch}");
                         var timeStart = DateTime.Now;
 
                         if (captureResults)

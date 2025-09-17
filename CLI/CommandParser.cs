@@ -1,11 +1,13 @@
-﻿using System;
+﻿using ByteForge.Toolkit.CommandLine;
+using Microsoft.VisualBasic.FileIO;
+using System;
 using System.Collections.Generic;
 using System.CommandLine;
 using System.CommandLine.Parsing;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
-using ByteForge.Toolkit.CommandLine;
 
 namespace ByteForge.Toolkit.CLI
 {
@@ -55,22 +57,23 @@ namespace ByteForge.Toolkit.CLI
             // Display banner if configured
             _builder.BannerAction?.Invoke();
 
-            // Process global options first and filter them out
-            var filteredArgs = ProcessGlobalOptions(args);
-            var replacedArgs = new List<string>(filteredArgs.Length);
-            foreach (var arg in filteredArgs)
+            // Replace tokens in arguments if any replacements are configured
+            var caseCorrectedArgs = new List<string>(args.Length);
+            foreach (var arg in args)
                 if (_tokenReplacer.TryGetValue(arg, out var replacement))
-                    replacedArgs.Add(replacement);
+                    caseCorrectedArgs.Add(replacement);
                 else
-                    replacedArgs.Add(arg);
+                    caseCorrectedArgs.Add(arg);
 
-            var result = _parser.Parse(replacedArgs);
+            // Process global options first and filter them out
+            var filteredArgs = ProcessGlobalOptions(caseCorrectedArgs.ToArray());
+
+            // Parse the (possibly modified) arguments
+            var result = _parser.Parse(filteredArgs);
             
             // Display parameter explanation if enabled and not a help command
             if (_builder.EnableParameterExplanation && !IsHelpCommand(result))
-            {
                 Console.WriteLine(DescribeCommand(result));
-            }
 
             return result;
         }
@@ -89,56 +92,82 @@ namespace ByteForge.Toolkit.CLI
             var descWriter = new StringWriter(sb);
 
             var command = cmd.CommandResult.Command;
-            
+
             // Build the full command path (group hierarchy)
             var commandPath = GetCommandPath(cmd.CommandResult);
             descWriter.WriteLine($"Running    : {commandPath}");
             descWriter.WriteLine($"Description: {command.Description}");
-            
+
+            DescribeOptions(cmd, descWriter);
+            DescribeArguments(cmd, descWriter);
+            return sb.ToString();
+        }
+
+        private static void DescribeOptions(ParseResult cmd, StringWriter descWriter)
+        {
+            var command = cmd.CommandResult.Command;
+
             // Only display options that were actually passed to the command
             var passedOptions = command.Options
-                .Where(opt => cmd.FindResultFor(opt) is OptionResult optResult && optResult.GetValueOrDefault() != null)
+                .Where(opt => cmd.FindResultFor(opt) is OptionResult)
                 .ToList();
-                
-            if (passedOptions.Count > 0)
-            {
-                descWriter.WriteLine("\nOptions:");
-                var len = passedOptions.Max(o => o.Name.Length);
-                foreach (var option in passedOptions)
-                {
-                    descWriter.WriteLine($"  {option.Name.PadRight(len)}: {option.Description}");
-                    
-                    if (cmd.FindResultFor(option) is OptionResult optionResult)
-                    {
-                        var value = optionResult.GetValueOrDefault();
-                        descWriter.WriteLine($"    {"Value".PadRight(len)}: {value}");
-                    }
-                }
-            }
-            
+
+            DescribeSymbols<Option>(command.Options, cmd, descWriter);
+        }
+
+        private static void DescribeArguments(ParseResult cmd, StringWriter descWriter)
+        {
+            var command = cmd.CommandResult.Command;
+
             // Only display arguments that were actually passed to the command
             var passedArguments = command.Arguments
                 .Where(arg => cmd.FindResultFor(arg) is ArgumentResult)
                 .ToList();
-                
-            if (passedArguments.Count > 0)
-            {
-                descWriter.WriteLine("\nArguments:");
-                var len = passedArguments.Max(a => a.Name.Length);
-                foreach (var argument in passedArguments)
+
+            DescribeSymbols<Argument>(command.Arguments, cmd, descWriter);
+        }
+
+        private static void DescribeSymbols<T>(IReadOnlyList<T> symbols, ParseResult cmd, StringWriter descWriter) where T : Symbol
+        {
+            var command = cmd.CommandResult.Command;
+            // Only display symbols that were actually passed to the command
+            var passedSymbols = command.Children
+                // Filter to only the symbols that were passed
+                .Where(sym => symbols.Contains(sym))
+                // Map to an anonymous object with name, description, and value
+                .Select(s =>
                 {
-                    descWriter.WriteLine($"  {argument.Name.PadRight(len)}: {argument.Description}");
-                    
-                    if (cmd.FindResultFor(argument) is ArgumentResult argResult)
+                    // Get the value assigned to the symbol, if any
+                    var sym = cmd.FindResultFor(s);
+                    if (sym == null) return null;
+
+                    // The symbol is an Argument or Option
+                    var val = (s is Argument arg) ? sym.GetValueForArgument(arg)
+                            : (s is Option opt) ? sym.GetValueForOption(opt)
+                            : null;
+                    return new
                     {
-                        var value = argResult.GetValueOrDefault();
-                        descWriter.WriteLine($"    {"Value".PadRight(len)}: {value}");
-                    }
-                }
+                        s.Name,
+                        s.Description,
+                        Value = val
+                    };
+                })
+                // Only include symbols with values
+                .Where(s => s != null && s.Value != null) 
+                .ToList();
+
+            if (passedSymbols.Count == 0)
+                return;
+
+            var plural = passedSymbols.Count != 1 ? "s" : string.Empty;
+            descWriter.WriteLine($"\n{typeof(T).Name}{plural}:");
+
+            var len = passedSymbols.Max(a => a.Name.Length);
+            foreach (var symbol in passedSymbols)
+            {
+                descWriter.WriteLine($"  {symbol.Name.PadRight(len)}: {symbol.Value}");
+                descWriter.WriteLine($"    > {symbol.Description}");
             }
-            
-            descWriter.WriteLine();
-            return sb.ToString();
         }
 
         /// <summary>
