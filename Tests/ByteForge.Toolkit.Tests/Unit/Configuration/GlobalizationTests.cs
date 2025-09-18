@@ -1,7 +1,7 @@
 using System;
 using System.Globalization;
 using System.Reflection;
-using FluentAssertions;
+using AwesomeAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using ByteForge.Toolkit.Tests.Helpers;
 using ByteForge.Toolkit.Tests.Models;
@@ -405,7 +405,8 @@ CurrencyFormat='$' #,##0.00";
         {
             // Arrange
             var configContent = @"[Globalization]
-CurrencyFormat=# ##0,00 '€'";
+CurrencyFormat=# ##0.00 '€'
+CultureInfo=pt-br";
             
             IConfigurationManager config = new ByteForge.Toolkit.Configuration();
             _tempConfigPath = TestConfigurationHelper.CreateTempConfigFile(configContent);
@@ -413,6 +414,7 @@ CurrencyFormat=# ##0,00 '€'";
             var globalization = config.Globalization;
 
             // Act
+            
             var formatted = globalization.FormatCurrency(1234.56);
 
             // Assert
@@ -467,8 +469,8 @@ CurrencyFormat='$' #,##0.00";
             // Arrange
             var configContent = @"[Globalization]
 CultureInfo=fr-FR
-NumberFormat=# ##0,00
-CurrencyFormat=# ##0,00 '€'";
+NumberFormat=# ##0.00
+CurrencyFormat=# ##0.00 '€'";
             
             IConfigurationManager config = new ByteForge.Toolkit.Configuration();
             _tempConfigPath = TestConfigurationHelper.CreateTempConfigFile(configContent);
@@ -492,7 +494,7 @@ CurrencyFormat=# ##0,00 '€'";
         {
             // Arrange
             var configContent = @"[Globalization]
-NumberFormat=# ##0,00";
+NumberFormat=# ##0.00";
             
             IConfigurationManager config = new ByteForge.Toolkit.Configuration();
             _tempConfigPath = TestConfigurationHelper.CreateTempConfigFile(configContent);

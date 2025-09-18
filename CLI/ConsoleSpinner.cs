@@ -141,14 +141,6 @@ namespace ByteForge.Toolkit
         public ConsoleSpinner(ConsoleColor color, string spinChars, int delayMs) : this(-1, -1, color, spinChars, delayMs) { }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="ConsoleSpinner"/> class with a specified color, spinner style, and delay.
-        /// </summary>
-        /// <param name="color">The color to be used for console output.</param>
-        /// <param name="style">The spinner style.</param>
-        /// <param name="delayMs">The delay in milliseconds between spinner frames.</param>
-        public ConsoleSpinner(ConsoleColor color, SpinnerStyle style, int delayMs) : this(-1, -1, color, GetSpinnerChars(style), delayMs) { }
-
-        /// <summary>
         /// Initializes a new instance of the <see cref="ConsoleSpinner"/> class with a specified spinner style.
         /// </summary>
         /// <param name="style">The spinner style.</param>
@@ -160,6 +152,21 @@ namespace ByteForge.Toolkit
         /// <param name="style">The spinner style.</param>
         /// <param name="delayMs">The delay in milliseconds between spinner frames.</param>
         public ConsoleSpinner(SpinnerStyle style, int delayMs) : this(-1, -1, null, GetSpinnerChars(style), delayMs) { }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ConsoleSpinner"/> class with a specified color.
+        /// </summary>
+        /// <param name="style">The spinner style.</param>
+        /// <param name="color">The color to be used for console output.</param>
+        public ConsoleSpinner(SpinnerStyle style, ConsoleColor color) : this(-1, -1, color, GetSpinnerChars(style), null) { }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ConsoleSpinner"/> class with a specified color, spinner style, and delay.
+        /// </summary>
+        /// <param name="style">The spinner style.</param>
+        /// <param name="color">The color to be used for console output.</param>
+        /// <param name="delayMs">The delay in milliseconds between spinner frames.</param>
+        public ConsoleSpinner(SpinnerStyle style, ConsoleColor color, int delayMs) : this(-1, -1, color, GetSpinnerChars(style), delayMs) { }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ConsoleSpinner"/> class at a specified position.
@@ -270,7 +277,12 @@ namespace ByteForge.Toolkit
             Delay = delayMs ?? 100;
             Color = color ?? ConsoleColor.DarkYellow;
             _spinChars = !string.IsNullOrEmpty(spinChars) ? spinChars : GetSpinnerChars(SpinnerStyle.Braille);
+
+            if (!ConsoleUtil.IsConsoleAvailable) return;
+
+            _isSpinning = true;
             _spinThread = new Thread(Spin) { IsBackground = true };
+            _spinThread.Start();
         }
 
         #endregion

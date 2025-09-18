@@ -1,11 +1,7 @@
-using System;
-using System.IO;
-using System.Reflection;
-using System.Threading.Tasks;
-using FluentAssertions;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using AwesomeAssertions;
 using ByteForge.Toolkit.Tests.Helpers;
 using ByteForge.Toolkit.Tests.Models;
+using System.Reflection;
 
 namespace ByteForge.Toolkit.Tests.Unit.Configuration
 {
@@ -105,7 +101,7 @@ StringValue=Test";
         #region Malformed INI File Tests
 
         [TestMethod]
-        public void Configuration_WithMalformedSection_ShouldHandleGracefully()
+        public void Configuration_WithMalformedSection_ShouldThrow()
         {
             // Arrange - INI with malformed section headers
             var malformedContent = @"[InvalidSection
@@ -123,11 +119,11 @@ IntValue=42";
                 var section = testConfig.GetSection<BasicTestConfig>("ValidSection");
             };
 
-            act.Should().NotThrow("malformed sections should be handled gracefully");
+            act.Should().Throw<InvalidDataException>("malformed section headers should throw InvalidDataException");
         }
 
         [TestMethod]
-        public void Configuration_WithInvalidKeyValuePair_ShouldHandleGracefully()
+        public void Configuration_WithInvalidKeyValuePair_ShouldThrow()
         {
             // Arrange - INI with invalid key-value pairs
             var malformedContent = @"[TestSection]
@@ -137,19 +133,17 @@ AnotherValidKey=AnotherValue
 =ValueWithoutKey
 KeyWithMultipleEquals=Value=With=Equals";
 
-            IConfigurationManager config = new ByteForge.Toolkit.Configuration();
             _tempConfigPath = TestConfigurationHelper.CreateTempConfigFile(malformedContent);
-            config.Initialize(_tempConfigPath);
 
             // Act & Assert - Should handle invalid key-value pairs gracefully
             Action act = () =>
             {
                 IConfigurationManager testConfig = new ByteForge.Toolkit.Configuration();
                 testConfig.Initialize(_tempConfigPath);
-                var section = config.GetSection<BasicTestConfig>("TestSection");
+                var section = testConfig.GetSection<BasicTestConfig>("TestSection");
             };
 
-            act.Should().NotThrow("invalid key-value pairs should be handled gracefully");
+            act.Should().Throw<InvalidDataException>("invalid key-value pairs should throw InvalidDataException");
         }
 
         [TestMethod]
@@ -193,7 +187,7 @@ KeyWithMultipleEquals=Value=With=Equals";
         #region Type Conversion Error Tests
 
         [TestMethod]
-        public void Configuration_InvalidIntegerConversion_ShouldHandleGracefully()
+        public void Configuration_InvalidIntegerConversion_ShoudThrow()
         {
             // Arrange
             var configContent = @"[TestSection]
@@ -201,47 +195,43 @@ IntValue=not_a_number
 BoolValue=not_a_boolean
 DoubleValue=not_a_double";
 
-            IConfigurationManager config = new ByteForge.Toolkit.Configuration();
             _tempConfigPath = TestConfigurationHelper.CreateTempConfigFile(configContent);
-            config.Initialize(_tempConfigPath);
 
             // Act & Assert - Invalid type conversions should be handled gracefully
             Action act = () =>
             {
-                IConfigurationManager testConfig = new ByteForge.Toolkit.Configuration();
-                testConfig.Initialize(_tempConfigPath);
+                IConfigurationManager config = new ByteForge.Toolkit.Configuration();
+                config.Initialize(_tempConfigPath);
                 var section = config.GetSection<BasicTestConfig>("TestSection");
             };
 
             // The system should handle invalid conversions gracefully by using defaults or throwing specific exceptions
-            act.Should().NotThrow("invalid type conversions should be handled gracefully");
+            act.Should().Throw<FormatException>("invalid type conversions should throw FormatException");
         }
 
         [TestMethod]
-        public void Configuration_NumericOverflow_ShouldHandleGracefully()
+        public void Configuration_NumericOverflow_ShouldThrow()
         {
             // Arrange - Values that would overflow int
             var configContent = @"[TestSection]
 IntValue=999999999999999999999
 DoubleValue=1.7976931348623157e+309";
 
-            IConfigurationManager config = new ByteForge.Toolkit.Configuration();
             _tempConfigPath = TestConfigurationHelper.CreateTempConfigFile(configContent);
-            config.Initialize(_tempConfigPath);
 
             // Act & Assert
             Action act = () =>
             {
-                IConfigurationManager testConfig = new ByteForge.Toolkit.Configuration();
-                testConfig.Initialize(_tempConfigPath);
+                IConfigurationManager config = new ByteForge.Toolkit.Configuration();
+                config.Initialize(_tempConfigPath);
                 var section = config.GetSection<BasicTestConfig>("TestSection");
             };
 
-            act.Should().NotThrow("numeric overflow should be handled gracefully");
+            act.Should().Throw<FormatException>("numeric overflow should throw OverflowException");
         }
 
         [TestMethod]
-        public void Configuration_InvalidDateFormat_ShouldHandleGracefully()
+        public void Configuration_InvalidDateFormat_ShoudThrow()
         {
             // Arrange
             var configContent = @"[TestSection]
@@ -249,23 +239,21 @@ DateValue=not_a_date
 DateValue2=32/13/2024
 DateValue3=2024-13-45";
 
-            IConfigurationManager config = new ByteForge.Toolkit.Configuration();
             _tempConfigPath = TestConfigurationHelper.CreateTempConfigFile(configContent);
-            config.Initialize(_tempConfigPath);
-
+            // 2024-13-45 is an invalid date, should be caught by DateTime parsing
             // Act & Assert
             Action act = () =>
             {
-                IConfigurationManager testConfig = new ByteForge.Toolkit.Configuration();
-                testConfig.Initialize(_tempConfigPath);
+                IConfigurationManager config = new ByteForge.Toolkit.Configuration();
+                config.Initialize(_tempConfigPath);
                 var section = config.GetSection<BasicTestConfig>("TestSection");
             };
 
-            act.Should().NotThrow("invalid date formats should be handled gracefully");
+            act.Should().Throw<FormatException>("invalid date formats should throw FormatException");
         }
 
         [TestMethod]
-        public void Configuration_InvalidEnumValue_ShouldHandleGracefully()
+        public void Configuration_InvalidEnumValue_Throw()
         {
             // Arrange
             var configContent = @"[TestSection]
@@ -277,12 +265,12 @@ DbType=UnknownDatabase";
             // Act & Assert
             Action act = () =>
             {
-                IConfigurationManager testConfig = new ByteForge.Toolkit.Configuration();
-                testConfig.Initialize(_tempConfigPath);
-                var section = testConfig.GetSection<EnumTestConfig>("TestSection");
+                IConfigurationManager config = new ByteForge.Toolkit.Configuration();
+                config.Initialize(_tempConfigPath);
+                var section = config.GetSection<EnumTestConfig>("TestSection");
             };
 
-            act.Should().NotThrow("invalid enum values should be handled gracefully");
+            act.Should().Throw<FormatException>("invalid enum values should throw FormatException");
         }
 
         #endregion
@@ -309,7 +297,7 @@ StringArray=NonExistentArraySection";
         }
 
         [TestMethod]
-        public void Configuration_ArrayWithMixedValidInvalidItems_ShouldLoadValidItems()
+        public void Configuration_ArrayWithMixedValidInvalidItems_ShouldThrow()
         {
             // Arrange
             var configContent = @"[TestSection]
@@ -322,20 +310,18 @@ NumberList=MixedNumberArray
 3=also_not_a_number
 4=300";
 
-            IConfigurationManager config = new ByteForge.Toolkit.Configuration();
             _tempConfigPath = TestConfigurationHelper.CreateTempConfigFile(configContent);
-            config.Initialize(_tempConfigPath);
 
             // Act & Assert
             Action act = () =>
             {
-                IConfigurationManager testConfig = new ByteForge.Toolkit.Configuration();
-                testConfig.Initialize(_tempConfigPath);
-                var section = testConfig.GetSection<ArrayTestConfig>("TestSection");
+                IConfigurationManager config = new ByteForge.Toolkit.Configuration();
+                config.Initialize(_tempConfigPath);
+                var section = config.GetSection<ArrayTestConfig>("TestSection");
             };
 
             // Should handle mixed valid/invalid array items gracefully
-            act.Should().NotThrow("mixed valid/invalid array items should be handled gracefully");
+            act.Should().Throw<FormatException>("mixed valid/invalid array items should throw FormatException");
         }
 
         [TestMethod]
@@ -351,16 +337,14 @@ StringArray=ArraySection1
 [ArraySection2]
 StringArray=ArraySection1";
 
-            IConfigurationManager config = new ByteForge.Toolkit.Configuration();
             _tempConfigPath = TestConfigurationHelper.CreateTempConfigFile(configContent);
-            config.Initialize(_tempConfigPath);
 
             // Act & Assert
             Action act = () =>
             {
-                IConfigurationManager testConfig = new ByteForge.Toolkit.Configuration();
-                testConfig.Initialize(_tempConfigPath);
-                var section = testConfig.GetSection<ArrayTestConfig>("TestSection");
+                IConfigurationManager config = new ByteForge.Toolkit.Configuration();
+                config.Initialize(_tempConfigPath);
+                var section = config.GetSection<ArrayTestConfig>("TestSection");
             };
 
             act.Should().NotThrow("circular array references should be handled gracefully");
@@ -385,9 +369,9 @@ RegularProperty=TestValue";
             // Act & Assert
             Action act = () =>
             {
-                IConfigurationManager testConfig = new ByteForge.Toolkit.Configuration();
-                testConfig.Initialize(_tempConfigPath);
-                var section = testConfig.GetSection<CustomDefaultConfig>("TestSection");
+                IConfigurationManager config = new ByteForge.Toolkit.Configuration();
+                config.Initialize(_tempConfigPath);
+                var section = config.GetSection<CustomDefaultConfig>("TestSection");
             };
 
             // Should handle custom default providers gracefully
@@ -426,15 +410,13 @@ CustomName=MappedValue";
                 largeConfigContent += $"Property{i}=Value{i}";
             }
 
-            IConfigurationManager config = new ByteForge.Toolkit.Configuration();
             _tempConfigPath = TestConfigurationHelper.CreateTempConfigFile(largeConfigContent);
-            config.Initialize(_tempConfigPath);
 
             // Act & Assert
             Action act = () =>
             {
-                IConfigurationManager testConfig = new ByteForge.Toolkit.Configuration();
-                testConfig.Initialize(_tempConfigPath);
+                IConfigurationManager config = new ByteForge.Toolkit.Configuration();
+                config.Initialize(_tempConfigPath);
                 var section = config.GetSection<BasicTestConfig>("TestSection");
             };
 
@@ -457,13 +439,13 @@ CustomName=MappedValue";
             // Act & Assert
             Action act = () =>
             {
-                IConfigurationManager testConfig = new ByteForge.Toolkit.Configuration();
-                testConfig.Initialize(_tempConfigPath);
+                IConfigurationManager config = new ByteForge.Toolkit.Configuration();
+                config.Initialize(_tempConfigPath);
                 
                 // Access multiple sections
                 for (int i = 0; i < 10; i++)
                 {
-                    var section = testConfig.GetSection<BasicTestConfig>($"Section{i}");
+                    var section = config.GetSection<BasicTestConfig>($"Section{i}");
                 }
             };
 
@@ -503,15 +485,13 @@ String_Value=Underscore key
 String.Value=Dotted key
 String Value=Spaced key";
 
-            IConfigurationManager config = new ByteForge.Toolkit.Configuration();
             _tempConfigPath = TestConfigurationHelper.CreateTempConfigFile(configContent);
-            config.Initialize(_tempConfigPath);
 
             // Act & Assert
             Action act = () =>
             {
-                IConfigurationManager testConfig = new ByteForge.Toolkit.Configuration();
-                testConfig.Initialize(_tempConfigPath);
+                IConfigurationManager config = new ByteForge.Toolkit.Configuration();
+                config.Initialize(_tempConfigPath);
                 var section = config.GetSection<BasicTestConfig>("TestSection");
             };
 
@@ -584,7 +564,7 @@ StringValue=Initial";
 
             // Act - Access sections concurrently
             var tasks = new Task<BasicTestConfig>[10];
-            for (int i = 0; i < 10; i++)
+            for (var i = 0; i < 10; i++)
             {
                 tasks[i] = Task.Run(() => config.GetSection<BasicTestConfig>("TestSection"));
             }

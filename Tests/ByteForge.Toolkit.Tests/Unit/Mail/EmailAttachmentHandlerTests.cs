@@ -1,5 +1,5 @@
 using ByteForge.Toolkit;
-using FluentAssertions;
+using AwesomeAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Collections.Generic;

@@ -1,6 +1,6 @@
 using System;
 using ByteForge.Toolkit;
-using FluentAssertions;
+using AwesomeAssertions;
 using Ignore = Microsoft.VisualStudio.TestTools.UnitTesting.IgnoreAttribute;
 
 namespace ByteForge.Toolkit.Tests.Unit.Utils

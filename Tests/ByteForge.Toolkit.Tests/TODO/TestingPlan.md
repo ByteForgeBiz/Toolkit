@@ -314,7 +314,7 @@ Jane Smith
 <PackageReference Include="MSTest.TestFramework" Version="3.1.1" />
 <PackageReference Include="MSTest.TestAdapter" Version="3.1.1" />
 <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.7.2" />
-<PackageReference Include="FluentAssertions" Version="6.12.0" />
+<PackageReference Include="AwesomeAssertions" Version="6.12.0" />
 <PackageReference Include="Microsoft.Extensions.Configuration" Version="9.0.7" />
 <PackageReference Include="Microsoft.Extensions.Configuration.Ini" Version="9.0.7" />
 ```
@@ -432,7 +432,7 @@ public static class AssertionHelpers
 #### Test Infrastructure Built
 - Complete helper class library (TempFileHelper, TestConfigurationHelper, AssertionHelpers)
 - Test data files with proper build configuration
-- MSTest framework with FluentAssertions integration
+- MSTest framework with AwesomeAssertions integration
 - 167 total test methods implemented
 
 #### Issues Resolved

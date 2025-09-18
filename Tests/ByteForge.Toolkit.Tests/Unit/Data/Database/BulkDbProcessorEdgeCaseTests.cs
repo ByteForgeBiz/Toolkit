@@ -1,6 +1,6 @@
 using ByteForge.Toolkit.Tests.Helpers;
 using ByteForge.Toolkit.Tests.Models;
-using FluentAssertions;
+using AwesomeAssertions;
 using System.Reflection;
 
 #pragma warning disable CS8602 // Dereference of a possibly null reference.

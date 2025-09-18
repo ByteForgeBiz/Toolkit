@@ -102,51 +102,49 @@ namespace ByteForge.Toolkit
 
             progressBar = progressBar.Substring(0, Math.Min(progressBar.Length, Console.WindowWidth - 1));
             Console.Write(progressBar.PadRight(Console.WindowWidth - 1) + "\r");
+        }
 
-            return;
+        /// <summary>
+        /// Builds a determinate progress bar string based on the given percentage.
+        /// </summary>
+        /// <param name="pct">Reference to the percentage value, which will be clamped between 0 and 100.</param>
+        /// <param name="message">Optional message to display with the progress bar.</param>
+        /// <param name="wdt">Width of the progress bar in characters.</param>
+        /// <returns>A formatted string representing the progress bar.</returns>
+        static string BuildProgressBar(ref float pct, string message, int wdt)
+        {
+            pct = Math.Min(100, Math.Max(0, pct));
+            var filledWidth = (int)(pct / 100f * wdt);
+            return $"\r [{new string('█', filledWidth).PadRight(wdt, '░')}] {pct:##0.00}% {message}";
+        }
 
-            /// <summary>
-            /// Builds a determinate progress bar string based on the given percentage.
-            /// </summary>
-            /// <param name="pct">Reference to the percentage value, which will be clamped between 0 and 100.</param>
-            /// <param name="message">Optional message to display with the progress bar.</param>
-            /// <param name="wdt">Width of the progress bar in characters.</param>
-            /// <returns>A formatted string representing the progress bar.</returns>
-            static string BuildProgressBar(ref float pct, string message, int wdt)
+        /// <summary>
+        /// Builds an indeterminate progress bar string with an animated block.
+        /// </summary>
+        /// <param name="message">Optional message to display with the progress bar.</param>
+        /// <param name="wdt">Width of the progress bar in characters.</param>
+        /// <returns>A formatted string representing the animated progress bar.</returns>
+        static string BuildIndeterminateProgressBar(string message, int wdt)
+        {
+            // Advance animation frame on each call
+            var animFrame = _animationFrame % (wdt + 2);
+            _animationFrame += (wdt / 10);
+
+            var filled = new string('░', wdt);
+
+            // Place a moving block of activity
+            var blockSize = Math.Min(3, wdt / 4);
+            var startPos = Math.Max(0, animFrame - blockSize);
+            var endPos = Math.Min(wdt, animFrame);
+
+            if (endPos > startPos)
             {
-                pct = Math.Min(100, Math.Max(0, pct));
-                var filledWidth = (int)(pct / 100f * wdt);
-                return $"\r [{new string('█', filledWidth).PadRight(wdt, '░')}] {pct:##0.00}% {message}";
+                filled = filled.Substring(0, startPos) +
+                        new string('█', endPos - startPos) +
+                        filled.Substring(endPos);
             }
 
-            /// <summary>
-            /// Builds an indeterminate progress bar string with an animated block.
-            /// </summary>
-            /// <param name="message">Optional message to display with the progress bar.</param>
-            /// <param name="wdt">Width of the progress bar in characters.</param>
-            /// <returns>A formatted string representing the animated progress bar.</returns>
-            static string BuildIndeterminateProgressBar(string message, int wdt)
-            {
-                // Advance animation frame on each call
-                var animFrame = _animationFrame % (wdt + 2);
-                _animationFrame += (wdt / 10);
-
-                var filled = new string('░', wdt);
-
-                // Place a moving block of activity
-                var blockSize = Math.Min(3, wdt / 4);
-                var startPos = Math.Max(0, animFrame - blockSize);
-                var endPos = Math.Min(wdt, animFrame);
-
-                if (endPos > startPos)
-                {
-                    filled = filled.Substring(0, startPos) +
-                            new string('█', endPos - startPos) +
-                            filled.Substring(endPos);
-                }
-
-                return $"\r [{filled}] Working... {message}";
-            }
+            return $"\r [{filled}] {message}";
         }
 
         /// <summary>

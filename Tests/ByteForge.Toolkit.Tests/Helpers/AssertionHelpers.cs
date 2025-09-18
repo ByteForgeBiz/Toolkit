@@ -2,9 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using ByteForge.Toolkit;
-using FluentAssertions;
-using FluentAssertions.Execution;
-using FluentAssertions.Primitives;
+using AwesomeAssertions;
+using AwesomeAssertions.Execution;
+using AwesomeAssertions.Primitives;
 
 namespace ByteForge.Toolkit.Tests.Helpers
 {
@@ -155,8 +155,8 @@ namespace ByteForge.Toolkit.Tests.Helpers
         /// <param name="because">The reason for the assertion.</param>
         public static void AssertInRange<T>(T actual, T min, T max, string because = "") where T : IComparable<T>
         {
-            actual.Should().BeGreaterOrEqualTo(min, because);
-            actual.Should().BeLessOrEqualTo(max, because);
+            actual.Should().BeGreaterThanOrEqualTo(min, because);
+            actual.Should().BeLessThanOrEqualTo(max, because);
         }
     }
 }

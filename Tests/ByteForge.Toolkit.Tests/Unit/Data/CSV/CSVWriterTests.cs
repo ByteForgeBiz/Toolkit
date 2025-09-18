@@ -4,7 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using ByteForge.Toolkit.Tests.Helpers;
-using FluentAssertions;
+using AwesomeAssertions;
 
 #pragma warning disable CS8600 // Converting null literal or possible null value to non-nullable type.
 

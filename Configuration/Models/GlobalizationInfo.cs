@@ -45,6 +45,7 @@ namespace ByteForge.Toolkit
         /// The <see cref="CultureInfo"/> property determines the culture-specific formatting for all values in this class.<br/>
         /// For example, setting this to <c>CultureInfo.GetCultureInfo("fr-FR")</c> will use French formatting conventions.
         /// </remarks>
+        [DefaultValueProvider(typeof(GlobalizationInfo), nameof(GetDefaultCultureInfo))]
         public CultureInfo CultureInfo { get; set; } = CultureInfo.InvariantCulture;
 
          /*
@@ -450,5 +451,7 @@ namespace ByteForge.Toolkit
         /// <param name="nullValue">The value to return if <paramref name="value"/> is <c>null</c>. Defaults to <c>null</c>.</param>
         /// <returns>A string representation of the value formatted as a currency, or <paramref name="nullValue"/> if <paramref name="value"/> is <c>null</c>.</returns>
         public string FormatCurrency(decimal? value, string nullValue = null) => value?.ToString(CurrencyFormat, CultureInfo) ?? nullValue;
+
+        private static CultureInfo GetDefaultCultureInfo() => CultureInfo.InvariantCulture;
     }
 }

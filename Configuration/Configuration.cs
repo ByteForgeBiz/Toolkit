@@ -147,9 +147,9 @@ namespace ByteForge.Toolkit
         private bool _manuallyInitialized;
 
         /// <summary>
-        /// Lazy-loaded globalization info for this instance.
+        /// Represents globalization settings and information used throughout the application.
         /// </summary>
-        private Lazy<GlobalizationInfo> _globalizationInfo;
+        private GlobalizationInfo _globalizationInfo;
 
         /// <summary>
         /// Lock object for thread safety on this instance.
@@ -245,7 +245,16 @@ namespace ByteForge.Toolkit
         /// <summary>
         /// Gets the globalization information for culture-aware formatting.
         /// </summary>
-        GlobalizationInfo IConfigurationManager.Globalization => _globalizationInfo?.Value ?? new GlobalizationInfo();
+        GlobalizationInfo IConfigurationManager.Globalization
+        {
+            get
+            {
+                // Ensure configuration is initialized before accessing globalization info
+                if (!_isInitialized)
+                    ((IConfigurationManager)this).Initialize();
+                return _globalizationInfo ??= GetSection<GlobalizationInfo>("Globalization");
+            }
+        }
 
         /// <summary>
         /// Initializes the configuration settings by loading the INI file from the specified path.
@@ -317,7 +326,7 @@ namespace ByteForge.Toolkit
 
                 // Initialize globalization info lazily - this avoids overhead when not needed
                 // The Lazy<T> pattern defers creation until first access
-                _globalizationInfo = new Lazy<GlobalizationInfo>(() => ((IConfigurationManager)this).GetSection<GlobalizationInfo>("Globalization"));
+                _globalizationInfo = ((IConfigurationManager)this).GetSection<GlobalizationInfo>("Globalization");
             }
         }
 
@@ -356,7 +365,13 @@ namespace ByteForge.Toolkit
             sectionName = sectionName ?? typeof(T).Name;
             if (_sections.TryGetValue(sectionName, out var section))
                 return (T)((IConfigSection<T>)section).Value;
-            return ((IConfigurationManager)this).AddSection<T>(sectionName);
+            lock (_instanceLock)
+            {
+                // Double-check pattern
+                if (_sections.TryGetValue(sectionName, out var section2))
+                    return (T)((IConfigSection<T>)section2).Value;
+                return ((IConfigurationManager)this).AddSection<T>(sectionName);
+            }
         }
 
         /// <summary>
@@ -494,7 +509,8 @@ namespace ByteForge.Toolkit
             }
 
             // Write the updated INI data back to the file
-            File.WriteAllLines(iniFilePath, iniData);
+            lock(_instanceLock)
+                File.WriteAllLines(iniFilePath, iniData);
         }
     }
 }

@@ -65,7 +65,7 @@ namespace ByteForge.Toolkit
         /// The spinner will automatically start displaying when this constructor is called.
         /// If no console is available, the spinner will not display but will not cause errors.
         /// </remarks>
-        public ProgressSpinner(string message = "Working...")
+        public ProgressSpinner(string message = null)
         {
             _message = message ?? "Working...";
             

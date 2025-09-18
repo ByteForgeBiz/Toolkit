@@ -3,7 +3,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using ByteForge.Toolkit;
 using ByteForge.Toolkit.Tests.Helpers;
-using FluentAssertions;
+using AwesomeAssertions;
 
 namespace ByteForge.Toolkit.Tests.Unit.Utils
 {

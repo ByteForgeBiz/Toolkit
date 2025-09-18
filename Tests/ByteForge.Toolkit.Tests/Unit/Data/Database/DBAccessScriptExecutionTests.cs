@@ -1,5 +1,6 @@
 using ByteForge.Toolkit.Tests.Helpers;
-using FluentAssertions;
+using AwesomeAssertions;
+using System.Data;
 
 #pragma warning disable CS8602 // Dereference of a possibly null reference.
 
@@ -189,7 +190,7 @@ namespace ByteForge.Toolkit.Tests.Unit.Data.Database
             
             // Verify the SELECT result
             var selectResult = result.ResultSets[0];
-            selectResult.Rows.Should().HaveCount(1, "SELECT should return one row");
+            selectResult.Rows.OfType<DataRow>().Should().HaveCount(1, "SELECT should return one row");
             var countValue = Convert.ToInt32(selectResult.Rows[0][0]);
             countValue.Should().Be(2, "should find both inserted records");
         }
@@ -368,21 +369,21 @@ namespace ByteForge.Toolkit.Tests.Unit.Data.Database
             
             // Validate first result set (TOP 3 entities)
             var firstResultSet = result.ResultSets[0];
-            firstResultSet.Rows.Should().HaveCountLessOrEqualTo(3, "first SELECT should return at most 3 rows");
+            firstResultSet.Rows.OfType<DataRow>().Should().HaveCountLessThanOrEqualTo(3, "first SELECT should return at most 3 rows");
             firstResultSet.Columns.Contains("Id").Should().BeTrue("should have Id column");
             firstResultSet.Columns.Contains("Name").Should().BeTrue("should have Name column");
             
             // Validate second result set (specific entity)
             var secondResultSet = result.ResultSets[1];
-            secondResultSet.Rows.Should().HaveCount(1, "second SELECT should return exactly 1 row");
+            secondResultSet.Rows.OfType<DataRow>().Should().HaveCount(1, "second SELECT should return exactly 1 row");
             var retrievedName = secondResultSet.Rows[0]["Name"].ToString();
             retrievedName.Should().Be(testName1, "should retrieve the inserted entity");
             
             // Validate third result set (count)
             var thirdResultSet = result.ResultSets[2];
-            thirdResultSet.Rows.Should().HaveCount(1, "third SELECT should return exactly 1 row");
+            thirdResultSet.Rows.OfType<DataRow>().Should().HaveCount(1, "third SELECT should return exactly 1 row");
             var countValue = Convert.ToInt32(thirdResultSet.Rows[0]["TotalCount"]);
-            countValue.Should().BeGreaterOrEqualTo(1, "should find at least the inserted test entity");
+            countValue.Should().BeGreaterThanOrEqualTo(1, "should find at least the inserted test entity");
         }
 
         /// <summary>
@@ -497,7 +498,7 @@ namespace ByteForge.Toolkit.Tests.Unit.Data.Database
             result.LastException.Should().NotBeNull("should capture the SQL exception");
             
             // Should have executed first batch successfully, but based on error behavior, might only have 1 result
-            result.RecordsAffected.Should().HaveCountLessOrEqualTo(2, "should have results for batches before error");
+            result.RecordsAffected.Should().HaveCountLessThanOrEqualTo(2, "should have results for batches before error");
             result.RecordsAffected.Should().NotBeEmpty("should have at least one successful batch result");
             result.RecordsAffected[0].Should().Be(1, "first batch should succeed and affect 1 record");
             

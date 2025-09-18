@@ -1,5 +1,5 @@
 using ByteForge.Toolkit.Tests.Helpers;
-using FluentAssertions;
+using AwesomeAssertions;
 
 #pragma warning disable CS8600 // Converting null literal or possible null value to non-nullable type.
 
@@ -279,7 +279,7 @@ namespace ByteForge.Toolkit.Tests.Unit.Data.Database
         {
             // Assert that enumeration has expected values
             var values = Enum.GetValues(typeof(DBAccess.DataBaseType));
-            values.Length.Should().BeGreaterOrEqualTo(2, "should have at least SQLServer and ODBC types");
+            values.Length.Should().BeGreaterThanOrEqualTo(2, "should have at least SQLServer and ODBC types");
 
             // Check for specific expected values
             Enum.IsDefined(typeof(DBAccess.DataBaseType), DBAccess.DataBaseType.SQLServer).Should().BeTrue();

@@ -1,5 +1,5 @@
 using ByteForge.Toolkit.Tests.Helpers;
-using FluentAssertions;
+using AwesomeAssertions;
 using System.Text;
 
 namespace ByteForge.Toolkit.Tests.Unit.Data.CSV

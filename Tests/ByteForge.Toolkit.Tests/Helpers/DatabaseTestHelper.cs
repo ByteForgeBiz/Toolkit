@@ -2,7 +2,7 @@ using System;
 using System.Data;
 using System.Diagnostics;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using FluentAssertions;
+using AwesomeAssertions;
 
 namespace ByteForge.Toolkit.Tests.Helpers
 {
@@ -455,7 +455,7 @@ ROLLBACK TRANSACTION;";
         public static void AssertExecutionTime(Action operation, long maxMilliseconds, string operationName = "Operation")
         {
             var elapsed = MeasureExecutionTime(operation);
-            elapsed.Should().BeLessOrEqualTo(maxMilliseconds, 
+            elapsed.Should().BeLessThanOrEqualTo(maxMilliseconds, 
                 $"{operationName} should complete within {maxMilliseconds}ms but took {elapsed}ms");
         }
 

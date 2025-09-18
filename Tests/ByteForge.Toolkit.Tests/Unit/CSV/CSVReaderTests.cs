@@ -6,7 +6,7 @@ using System.Text;
 using ByteForge.Toolkit;
 using ByteForge.Toolkit.Logging;
 using ByteForge.Toolkit.Tests.Helpers;
-using FluentAssertions;
+using AwesomeAssertions;
 
 namespace ByteForge.Toolkit.Tests.Unit.CSV
 {

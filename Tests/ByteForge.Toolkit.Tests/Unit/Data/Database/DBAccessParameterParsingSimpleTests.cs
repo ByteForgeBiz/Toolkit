@@ -1,4 +1,4 @@
-using FluentAssertions;
+using AwesomeAssertions;
 using System.Reflection;
 
 #pragma warning disable CS8603 // Possible null reference return.

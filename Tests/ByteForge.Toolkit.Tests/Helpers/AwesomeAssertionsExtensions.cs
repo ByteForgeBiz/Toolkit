@@ -1,7 +1,6 @@
-﻿using FluentAssertions;
-using FluentAssertions.Execution;
-using FluentAssertions.Primitives;
-using System.Net.Http;
+﻿using AwesomeAssertions;
+using AwesomeAssertions.Execution;
+using AwesomeAssertions.Primitives;
 
 namespace ByteForge.Toolkit.Tests.Helpers
 {
@@ -10,7 +9,7 @@ namespace ByteForge.Toolkit.Tests.Helpers
     /// </summary>
     /// <remarks>
     /// This static helper class contains a collection of assertion methods that extend the
-    /// functionality of FluentAssertions. These methods allow users to assert that a subject satisfies specific
+    /// functionality of AwesomeAssertions. These methods allow users to assert that a subject satisfies specific
     /// conditions, such as meeting all or any of a set of predicates. The methods are designed to work with a variety
     /// of types, including reference types, value types, nullable types, and specific types like 
     /// <see cref="DateTime"/>, <see cref="Guid"/>, and <see cref="HttpResponseMessage"/> 
@@ -18,8 +17,64 @@ namespace ByteForge.Toolkit.Tests.Helpers
     /// chained fluently. The methods also support optional "because" arguments to provide context for assertion failures. 
     /// </para>
     /// </remarks>
-    internal static class FluentAssertionsExtensions
+    internal static class AwesomeAssertionsExtensions
     {
+        private static AssertionChain Chain => AssertionChain.GetOrCreate();
+
+        /// <summary>
+        /// Asserts that the subject satisfies at least one of the specified predicates.
+        /// </summary>
+        /// <typeparam name="TSubject">The type of the subject being asserted.</typeparam>
+        /// <typeparam name="TAssertions">The type of the assertion object.</typeparam>
+        /// <param name="assertion">The assertion object containing the subject to evaluate.</param>
+        /// <param name="because">A formatted phrase explaining why the assertion is needed. This is optional and can include placeholders for arguments.</param>
+        /// <param name="predicates">An array of predicates to evaluate against the subject. At least one predicate must return <see langword="true"/> for the assertion to pass.</param>
+        /// <returns>An <see cref="AndConstraint{TAssertions}"/> that can be used to chain additional assertions.</returns>
+        /// <remarks>
+        /// This method is typically used to verify that a subject meets at least one of a set of
+        /// conditions. If no predicates are provided, the assertion will fail.
+        /// </remarks>
+        public static AndConstraint<TAssertions> SatisfyAny<TSubject, TAssertions>(
+            this ObjectAssertions<TSubject, TAssertions> assertion,
+            string because = "",
+            params Func<TSubject, bool>[] predicates)
+            where TAssertions : ObjectAssertions<TSubject, TAssertions>
+        {
+            Chain
+                .BecauseOf(because)
+                .ForCondition(predicates.Any(p => p(assertion.Subject)))
+                .FailWith("Expected any predicate to be satisfied, but none were.");
+
+            return new AndConstraint<TAssertions>((TAssertions)assertion);
+        }
+
+        /// <summary>
+        /// Asserts that the subject satisfies all of the specified predicates.
+        /// </summary>
+        /// <typeparam name="TSubject">The type of the subject being asserted.</typeparam>
+        /// <typeparam name="TAssertions">The type of the assertion object.</typeparam>
+        /// <param name="assertion">The assertion object containing the subject to evaluate.</param>
+        /// <param name="because">A formatted phrase explaining why the assertion is needed. This is optional and can include placeholders for arguments.</param>
+        /// <param name="predicates">An array of predicates to evaluate against the subject. All predicates must return <see langword="true"/> for the assertion to pass.</param>
+        /// <returns>An <see cref="AndConstraint{TAssertions}"/> that can be used to chain additional assertions.</returns>
+        /// <remarks>
+        /// This method is typically used to verify that a subject meets all of a set of
+        /// conditions. If no predicates are provided, the assertion will fail.
+        /// </remarks>
+        public static AndConstraint<TAssertions> SatisfyAll<TSubject, TAssertions>(
+            this ObjectAssertions<TSubject, TAssertions> assertion,
+            string because = "",
+            params Func<TSubject, bool>[] predicates)
+            where TAssertions : ObjectAssertions<TSubject, TAssertions>
+        {
+            Chain
+                .BecauseOf(because)
+                .ForCondition(predicates.All(p => p(assertion.Subject)))
+                .FailWith("Expected all predicates to be satisfied, but not all were.");
+
+            return new AndConstraint<TAssertions>((TAssertions)assertion);
+        }
+
         /// <summary>
         /// Asserts that the subject satisfies at least one of the specified predicates.
         /// </summary>
@@ -39,7 +94,7 @@ namespace ByteForge.Toolkit.Tests.Helpers
             params Func<TSubject, bool>[] predicates)
             where TAssertions : ReferenceTypeAssertions<TSubject, TAssertions>
         {
-            Execute.Assertion
+            Chain
                 .BecauseOf(because)
                 .ForCondition(predicates.Any(p => p(assertion.Subject)))
                 .FailWith("Expected any predicate to be satisfied, but none were.");
@@ -66,7 +121,7 @@ namespace ByteForge.Toolkit.Tests.Helpers
             params Func<TSubject, bool>[] predicates)
             where TAssertions : ReferenceTypeAssertions<TSubject, TAssertions>
         {
-            Execute.Assertion
+            Chain
                 .BecauseOf(because)
                 .ForCondition(predicates.All(p => p(assertion.Subject)))
                 .FailWith("Expected all predicates to be satisfied, but not all were.");
@@ -86,7 +141,7 @@ namespace ByteForge.Toolkit.Tests.Helpers
             string because = "",
             params Func<bool?, bool>[] predicates)
         {
-            Execute.Assertion
+            Chain
                 .BecauseOf(because)
                 .ForCondition(predicates.Any(p => p(assertion.Subject)))
                 .FailWith("Expected any predicate to be satisfied, but none were.");
@@ -106,7 +161,7 @@ namespace ByteForge.Toolkit.Tests.Helpers
             string because = "",
             params Func<bool?, bool>[] predicates)
         {
-            Execute.Assertion
+            Chain
                 .BecauseOf(because)
                 .ForCondition(predicates.All(p => p(assertion.Subject)))
                 .FailWith("Expected all predicates to be satisfied, but not all were.");
@@ -126,7 +181,7 @@ namespace ByteForge.Toolkit.Tests.Helpers
             string because = "",
             params Func<DateTime?, bool>[] predicates)
         {
-            Execute.Assertion
+            Chain
                 .BecauseOf(because)
                 .ForCondition(predicates.Any(p => p(assertion.Subject)))
                 .FailWith("Expected any predicate to be satisfied, but none were.");
@@ -146,7 +201,7 @@ namespace ByteForge.Toolkit.Tests.Helpers
             string because = "",
             params Func<DateTime?, bool>[] predicates)
         {
-            Execute.Assertion
+            Chain
                 .BecauseOf(because)
                 .ForCondition(predicates.All(p => p(assertion.Subject)))
                 .FailWith("Expected all predicates to be satisfied, but not all were.");
@@ -166,7 +221,7 @@ namespace ByteForge.Toolkit.Tests.Helpers
             string because = "",
             params Func<DateTimeOffset?, bool>[] predicates)
         {
-            Execute.Assertion
+            Chain
                 .BecauseOf(because)
                 .ForCondition(predicates.Any(p => p(assertion.Subject)))
                 .FailWith("Expected any predicate to be satisfied, but none were.");
@@ -186,7 +241,7 @@ namespace ByteForge.Toolkit.Tests.Helpers
             string because = "",
             params Func<DateTimeOffset?, bool>[] predicates)
         {
-            Execute.Assertion
+            Chain
                 .BecauseOf(because)
                 .ForCondition(predicates.All(p => p(assertion.Subject)))
                 .FailWith("Expected all predicates to be satisfied, but not all were.");
@@ -206,7 +261,7 @@ namespace ByteForge.Toolkit.Tests.Helpers
             string because = "",
             params Func<Guid?, bool>[] predicates)
         {
-            Execute.Assertion
+            Chain
                 .BecauseOf(because)
                 .ForCondition(predicates.Any(p => p(assertion.Subject)))
                 .FailWith("Expected any predicate to be satisfied, but none were.");
@@ -226,7 +281,7 @@ namespace ByteForge.Toolkit.Tests.Helpers
             string because = "",
             params Func<Guid?, bool>[] predicates)
         {
-            Execute.Assertion
+            Chain
                 .BecauseOf(because)
                 .ForCondition(predicates.All(p => p(assertion.Subject)))
                 .FailWith("Expected all predicates to be satisfied, but not all were.");
@@ -248,7 +303,7 @@ namespace ByteForge.Toolkit.Tests.Helpers
             params Func<TEnum?, bool>[] predicates)
             where TEnum : struct, Enum
         {
-            Execute.Assertion
+            Chain
                 .BecauseOf(because)
                 .ForCondition(predicates.Any(p => p(assertion.Subject)))
                 .FailWith("Expected any predicate to be satisfied, but none were.");
@@ -270,7 +325,7 @@ namespace ByteForge.Toolkit.Tests.Helpers
             params Func<TEnum?, bool>[] predicates)
             where TEnum : struct, Enum
         {
-            Execute.Assertion
+            Chain
                 .BecauseOf(because)
                 .ForCondition(predicates.All(p => p(assertion.Subject)))
                 .FailWith("Expected all predicates to be satisfied, but not all were.");
@@ -290,7 +345,7 @@ namespace ByteForge.Toolkit.Tests.Helpers
             string because = "",
             params Func<bool?, bool>[] predicates)
         {
-            Execute.Assertion
+            Chain
                 .BecauseOf(because)
                 .ForCondition(predicates.Any(p => p(assertion.Subject)))
                 .FailWith("Expected any predicate to be satisfied, but none were.");
@@ -310,7 +365,7 @@ namespace ByteForge.Toolkit.Tests.Helpers
             string because = "",
             params Func<bool?, bool>[] predicates)
         {
-            Execute.Assertion
+            Chain
                 .BecauseOf(because)
                 .ForCondition(predicates.All(p => p(assertion.Subject)))
                 .FailWith("Expected all predicates to be satisfied, but not all were.");
@@ -330,7 +385,7 @@ namespace ByteForge.Toolkit.Tests.Helpers
             string because = "",
             params Func<DateTime?, bool>[] predicates)
         {
-            Execute.Assertion
+            Chain
                 .BecauseOf(because)
                 .ForCondition(predicates.Any(p => p(assertion.Subject)))
                 .FailWith("Expected any predicate to be satisfied, but none were.");
@@ -350,7 +405,7 @@ namespace ByteForge.Toolkit.Tests.Helpers
             string because = "",
             params Func<DateTime?, bool>[] predicates)
         {
-            Execute.Assertion
+            Chain
                 .BecauseOf(because)
                 .ForCondition(predicates.All(p => p(assertion.Subject)))
                 .FailWith("Expected all predicates to be satisfied, but not all were.");
@@ -370,7 +425,7 @@ namespace ByteForge.Toolkit.Tests.Helpers
             string because = "",
             params Func<DateTimeOffset?, bool>[] predicates)
         {
-            Execute.Assertion
+            Chain
                 .BecauseOf(because)
                 .ForCondition(predicates.Any(p => p(assertion.Subject)))
                 .FailWith("Expected any predicate to be satisfied, but none were.");
@@ -390,7 +445,7 @@ namespace ByteForge.Toolkit.Tests.Helpers
             string because = "",
             params Func<DateTimeOffset?, bool>[] predicates)
         {
-            Execute.Assertion
+            Chain
                 .BecauseOf(because)
                 .ForCondition(predicates.All(p => p(assertion.Subject)))
                 .FailWith("Expected all predicates to be satisfied, but not all were.");
@@ -412,7 +467,7 @@ namespace ByteForge.Toolkit.Tests.Helpers
             params Func<TEnum?, bool>[] predicates)
             where TEnum : struct, Enum
         {
-            Execute.Assertion
+            Chain
                 .BecauseOf(because)
                 .ForCondition(predicates.Any(p => p(assertion.Subject)))
                 .FailWith("Expected any predicate to be satisfied, but none were.");
@@ -434,7 +489,7 @@ namespace ByteForge.Toolkit.Tests.Helpers
             params Func<TEnum?, bool>[] predicates)
             where TEnum : struct, Enum
         {
-            Execute.Assertion
+            Chain
                 .BecauseOf(because)
                 .ForCondition(predicates.All(p => p(assertion.Subject)))
                 .FailWith("Expected all predicates to be satisfied, but not all were.");
@@ -454,7 +509,7 @@ namespace ByteForge.Toolkit.Tests.Helpers
             string because = "",
             params Func<Guid?, bool>[] predicates)
         {
-            Execute.Assertion
+            Chain
                 .BecauseOf(because)
                 .ForCondition(predicates.Any(p => p(assertion.Subject)))
                 .FailWith("Expected any predicate to be satisfied, but none were.");
@@ -474,52 +529,12 @@ namespace ByteForge.Toolkit.Tests.Helpers
             string because = "",
             params Func<Guid?, bool>[] predicates)
         {
-            Execute.Assertion
+            Chain
                 .BecauseOf(because)
                 .ForCondition(predicates.All(p => p(assertion.Subject)))
                 .FailWith("Expected all predicates to be satisfied, but not all were.");
 
             return new AndConstraint<NullableGuidAssertions>(assertion);
-        }
-
-        /// <summary>
-        /// Asserts that the HttpResponseMessage subject satisfies at least one of the specified predicates.
-        /// </summary>
-        /// <param name="assertion">The assertion object containing the HttpResponseMessage subject to evaluate.</param>
-        /// <param name="because">A formatted phrase explaining why the assertion is needed.</param>
-        /// <param name="predicates">An array of predicates to evaluate against the HttpResponseMessage subject.</param>
-        /// <returns>An <see cref="AndConstraint{HttpResponseMessageAssertions}"/> for chaining further assertions.</returns>
-        public static AndConstraint<HttpResponseMessageAssertions> SatisfyAny(
-            this HttpResponseMessageAssertions assertion,
-            string because = "",
-            params Func<HttpResponseMessage, bool>[] predicates)
-        {
-            Execute.Assertion
-                .BecauseOf(because)
-                .ForCondition(predicates.Any(p => p(assertion.Subject)))
-                .FailWith("Expected any predicate to be satisfied, but none were.");
-
-            return new AndConstraint<HttpResponseMessageAssertions>(assertion);
-        }
-
-        /// <summary>
-        /// Asserts that the HttpResponseMessage subject satisfies all of the specified predicates.
-        /// </summary>
-        /// <param name="assertion">The assertion object containing the HttpResponseMessage subject to evaluate.</param>
-        /// <param name="because">A formatted phrase explaining why the assertion is needed.</param>
-        /// <param name="predicates">An array of predicates to evaluate against the HttpResponseMessage subject.</param>
-        /// <returns>An <see cref="AndConstraint{HttpResponseMessageAssertions}"/> for chaining further assertions.</returns>
-        public static AndConstraint<HttpResponseMessageAssertions> SatisfyAll(
-            this HttpResponseMessageAssertions assertion,
-            string because = "",
-            params Func<HttpResponseMessage, bool>[] predicates)
-        {
-            Execute.Assertion
-                .BecauseOf(because)
-                .ForCondition(predicates.All(p => p(assertion.Subject)))
-                .FailWith("Expected all predicates to be satisfied, but not all were.");
-
-            return new AndConstraint<HttpResponseMessageAssertions>(assertion);
         }
 
         /// <summary>
@@ -534,7 +549,7 @@ namespace ByteForge.Toolkit.Tests.Helpers
             string because = "",
             params Func<TimeSpan?, bool>[] predicates)
         {
-            Execute.Assertion
+            Chain
                 .BecauseOf(because)
                 .ForCondition(predicates.Any(p => p(assertion.Subject)))
                 .FailWith("Expected any predicate to be satisfied, but none were.");
@@ -554,12 +569,52 @@ namespace ByteForge.Toolkit.Tests.Helpers
             string because = "",
             params Func<TimeSpan?, bool>[] predicates)
         {
-            Execute.Assertion
+            Chain
                 .BecauseOf(because)
                 .ForCondition(predicates.All(p => p(assertion.Subject)))
                 .FailWith("Expected all predicates to be satisfied, but not all were.");
 
             return new AndConstraint<SimpleTimeSpanAssertions>(assertion);
+        }
+
+        /// <summary>
+        /// Asserts that the nullable TimeSpan subject satisfies at least one of the specified predicates.
+        /// </summary>
+        /// <param name="assertion">The assertion object containing the nullable TimeSpan subject to evaluate.</param>
+        /// <param name="because">A formatted phrase explaining why the assertion is needed.</param>
+        /// <param name="predicates">An array of predicates to evaluate against the nullable TimeSpan subject.</param>
+        /// <returns>An <see cref="AndConstraint{NullableSimpleTimeSpanAssertions}"/> for chaining further assertions.</returns>
+        public static AndConstraint<NullableSimpleTimeSpanAssertions> SatisfyAny(
+            this NullableSimpleTimeSpanAssertions assertion,
+            string because = "",
+            params Func<TimeSpan?, bool>[] predicates)
+        {
+            Chain
+                .BecauseOf(because)
+                .ForCondition(predicates.Any(p => p(assertion.Subject)))
+                .FailWith("Expected any predicate to be satisfied, but none were.");
+
+            return new AndConstraint<NullableSimpleTimeSpanAssertions>(assertion);
+        }
+
+        /// <summary>
+        /// Asserts that the nullable TimeSpan subject satisfies all of the specified predicates.
+        /// </summary>
+        /// <param name="assertion">The assertion object containing the nullable TimeSpan subject to evaluate.</param>
+        /// <param name="because">A formatted phrase explaining why the assertion is needed.</param>
+        /// <param name="predicates">An array of predicates to evaluate against the nullable TimeSpan subject.</param>
+        /// <returns>An <see cref="AndConstraint{NullableSimpleTimeSpanAssertions}"/> for chaining further assertions.</returns>
+        public static AndConstraint<NullableSimpleTimeSpanAssertions> SatisfyAll(
+            this NullableSimpleTimeSpanAssertions assertion,
+            string because = "",
+            params Func<TimeSpan?, bool>[] predicates)
+        {
+            Chain
+                .BecauseOf(because)
+                .ForCondition(predicates.All(p => p(assertion.Subject)))
+                .FailWith("Expected all predicates to be satisfied, but not all were.");
+
+            return new AndConstraint<NullableSimpleTimeSpanAssertions>(assertion);
         }
     }
 }

@@ -1,7 +1,7 @@
 using System;
 using System.IO;
 using System.Reflection;
-using FluentAssertions;
+using AwesomeAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using ByteForge.Toolkit.Tests.Helpers;
 using ByteForge.Toolkit.Tests.Models;
@@ -313,7 +313,7 @@ CurrencySymbol=$";
             var savedContent = File.ReadAllText(_tempConfigPath);
             savedContent.Should().Contain("StringValue=Modified String", "modified string should be saved");
             savedContent.Should().Contain("IntValue=999", "modified int should be saved");
-            savedContent.Should().Contain("BoolValue=false", "modified bool should be saved");
+            savedContent.Should().Contain("BoolValue=False", "modified bool should be saved");
         }
 
         [TestMethod]

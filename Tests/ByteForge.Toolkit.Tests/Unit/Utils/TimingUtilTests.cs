@@ -3,7 +3,7 @@ using System.IO;
 using System.Threading.Tasks;
 using ByteForge.Toolkit;
 using ByteForge.Toolkit.Logging;
-using FluentAssertions;
+using AwesomeAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace ByteForge.Toolkit.Tests.Unit.Utils
@@ -217,7 +217,7 @@ namespace ByteForge.Toolkit.Tests.Unit.Utils
             var match = System.Text.RegularExpressions.Regex.Match(testLogger.LastMessage, @"(\d+(?:\.\d+)?)ms");
             if (match.Success && double.TryParse(match.Groups[1].Value, out var loggedMs))
             {
-                loggedMs.Should().BeGreaterOrEqualTo(sleepDuration * 0.8, "logged time should be approximately the sleep duration");
+                loggedMs.Should().BeGreaterThanOrEqualTo(sleepDuration * 0.8, "logged time should be approximately the sleep duration");
                 loggedMs.Should().BeLessThan(sleepDuration * 3, "logged time should be reasonable");
             }
         }
@@ -425,7 +425,7 @@ namespace ByteForge.Toolkit.Tests.Unit.Utils
             var match = System.Text.RegularExpressions.Regex.Match(testLogger.LastMessage, @"(\d+(?:\.\d+)?)ms");
             if (match.Success && double.TryParse(match.Groups[1].Value, out var loggedMs))
             {
-                loggedMs.Should().BeGreaterOrEqualTo(delayDuration * 0.8, "logged time should be approximately the delay duration");
+                loggedMs.Should().BeGreaterThanOrEqualTo(delayDuration * 0.8, "logged time should be approximately the delay duration");
                 loggedMs.Should().BeLessThan(delayDuration * 3, "logged time should be reasonable");
             }
         }

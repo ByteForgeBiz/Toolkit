@@ -1,5 +1,5 @@
 using ByteForge.Toolkit.Tests.Helpers;
-using FluentAssertions;
+using AwesomeAssertions;
 
 #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
 
@@ -465,7 +465,7 @@ namespace ByteForge.Toolkit.Tests.Unit.Data.Database
 
             // Assert
             _dbAccess.LastException.Should().BeNull($"should not have thrown exception: {_dbAccess.LastException}");
-            count.Should().BeGreaterOrEqualTo(0, "should return a valid count");
+            count.Should().BeGreaterThanOrEqualTo(0, "should return a valid count");
         }
 
         /// <summary>
@@ -581,7 +581,7 @@ namespace ByteForge.Toolkit.Tests.Unit.Data.Database
 
             // Assert
             _dbAccess.LastException.Should().BeNull($"should not have thrown exception: {_dbAccess.LastException}");
-            count.Should().BeGreaterOrEqualTo(0, "should handle empty string parameters");
+            count.Should().BeGreaterThanOrEqualTo(0, "should handle empty string parameters");
         }
 
         /// <summary>
