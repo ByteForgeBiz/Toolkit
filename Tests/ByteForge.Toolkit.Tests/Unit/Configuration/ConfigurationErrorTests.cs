@@ -2,6 +2,7 @@ using AwesomeAssertions;
 using ByteForge.Toolkit.Tests.Helpers;
 using ByteForge.Toolkit.Tests.Models;
 using System.Reflection;
+using System.Text;
 
 namespace ByteForge.Toolkit.Tests.Unit.Configuration
 {
@@ -686,30 +687,53 @@ UrlValue=https://example.com/path?param=value&other=test";
         [TestMethod]
         public void Configuration_ConcurrentSaveOperations_ShouldHandleGracefully()
         {
-            // Arrange
-            var configContent = @"[TestSection]
-StringValue=Initial";
-            
+            // Arrange - Create a unique file for this test to avoid conflicts with other tests
+            var sb = new StringBuilder();
+            for (var i = 0; i < 5; i++)
+            {
+                sb.AppendLine($"[TestSection{i}]");
+                sb.AppendLine($"StringValue=InitialValue{i}");
+            }
+
+            _tempConfigPath = TestConfigurationHelper.CreateTempConfigFile(sb.ToString());
             IConfigurationManager config = new ByteForge.Toolkit.Configuration();
-            _tempConfigPath = TestConfigurationHelper.CreateTempConfigFile(configContent);
             config.Initialize(_tempConfigPath);
 
             // Act - Attempt concurrent save operations
             var tasks = new Task[5];
+
             for (var i = 0; i < 5; i++)
             {
                 var index = i;
                 tasks[i] = Task.Run(() =>
                 {
-                    var section = config.GetSection<BasicTestConfig>("TestSection");
+                    // Each thread should use the same configuration instance but modify a different property
+                    // to avoid overwriting the same property (more realistic scenario)
+                    var section = config.GetSection<BasicTestConfig>($"TestSection{index}");
                     section.StringValue = $"Value{index}";
-                    config.Save();
+            config.Save();
                 });
             }
 
+            // Wait with timeout to avoid hanging
+            var completed = Task.WaitAll(tasks, TimeSpan.FromSeconds(10));
+            
             // Assert
-            Action act = () => Task.WaitAll(tasks);
-            act.Should().NotThrow("concurrent save operations should be handled gracefully");
+            completed.Should().BeTrue("concurrent save operations should complete within timeout");
+
+            var fileExists = File.Exists(_tempConfigPath);
+            fileExists.Should().BeTrue("configuration file should exist after concurrent saves");
+            // Read the file and verify content
+            if (fileExists)
+            {
+                var content = File.ReadAllText(_tempConfigPath);
+                content.Should().NotBeEmpty("configuration file should not be empty after concurrent saves");
+                content.Should().Contain("=Value0")
+                            .And.Contain("=Value1")
+                            .And.Contain("=Value2")
+                            .And.Contain("=Value3")
+                            .And.Contain("=Value4", "all changes should be present in the file");
+            }
         }
 
         /// <summary>

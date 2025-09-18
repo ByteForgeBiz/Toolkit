@@ -152,6 +152,7 @@ namespace ByteForge.Toolkit
         /// Lock object for thread safety on this instance.
         /// </summary>
         private readonly object _instanceLock = new object();
+        private static readonly object _staticLock = new object();
 
         // ==========================
         // Public Instance Properties
@@ -336,7 +337,7 @@ namespace ByteForge.Toolkit
         T IConfigurationManager.AddSection<T>(string sectionName)
         {
             // If no section name is provided, use the type name as a convention
-            sectionName = sectionName ?? typeof(T).Name;
+            sectionName ??= typeof(T).Name;
 
             // Create a wrapper that binds the configuration section to the concrete type
             // This enables strongly-typed access to configuration values
@@ -359,7 +360,7 @@ namespace ByteForge.Toolkit
         /// <returns>The section instance.</returns>
         T IConfigurationManager.GetSection<T>(string sectionName)
         {
-            sectionName = sectionName ?? typeof(T).Name;
+            sectionName ??= typeof(T).Name;
             if (_sections.TryGetValue(sectionName, out var section))
                 return (T)((IConfigSection<T>)section).Value;
             lock (_instanceLock)
@@ -374,7 +375,35 @@ namespace ByteForge.Toolkit
         /// <summary>
         /// Saves the current configuration settings to the INI file.
         /// </summary>
+        /// <remarks>
+        /// The method updates the INI file to reflect the current state of the in-memory configuration.<br/>
+        /// It preserves the structure and comments of the existing INI file while adding or updating 
+        /// sections and keys based on the in-memory configuration.<br/>
+        /// Any keys set to <see langword="null"/> in the configuration are omitted from the file.<br/>
+        /// </remarks>
         void IConfigurationManager.Save()
+        {
+            if (!_isInitialized)
+                throw new InvalidOperationException("The configuration settings must be initialized before saving.");
+            // Locking to ensure thread safety during the save operation
+            lock (_staticLock)
+            {
+                ThreadUnsafeSave();
+            }
+        }
+
+        /// <summary>
+        /// Saves the current configuration state to the INI file.<br/>
+        /// This method is not thread-safe and should not be called concurrently from multiple threads.
+        /// </summary>
+        /// <remarks>
+        /// This method updates the INI file to reflect the current state of the in-memory configuration. 
+        /// It preserves the structure and comments of the existing INI file while adding or updating
+        /// sections and keys based on the in-memory configuration. New sections and keys are appended as needed, and
+        /// keys set to <see langword="null"/> are excluded from the output.  Callers must ensure that no other threads are reading or
+        /// writing to the INI file while this method is executing to avoid data corruption or inconsistent
+        /// state.</remarks>
+        void ThreadUnsafeSave()
         {
             var section = string.Empty;
             var iniData = new List<string>();
@@ -506,8 +535,7 @@ namespace ByteForge.Toolkit
             }
 
             // Write the updated INI data back to the file
-            lock(_instanceLock)
-                File.WriteAllLines(iniFilePath, iniData);
+            File.WriteAllLines(iniFilePath, iniData);
         }
     }
 }
