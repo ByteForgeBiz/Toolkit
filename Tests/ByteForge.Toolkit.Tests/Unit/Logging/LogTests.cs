@@ -1,7 +1,6 @@
+using AwesomeAssertions;
 using ByteForge.Toolkit.Logging;
 using ByteForge.Toolkit.Tests.Helpers;
-using AwesomeAssertions;
-using System.Reflection;
 
 namespace ByteForge.Toolkit.Tests.Unit.Logging
 {
@@ -14,14 +13,18 @@ namespace ByteForge.Toolkit.Tests.Unit.Logging
 
         static LogTests()
         {
-            var configPath = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "TestData", "Configuration", "basic_config.ini");
-            ByteForge.Toolkit.Configuration.Initialize(configPath);
+            var tempLog = TempFileHelper.GetTempFilePath(".log");
+            var iniText = $@"[Logging]
+eTraceLogLevel=All
+bUseSessionLogging=False
+sLogFile={tempLog}";
+            var iniFile = TempFileHelper.CreateTempIniFile(iniText);
+            Toolkit.Configuration.Initialize(iniFile);
         }
 
         [TestInitialize]
         public void TestInitialize()
         {
-
             // Store original settings to restore later
             _originalLogLevel = Log.LogLevel;
             
