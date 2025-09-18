@@ -1,8 +1,5 @@
-using System;
-using System.Data;
-using System.Diagnostics;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using AwesomeAssertions;
+using System.Diagnostics;
 
 namespace ByteForge.Toolkit.Tests.Helpers
 {

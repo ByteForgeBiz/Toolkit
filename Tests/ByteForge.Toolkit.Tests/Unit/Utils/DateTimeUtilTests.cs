@@ -1,7 +1,4 @@
-using System;
-using ByteForge.Toolkit;
 using AwesomeAssertions;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace ByteForge.Toolkit.Tests.Unit.Utils
 {
@@ -214,7 +211,7 @@ namespace ByteForge.Toolkit.Tests.Unit.Utils
             var utcTime = new DateTime(2023, 1, 15, 17, 0, 0, DateTimeKind.Utc); // 5 PM UTC
             var easternTimeZone = TimeZoneInfo.FindSystemTimeZoneById("Eastern Standard Time");
             var expectedEasternTime = new DateTime(2023, 1, 15, 12, 0, 0); // 12 PM EST (UTC-5)
-            
+
             // Act
             var easternTime = utcTime.ToTimeZone(easternTimeZone);
 
@@ -321,7 +318,7 @@ namespace ByteForge.Toolkit.Tests.Unit.Utils
             var baseDate = new DateTime(2023, 1, 15, 17, 0, 0);
             var utcDate = DateTime.SpecifyKind(baseDate, DateTimeKind.Utc);
             var unspecifiedDate = DateTime.SpecifyKind(baseDate, DateTimeKind.Unspecified);
-            
+
             var easternTimeZone = TimeZoneInfo.FindSystemTimeZoneById("Eastern Standard Time");
             var expectedEasternTime = new DateTime(2023, 1, 15, 12, 0, 0); // UTC-5 in January
 
@@ -387,10 +384,10 @@ namespace ByteForge.Toolkit.Tests.Unit.Utils
             // Act & Assert
             Action act1 = () => DateTimeUtil.FromUnixTime(largeUnixTime);
             act1.Should().NotThrow("Should handle large Unix timestamp");
-                
+
             Action act2 = () => DateTimeUtil.FromUnixTime(smallUnixTime);
             act2.Should().NotThrow("Should handle small Unix timestamp");
-                
+
             Action act3 = () => DateTimeUtil.FromUnixTimeMilliseconds(largeUnixTimeMs);
             act3.Should().NotThrow("Should handle large Unix timestamp in milliseconds");
         }

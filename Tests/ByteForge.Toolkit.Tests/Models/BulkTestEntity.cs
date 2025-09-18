@@ -1,5 +1,3 @@
-using System;
-
 namespace ByteForge.Toolkit.Tests.Models
 {
     /// <summary>

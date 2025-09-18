@@ -1,5 +1,4 @@
-﻿// ILogger.cs
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System;
 
 namespace ByteForge.Toolkit.Logging

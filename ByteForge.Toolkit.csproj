@@ -265,9 +265,7 @@
   <ItemGroup>
     <AsmInfo Include="Properties\AssemblyInfo.cs" Visible="False" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Zip\" />
-  </ItemGroup>
+  <ItemGroup />
   <Target Name="Messages" BeforeTargets="PrepareForBuild">
     <Message Text="CentralLocationPath: '$(CentralLocationPath)'" Importance="high" />
     <Message Text="Importing ByteForge.Tasks.targets..." Importance="high" Condition="Exists('$(CentralLocationPath)\ByteForge.Tasks.targets')" />

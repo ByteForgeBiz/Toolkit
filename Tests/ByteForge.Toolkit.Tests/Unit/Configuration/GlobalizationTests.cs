@@ -1,10 +1,7 @@
-using System;
+using AwesomeAssertions;
+using ByteForge.Toolkit.Tests.Helpers;
 using System.Globalization;
 using System.Reflection;
-using AwesomeAssertions;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using ByteForge.Toolkit.Tests.Helpers;
-using ByteForge.Toolkit.Tests.Models;
 
 namespace ByteForge.Toolkit.Tests.Unit.Configuration
 {

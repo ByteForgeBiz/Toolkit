@@ -3,8 +3,6 @@ using System.Data;
 using System.Data.Common;
 using System.Data.Odbc;
 using System.Data.SqlClient;
-using System.Linq;
-using System.Text.RegularExpressions;
 
 namespace ByteForge.Toolkit
 {

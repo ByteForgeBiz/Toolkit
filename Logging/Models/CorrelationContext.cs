@@ -1,5 +1,4 @@
-﻿// ILogger.cs
-using System;
+﻿using System;
 
 namespace ByteForge.Toolkit.Logging
 {

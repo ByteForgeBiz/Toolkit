@@ -1,9 +1,5 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using ByteForge.Toolkit;
-using ByteForge.Toolkit.Tests.Helpers;
 using AwesomeAssertions;
+using ByteForge.Toolkit.Tests.Helpers;
 
 namespace ByteForge.Toolkit.Tests.Unit.DataStructures
 {

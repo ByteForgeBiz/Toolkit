@@ -1,9 +1,5 @@
-using System;
-using System.IO;
-using System.Linq;
-using ByteForge.Toolkit;
 using AwesomeAssertions;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using ByteForge.Toolkit.Tests.Helpers;
 
 namespace ByteForge.Toolkit.Tests.Unit.Utils
 {
@@ -31,8 +27,7 @@ namespace ByteForge.Toolkit.Tests.Unit.Utils
         public void Setup()
         {
             // Create a unique temporary directory for each test
-            _testDirectory = Path.Combine(Path.GetTempPath(), $"IOUtilsTest_{Guid.NewGuid()}");
-            Directory.CreateDirectory(_testDirectory);
+            _testDirectory = TempFileHelper.CreateTempDirectory();
         }
 
         /// <summary>
