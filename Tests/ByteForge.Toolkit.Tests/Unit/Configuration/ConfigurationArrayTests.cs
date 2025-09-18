@@ -26,6 +26,13 @@ namespace ByteForge.Toolkit.Tests.Unit.Configuration
 
         #region Basic Array Support Tests
 
+        /// <summary>
+        /// Verifies that string arrays are loaded correctly from configuration sections.
+        /// </summary>
+        /// <remarks>
+        /// This test ensures that configuration sections can properly load and parse string array values
+        /// from referenced INI sections, supporting complex data structures in configuration.
+        /// </remarks>
         [TestMethod]
         public void ConfigSection_StringArray_ShouldLoadCorrectly()
         {
@@ -55,6 +62,13 @@ StringArray=TestStringArray
                 list => list.ElementAt(2) == "Item3");
         }
 
+        /// <summary>
+        /// Verifies that generic lists of integers are loaded and parsed correctly from configuration.
+        /// </summary>
+        /// <remarks>
+        /// This test ensures that strongly-typed generic lists can be populated from configuration sections
+        /// with automatic type conversion from string to the target type.
+        /// </remarks>
         [TestMethod]
         public void ConfigSection_GenericList_ShouldLoadCorrectly()
         {
@@ -86,6 +100,13 @@ NumberList=TestNumberList
                 list => list.ElementAt(3) == 40);
         }
 
+        /// <summary>
+        /// Verifies that lists defined as interfaces are loaded correctly from configuration.
+        /// </summary>
+        /// <remarks>
+        /// This test ensures that properties declared with interface types (IList, ICollection)
+        /// can be properly populated from configuration sections.
+        /// </remarks>
         [TestMethod]
         public void ConfigSection_InterfaceList_ShouldLoadCorrectly()
         {
@@ -115,6 +136,13 @@ InterfaceList=TestInterfaceList
                 list => list.ElementAt(2) == "Gamma");
         }
 
+        /// <summary>
+        /// Verifies that enumerable collections are loaded correctly from configuration.
+        /// </summary>
+        /// <remarks>
+        /// This test ensures that properties declared as IEnumerable can be properly loaded
+        /// from configuration sections, supporting various collection abstractions.
+        /// </remarks>
         [TestMethod]
         public void ConfigSection_EnumerableCollection_ShouldLoadCorrectly()
         {
@@ -148,6 +176,13 @@ EnumerableCollection=TestEnumerableCollection
 
         #region Array Section Naming Tests
 
+        /// <summary>
+        /// Verifies that arrays use default naming convention based on property name when no explicit name is provided.
+        /// </summary>
+        /// <remarks>
+        /// This test ensures that when no custom array section name is specified, the configuration system
+        /// uses the default naming convention to locate the array section.
+        /// </remarks>
         [TestMethod]
         public void ConfigSection_DefaultArrayNaming_ShouldUsePropertyNameArray()
         {
@@ -174,6 +209,13 @@ StringArray=StringArrayArray
                 list => list.ElementAt(1) == "DefaultNaming2");
         }
 
+        /// <summary>
+        /// Verifies that arrays use custom section names when specified via configuration attributes.
+        /// </summary>
+        /// <remarks>
+        /// This test ensures that configuration attributes can override the default array section naming
+        /// to provide more meaningful or application-specific section names.
+        /// </remarks>
         [TestMethod]
         public void ConfigSection_CustomArrayNaming_ShouldUseAttributeName()
         {
@@ -203,6 +245,13 @@ CustomNamedArray=CustomArraySection
                 list => list.ElementAt(2) == "Custom3");
         }
 
+        /// <summary>
+        /// Verifies that array section names specified in INI values override default and attribute-based names.
+        /// </summary>
+        /// <remarks>
+        /// This test ensures that the actual INI file content can specify which section contains array data,
+        /// providing runtime flexibility in array section organization.
+        /// </remarks>
         [TestMethod]
         public void ConfigSection_OverrideArrayNameInINI_ShouldUseINIValue()
         {
@@ -233,6 +282,13 @@ StringArray=OverriddenArraySection
 
         #region Array Key Format Tests
 
+        /// <summary>
+        /// Verifies that array items with numeric indices are loaded in correct sequential order.
+        /// </summary>
+        /// <remarks>
+        /// This test ensures that when array sections use numeric keys (0, 1, 2, etc.),
+        /// the items are loaded in the expected numerical sequence order.
+        /// </remarks>
         [TestMethod]
         public void ConfigSection_NumericIndices_ShouldLoadInOrder()
         {
@@ -262,6 +318,13 @@ StringArray=NumericIndicesArray
                 list => list.ElementAt(3) == "Three");
         }
 
+        /// <summary>
+        /// Verifies that array items with named keys are loaded in alphabetical order by key name.
+        /// </summary>
+        /// <remarks>
+        /// This test ensures that when array sections use named keys instead of numeric indices,
+        /// the items are loaded in alphabetical order based on their key names.
+        /// </remarks>
         [TestMethod]
         public void ConfigSection_NamedKeys_ShouldLoadInAlphabeticalOrder()
         {
@@ -291,6 +354,13 @@ Backup=Third";
                 list => list.ElementAt(2) == "Second");  // "Secondary" key (alphabetically third)
         }
 
+        /// <summary>
+        /// Verifies that array items with mixed key formats (numeric and named) are loaded in alphabetical order.
+        /// </summary>
+        /// <remarks>
+        /// This test ensures that when array sections contain both numeric and string keys,
+        /// all items are loaded in alphabetical order treating all keys as strings.
+        /// </remarks>
         [TestMethod]
         public void ConfigSection_MixedKeyFormats_ShouldLoadInAlphabeticalOrder()
         {
@@ -323,6 +393,14 @@ xyz=ExWhyZed";
         }
 
 
+        /// <summary>
+        /// Verifies that array items with sparse numeric indices are loaded in alphabetical key order.
+        /// </summary>
+        /// <remarks>
+        /// This test ensures that non-sequential numeric keys (0, 2, 5, 10) are sorted alphabetically as strings,
+        /// which affects the order of items in the resulting array. This is important for understanding
+        /// how the configuration system handles gaps in numeric indices.
+        /// </remarks>
         [TestMethod]
         public void ConfigSection_SparseIndices_ShouldLoadInAlphabeticalOrder()
         {
@@ -354,6 +432,14 @@ StringArray=SparseIndicesArray
                 list => list.ElementAt(3) == "Ten");  // "10" key (alphabetically fourth - string sort puts "10" after "5")
         }
 
+        /// <summary>
+        /// Verifies that an empty array section creates an empty but non-null array.
+        /// </summary>
+        /// <remarks>
+        /// This test ensures that when an array section exists but contains no items,
+        /// the system creates an empty array rather than null, which is important for
+        /// null-safe operations and consistent behavior.
+        /// </remarks>
         [TestMethod]
         public void ConfigSection_EmptyArraySection_ShouldCreateEmptyArray()
         {
@@ -379,6 +465,14 @@ StringArray=EmptyArraySection
 
         #region Array Persistence Tests
 
+        /// <summary>
+        /// Verifies that saving an array normalizes indices to sequential numeric format (0, 1, 2, ...).
+        /// </summary>
+        /// <remarks>
+        /// This test ensures that regardless of how array items were originally indexed,
+        /// the save operation normalizes them to standard sequential numeric indices.
+        /// This provides consistency and predictability in saved configuration files.
+        /// </remarks>
         [TestMethod]
         public void ConfigSection_SaveArray_ShouldNormalizeToNumericIndices()
         {
@@ -402,6 +496,14 @@ StringArray=EmptyArraySection
             savedContent.Should().Contain("2=Save3", "third item should use index 2");
         }
 
+        /// <summary>
+        /// Verifies that arrays with custom section names save to their designated sections.
+        /// </summary>
+        /// <remarks>
+        /// This test ensures that arrays configured with custom section names via ConfigurationArrayAttribute
+        /// are correctly saved to their designated sections rather than default naming conventions.
+        /// This supports flexible configuration organization.
+        /// </remarks>
         [TestMethod]
         public void ConfigSection_SaveCustomNamedArray_ShouldUseCustomSection()
         {
@@ -424,6 +526,14 @@ StringArray=EmptyArraySection
             savedContent.Should().Contain("1=Custom2", "custom array second item should be saved");
         }
 
+        /// <summary>
+        /// Verifies that saving a modified array removes old entries that are no longer needed.
+        /// </summary>
+        /// <remarks>
+        /// This test ensures that when an array is shortened (e.g., from 3 items to 2),
+        /// the save operation properly removes the old entries to prevent stale data.
+        /// This is critical for maintaining configuration integrity.
+        /// </remarks>
         [TestMethod]
         public void ConfigSection_SaveModifiedArray_ShouldClearOldEntries()
         {
@@ -458,6 +568,14 @@ StringArray=StringArrayArray
             savedContent.Should().NotContain("Old3", "old values should not remain");
         }
 
+        /// <summary>
+        /// Verifies that saving a null array clears all entries from its configuration section.
+        /// </summary>
+        /// <remarks>
+        /// This test ensures that setting an array property to null and saving will properly
+        /// remove all associated array items from the configuration file, effectively
+        /// clearing the array section while maintaining other configuration data.
+        /// </remarks>
         [TestMethod]
         public void ConfigSection_SaveNullArray_ShouldClearSection()
         {
@@ -489,6 +607,14 @@ StringArray=StringArrayArray
 
         #region Array Type Support Tests
 
+        /// <summary>
+        /// Verifies that integer arrays properly parse numeric string values into their target type.
+        /// </summary>
+        /// <remarks>
+        /// This test ensures that the type conversion system correctly handles arrays of numeric types,
+        /// converting string values from configuration into proper integer values.
+        /// This validates the type safety and conversion capabilities of the array system.
+        /// </remarks>
         [TestMethod]
         public void ConfigSection_IntegerArray_ShouldParseNumbers()
         {
@@ -517,6 +643,14 @@ NumberList=NumberArray
                 list => list.ElementAt(2) == 300);
         }
 
+        /// <summary>
+        /// Verifies that arrays with invalid type conversions throw appropriate format exceptions.
+        /// </summary>
+        /// <remarks>
+        /// This test ensures that when an array contains values that cannot be converted to the target type
+        /// (e.g., non-numeric strings in an integer array), the system throws a FormatException.
+        /// This provides clear error reporting for configuration validation.
+        /// </remarks>
         [TestMethod]
         public void ConfigSection_MixedTypesInArray_ShouldThrowFormatException()
         {
@@ -547,6 +681,14 @@ NumberList=MixedTypeArray
 
         #region Array Round-trip Tests
 
+        /// <summary>
+        /// Verifies that array data is preserved through save and reload operations.
+        /// </summary>
+        /// <remarks>
+        /// This test ensures data integrity by verifying that arrays can be saved to configuration
+        /// and then reloaded with identical content and ordering. This validates the complete
+        /// serialization and deserialization pipeline for array data.
+        /// </remarks>
         [TestMethod]
         public void ConfigSection_ArrayRoundTrip_ShouldPreserveData()
         {
@@ -575,6 +717,14 @@ NumberList=MixedTypeArray
                 list => list.ElementAt(2) == originalArray[2]);
         }
 
+        /// <summary>
+        /// Verifies that multiple arrays of different types can coexist in a single configuration section.
+        /// </summary>
+        /// <remarks>
+        /// This test validates complex scenarios where a configuration section contains multiple
+        /// array properties of different types (string arrays, custom named arrays, integer arrays).
+        /// This ensures the system can handle realistic configuration requirements.
+        /// </remarks>
         [TestMethod]
         public void ConfigSection_ComplexArrayScenario_ShouldWork()
         {

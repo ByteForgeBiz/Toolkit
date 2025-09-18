@@ -7,6 +7,14 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace ByteForge.Toolkit.Tests.Unit.Utils
 {
+    /// <summary>
+    /// Unit tests for the <see cref="IOUtils"/> class, which provides utility methods for IO operations.
+    /// </summary>
+    /// <remarks>
+    /// These tests validate the file retrieval and path normalization functions of the IOUtils class.
+    /// The tests cover a range of scenarios including pattern matching, subdirectory searching,
+    /// path normalization, and edge cases such as empty directories and invalid paths.
+    /// </remarks>
     [TestClass]
     [TestCategory("Unit")]
     [TestCategory("Utils")]

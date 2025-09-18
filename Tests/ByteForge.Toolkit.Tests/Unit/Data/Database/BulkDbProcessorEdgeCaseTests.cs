@@ -89,6 +89,11 @@ namespace ByteForge.Toolkit.Tests.Unit.Data.Database
         /// <summary>
         /// Tests that BulkDbProcessor throws appropriate exception for entities without DBColumnAttribute.
         /// </summary>
+        /// <remarks>
+        /// This test validates robust entity validation during BulkDbProcessor initialization.
+        /// Entities without DBColumnAttribute cannot be processed because there's no column mapping information,
+        /// so early detection with clear error messages is essential for developer experience.
+        /// </remarks>
         [TestMethod]
         public void Constructor_EntityWithoutDBColumnAttribute_ShouldThrowInvalidOperationException()
         {
@@ -118,6 +123,11 @@ namespace ByteForge.Toolkit.Tests.Unit.Data.Database
         /// <summary>
         /// Tests that BulkDbProcessor throws appropriate exception for entities with duplicate column names.
         /// </summary>
+        /// <remarks>
+        /// This test ensures data integrity by preventing ambiguous column mappings in bulk operations.
+        /// Duplicate column names would cause SQL generation errors and unpredictable behavior,
+        /// so validation during initialization prevents runtime failures in production environments.
+        /// </remarks>
         [TestMethod]
         public void Constructor_EntityWithDuplicateColumnNames_ShouldThrowInvalidOperationException()
         {
@@ -147,6 +157,11 @@ namespace ByteForge.Toolkit.Tests.Unit.Data.Database
         /// <summary>
         /// Tests that bulk upsert throws appropriate exception for entities without keys or unique indexes.
         /// </summary>
+        /// <remarks>
+        /// This test validates requirements for upsert operations that need unique identification criteria.
+        /// Without primary keys or unique indexes, upsert operations cannot determine which records
+        /// to update versus insert, making the operation semantically impossible.
+        /// </remarks>
         [TestMethod]
         public void BulkUpsert_EntityWithoutKeysOrUniqueIndexes_ShouldThrowInvalidOperationException()
         {
@@ -164,6 +179,11 @@ namespace ByteForge.Toolkit.Tests.Unit.Data.Database
         /// <summary>
         /// Tests that bulk delete throws appropriate exception for entities without keys or unique indexes.
         /// </summary>
+        /// <remarks>
+        /// This test ensures data safety by requiring unique identification for bulk delete operations.
+        /// Without keys or unique indexes, delete operations could affect unintended records,
+        /// potentially causing data loss in production systems.
+        /// </remarks>
         [TestMethod]
         public void BulkDelete_EntityWithoutKeysOrUniqueIndexes_ShouldThrowInvalidOperationException()
         {
@@ -197,6 +217,11 @@ namespace ByteForge.Toolkit.Tests.Unit.Data.Database
         /// <summary>
         /// Tests that bulk upsert fails for entities with identity primary key only.
         /// </summary>
+        /// <remarks>
+        /// This test validates constraints for upsert operations with identity columns.
+        /// Identity primary keys are auto-generated and cannot be used for matching during upsert,
+        /// requiring additional unique columns or indexes for proper operation identification.
+        /// </remarks>
         [TestMethod]
         public void BulkUpsert_EntityWithIdentityPrimaryKeyOnly_ShouldThrowInvalidOperationException()
         {
@@ -236,6 +261,11 @@ namespace ByteForge.Toolkit.Tests.Unit.Data.Database
         /// <summary>
         /// Tests that bulk operations handle very long strings correctly by creating appropriate column types.
         /// </summary>
+        /// <remarks>
+        /// This test validates dynamic column type selection for varying string lengths in bulk operations.
+        /// Proper handling of long strings is crucial for applications dealing with large text data,
+        /// ensuring no data truncation occurs during bulk loading processes.
+        /// </remarks>
         [TestMethod]
         public void BulkInsert_WithVeryLongStrings_ShouldCreateTextFieldAndHandleCorrectly()
         {
@@ -294,6 +324,11 @@ namespace ByteForge.Toolkit.Tests.Unit.Data.Database
         /// <summary>
         /// Tests that bulk operations handle null values correctly.
         /// </summary>
+        /// <remarks>
+        /// This test ensures proper null value handling throughout the bulk operation pipeline.
+        /// Null values are common in real-world data and must be handled correctly to prevent
+        /// SQL errors and ensure data integrity during bulk loading operations.
+        /// </remarks>
         [TestMethod]
         public void BulkInsert_WithNullValues_ShouldHandleCorrectly()
         {
@@ -328,6 +363,11 @@ namespace ByteForge.Toolkit.Tests.Unit.Data.Database
         /// <summary>
         /// Tests that bulk operations handle DateTime.MinValue correctly (should convert to NULL).
         /// </summary>
+        /// <remarks>
+        /// This test validates special handling of DateTime edge cases in bulk operations.
+        /// DateTime.MinValue often represents uninitialized dates and should be converted to NULL
+        /// to maintain data consistency and prevent invalid date storage in database systems.
+        /// </remarks>
         [TestMethod]
         public void BulkInsert_WithDateTimeMinValue_ShouldConvertToNull()
         {
@@ -365,6 +405,11 @@ namespace ByteForge.Toolkit.Tests.Unit.Data.Database
         /// <summary>
         /// Tests that bulk operations handle very large datasets without memory issues.
         /// </summary>
+        /// <remarks>
+        /// This stress test validates memory efficiency and performance scalability of bulk operations.
+        /// Large dataset handling is crucial for ETL processes and data migration scenarios,
+        /// ensuring applications can process substantial volumes without memory exhaustion.
+        /// </remarks>
         [TestMethod]
         public void BulkInsert_VeryLargeDataset_ShouldHandleMemoryEfficiently()
         {
@@ -397,6 +442,11 @@ namespace ByteForge.Toolkit.Tests.Unit.Data.Database
         /// <summary>
         /// Tests that events are fired correctly even when operations complete very quickly.
         /// </summary>
+        /// <remarks>
+        /// This test ensures event reliability for minimal datasets in bulk operations.
+        /// Event consistency regardless of operation duration is important for applications
+        /// that depend on progress reporting and completion notifications for user feedback.
+        /// </remarks>
         [TestMethod]
         public void BulkInsert_VerySmallDataset_ShouldStillFireEvents()
         {
@@ -422,6 +472,11 @@ namespace ByteForge.Toolkit.Tests.Unit.Data.Database
         /// <summary>
         /// Tests that events handle null subscribers gracefully.
         /// </summary>
+        /// <remarks>
+        /// This test ensures robustness when no event handlers are subscribed to bulk operations.
+        /// Graceful handling of null event subscribers prevents NullReferenceException and ensures
+        /// operations complete successfully regardless of event subscription status.
+        /// </remarks>
         [TestMethod]
         public void BulkInsert_WithNullEventSubscribers_ShouldNotThrow()
         {
@@ -446,6 +501,11 @@ namespace ByteForge.Toolkit.Tests.Unit.Data.Database
         /// <summary>
         /// Tests bulk operations with table names containing special characters.
         /// </summary>
+        /// <remarks>
+        /// This test validates SQL identifier handling for table names with special characters.
+        /// Special characters in table names require proper escaping and bracket notation
+        /// to prevent SQL syntax errors during bulk operation SQL generation.
+        /// </remarks>
         [TestMethod]
         public void BulkInsert_WithSpecialCharactersInTableName_ShouldHandleCorrectly()
         {
@@ -487,6 +547,11 @@ namespace ByteForge.Toolkit.Tests.Unit.Data.Database
         /// <summary>
         /// Tests that internal property mapping is correctly initialized.
         /// </summary>
+        /// <remarks>
+        /// This test validates the internal reflection-based property mapping system in BulkDbProcessor.
+        /// Proper property mapping initialization is crucial for correct SQL generation, column mapping,
+        /// and data transfer during all bulk operations.
+        /// </remarks>
         [TestMethod]
         public void Constructor_PropertyMapping_ShouldInitializeCorrectly()
         {
@@ -523,6 +588,11 @@ namespace ByteForge.Toolkit.Tests.Unit.Data.Database
         /// <summary>
         /// Tests that bulk operations handle concurrent access correctly.
         /// </summary>
+        /// <remarks>
+        /// This test validates thread safety and isolation of concurrent bulk operations.
+        /// Multi-threaded applications may perform bulk operations simultaneously,
+        /// so ensuring proper isolation prevents data corruption and operation interference.
+        /// </remarks>
         [TestMethod]
         public void BulkInsert_ConcurrentOperations_ShouldHandleCorrectly()
         {

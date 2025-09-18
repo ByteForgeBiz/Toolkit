@@ -81,6 +81,11 @@ namespace ByteForge.Toolkit.Tests.Unit.Data.Database
         /// <summary>
         /// Tests that the BulkDbProcessor constructor with table name works correctly.
         /// </summary>
+        /// <remarks>
+        /// This test validates the core initialization of BulkDbProcessor for high-performance bulk operations.
+        /// It ensures proper detection of primary keys and unique indexes from entity attributes,
+        /// which is essential for generating efficient bulk SQL operations and maintaining data integrity.
+        /// </remarks>
         [TestMethod]
         public void Constructor_WithValidTableName_ShouldInitializeCorrectly()
         {
@@ -99,6 +104,11 @@ namespace ByteForge.Toolkit.Tests.Unit.Data.Database
         /// <summary>
         /// Tests that the BulkDbProcessor constructor throws for null or empty table name.
         /// </summary>
+        /// <remarks>
+        /// This test ensures robust parameter validation for BulkDbProcessor construction.
+        /// Proper validation prevents runtime errors in bulk operations and provides clear
+        /// error messages for developers, which is crucial for debugging complex data processing scenarios.
+        /// </remarks>
         [TestMethod]
         public void Constructor_WithNullOrEmptyTableName_ShouldThrowArgumentException()
         {
@@ -121,6 +131,11 @@ namespace ByteForge.Toolkit.Tests.Unit.Data.Database
         /// <summary>
         /// Tests that property mapping is initialized correctly for BulkTestEntity.
         /// </summary>
+        /// <remarks>
+        /// This test validates the attribute-based mapping system that drives bulk operation efficiency.
+        /// Correct property mapping is essential for generating optimized SQL operations,
+        /// implementing upsert logic, and ensuring data integrity constraints are properly handled.
+        /// </remarks>
         [TestMethod]
         public void Initialization_PropertyMapping_ShouldBeConfiguredCorrectly()
         {
@@ -145,6 +160,11 @@ namespace ByteForge.Toolkit.Tests.Unit.Data.Database
         /// <summary>
         /// Tests that bulk insert operation works correctly with a single record.
         /// </summary>
+        /// <remarks>
+        /// This test validates the fundamental bulk insert functionality with minimal data.
+        /// Single record insertion tests the core table creation, SQL generation, and progress reporting
+        /// mechanisms that form the foundation for larger bulk operations.
+        /// </remarks>
         [TestMethod]
         public void BulkInsert_SingleRecord_ShouldInsertSuccessfully()
         {
@@ -173,6 +193,11 @@ namespace ByteForge.Toolkit.Tests.Unit.Data.Database
         /// <summary>
         /// Tests that bulk insert operation works correctly with multiple records.
         /// </summary>
+        /// <remarks>
+        /// This test validates high-performance bulk insertion capabilities with significant data volumes.
+        /// Multi-record operations test batch processing efficiency, transaction management,
+        /// and progress reporting for real-world data loading scenarios.
+        /// </remarks>
         [TestMethod]
         public void BulkInsert_MultipleRecords_ShouldInsertAllSuccessfully()
         {
@@ -207,6 +232,11 @@ namespace ByteForge.Toolkit.Tests.Unit.Data.Database
         /// <summary>
         /// Tests that bulk insert with empty collection completes successfully.
         /// </summary>
+        /// <remarks>
+        /// This edge case test ensures robust handling of empty data collections in bulk operations.
+        /// Empty collection handling is important for dynamic data processing scenarios where
+        /// data availability may vary, preventing application errors in production environments.
+        /// </remarks>
         [TestMethod]
         public void BulkInsert_EmptyCollection_ShouldCompleteSuccessfully()
         {
@@ -231,6 +261,11 @@ namespace ByteForge.Toolkit.Tests.Unit.Data.Database
         /// <summary>
         /// Tests that bulk insert creates the destination table when configured to do so.
         /// </summary>
+        /// <remarks>
+        /// This test validates dynamic table creation functionality for bulk operations.
+        /// Automatic table creation is essential for ETL processes, data migration scenarios,
+        /// and applications that need to create destination tables based on source data structures.
+        /// </remarks>
         [TestMethod]
         public void BulkInsert_WithCreateDestinationTable_ShouldCreateTable()
         {
@@ -266,6 +301,11 @@ namespace ByteForge.Toolkit.Tests.Unit.Data.Database
         /// <summary>
         /// Tests that bulk upsert operation inserts new records correctly.
         /// </summary>
+        /// <remarks>
+        /// This test validates upsert functionality for new record insertion scenarios.
+        /// Upsert operations are crucial for data synchronization, incremental loading,
+        /// and maintaining data consistency in systems with multiple data sources.
+        /// </remarks>
         [TestMethod]
         public void BulkUpsert_NewRecords_ShouldInsertSuccessfully()
         {
@@ -292,6 +332,11 @@ namespace ByteForge.Toolkit.Tests.Unit.Data.Database
         /// <summary>
         /// Tests that bulk upsert operation updates existing records correctly.
         /// </summary>
+        /// <remarks>
+        /// This test validates upsert functionality for existing record modification scenarios.
+        /// Update capabilities in upsert operations are essential for maintaining current data
+        /// in synchronization processes and handling duplicate key scenarios gracefully.
+        /// </remarks>
         [TestMethod]
         public void BulkUpsert_ExistingRecords_ShouldUpdateSuccessfully()
         {
@@ -326,6 +371,11 @@ namespace ByteForge.Toolkit.Tests.Unit.Data.Database
         /// <summary>
         /// Tests that bulk upsert operation handles mixed insert and update scenarios.
         /// </summary>
+        /// <remarks>
+        /// This test validates the sophisticated logic required for mixed upsert operations.
+        /// Mixed scenarios are common in real-world data synchronization where some records exist
+        /// and others are new, requiring intelligent decision-making for optimal performance.
+        /// </remarks>
         [TestMethod]
         public void BulkUpsert_MixedInsertAndUpdate_ShouldHandleBothCorrectly()
         {
@@ -374,6 +424,11 @@ namespace ByteForge.Toolkit.Tests.Unit.Data.Database
         /// <summary>
         /// Tests that bulk delete operation removes records correctly.
         /// </summary>
+        /// <remarks>
+        /// This test validates bulk deletion functionality for data cleanup and maintenance operations.
+        /// Bulk delete operations are essential for data lifecycle management, archival processes,
+        /// and maintaining database performance by removing obsolete records efficiently.
+        /// </remarks>
         [TestMethod]
         public void BulkDelete_ExistingRecords_ShouldDeleteSuccessfully()
         {
@@ -434,6 +489,11 @@ namespace ByteForge.Toolkit.Tests.Unit.Data.Database
         /// <summary>
         /// Tests that bulk delete with non-existent records completes without error.
         /// </summary>
+        /// <remarks>
+        /// This test ensures graceful handling of deletion attempts for non-existent records.
+        /// Robust error handling for missing records is crucial in distributed systems where
+        /// data may be deleted by other processes or in multi-step data processing scenarios.
+        /// </remarks>
         [TestMethod]
         public void BulkDelete_NonExistentRecords_ShouldCompleteWithoutError()
         {
@@ -461,6 +521,11 @@ namespace ByteForge.Toolkit.Tests.Unit.Data.Database
         /// <summary>
         /// Tests that bulk delete with empty collection completes successfully.
         /// </summary>
+        /// <remarks>
+        /// This edge case test validates empty collection handling in bulk delete operations.
+        /// Empty collection scenarios are common in conditional data processing and filtered
+        /// operations, requiring graceful handling to prevent application failures.
+        /// </remarks>
         [TestMethod]
         public void BulkDelete_EmptyCollection_ShouldCompleteSuccessfully()
         {
@@ -489,6 +554,11 @@ namespace ByteForge.Toolkit.Tests.Unit.Data.Database
         /// <summary>
         /// Tests that async bulk insert operation works correctly.
         /// </summary>
+        /// <remarks>
+        /// This test validates asynchronous bulk operations with cancellation token support.
+        /// Async operations are essential for responsive applications and enable proper
+        /// cancellation handling for long-running bulk data processing operations.
+        /// </remarks>
         [TestMethod]
         public async Task BulkInsertAsync_WithCancellationToken_ShouldInsertSuccessfully()
         {
@@ -511,6 +581,11 @@ namespace ByteForge.Toolkit.Tests.Unit.Data.Database
         /// <summary>
         /// Tests that async bulk upsert operation works correctly.
         /// </summary>
+        /// <remarks>
+        /// This test validates asynchronous upsert operations for non-blocking data synchronization.
+        /// Async upserts are crucial for maintaining application responsiveness during large-scale
+        /// data synchronization and ETL processes in production environments.
+        /// </remarks>
         [TestMethod]
         public async Task BulkUpsertAsync_WithCancellationToken_ShouldUpsertSuccessfully()
         {
@@ -533,6 +608,11 @@ namespace ByteForge.Toolkit.Tests.Unit.Data.Database
         /// <summary>
         /// Tests that async bulk delete operation works correctly.
         /// </summary>
+        /// <remarks>
+        /// This test validates asynchronous bulk deletion with proper cancellation support.
+        /// Async delete operations are important for data lifecycle management without blocking
+        /// application threads during large-scale cleanup and archival operations.
+        /// </remarks>
         [TestMethod]
         public async Task BulkDeleteAsync_WithCancellationToken_ShouldDeleteSuccessfully()
         {
@@ -564,6 +644,11 @@ namespace ByteForge.Toolkit.Tests.Unit.Data.Database
         /// <summary>
         /// Tests that bulk operations fail gracefully with ODBC database type.
         /// </summary>
+        /// <remarks>
+        /// This test ensures proper error handling for unsupported database types in bulk operations.
+        /// ODBC databases don't support SQL Server bulk copy operations, so graceful failure handling
+        /// is essential for providing clear error messages and preventing application crashes.
+        /// </remarks>
         [TestMethod]
         public void BulkOperations_WithODBCDatabase_ShouldFailGracefully()
         {
@@ -606,6 +691,11 @@ namespace ByteForge.Toolkit.Tests.Unit.Data.Database
         /// <summary>
         /// Tests that bulk operations handle database connection errors gracefully.
         /// </summary>
+        /// <remarks>
+        /// This test validates error handling for connectivity issues during bulk operations.
+        /// Connection error handling is crucial for robust applications that must handle
+        /// network issues, database outages, and configuration problems gracefully.
+        /// </remarks>
         [TestMethod]
         public void BulkOperations_WithInvalidDatabase_ShouldHandleErrorsGracefully()
         {
@@ -634,6 +724,11 @@ namespace ByteForge.Toolkit.Tests.Unit.Data.Database
         /// <summary>
         /// Tests that CreateDestinationTable property affects table creation behavior.
         /// </summary>
+        /// <remarks>
+        /// This test validates configurable table creation behavior for bulk operations.
+        /// The ability to disable table creation is important for production environments where
+        /// table structures are pre-defined and automatic creation could cause security or schema issues.
+        /// </remarks>
         [TestMethod]
         public void BulkInsert_WithCreateDestinationTableFalse_ShouldRequireExistingTable()
         {
@@ -658,6 +753,11 @@ namespace ByteForge.Toolkit.Tests.Unit.Data.Database
         /// <summary>
         /// Tests that DropDestinationTableIfExists property affects table dropping behavior.
         /// </summary>
+        /// <remarks>
+        /// This test validates configurable table preservation behavior for incremental data loading.
+        /// Preserving existing tables is essential for incremental ETL processes and scenarios where
+        /// data should be appended rather than replaced during bulk operations.
+        /// </remarks>
         [TestMethod]
         public void BulkInsert_WithDropDestinationTableIfExistsFalse_ShouldPreserveExistingTable()
         {
@@ -692,6 +792,11 @@ namespace ByteForge.Toolkit.Tests.Unit.Data.Database
         /// <summary>
         /// Tests that bulk insert performs well with a large dataset.
         /// </summary>
+        /// <remarks>
+        /// This performance test validates scalability and efficiency of bulk operations with large datasets.
+        /// Performance validation is crucial for ensuring bulk operations meet enterprise requirements
+        /// for data loading speed and resource utilization in production environments.
+        /// </remarks>
         [TestMethod]
         public void BulkInsert_LargeDataset_ShouldPerformEfficiently()
         {

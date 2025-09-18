@@ -66,6 +66,11 @@ namespace ByteForge.Toolkit.Tests.Unit.Data.Database
         /// <summary>
         /// Tests that simple named parameter assignments are parsed correctly for SQL Server.
         /// </summary>
+        /// <remarks>
+        /// This test validates the enhanced parameter parsing logic for SQL Server stored procedures.
+        /// Named parameter assignments (@param = @value) allow flexible parameter passing and require
+        /// intelligent parsing to extract only the value parameters that need to be supplied.
+        /// </remarks>
         [TestMethod]
         public void ParseParameters_SQLServer_SimpleNamedAssignment_ShouldReturnValueParameters()
         {
@@ -88,6 +93,11 @@ namespace ByteForge.Toolkit.Tests.Unit.Data.Database
         /// <summary>
         /// Tests that multiple named parameter assignments with whitespace are handled correctly.
         /// </summary>
+        /// <remarks>
+        /// This test ensures robust parsing of stored procedure calls with varying whitespace formatting.
+        /// Real-world SQL scripts often have inconsistent spacing, so the parser must handle
+        /// multiple whitespace patterns while maintaining accuracy in parameter extraction.
+        /// </remarks>
         [TestMethod]
         public void ParseParameters_SQLServer_NamedAssignmentWithWhitespace_ShouldParseCorrectly()
         {
@@ -115,6 +125,11 @@ namespace ByteForge.Toolkit.Tests.Unit.Data.Database
         /// <summary>
         /// Tests that named assignments within string literals are ignored.
         /// </summary>
+        /// <remarks>
+        /// This test validates context-aware parsing that distinguishes between actual parameters
+        /// and parameter-like syntax within string literals. Proper string literal handling prevents
+        /// false parameter detection and ensures accurate parameter extraction.
+        /// </remarks>
         [TestMethod]
         public void ParseParameters_SQLServer_NamedAssignmentInStringLiteral_ShouldIgnoreStringContent()
         {
@@ -137,6 +152,11 @@ namespace ByteForge.Toolkit.Tests.Unit.Data.Database
         /// <summary>
         /// Tests that named assignments in comments are ignored.
         /// </summary>
+        /// <remarks>
+        /// This test ensures that both single-line (--) and multi-line (/* */) comments are properly
+        /// excluded from parameter parsing. Comment awareness is crucial for handling documented
+        /// SQL scripts without extracting commented-out parameter references.
+        /// </remarks>
         [TestMethod]
         public void ParseParameters_SQLServer_NamedAssignmentInComments_ShouldIgnoreComments()
         {
@@ -167,6 +187,11 @@ namespace ByteForge.Toolkit.Tests.Unit.Data.Database
         /// <summary>
         /// Tests that standalone parameters (not part of named assignments) are handled correctly.
         /// </summary>
+        /// <remarks>
+        /// This test validates traditional parameter parsing for standard parameterized queries.
+        /// Standalone parameters in WHERE clauses and other SQL constructs must be detected correctly
+        /// alongside the enhanced named assignment parsing for comprehensive parameter support.
+        /// </remarks>
         [TestMethod]
         public void ParseParameters_SQLServer_StandaloneParameters_ShouldReturnStandaloneParams()
         {
@@ -187,6 +212,11 @@ namespace ByteForge.Toolkit.Tests.Unit.Data.Database
         /// <summary>
         /// Tests that mixed named assignments and standalone parameters are handled correctly.
         /// </summary>
+        /// <remarks>
+        /// This test validates complex scenarios where stored procedure calls with named parameters
+        /// are combined with traditional parameterized queries. Mixed parameter types are common
+        /// in enterprise applications that use both stored procedures and dynamic SQL.
+        /// </remarks>
         [TestMethod]
         public void ParseParameters_SQLServer_MixedParameterTypes_ShouldHandleBothTypes()
         {
@@ -215,6 +245,11 @@ namespace ByteForge.Toolkit.Tests.Unit.Data.Database
         /// <summary>
         /// Tests that ODBC parameter parsing works with the original logic (no named assignments).
         /// </summary>
+        /// <remarks>
+        /// This test ensures backward compatibility with ODBC databases that don't support
+        /// SQL Server's named parameter syntax. ODBC parameter parsing maintains the original
+        /// behavior of treating all @ symbols as positional parameters.
+        /// </remarks>
         [TestMethod]
         public void ParseParameters_ODBC_AllParameters_ShouldReturnAllParametersIncludingDuplicates()
         {
@@ -237,6 +272,11 @@ namespace ByteForge.Toolkit.Tests.Unit.Data.Database
         /// <summary>
         /// Tests that ODBC ignores named assignment syntax and treats all @ symbols as parameters.
         /// </summary>
+        /// <remarks>
+        /// This test validates database-specific behavior where ODBC connections process all
+        /// @ symbols as parameters regardless of named assignment syntax. This ensures consistent
+        /// parameter handling across different database types and connection methods.
+        /// </remarks>
         [TestMethod]
         public void ParseParameters_ODBC_NamedAssignmentSyntax_ShouldTreatAllAsRegularParameters()
         {
@@ -263,6 +303,11 @@ namespace ByteForge.Toolkit.Tests.Unit.Data.Database
         /// <summary>
         /// Tests that empty or null queries are handled gracefully.
         /// </summary>
+        /// <remarks>
+        /// This test ensures robust error handling for edge cases in parameter parsing.
+        /// Empty or null queries should not cause exceptions but should return empty parameter lists,
+        /// maintaining application stability in scenarios with dynamic query generation.
+        /// </remarks>
         [TestMethod]
         public void ParseParameters_EmptyOrNullQuery_ShouldReturnEmptyList()
         {
@@ -285,6 +330,11 @@ namespace ByteForge.Toolkit.Tests.Unit.Data.Database
         /// <summary>
         /// Tests that queries without parameters return empty results.
         /// </summary>
+        /// <remarks>
+        /// This test validates parameter parsing behavior for static queries without parameters.
+        /// Non-parameterized queries should return empty parameter lists efficiently,
+        /// supporting applications that mix parameterized and static SQL statements.
+        /// </remarks>
         [TestMethod]
         public void ParseParameters_QueryWithoutParameters_ShouldReturnEmptyList()
         {
@@ -302,6 +352,11 @@ namespace ByteForge.Toolkit.Tests.Unit.Data.Database
         /// <summary>
         /// Tests complex scenarios with nested comments and string literals.
         /// </summary>
+        /// <remarks>
+        /// This stress test validates sophisticated parsing capabilities with multiple edge cases combined.
+        /// Complex real-world SQL scripts may contain nested comments, string literals with parameter-like content,
+        /// and mixed parameter types, requiring robust parsing logic to handle all scenarios correctly.
+        /// </remarks>
         [TestMethod]
         public void ParseParameters_ComplexQueryWithCommentsAndStrings_ShouldParseCorrectly()
         {
@@ -344,6 +399,11 @@ namespace ByteForge.Toolkit.Tests.Unit.Data.Database
         /// <summary>
         /// Tests that parameter names with underscores and numbers are handled correctly.
         /// </summary>
+        /// <remarks>
+        /// This test validates identifier parsing for parameters with common naming conventions.
+        /// Parameters often use underscores and numbers in enterprise applications,
+        /// so proper parsing of these identifiers is essential for broad compatibility.
+        /// </remarks>
         [TestMethod]
         public void ParseParameters_ParametersWithUnderscoresAndNumbers_ShouldParseCorrectly()
         {
@@ -366,6 +426,11 @@ namespace ByteForge.Toolkit.Tests.Unit.Data.Database
         /// <summary>
         /// Tests that case sensitivity is handled correctly (parameters should be case-insensitive).
         /// </summary>
+        /// <remarks>
+        /// This test validates SQL Server's case-insensitive parameter behavior in parsing logic.
+        /// Parameter deduplication based on case-insensitive matching prevents duplicate parameter
+        /// creation and ensures consistency with SQL Server parameter handling semantics.
+        /// </remarks>
         [TestMethod]
         public void ParseParameters_CaseInsensitiveParameters_ShouldHandleCaseCorrectly()
         {
@@ -391,6 +456,11 @@ namespace ByteForge.Toolkit.Tests.Unit.Data.Database
         /// <summary>
         /// Tests that the parameter parsing integrates correctly with parameter creation.
         /// </summary>
+        /// <remarks>
+        /// This integration test validates the complete parameter processing pipeline from parsing to creation.
+        /// The parameter parsing logic must correctly identify required parameters so that
+        /// parameter creation can match supplied values with expected parameters.
+        /// </remarks>
         [TestMethod]
         public void AddParametersToCommand_WithNamedAssignments_ShouldCreateCorrectParameters()
         {
@@ -413,6 +483,11 @@ namespace ByteForge.Toolkit.Tests.Unit.Data.Database
         /// <summary>
         /// Tests that parameter count mismatch is properly detected by parameter parsing.
         /// </summary>
+        /// <remarks>
+        /// This test validates error detection capabilities for parameter count validation.
+        /// Accurate parameter counting from parsing enables meaningful error messages
+        /// when supplied parameter counts don't match expected parameters.
+        /// </remarks>
         [TestMethod]
         public void AddParametersToCommand_ParameterCountMismatch_ShouldDetectCorrectParameterCount()
         {
@@ -438,6 +513,11 @@ namespace ByteForge.Toolkit.Tests.Unit.Data.Database
         /// <summary>
         /// Tests that parameter parsing performance is acceptable for complex queries.
         /// </summary>
+        /// <remarks>
+        /// This performance test ensures that enhanced parameter parsing doesn't introduce significant overhead.
+        /// Complex SQL scripts with many parameters and named assignments must be parsed efficiently
+        /// to maintain acceptable application performance in database-intensive operations.
+        /// </remarks>
         [TestMethod]
         public void ParseParameters_ComplexQuery_ShouldCompleteWithinReasonableTime()
         {

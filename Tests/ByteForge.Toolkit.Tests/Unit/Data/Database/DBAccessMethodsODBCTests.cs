@@ -56,6 +56,11 @@ namespace ByteForge.Toolkit.Tests.Unit.Data.Database
         /// <summary>
         /// Tests that TestConnection returns true for a valid Access database connection.
         /// </summary>
+        /// <remarks>
+        /// This test validates ODBC connectivity to Access databases, ensuring proper driver configuration
+        /// and database file accessibility. ODBC connections to Access require proper driver installation
+        /// and file permissions, making this test crucial for environment validation.
+        /// </remarks>
         [TestMethod]
         public void TestConnection_ValidAccessDatabase_ShouldReturnTrue()
         {
@@ -70,6 +75,11 @@ namespace ByteForge.Toolkit.Tests.Unit.Data.Database
         /// <summary>
         /// Tests that TestConnection returns false for an invalid ODBC connection.
         /// </summary>
+        /// <remarks>
+        /// This test ensures graceful handling of ODBC connection failures, which can occur due to
+        /// missing drivers, invalid file paths, or access permission issues. Proper error handling
+        /// is critical for ODBC connections as they often involve external file dependencies.
+        /// </remarks>
         [TestMethod]
         public void TestConnection_InvalidODBCDatabase_ShouldReturnFalse()
         {
@@ -88,6 +98,11 @@ namespace ByteForge.Toolkit.Tests.Unit.Data.Database
         /// <summary>
         /// Tests the async version of TestConnection with Access database.
         /// </summary>
+        /// <remarks>
+        /// This test validates asynchronous ODBC connection testing with Access databases.
+        /// Async ODBC operations are important for preventing UI freezing when testing
+        /// file-based database connections that may involve disk I/O delays.
+        /// </remarks>
         [TestMethod]
         public async Task TestConnectionAsync_ValidAccessDatabase_ShouldReturnTrue()
         {
@@ -106,6 +121,11 @@ namespace ByteForge.Toolkit.Tests.Unit.Data.Database
         /// <summary>
         /// Tests that GetValue returns the correct scalar value from Access database.
         /// </summary>
+        /// <remarks>
+        /// This test validates scalar value retrieval through ODBC with Access databases.
+        /// Access databases have specific data type mappings and query syntax differences
+        /// compared to SQL Server, making this test important for cross-database compatibility.
+        /// </remarks>
         [TestMethod]
         public void GetValue_SimpleScalarQuery_ShouldReturnCorrectValue()
         {
@@ -120,6 +140,11 @@ namespace ByteForge.Toolkit.Tests.Unit.Data.Database
         /// <summary>
         /// Tests that GetValue with parameters works correctly with Access database.
         /// </summary>
+        /// <remarks>
+        /// This test ensures parameterized queries work correctly with ODBC and Access databases.
+        /// Parameter binding with ODBC can behave differently than with native SQL Server connections,
+        /// particularly with data type conversions and null value handling.
+        /// </remarks>
         [TestMethod]
         public void GetValue_WithParameters_ShouldReturnCorrectValue()
         {
@@ -135,6 +160,11 @@ namespace ByteForge.Toolkit.Tests.Unit.Data.Database
         /// <summary>
         /// Tests that GetValue returns null for queries that return no results in Access.
         /// </summary>
+        /// <remarks>
+        /// This test validates empty result handling with ODBC connections to Access databases.
+        /// Access databases may handle null values and empty results differently than SQL Server,
+        /// requiring specific validation to ensure consistent behavior across database types.
+        /// </remarks>
         [TestMethod]
         public void GetValue_NoResults_ShouldReturnDefault()
         {
@@ -150,6 +180,11 @@ namespace ByteForge.Toolkit.Tests.Unit.Data.Database
         /// <summary>
         /// Tests the generic TryGetValue method for successful operations with Access.
         /// </summary>
+        /// <remarks>
+        /// This test validates the Try-pattern implementation with ODBC and Access databases.
+        /// The Try-pattern provides safer error handling for ODBC connections, which can be
+        /// more prone to connectivity issues due to file-based nature of Access databases.
+        /// </remarks>
         [TestMethod]
         public void TryGetValue_ValidQuery_ShouldReturnTrueAndValue()
         {
@@ -165,6 +200,11 @@ namespace ByteForge.Toolkit.Tests.Unit.Data.Database
         /// <summary>
         /// Tests TryGetValue with an invalid query in Access.
         /// </summary>
+        /// <remarks>
+        /// This test ensures proper error handling for invalid SQL with ODBC connections.
+        /// Access databases have different SQL syntax rules and error messages compared to SQL Server,
+        /// making robust error handling crucial for applications supporting multiple database types.
+        /// </remarks>
         [TestMethod]
         public void TryGetValue_InvalidQuery_ShouldReturnFalseAndDefault()
         {
@@ -180,6 +220,11 @@ namespace ByteForge.Toolkit.Tests.Unit.Data.Database
         /// <summary>
         /// Tests the async version of GetValue with Access database.
         /// </summary>
+        /// <remarks>
+        /// This test validates asynchronous scalar value retrieval with ODBC and Access databases.
+        /// Async operations are particularly beneficial for file-based databases like Access,
+        /// where disk I/O operations can introduce latency in data retrieval operations.
+        /// </remarks>
         [TestMethod]
         public async Task GetValueAsync_ValidQuery_ShouldReturnCorrectValue()
         {
@@ -194,6 +239,11 @@ namespace ByteForge.Toolkit.Tests.Unit.Data.Database
         /// <summary>
         /// Tests the async version of TryGetValue with Access database.
         /// </summary>
+        /// <remarks>
+        /// This test combines async patterns with the Try-pattern for ODBC Access operations.
+        /// This combination provides both performance benefits and robust error handling,
+        /// essential for reliable data access in applications using file-based databases.
+        /// </remarks>
         [TestMethod]
         public async Task TryGetValueAsync_ValidQuery_ShouldReturnSuccessAndValue()
         {
@@ -213,6 +263,11 @@ namespace ByteForge.Toolkit.Tests.Unit.Data.Database
         /// <summary>
         /// Tests that GetRecord returns a single DataRow for a valid query in Access.
         /// </summary>
+        /// <remarks>
+        /// This test validates single record retrieval through ODBC with Access databases.
+        /// Access databases may have different column metadata and data type representations
+        /// compared to SQL Server, requiring specific validation of DataRow population.
+        /// </remarks>
         [TestMethod]
         public void GetRecord_ValidQuery_ShouldReturnDataRow()
         {
@@ -229,6 +284,11 @@ namespace ByteForge.Toolkit.Tests.Unit.Data.Database
         /// <summary>
         /// Tests that GetRecord returns null when no records match the query in Access.
         /// </summary>
+        /// <remarks>
+        /// This test ensures consistent null-handling behavior for single record queries with ODBC.
+        /// Access databases may handle empty result sets differently, making this validation
+        /// important for maintaining consistent API behavior across database types.
+        /// </remarks>
         [TestMethod]
         public void GetRecord_NoResults_ShouldReturnNull()
         {
@@ -243,6 +303,11 @@ namespace ByteForge.Toolkit.Tests.Unit.Data.Database
         /// <summary>
         /// Tests the async version of GetRecord with Access database.
         /// </summary>
+        /// <remarks>
+        /// This test validates asynchronous single record retrieval with ODBC and Access databases.
+        /// File-based databases like Access can benefit significantly from async operations
+        /// to prevent blocking during disk I/O operations for record retrieval.
+        /// </remarks>
         [TestMethod]
         public async Task GetRecordAsync_ValidQuery_ShouldReturnDataRow()
         {
@@ -262,6 +327,11 @@ namespace ByteForge.Toolkit.Tests.Unit.Data.Database
         /// <summary>
         /// Tests that GetRecords returns multiple records as DataRowCollection from Access.
         /// </summary>
+        /// <remarks>
+        /// This test validates bulk record retrieval through ODBC with Access databases.
+        /// Multi-record queries with Access databases can have performance implications
+        /// and different memory usage patterns compared to server-based databases.
+        /// </remarks>
         [TestMethod]
         public void GetRecords_ValidQuery_ShouldReturnDataRowCollection()
         {
@@ -277,6 +347,11 @@ namespace ByteForge.Toolkit.Tests.Unit.Data.Database
         /// <summary>
         /// Tests that GetRecords returns null when no records match the query in Access.
         /// </summary>
+        /// <remarks>
+        /// This test ensures consistent empty result handling for multi-record ODBC queries.
+        /// The behavior returns an empty DataRowCollection rather than null, providing
+        /// consistent iteration patterns regardless of the underlying database type.
+        /// </remarks>
         [TestMethod]
         public void GetRecords_NoResults_ShouldReturnNull()
         {
@@ -291,6 +366,11 @@ namespace ByteForge.Toolkit.Tests.Unit.Data.Database
         /// <summary>
         /// Tests the async version of GetRecords with Access database.
         /// </summary>
+        /// <remarks>
+        /// This test validates asynchronous bulk record retrieval with ODBC and Access databases.
+        /// Async bulk operations are particularly important for Access databases where
+        /// file I/O operations can introduce significant latency for large result sets.
+        /// </remarks>
         [TestMethod]
         public async Task GetRecordsAsync_ValidQuery_ShouldReturnDataRowCollection()
         {
@@ -310,6 +390,11 @@ namespace ByteForge.Toolkit.Tests.Unit.Data.Database
         /// <summary>
         /// Tests that ExecuteQuery successfully executes an INSERT statement in Access.
         /// </summary>
+        /// <remarks>
+        /// This test validates data insertion through ODBC with Access databases.
+        /// Access databases have specific constraints on data types, field lengths, and
+        /// concurrent access that require careful validation for reliable data insertion.
+        /// </remarks>
         [TestMethod]
         public void ExecuteQuery_InsertStatement_ShouldReturnTrueAndUpdateRecordsAffected()
         {
@@ -343,6 +428,11 @@ namespace ByteForge.Toolkit.Tests.Unit.Data.Database
         /// <summary>
         /// Tests that ExecuteQuery successfully executes an UPDATE statement in Access.
         /// </summary>
+        /// <remarks>
+        /// This test ensures data modification works correctly through ODBC with Access databases.
+        /// UPDATE operations in Access databases require careful handling of record locking
+        /// and file-based transaction management to ensure data integrity.
+        /// </remarks>
         [TestMethod]
         public void ExecuteQuery_UpdateStatement_ShouldReturnTrueAndUpdateRecordsAffected()
         {
@@ -381,6 +471,11 @@ namespace ByteForge.Toolkit.Tests.Unit.Data.Database
         /// <summary>
         /// Tests that ExecuteQuery successfully executes a DELETE statement in Access.
         /// </summary>
+        /// <remarks>
+        /// This test validates data deletion through ODBC with Access databases.
+        /// DELETE operations in file-based databases like Access require proper handling
+        /// of record locking and database compaction considerations for optimal performance.
+        /// </remarks>
         [TestMethod]
         public void ExecuteQuery_DeleteStatement_ShouldReturnTrueAndUpdateRecordsAffected()
         {
@@ -406,6 +501,11 @@ namespace ByteForge.Toolkit.Tests.Unit.Data.Database
         /// <summary>
         /// Tests ExecuteQuery with an invalid SQL statement in Access.
         /// </summary>
+        /// <remarks>
+        /// This test ensures robust error handling for malformed SQL with ODBC connections.
+        /// Access databases have different SQL syntax support and error reporting compared
+        /// to SQL Server, requiring specific validation of error handling mechanisms.
+        /// </remarks>
         [TestMethod]
         public void ExecuteQuery_InvalidSQL_ShouldReturnFalseAndSetException()
         {
@@ -420,6 +520,11 @@ namespace ByteForge.Toolkit.Tests.Unit.Data.Database
         /// <summary>
         /// Tests the async version of ExecuteQuery with Access database.
         /// </summary>
+        /// <remarks>
+        /// This test validates asynchronous data modification through ODBC with Access databases.
+        /// Async INSERT operations are particularly beneficial for Access databases where
+        /// file I/O and locking mechanisms can introduce latency in data modification operations.
+        /// </remarks>
         [TestMethod]
         public async Task ExecuteQueryAsync_ValidStatement_ShouldReturnTrue()
         {
@@ -452,6 +557,11 @@ namespace ByteForge.Toolkit.Tests.Unit.Data.Database
         /// <summary>
         /// Tests that queries with multiple ODBC parameters work correctly.
         /// </summary>
+        /// <remarks>
+        /// This test validates complex parameter binding with ODBC drivers for Access databases.
+        /// ODBC parameter handling can differ from native database connections, particularly
+        /// with data type conversions and parameter ordering for complex queries.
+        /// </remarks>
         [TestMethod]
         public void GetValue_MultipleODBCParameters_ShouldHandleCorrectly()
         {
@@ -468,6 +578,11 @@ namespace ByteForge.Toolkit.Tests.Unit.Data.Database
         /// <summary>
         /// Tests that null parameters are handled correctly in Access via ODBC.
         /// </summary>
+        /// <remarks>
+        /// This test ensures proper null value handling through ODBC drivers with Access databases.
+        /// ODBC connections may handle null values differently than native connections,
+        /// requiring specific validation to ensure consistent null value processing.
+        /// </remarks>
         [TestMethod]
         public void GetValue_NullODBCParameter_ShouldHandleCorrectly()
         {
@@ -484,6 +599,11 @@ namespace ByteForge.Toolkit.Tests.Unit.Data.Database
         /// <summary>
         /// Tests that various data types as ODBC parameters work correctly.
         /// </summary>
+        /// <remarks>
+        /// This test validates data type conversion and storage through ODBC with Access databases.
+        /// Access databases have specific data type limitations and conversion rules that differ
+        /// from SQL Server, particularly for GUID, DateTime, and Decimal types.
+        /// </remarks>
         [TestMethod]
         public void ExecuteQuery_VariousDataTypesODBC_ShouldHandleCorrectly()
         {
@@ -526,6 +646,11 @@ namespace ByteForge.Toolkit.Tests.Unit.Data.Database
         /// <summary>
         /// Tests that simple queries execute within reasonable time limits in Access.
         /// </summary>
+        /// <remarks>
+        /// This performance test validates that ODBC operations with Access databases meet
+        /// acceptable response times. File-based databases typically have slower performance
+        /// than server-based databases, requiring adjusted performance expectations.
+        /// </remarks>
         [TestMethod]
         public void GetValue_SimpleAccessQuery_ShouldExecuteQuickly()
         {
@@ -539,6 +664,11 @@ namespace ByteForge.Toolkit.Tests.Unit.Data.Database
         /// <summary>
         /// Tests that parameterized queries don't significantly impact performance in Access.
         /// </summary>
+        /// <remarks>
+        /// This test ensures that ODBC parameter binding doesn't introduce excessive overhead
+        /// with Access databases. Parameterized queries through ODBC can have different
+        /// performance characteristics compared to native database connections.
+        /// </remarks>
         [TestMethod]
         public void GetValue_ParameterizedAccessQuery_ShouldExecuteQuickly()
         {
@@ -556,6 +686,11 @@ namespace ByteForge.Toolkit.Tests.Unit.Data.Database
         /// <summary>
         /// Tests behavior with empty string parameters in Access.
         /// </summary>
+        /// <remarks>
+        /// This edge case test validates empty string handling through ODBC with Access databases.
+        /// Access databases may treat empty strings differently than other database systems,
+        /// particularly in comparison operations and null coalescing scenarios.
+        /// </remarks>
         [TestMethod]
         public void GetValue_EmptyStringParameterAccess_ShouldHandleCorrectly()
         {
@@ -571,6 +706,11 @@ namespace ByteForge.Toolkit.Tests.Unit.Data.Database
         /// <summary>
         /// Tests behavior when Access query returns null values.
         /// </summary>
+        /// <remarks>
+        /// This test ensures proper null value conversion from Access databases through ODBC.
+        /// ODBC drivers may handle null value representation differently, requiring validation
+        /// to ensure consistent null value processing in .NET applications.
+        /// </remarks>
         [TestMethod]
         public void GetValue_AccessNullResult_ShouldReturnNull()
         {
@@ -586,6 +726,11 @@ namespace ByteForge.Toolkit.Tests.Unit.Data.Database
         /// <summary>
         /// Tests that Access-specific date format handling works correctly.
         /// </summary>
+        /// <remarks>
+        /// This test validates date/time handling through ODBC with Access databases.
+        /// Access databases have specific date/time storage formats and range limitations
+        /// that require careful validation to ensure proper date parameter handling.
+        /// </remarks>
         [TestMethod]
         public void GetValue_AccessDateHandling_ShouldWorkCorrectly()
         {

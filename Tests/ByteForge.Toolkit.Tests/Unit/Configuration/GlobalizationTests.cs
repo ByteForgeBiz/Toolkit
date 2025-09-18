@@ -25,6 +25,14 @@ namespace ByteForge.Toolkit.Tests.Unit.Configuration
 
         #region Globalization Loading Tests
 
+        /// <summary>
+        /// Verifies that globalization settings use appropriate defaults when no custom configuration is provided.
+        /// </summary>
+        /// <remarks>
+        /// This test ensures that the globalization system has sensible fallback values for all formatting
+        /// options, allowing applications to work correctly even without explicit globalization configuration.
+        /// Default values should follow common US formatting conventions.
+        /// </remarks>
         [TestMethod]
         public void GlobalizationInfo_WithDefaultConfiguration_ShouldUseDefaults()
         {
@@ -46,6 +54,14 @@ namespace ByteForge.Toolkit.Tests.Unit.Configuration
             globalization.NumberFormat.Should().Be("#,##0.00", "default number format should have two decimals");
         }
 
+        /// <summary>
+        /// Verifies that globalization settings properly load custom values from configuration.
+        /// </summary>
+        /// <remarks>
+        /// This test validates that the configuration system can load custom globalization settings
+        /// for different locales and formatting preferences, enabling internationalization support
+        /// for applications targeting multiple regions.
+        /// </remarks>
         [TestMethod]
         public void GlobalizationInfo_WithCustomConfiguration_ShouldLoadCustomValues()
         {
@@ -72,6 +88,14 @@ NumberFormat=# ##0,000";
             globalization.NumberFormat.Should().Be("# ##0,000", "custom number format should be loaded");
         }
 
+        /// <summary>
+        /// Verifies that partial globalization configuration uses defaults for missing values.
+        /// </summary>
+        /// <remarks>
+        /// This test ensures that when only some globalization settings are provided,
+        /// the system gracefully falls back to defaults for missing values, allowing
+        /// incremental configuration without breaking functionality.
+        /// </remarks>
         [TestMethod]
         public void GlobalizationInfo_WithPartialConfiguration_ShouldUseDefaultsForMissing()
         {
@@ -98,6 +122,14 @@ CurrencyFormat=¥#,##0";
 
         #region Date Formatting Tests
 
+        /// <summary>
+        /// Verifies that date formatting uses the configured date format pattern correctly.
+        /// </summary>
+        /// <remarks>
+        /// This test validates the core date formatting functionality, ensuring that custom
+        /// date format patterns are applied correctly to DateTime values. This is essential
+        /// for consistent date representation across the application.
+        /// </remarks>
         [TestMethod]
         public void GlobalizationInfo_FormatDate_ShouldFormatCorrectly()
         {
@@ -118,6 +150,14 @@ DateFormat=yyyy-MM-dd";
             formatted.Should().Be("2024-01-15", "date should be formatted using custom format");
         }
 
+        /// <summary>
+        /// Verifies that date formatting with null values returns the specified null representation.
+        /// </summary>
+        /// <remarks>
+        /// This test ensures robust null handling in date formatting, allowing applications
+        /// to specify custom null value representations (like "N/A" or "TBD") for better
+        /// user experience when dealing with missing date data.
+        /// </remarks>
         [TestMethod]
         public void GlobalizationInfo_FormatDate_WithNullValue_ShouldReturnNullValue()
         {
@@ -135,6 +175,14 @@ DateFormat=yyyy-MM-dd";
             formatted.Should().Be("N/A", "null date should return specified null value");
         }
 
+        /// <summary>
+        /// Verifies that long date formatting includes day of week and full month names.
+        /// </summary>
+        /// <remarks>
+        /// This test validates the long date formatting feature, which provides more verbose
+        /// date representations suitable for formal documents or user interfaces requiring
+        /// complete date information including day names.
+        /// </remarks>
         [TestMethod]
         public void GlobalizationInfo_FormatLongDate_ShouldUseCorrectFormat()
         {
@@ -155,6 +203,14 @@ LongDateFormat=dddd, MMMM d, yyyy";
             formatted.Should().Be("Monday, January 15, 2024", "long date should include day of week and full month name");
         }
 
+        /// <summary>
+        /// Verifies that datetime formatting correctly combines separate date and time format patterns.
+        /// </summary>
+        /// <remarks>
+        /// This test ensures that the datetime formatting logic properly merges configured
+        /// date and time formats into a cohesive datetime representation, maintaining
+        /// consistency between separate and combined formatting operations.
+        /// </remarks>
         [TestMethod]
         public void GlobalizationInfo_FormatDateTime_ShouldCombineDateAndTime()
         {
@@ -180,6 +236,14 @@ TimeFormat=HH:mm:ss";
 
         #region Time Formatting Tests
 
+        /// <summary>
+        /// Verifies that time formatting uses the configured time format pattern correctly.
+        /// </summary>
+        /// <remarks>
+        /// This test validates the core time formatting functionality, ensuring that custom
+        /// time format patterns are applied correctly to DateTime values. This supports
+        /// different time display preferences like 24-hour vs 12-hour formats.
+        /// </remarks>
         [TestMethod]
         public void GlobalizationInfo_FormatTime_ShouldFormatCorrectly()
         {
@@ -200,6 +264,14 @@ TimeFormat=HH:mm:ss";
             formatted.Should().Be("14:30:45", "time should be formatted using 24-hour format");
         }
 
+        /// <summary>
+        /// Verifies that short time formatting excludes seconds for concise time display.
+        /// </summary>
+        /// <remarks>
+        /// This test ensures that short time formatting provides a more concise time representation
+        /// suitable for UI elements where space is limited or when second-level precision
+        /// is not required for the user experience.
+        /// </remarks>
         [TestMethod]
         public void GlobalizationInfo_FormatShortTime_ShouldUseShortFormat()
         {
@@ -220,6 +292,14 @@ ShortTimeFormat=HH:mm";
             formatted.Should().Be("14:30", "short time should exclude seconds");
         }
 
+        /// <summary>
+        /// Verifies that long time formatting includes milliseconds for high-precision time display.
+        /// </summary>
+        /// <remarks>
+        /// This test validates the long time formatting feature, which provides high-precision
+        /// time representations suitable for logging, debugging, or applications requiring
+        /// subsecond timing accuracy.
+        /// </remarks>
         [TestMethod]
         public void GlobalizationInfo_FormatLongTime_ShouldIncludeMilliseconds()
         {
@@ -240,6 +320,14 @@ LongTimeFormat=HH:mm:ss.fff";
             formatted.Should().Be("14:30:45.123", "long time should include milliseconds");
         }
 
+        /// <summary>
+        /// Verifies that 12-hour time formatting includes AM/PM indicators correctly.
+        /// </summary>
+        /// <remarks>
+        /// This test validates the 12-hour time formatting functionality, ensuring proper
+        /// conversion from 24-hour to 12-hour format with appropriate AM/PM indicators.
+        /// This is essential for applications targeting users familiar with 12-hour time conventions.
+        /// </remarks>
         [TestMethod]
         public void GlobalizationInfo_FormatTime12_ShouldUse12HourFormat()
         {
@@ -260,6 +348,14 @@ Time12Format=hh:mm:ss tt";
             formatted.Should().Be("02:30:45 PM", "12-hour time should include AM/PM indicator");
         }
 
+        /// <summary>
+        /// Verifies that short 12-hour time formatting excludes seconds and leading zeros appropriately.
+        /// </summary>
+        /// <remarks>
+        /// This test ensures that short 12-hour time formatting provides the most concise
+        /// representation suitable for casual time display, removing unnecessary elements
+        /// while maintaining clarity with AM/PM indicators.
+        /// </remarks>
         [TestMethod]
         public void GlobalizationInfo_FormatShortTime12_ShouldUseShort12HourFormat()
         {
@@ -284,6 +380,14 @@ ShortTime12Format=h:mm tt";
 
         #region Numeric Formatting Tests
 
+        /// <summary>
+        /// Verifies that integer formatting includes thousands separators for better readability.
+        /// </summary>
+        /// <remarks>
+        /// This test validates the integer formatting functionality, ensuring that large numbers
+        /// are displayed with appropriate thousands separators to improve readability and
+        /// user comprehension of numeric values.
+        /// </remarks>
         [TestMethod]
         public void GlobalizationInfo_FormatInteger_ShouldFormatWithThousandsSeparator()
         {
@@ -303,6 +407,14 @@ IntegerFormat=#,##0";
             formatted.Should().Be("1,234,567", "integer should be formatted with thousands separators");
         }
 
+        /// <summary>
+        /// Verifies that integer formatting with null values returns the specified null representation.
+        /// </summary>
+        /// <remarks>
+        /// This test ensures robust null handling in integer formatting, allowing applications
+        /// to specify custom null value representations for better user experience when
+        /// dealing with missing or undefined numeric data.
+        /// </remarks>
         [TestMethod]
         public void GlobalizationInfo_FormatInteger_WithNullValue_ShouldReturnNullValue()
         {
@@ -320,6 +432,14 @@ IntegerFormat=#,##0";
             formatted.Should().Be("N/A", "null integer should return specified null value");
         }
 
+        /// <summary>
+        /// Verifies that number formatting correctly handles decimal places according to the configured format.
+        /// </summary>
+        /// <remarks>
+        /// This test validates the decimal number formatting functionality, ensuring that floating-point
+        /// numbers are displayed with the correct number of decimal places and proper rounding
+        /// according to the configured number format pattern.
+        /// </remarks>
         [TestMethod]
         public void GlobalizationInfo_FormatNumber_ShouldFormatDecimalPlaces()
         {
@@ -339,6 +459,14 @@ NumberFormat=#,##0.000";
             formatted.Should().Be("1,234.568", "number should be formatted with specified decimal places");
         }
 
+        /// <summary>
+        /// Verifies that number formatting works correctly with float data types.
+        /// </summary>
+        /// <remarks>
+        /// This test ensures that the number formatting system properly handles single-precision
+        /// floating-point values, maintaining type compatibility across different numeric types
+        /// while applying consistent formatting rules.
+        /// </remarks>
         [TestMethod]
         public void GlobalizationInfo_FormatNumber_WithFloat_ShouldWork()
         {
@@ -358,6 +486,14 @@ NumberFormat=#,##0.00";
             formatted.Should().Be("123.46", "float should be formatted correctly");
         }
 
+        /// <summary>
+        /// Verifies that number formatting works correctly with decimal data types for high precision.
+        /// </summary>
+        /// <remarks>
+        /// This test validates that the number formatting system properly handles high-precision
+        /// decimal values, which is important for financial calculations and other scenarios
+        /// requiring exact decimal representation.
+        /// </remarks>
         [TestMethod]
         public void GlobalizationInfo_FormatNumber_WithDecimal_ShouldWork()
         {
@@ -381,6 +517,14 @@ NumberFormat=#,##0.0000";
 
         #region Currency Formatting Tests
 
+        /// <summary>
+        /// Verifies that currency formatting includes the appropriate currency symbol and formatting.
+        /// </summary>
+        /// <remarks>
+        /// This test validates the core currency formatting functionality, ensuring that monetary
+        /// values are displayed with proper currency symbols, decimal places, and thousands
+        /// separators according to the configured currency format.
+        /// </remarks>
         [TestMethod]
         public void GlobalizationInfo_FormatCurrency_ShouldIncludeCurrencySymbol()
         {
@@ -400,6 +544,14 @@ CurrencyFormat='$' #,##0.00";
             formatted.Should().Be("$ 1,234.56", "currency should include dollar symbol and formatting");
         }
 
+        /// <summary>
+        /// Verifies that currency formatting works correctly with European currency conventions.
+        /// </summary>
+        /// <remarks>
+        /// This test ensures that the currency formatting system supports different currency
+        /// placement conventions, such as placing the Euro symbol after the amount with
+        /// culture-specific decimal and thousands separators.
+        /// </remarks>
         [TestMethod]
         public void GlobalizationInfo_FormatCurrency_WithEuroFormat_ShouldWork()
         {
@@ -421,6 +573,14 @@ CultureInfo=pt-br";
             formatted.Should().Be("1 234,56 €", "Euro format should place symbol after amount");
         }
 
+        /// <summary>
+        /// Verifies that currency formatting works correctly with float data types.
+        /// </summary>
+        /// <remarks>
+        /// This test ensures that the currency formatting system properly handles single-precision
+        /// floating-point values, maintaining type compatibility for various numeric inputs
+        /// while applying consistent currency formatting rules.
+        /// </remarks>
         [TestMethod]
         public void GlobalizationInfo_FormatCurrency_WithFloat_ShouldWork()
         {
@@ -440,6 +600,14 @@ CurrencyFormat='$' #,##0.00";
             formatted.Should().Be("$ 1,234.56", "float currency should be formatted correctly");
         }
 
+        /// <summary>
+        /// Verifies that currency formatting works correctly with decimal data types for precise monetary values.
+        /// </summary>
+        /// <remarks>
+        /// This test validates that the currency formatting system properly handles high-precision
+        /// decimal values, which is crucial for financial applications requiring exact monetary
+        /// calculations without floating-point precision issues.
+        /// </remarks>
         [TestMethod]
         public void GlobalizationInfo_FormatCurrency_WithDecimal_ShouldWork()
         {
@@ -463,6 +631,14 @@ CurrencyFormat='$' #,##0.00";
 
         #region Culture-Specific Formatting Tests
 
+        /// <summary>
+        /// Verifies that French culture settings apply appropriate French formatting conventions.
+        /// </summary>
+        /// <remarks>
+        /// This test validates culture-specific formatting by ensuring that French locale settings
+        /// produce the expected formatting for numbers and currency, including the use of space
+        /// as thousands separator and comma as decimal separator.
+        /// </remarks>
         [TestMethod]
         public void GlobalizationInfo_WithFrenchCulture_ShouldUseFrenchFormatting()
         {
@@ -489,6 +665,14 @@ CurrencyFormat=# ##0.00 '€'";
             formattedCurrency.Should().Be("1 234,56 €", "French currency should follow European conventions");
         }
 
+        /// <summary>
+        /// Verifies that German culture settings apply appropriate German formatting conventions.
+        /// </summary>
+        /// <remarks>
+        /// This test validates culture-specific formatting for German locale, ensuring that
+        /// numeric formatting follows German conventions with appropriate separators.
+        /// This demonstrates the internationalization capabilities of the formatting system.
+        /// </remarks>
         [TestMethod]
         public void GlobalizationInfo_WithGermanCulture_ShouldUseGermanFormatting()
         {
@@ -515,6 +699,14 @@ NumberFormat=# ##0.00";
 
         #region Multiple Integer Type Tests
 
+        /// <summary>
+        /// Verifies that integer formatting works correctly with all integer data types.
+        /// </summary>
+        /// <remarks>
+        /// This comprehensive test validates that the integer formatting system supports
+        /// all .NET integer types (short, long, byte, uint, ulong, ushort, sbyte) with
+        /// consistent formatting behavior regardless of the underlying type.
+        /// </remarks>
         [TestMethod]
         public void GlobalizationInfo_FormatInteger_WithVariousIntegerTypes_ShouldWork()
         {
@@ -541,6 +733,14 @@ IntegerFormat=#,##0";
 
         #region Combined Date/Time Format Tests
 
+        /// <summary>
+        /// Verifies that combined date/time formats are constructed correctly from individual format components.
+        /// </summary>
+        /// <remarks>
+        /// This test validates the format combination logic, ensuring that various datetime formats
+        /// are properly assembled from their constituent date and time format patterns.
+        /// This is essential for providing consistent datetime representations across the application.
+        /// </remarks>
         [TestMethod]
         public void GlobalizationInfo_CombinedFormats_ShouldBuildCorrectly()
         {
@@ -567,6 +767,14 @@ LongTime12Format=hh:mm:ss.fff tt";
             globalization.LongDateTime12Format.Should().Be("dddd, MMMM d, yyyy hh:mm:ss.fff tt", "long 12-hour datetime should combine appropriately");
         }
 
+        /// <summary>
+        /// Verifies that short datetime formatting uses the properly combined date and short time formats.
+        /// </summary>
+        /// <remarks>
+        /// This test ensures that short datetime formatting produces concise datetime representations
+        /// by combining the configured date format with the short time format, suitable for
+        /// UI elements where space is limited.
+        /// </remarks>
         [TestMethod]
         public void GlobalizationInfo_FormatShortDateTime_ShouldUseCombinedFormat()
         {
@@ -588,6 +796,14 @@ ShortTimeFormat=HH:mm";
             formatted.Should().Be("2024-01-15 14:30", "short datetime should combine date and short time");
         }
 
+        /// <summary>
+        /// Verifies that long datetime formatting uses the properly combined long date and long time formats.
+        /// </summary>
+        /// <remarks>
+        /// This test ensures that long datetime formatting produces comprehensive datetime representations
+        /// by combining the configured long date format with the long time format, providing
+        /// complete temporal information including day names and millisecond precision.
+        /// </remarks>
         [TestMethod]
         public void GlobalizationInfo_FormatLongDateTime_ShouldUseCombinedFormat()
         {

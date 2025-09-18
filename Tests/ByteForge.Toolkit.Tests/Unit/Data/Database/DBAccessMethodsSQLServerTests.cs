@@ -60,6 +60,11 @@ namespace ByteForge.Toolkit.Tests.Unit.Data.Database
         /// <summary>
         /// Tests that TestConnection returns true for a valid database connection.
         /// </summary>
+        /// <remarks>
+        /// This test verifies the fundamental connectivity functionality of DBAccess with SQL Server.
+        /// It ensures that the database configuration is valid and that the connection can be established
+        /// successfully, which is critical for all other database operations.
+        /// </remarks>
         [TestMethod]
         public void TestConnection_ValidDatabase_ShouldReturnTrue()
         {
@@ -74,6 +79,11 @@ namespace ByteForge.Toolkit.Tests.Unit.Data.Database
         /// <summary>
         /// Tests that TestConnection returns false for an invalid database connection.
         /// </summary>
+        /// <remarks>
+        /// This test validates proper error handling when connection parameters are invalid.
+        /// It ensures that DBAccess gracefully handles connection failures and sets appropriate
+        /// exception information without throwing unhandled exceptions.
+        /// </remarks>
         [TestMethod]
         public void TestConnection_InvalidDatabase_ShouldReturnFalse()
         {
@@ -92,6 +102,11 @@ namespace ByteForge.Toolkit.Tests.Unit.Data.Database
         /// <summary>
         /// Tests the async version of TestConnection.
         /// </summary>
+        /// <remarks>
+        /// This test ensures that the asynchronous connection testing functionality works correctly
+        /// with SQL Server, allowing for non-blocking database connectivity checks in async/await
+        /// patterns commonly used in modern applications.
+        /// </remarks>
         [TestMethod]
         public async Task TestConnectionAsync_ValidDatabase_ShouldReturnTrue()
         {
@@ -109,6 +124,11 @@ namespace ByteForge.Toolkit.Tests.Unit.Data.Database
         /// <summary>
         /// Tests that GetValue returns the correct scalar value from a simple query.
         /// </summary>
+        /// <remarks>
+        /// This test validates the core scalar value retrieval functionality with SQL Server.
+        /// It demonstrates proper handling of COUNT queries and type conversion, which are
+        /// fundamental operations for data validation and business logic in applications.
+        /// </remarks>
         [TestMethod]
         public void GetValue_SimpleScalarQuery_ShouldReturnCorrectValue()
         {
@@ -123,6 +143,11 @@ namespace ByteForge.Toolkit.Tests.Unit.Data.Database
         /// <summary>
         /// Tests that GetValue with parameters works correctly.
         /// </summary>
+        /// <remarks>
+        /// This test ensures that parameterized queries work properly with GetValue, validating
+        /// SQL injection prevention mechanisms and proper parameter binding with SQL Server.
+        /// Parameterized queries are essential for security and performance in production systems.
+        /// </remarks>
         [TestMethod]
         public void GetValue_WithParameters_ShouldReturnCorrectValue()
         {
@@ -138,6 +163,11 @@ namespace ByteForge.Toolkit.Tests.Unit.Data.Database
         /// <summary>
         /// Tests that GetValue returns null for queries that return no results.
         /// </summary>
+        /// <remarks>
+        /// This test validates proper handling of empty result sets in scalar queries.
+        /// It ensures that the method returns appropriate null values rather than throwing
+        /// exceptions, which is crucial for robust application behavior when data is not found.
+        /// </remarks>
         [TestMethod]
         public void GetValue_NoResults_ShouldReturnDefault()
         {
@@ -153,6 +183,11 @@ namespace ByteForge.Toolkit.Tests.Unit.Data.Database
         /// <summary>
         /// Tests the generic TryGetValue method for successful operations.
         /// </summary>
+        /// <remarks>
+        /// This test validates the Try-pattern implementation for scalar value retrieval,
+        /// which provides a safer alternative to GetValue by returning success/failure status
+        /// without throwing exceptions. This pattern is valuable for performance-critical scenarios.
+        /// </remarks>
         [TestMethod]
         public void TryGetValue_ValidQuery_ShouldReturnTrueAndValue()
         {
@@ -168,6 +203,11 @@ namespace ByteForge.Toolkit.Tests.Unit.Data.Database
         /// <summary>
         /// Tests TryGetValue with an invalid query.
         /// </summary>
+        /// <remarks>
+        /// This test ensures that TryGetValue properly handles SQL syntax errors and invalid
+        /// table references by returning false and setting appropriate error information.
+        /// This behavior is crucial for applications that need to handle database errors gracefully.
+        /// </remarks>
         [TestMethod]
         public void TryGetValue_InvalidQuery_ShouldReturnFalseAndDefault()
         {
@@ -183,6 +223,11 @@ namespace ByteForge.Toolkit.Tests.Unit.Data.Database
         /// <summary>
         /// Tests the async version of GetValue.
         /// </summary>
+        /// <remarks>
+        /// This test validates asynchronous scalar value retrieval with SQL Server,
+        /// ensuring proper async/await patterns and non-blocking database operations.
+        /// Async methods are essential for scalable web applications and services.
+        /// </remarks>
         [TestMethod]
         public async Task GetValueAsync_ValidQuery_ShouldReturnCorrectValue()
         {
@@ -197,6 +242,11 @@ namespace ByteForge.Toolkit.Tests.Unit.Data.Database
         /// <summary>
         /// Tests the async version of TryGetValue.
         /// </summary>
+        /// <remarks>
+        /// This test combines the benefits of the Try-pattern with asynchronous execution,
+        /// providing both performance benefits and graceful error handling for scalar queries.
+        /// The tuple return type enables clean destructuring in modern C# applications.
+        /// </remarks>
         [TestMethod]
         public async Task TryGetValueAsync_ValidQuery_ShouldReturnSuccessAndValue()
         {
@@ -216,6 +266,11 @@ namespace ByteForge.Toolkit.Tests.Unit.Data.Database
         /// <summary>
         /// Tests that GetRecord returns a single DataRow for a valid query.
         /// </summary>
+        /// <remarks>
+        /// This test validates single record retrieval functionality with SQL Server.
+        /// It ensures proper DataRow population with column metadata and data values,
+        /// which is essential for applications that need structured access to database records.
+        /// </remarks>
         [TestMethod]
         public void GetRecord_ValidQuery_ShouldReturnDataRow()
         {
@@ -232,6 +287,11 @@ namespace ByteForge.Toolkit.Tests.Unit.Data.Database
         /// <summary>
         /// Tests that GetRecord returns null when no records match the query.
         /// </summary>
+        /// <remarks>
+        /// This test ensures proper handling of empty result sets in single record queries.
+        /// Returning null for non-existent records allows applications to distinguish between
+        /// 'no data found' and actual data retrieval errors, enabling proper business logic flow.
+        /// </remarks>
         [TestMethod]
         public void GetRecord_NoResults_ShouldReturnNull()
         {
@@ -246,6 +306,11 @@ namespace ByteForge.Toolkit.Tests.Unit.Data.Database
         /// <summary>
         /// Tests the async version of GetRecord.
         /// </summary>
+        /// <remarks>
+        /// This test validates asynchronous single record retrieval with SQL Server,
+        /// ensuring that DataRow objects are properly constructed in async scenarios.
+        /// Async record retrieval is crucial for responsive UI applications and web services.
+        /// </remarks>
         [TestMethod]
         public async Task GetRecordAsync_ValidQuery_ShouldReturnDataRow()
         {
@@ -265,6 +330,11 @@ namespace ByteForge.Toolkit.Tests.Unit.Data.Database
         /// <summary>
         /// Tests that GetRecords returns multiple records as DataRowCollection.
         /// </summary>
+        /// <remarks>
+        /// This test validates bulk record retrieval functionality with SQL Server.
+        /// It ensures proper population of DataRowCollection with multiple records,
+        /// which is fundamental for reporting, data analysis, and bulk data processing scenarios.
+        /// </remarks>
         [TestMethod]
         public void GetRecords_ValidQuery_ShouldReturnDataRowCollection()
         {
@@ -280,6 +350,11 @@ namespace ByteForge.Toolkit.Tests.Unit.Data.Database
         /// <summary>
         /// Tests that GetRecords returns null when no records match the query.
         /// </summary>
+        /// <remarks>
+        /// This test validates handling of empty result sets in multi-record queries.
+        /// The behavior returns an empty DataRowCollection rather than null, which provides
+        /// consistent behavior for iteration and count operations in application code.
+        /// </remarks>
         [TestMethod]
         public void GetRecords_NoResults_ShouldReturnNull()
         {
@@ -294,6 +369,11 @@ namespace ByteForge.Toolkit.Tests.Unit.Data.Database
         /// <summary>
         /// Tests the async version of GetRecords.
         /// </summary>
+        /// <remarks>
+        /// This test ensures asynchronous bulk record retrieval works correctly with SQL Server.
+        /// Async multi-record queries are essential for scalable applications that process
+        /// large datasets without blocking the calling thread.
+        /// </remarks>
         [TestMethod]
         public async Task GetRecordsAsync_ValidQuery_ShouldReturnDataRowCollection()
         {
@@ -313,6 +393,11 @@ namespace ByteForge.Toolkit.Tests.Unit.Data.Database
         /// <summary>
         /// Tests that ExecuteQuery successfully executes an INSERT statement.
         /// </summary>
+        /// <remarks>
+        /// This test validates data insertion capabilities with parameterized queries on SQL Server.
+        /// It demonstrates proper parameter binding, transaction handling, and RecordsAffected tracking,
+        /// which are essential for data modification operations and audit trails in business applications.
+        /// </remarks>
         [TestMethod]
         public void ExecuteQuery_InsertStatement_ShouldReturnTrueAndUpdateRecordsAffected()
         {
@@ -346,6 +431,11 @@ namespace ByteForge.Toolkit.Tests.Unit.Data.Database
         /// <summary>
         /// Tests that ExecuteQuery successfully executes an UPDATE statement.
         /// </summary>
+        /// <remarks>
+        /// This test ensures data modification capabilities work correctly with SQL Server.
+        /// It validates parameter handling for WHERE clauses and SET operations, demonstrating
+        /// the safety and reliability of data updates in transactional business scenarios.
+        /// </remarks>
         [TestMethod]
         public void ExecuteQuery_UpdateStatement_ShouldReturnTrueAndUpdateRecordsAffected()
         {
@@ -384,6 +474,11 @@ namespace ByteForge.Toolkit.Tests.Unit.Data.Database
         /// <summary>
         /// Tests that ExecuteQuery successfully executes a DELETE statement.
         /// </summary>
+        /// <remarks>
+        /// This test validates data deletion functionality with proper parameter binding.
+        /// It ensures that DELETE operations are executed safely with accurate RecordsAffected
+        /// tracking, which is crucial for data integrity and audit logging in enterprise applications.
+        /// </remarks>
         [TestMethod]
         public void ExecuteQuery_DeleteStatement_ShouldReturnTrueAndUpdateRecordsAffected()
         {
@@ -409,6 +504,11 @@ namespace ByteForge.Toolkit.Tests.Unit.Data.Database
         /// <summary>
         /// Tests ExecuteQuery with an invalid SQL statement.
         /// </summary>
+        /// <remarks>
+        /// This test ensures proper error handling for malformed SQL statements.
+        /// It validates that the method returns false and sets appropriate exception information
+        /// rather than allowing SQL errors to propagate, providing robust error handling for applications.
+        /// </remarks>
         [TestMethod]
         public void ExecuteQuery_InvalidSQL_ShouldReturnFalseAndSetException()
         {
@@ -423,6 +523,11 @@ namespace ByteForge.Toolkit.Tests.Unit.Data.Database
         /// <summary>
         /// Tests the async version of ExecuteQuery.
         /// </summary>
+        /// <remarks>
+        /// This test validates asynchronous data modification operations with SQL Server.
+        /// It ensures that INSERT statements work correctly in async scenarios, which is
+        /// essential for scalable web applications and services that require non-blocking database operations.
+        /// </remarks>
         [TestMethod]
         public async Task ExecuteQueryAsync_ValidStatement_ShouldReturnTrue()
         {
@@ -455,6 +560,11 @@ namespace ByteForge.Toolkit.Tests.Unit.Data.Database
         /// <summary>
         /// Tests that queries with multiple parameters work correctly.
         /// </summary>
+        /// <remarks>
+        /// This test validates complex parameter handling with multiple conditions in SQL Server queries.
+        /// It ensures proper parameter binding for range queries and complex WHERE clauses, which are
+        /// common in business applications for filtering and data analysis operations.
+        /// </remarks>
         [TestMethod]
         public void GetValue_MultipleParameters_ShouldHandleCorrectly()
         {
@@ -471,6 +581,11 @@ namespace ByteForge.Toolkit.Tests.Unit.Data.Database
         /// <summary>
         /// Tests that null parameters are handled correctly.
         /// </summary>
+        /// <remarks>
+        /// This test ensures proper handling of NULL values in parameterized queries with SQL Server.
+        /// Null parameter handling is crucial for optional search criteria and nullable database columns,
+        /// preventing SQL errors and ensuring correct business logic execution.
+        /// </remarks>
         [TestMethod]
         public void GetValue_NullParameter_ShouldHandleCorrectly()
         {
@@ -486,6 +601,11 @@ namespace ByteForge.Toolkit.Tests.Unit.Data.Database
         /// <summary>
         /// Tests that various data types as parameters work correctly.
         /// </summary>
+        /// <remarks>
+        /// This test validates type safety and proper conversion for different .NET data types
+        /// when used as SQL Server parameters. It ensures that GUID, DateTime, Decimal, Boolean,
+        /// and String types are correctly handled, which is essential for robust data persistence.
+        /// </remarks>
         [TestMethod]
         public void ExecuteQuery_VariousDataTypes_ShouldHandleCorrectly()
         {
@@ -529,6 +649,11 @@ namespace ByteForge.Toolkit.Tests.Unit.Data.Database
         /// <summary>
         /// Tests that simple queries execute within reasonable time limits.
         /// </summary>
+        /// <remarks>
+        /// This performance test ensures that basic SQL Server operations meet expected response times.
+        /// Performance validation is crucial for applications with SLA requirements and helps identify
+        /// potential database configuration or connectivity issues early in development.
+        /// </remarks>
         [TestMethod]
         public void GetValue_SimpleQuery_ShouldExecuteQuickly()
         {
@@ -542,6 +667,11 @@ namespace ByteForge.Toolkit.Tests.Unit.Data.Database
         /// <summary>
         /// Tests that queries with parameters don't significantly impact performance.
         /// </summary>
+        /// <remarks>
+        /// This test validates that parameterized queries maintain acceptable performance with SQL Server.
+        /// While parameters add security benefits, this test ensures they don't introduce significant
+        /// overhead that could impact application responsiveness in production environments.
+        /// </remarks>
         [TestMethod]
         public void GetValue_ParameterizedQuery_ShouldExecuteQuickly()
         {
@@ -555,6 +685,11 @@ namespace ByteForge.Toolkit.Tests.Unit.Data.Database
         /// <summary>
         /// Tests that retrieving multiple records doesn't take excessive time.
         /// </summary>
+        /// <remarks>
+        /// This performance test ensures bulk data retrieval operations complete within acceptable timeframes.
+        /// Multi-record queries are common in reporting and data analysis scenarios, so performance
+        /// validation helps ensure scalability for large datasets.
+        /// </remarks>
         [TestMethod]
         public void GetRecords_MultipleRecords_ShouldExecuteQuickly()
         {
@@ -572,6 +707,11 @@ namespace ByteForge.Toolkit.Tests.Unit.Data.Database
         /// <summary>
         /// Tests behavior with empty string parameters.
         /// </summary>
+        /// <remarks>
+        /// This edge case test validates handling of empty string parameters in SQL Server queries.
+        /// Empty strings are common in user input scenarios and need to be handled correctly to
+        /// prevent unexpected query results or application errors.
+        /// </remarks>
         [TestMethod]
         public void GetValue_EmptyStringParameter_ShouldHandleCorrectly()
         {
@@ -587,6 +727,11 @@ namespace ByteForge.Toolkit.Tests.Unit.Data.Database
         /// <summary>
         /// Tests behavior when query returns DBNull values.
         /// </summary>
+        /// <remarks>
+        /// This test ensures proper conversion of SQL NULL values to .NET null values.
+        /// DBNull handling is critical for applications working with nullable database columns,
+        /// preventing InvalidCastException and ensuring proper null propagation in business logic.
+        /// </remarks>
         [TestMethod]
         public void GetValue_DBNullResult_ShouldReturnNull()
         {
@@ -602,6 +747,11 @@ namespace ByteForge.Toolkit.Tests.Unit.Data.Database
         /// <summary>
         /// Tests that very long query strings are handled properly.
         /// </summary>
+        /// <remarks>
+        /// This stress test validates that SQL Server can handle complex queries with many conditions.
+        /// Long query strings can occur in dynamic query building scenarios, search filters,
+        /// and reporting applications, so proper handling ensures application stability.
+        /// </remarks>
         [TestMethod]
         public void GetValue_LongQueryString_ShouldHandleCorrectly()
         {

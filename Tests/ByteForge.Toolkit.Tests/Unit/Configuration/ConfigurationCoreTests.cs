@@ -56,6 +56,14 @@ CurrencySymbol=$";
 
         #region Initialization Tests
 
+        /// <summary>
+        /// Verifies that configuration can be initialized with a file path and loads successfully.
+        /// </summary>
+        /// <remarks>
+        /// This test ensures the basic initialization pattern works correctly, loading configuration
+        /// data from a specified file path and making the root configuration available.
+        /// This is the most common initialization method used in applications.
+        /// </remarks>
         [TestMethod]
         public void Initialize_WithFilePath_ShouldLoadConfiguration()
         {
@@ -71,6 +79,14 @@ CurrencySymbol=$";
             config.Root.Should().NotBeNull("root configuration should be available");
         }
 
+        /// <summary>
+        /// Verifies that configuration can be initialized with separate directory and filename parameters.
+        /// </summary>
+        /// <remarks>
+        /// This test validates the alternative initialization method that accepts directory and filename
+        /// as separate parameters, providing flexibility for applications that need to construct
+        /// file paths dynamically.
+        /// </remarks>
         [TestMethod]
         public void Initialize_WithDirectoryAndFileName_ShouldLoadConfiguration()
         {
@@ -88,6 +104,14 @@ CurrencySymbol=$";
             config.Root.Should().NotBeNull("root configuration should be available");
         }
 
+        /// <summary>
+        /// Verifies that initializing with a null directory parameter throws ArgumentNullException.
+        /// </summary>
+        /// <remarks>
+        /// This test ensures proper input validation by confirming that null directory parameters
+        /// are rejected with appropriate exceptions, preventing runtime errors and providing
+        /// clear error messaging for invalid usage.
+        /// </remarks>
         [TestMethod]
         public void Initialize_WithNullDirectory_ShouldThrowArgumentNullException()
         {
@@ -101,6 +125,13 @@ CurrencySymbol=$";
                 .Which.ParamName.Should().Be("directory", "null directory should throw ArgumentNullException");
         }
 
+        /// <summary>
+        /// Verifies that initializing with a null filename parameter throws ArgumentNullException.
+        /// </summary>
+        /// <remarks>
+        /// This test ensures comprehensive input validation by confirming that null filename parameters
+        /// are properly rejected, maintaining the robustness of the initialization process.
+        /// </remarks>
         [TestMethod]
         public void Initialize_WithNullFileName_ShouldThrowArgumentNullException()
         {
@@ -114,6 +145,13 @@ CurrencySymbol=$";
                 .Which.ParamName.Should().Be("fileName", "null fileName should throw ArgumentNullException");
         }
 
+        /// <summary>
+        /// Verifies that initializing with an empty directory string throws ArgumentNullException.
+        /// </summary>
+        /// <remarks>
+        /// This test ensures that empty strings are treated as invalid input for directory parameters,
+        /// maintaining consistent validation behavior alongside null checks.
+        /// </remarks>
         [TestMethod]
         public void Initialize_WithEmptyDirectory_ShouldThrowArgumentNullException()
         {
@@ -127,6 +165,13 @@ CurrencySymbol=$";
                 .Which.ParamName.Should().Be("directory", "empty directory should throw ArgumentNullException");
         }
 
+        /// <summary>
+        /// Verifies that initializing with an empty filename string throws ArgumentNullException.
+        /// </summary>
+        /// <remarks>
+        /// This test completes the input validation coverage by ensuring empty filename strings
+        /// are rejected, providing comprehensive protection against invalid initialization parameters.
+        /// </remarks>
         [TestMethod]
         public void Initialize_WithEmptyFileName_ShouldThrowArgumentNullException()
         {
@@ -140,6 +185,14 @@ CurrencySymbol=$";
                 .Which.ParamName.Should().Be("fileName", "empty fileName should throw ArgumentNullException");
         }
 
+        /// <summary>
+        /// Verifies that attempting to initialize an already initialized configuration throws InvalidOperationException.
+        /// </summary>
+        /// <remarks>
+        /// This test ensures that the configuration system prevents double initialization,
+        /// which could lead to unexpected behavior or resource conflicts. This enforces
+        /// the singleton pattern and initialization lifecycle.
+        /// </remarks>
         [TestMethod]
         public void Initialize_TwiceWithSameFile_ShouldThrowInvalidOperationException()
         {
@@ -155,6 +208,14 @@ CurrencySymbol=$";
                 .WithMessage("*already been initialized*", "double initialization should throw InvalidOperationException");
         }
 
+        /// <summary>
+        /// Verifies that initializing with a non-existent directory throws DirectoryNotFoundException.
+        /// </summary>
+        /// <remarks>
+        /// This test ensures that the system properly validates directory existence before
+        /// attempting to access configuration files, providing clear error messaging
+        /// for file system issues.
+        /// </remarks>
         [TestMethod]
         public void Initialize_WithNonExistentDirectory_ShouldThrowDirectoryNotFoundException()
         {
@@ -168,6 +229,14 @@ CurrencySymbol=$";
                 .WithMessage("*directory was not found*", "non-existent directory should throw DirectoryNotFoundException");
         }
 
+        /// <summary>
+        /// Verifies that initializing with a non-existent configuration file throws FileNotFoundException.
+        /// </summary>
+        /// <remarks>
+        /// This test ensures that missing configuration files are detected during initialization
+        /// and reported with appropriate exceptions, preventing silent failures and
+        /// providing clear guidance for troubleshooting.
+        /// </remarks>
         [TestMethod]
         public void Initialize_WithNonExistentFile_ShouldThrowFileNotFoundException()
         {
@@ -186,6 +255,13 @@ CurrencySymbol=$";
 
         #region Section Management Tests
 
+        /// <summary>
+        /// Verifies that adding a configuration section with a valid type creates the section successfully.
+        /// </summary>
+        /// <remarks>
+        /// This test validates the basic section creation functionality, ensuring that strongly-typed
+        /// configuration sections can be added to the configuration system and are properly instantiated.
+        /// </remarks>
         [TestMethod]
         public void AddSection_WithValidType_ShouldCreateSection()
         {
@@ -202,6 +278,14 @@ CurrencySymbol=$";
             section.Should().BeOfType<BasicTestConfig>("section should be of correct type");
         }
 
+        /// <summary>
+        /// Verifies that adding a configuration section with a custom name creates a properly named section.
+        /// </summary>
+        /// <remarks>
+        /// This test ensures that the configuration system supports custom section naming,
+        /// allowing multiple instances of the same configuration type with different names.
+        /// This is essential for scenarios with multiple database connections or environments.
+        /// </remarks>
         [TestMethod]
         public void AddSection_WithCustomSectionName_ShouldCreateNamedSection()
         {
@@ -218,6 +302,14 @@ CurrencySymbol=$";
             section.Should().BeOfType<BasicTestConfig>("section should be of correct type");
         }
 
+        /// <summary>
+        /// Verifies that attempting to add a duplicate section throws InvalidOperationException.
+        /// </summary>
+        /// <remarks>
+        /// This test ensures that the configuration system prevents duplicate section registration,
+        /// which could lead to ambiguous behavior or data corruption. This enforces unique
+        /// section identity within the configuration system.
+        /// </remarks>
         [TestMethod]
         public void AddSection_Duplicate_ShouldThrowInvalidOperationException()
         {
@@ -234,6 +326,14 @@ CurrencySymbol=$";
                 .WithMessage("*section*already exists*", "duplicate section should throw InvalidOperationException");
         }
 
+        /// <summary>
+        /// Verifies that retrieving an existing configuration section returns the correct section instance.
+        /// </summary>
+        /// <remarks>
+        /// This test validates the section retrieval mechanism, ensuring that previously added
+        /// sections can be retrieved and that the same instance is returned for consistency.
+        /// This is critical for maintaining state across configuration operations.
+        /// </remarks>
         [TestMethod]
         public void GetSection_ExistingSection_ShouldReturnSection()
         {
@@ -251,6 +351,14 @@ CurrencySymbol=$";
             retrievedSection.Should().BeSameAs(originalSection, "should return the same section instance");
         }
 
+        /// <summary>
+        /// Verifies that retrieving a non-existing configuration section automatically creates it.
+        /// </summary>
+        /// <remarks>
+        /// This test ensures the convenient auto-creation behavior where sections are created
+        /// on-demand when first accessed, reducing boilerplate code and improving developer
+        /// experience while maintaining type safety.
+        /// </remarks>
         [TestMethod]
         public void GetSection_NonExistingSection_ShouldAutoCreate()
         {
@@ -267,6 +375,14 @@ CurrencySymbol=$";
             section.Should().BeOfType<BasicTestConfig>("section should be of correct type");
         }
 
+        /// <summary>
+        /// Verifies that retrieving a configuration section by custom name returns the correct named section.
+        /// </summary>
+        /// <remarks>
+        /// This test validates the named section retrieval mechanism, ensuring that custom-named
+        /// sections can be accessed correctly and that the proper instance is returned.
+        /// This supports complex configuration scenarios with multiple section instances.
+        /// </remarks>
         [TestMethod]
         public void GetSection_WithCustomName_ShouldReturnNamedSection()
         {
@@ -292,6 +408,14 @@ CurrencySymbol=$";
 
         #region Save/Load Tests
 
+        /// <summary>
+        /// Verifies that saving configuration with modified section data persists changes to the file.
+        /// </summary>
+        /// <remarks>
+        /// This test ensures that the save mechanism correctly writes modified configuration
+        /// data back to the configuration file, maintaining data persistence and allowing
+        /// configuration changes to survive application restarts.
+        /// </remarks>
         [TestMethod]
         public void Save_WithModifiedSection_ShouldPersistChanges()
         {
@@ -316,6 +440,14 @@ CurrencySymbol=$";
             savedContent.Should().Contain("BoolValue=False", "modified bool should be saved");
         }
 
+        /// <summary>
+        /// Verifies that saving configuration with new sections adds them to the configuration file.
+        /// </summary>
+        /// <remarks>
+        /// This test ensures that newly added configuration sections are properly written
+        /// to the configuration file during save operations, expanding the configuration
+        /// structure as needed without losing existing data.
+        /// </remarks>
         [TestMethod]
         public void Save_WithNewSection_ShouldAddToFile()
         {
@@ -339,6 +471,14 @@ CurrencySymbol=$";
             savedContent.Should().Contain("Port=5432", "new section port should be saved");
         }
 
+        /// <summary>
+        /// Verifies that configuration data is preserved through save and reload operations.
+        /// </summary>
+        /// <remarks>
+        /// This test validates the complete persistence cycle by saving modified configuration
+        /// data and then reloading it in a fresh configuration instance, ensuring data
+        /// integrity and proper serialization/deserialization behavior.
+        /// </remarks>
         [TestMethod]
         public void RoundTrip_SaveAndReload_ShouldPreserveData()
         {
@@ -372,6 +512,14 @@ CurrencySymbol=$";
 
         #region Thread Safety Tests
 
+        /// <summary>
+        /// Verifies that concurrent access to configuration sections is thread-safe.
+        /// </summary>
+        /// <remarks>
+        /// This test ensures that the configuration system can handle multiple threads
+        /// accessing and creating sections simultaneously without race conditions or
+        /// corruption, which is essential for multi-threaded applications.
+        /// </remarks>
         [TestMethod]
         public void ConcurrentAccess_MultipleSections_ShouldBeThreadSafe()
         {

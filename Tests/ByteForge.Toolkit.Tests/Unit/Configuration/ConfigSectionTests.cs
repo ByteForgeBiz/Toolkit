@@ -25,6 +25,12 @@ namespace ByteForge.Toolkit.Tests.Unit.Configuration
 
         #region Basic Property Mapping Tests
 
+        /// <summary>
+        /// Verifies that string properties are loaded correctly from configuration files.
+        /// </summary>
+        /// <remarks>
+        /// Tests the fundamental property mapping functionality for string values in INI files.
+        /// </remarks>
         [TestMethod]
         public void ConfigSection_StringProperty_ShouldLoadAndSaveCorrectly()
         {
@@ -43,6 +49,12 @@ StringValue=Hello World";
             section.StringValue.Should().Be("Hello World", "string property should be loaded from INI");
         }
 
+        /// <summary>
+        /// Verifies that integer properties are loaded and parsed correctly from configuration files.
+        /// </summary>
+        /// <remarks>
+        /// Tests type conversion from string to int for configuration values.
+        /// </remarks>
         [TestMethod]
         public void ConfigSection_IntProperty_ShouldLoadAndSaveCorrectly()
         {
@@ -61,6 +73,12 @@ IntValue=42";
             section.IntValue.Should().Be(42, "int property should be loaded from INI");
         }
 
+        /// <summary>
+        /// Verifies that boolean true values are parsed correctly from configuration files.
+        /// </summary>
+        /// <remarks>
+        /// Tests string to boolean conversion for 'true' values in INI files.
+        /// </remarks>
         [TestMethod]
         public void ConfigSection_BoolProperty_ShouldLoadTrueCorrectly()
         {
@@ -79,6 +97,12 @@ BoolValue=true";
             section.BoolValue.Should().BeTrue("boolean true property should be loaded from INI");
         }
 
+        /// <summary>
+        /// Verifies that boolean false values are parsed correctly from configuration files.
+        /// </summary>
+        /// <remarks>
+        /// Tests string to boolean conversion for 'false' values in INI files.
+        /// </remarks>
         [TestMethod]
         public void ConfigSection_BoolProperty_ShouldLoadFalseCorrectly()
         {
@@ -97,6 +121,12 @@ BoolValue=false";
             section.BoolValue.Should().BeFalse("boolean false property should be loaded from INI");
         }
 
+        /// <summary>
+        /// Verifies that double precision floating point properties are parsed correctly from configuration files.
+        /// </summary>
+        /// <remarks>
+        /// Tests string to double conversion and precision handling.
+        /// </remarks>
         [TestMethod]
         public void ConfigSection_DoubleProperty_ShouldLoadCorrectly()
         {
@@ -115,6 +145,13 @@ DoubleValue=3.14159";
             section.DoubleValue.Should().BeApproximately(3.14159, 0.00001, "double property should be loaded from INI");
         }
 
+        /// <summary>
+        /// Verifies that DateTime properties are loaded and parsed correctly from configuration files.
+        /// </summary>
+        /// <remarks>
+        /// This test validates string to DateTime conversion functionality, ensuring that ISO 8601
+        /// formatted date strings are properly parsed into DateTime objects.
+        /// </remarks>
         [TestMethod]
         public void ConfigSection_DateTimeProperty_ShouldLoadCorrectly()
         {
@@ -133,6 +170,14 @@ DateValue=2024-01-15T10:30:00";
             section.DateValue.Should().Be(new DateTime(2024, 1, 15, 10, 30, 0), "DateTime property should be loaded from INI");
         }
 
+        /// <summary>
+        /// Verifies that enum properties are loaded and parsed correctly from configuration files.
+        /// </summary>
+        /// <remarks>
+        /// This test validates string to enum conversion functionality, ensuring that enum values
+        /// specified as strings in configuration files are properly parsed into their corresponding
+        /// enum types. This enables type-safe configuration for categorical values.
+        /// </remarks>
         [TestMethod]
         public void ConfigSection_EnumProperty_ShouldLoadCorrectly()
         {
@@ -157,6 +202,14 @@ DbType=PostgreSQL";
 
         #region Default Value Tests
 
+        /// <summary>
+        /// Verifies that missing configuration properties use their DefaultValue attribute values.
+        /// </summary>
+        /// <remarks>
+        /// This test ensures that when properties are not present in the configuration file,
+        /// the system falls back to values specified in DefaultValue attributes, providing
+        /// robust behavior and reducing required configuration complexity.
+        /// </remarks>
         [TestMethod]
         public void ConfigSection_MissingProperty_ShouldUseDefaultValue()
         {
@@ -175,6 +228,14 @@ StringValue=Test";
             section.TimeoutValue.Should().Be(30, "missing property should use DefaultValue attribute");
         }
 
+        /// <summary>
+        /// Verifies that missing configuration properties use values from custom DefaultValueProvider implementations.
+        /// </summary>
+        /// <remarks>
+        /// This test validates the advanced default value system that allows for dynamic default values
+        /// through custom provider classes, enabling more complex default value logic than simple
+        /// static attribute values can provide.
+        /// </remarks>
         [TestMethod]
         public void ConfigSection_CustomDefaultProvider_ShouldUseProviderValue()
         {
@@ -194,6 +255,14 @@ RegularProperty=Some Value";
             section.ConnectionTimeout.Should().Be(60, "missing property should use DefaultValueProvider method");
         }
 
+        /// <summary>
+        /// Verifies that nullable type properties correctly handle null values when not specified in configuration.
+        /// </summary>
+        /// <remarks>
+        /// This test ensures that nullable properties remain null when not provided in configuration,
+        /// allowing for optional configuration values that can be distinguished from default values.
+        /// This is important for scenarios where null has semantic meaning.
+        /// </remarks>
         [TestMethod]
         public void ConfigSection_NullableTypes_ShouldHandleNullCorrectly()
         {
@@ -215,6 +284,14 @@ OptionalString=";
             section.NullableDouble.Should().BeNull("missing nullable double should be null");
         }
 
+        /// <summary>
+        /// Verifies that nullable type properties correctly load and convert values when specified in configuration.
+        /// </summary>
+        /// <remarks>
+        /// This test validates that nullable properties can successfully load and parse values
+        /// from configuration when provided, ensuring proper type conversion while maintaining
+        /// the ability to represent null states.
+        /// </remarks>
         [TestMethod]
         public void ConfigSection_NullableTypes_ShouldLoadValuesCorrectly()
         {
@@ -243,6 +320,14 @@ NullableDouble=3.14";
 
         #region Attribute Tests
 
+        /// <summary>
+        /// Verifies that ConfigName attributes correctly map properties to custom configuration keys.
+        /// </summary>
+        /// <remarks>
+        /// This test validates the key mapping functionality that allows properties to be mapped
+        /// to configuration keys with different names, enabling compatibility with existing
+        /// configuration files or preferred naming conventions.
+        /// </remarks>
         [TestMethod]
         public void ConfigSection_ConfigNameAttribute_ShouldMapToCustomKey()
         {
@@ -261,6 +346,14 @@ CustomName=Mapped Value";
             section.MappedProperty.Should().Be("Mapped Value", "ConfigName attribute should map to custom INI key");
         }
 
+        /// <summary>
+        /// Verifies that DoNotPersist attributes prevent properties from being saved while still allowing loading.
+        /// </summary>
+        /// <remarks>
+        /// This test ensures that properties marked with DoNotPersist can load values from configuration
+        /// but will not be written back when saving, useful for runtime-only properties or
+        /// computed values that shouldn't be persisted.
+        /// </remarks>
         [TestMethod]
         public void ConfigSection_DoNotPersistAttribute_ShouldLoadButNotSave()
         {
@@ -286,6 +379,14 @@ LastAccessed=2024-01-15T10:30:00";
             savedContent.Should().NotContain("LastAccessed=" + DateTime.Now.ToString("o"), "DoNotPersist property should not be saved with new value");
         }
 
+        /// <summary>
+        /// Verifies that Ignore attributes completely exclude properties from configuration processing.
+        /// </summary>
+        /// <remarks>
+        /// This test ensures that properties marked with Ignore are completely excluded from
+        /// configuration loading and saving, allowing for computed or runtime-only properties
+        /// that should never interact with the configuration system.
+        /// </remarks>
         [TestMethod]
         public void ConfigSection_IgnoreAttribute_ShouldBeCompletelyIgnored()
         {
@@ -309,6 +410,14 @@ ComputedProperty=This should be ignored";
 
         #region Property Type Conversion Tests
 
+        /// <summary>
+        /// Verifies that string to integer type conversion works correctly for configuration values.
+        /// </summary>
+        /// <remarks>
+        /// This test validates the basic type conversion system for integer values, ensuring that
+        /// numeric strings in configuration files are properly converted to integer properties
+        /// without data loss or conversion errors.
+        /// </remarks>
         [TestMethod]
         public void ConfigSection_StringToIntConversion_ShouldWork()
         {
@@ -327,6 +436,14 @@ IntValue=12345";
             section.IntValue.Should().Be(12345, "string to int conversion should work");
         }
 
+        /// <summary>
+        /// Verifies that string to boolean conversion handles various input formats correctly.
+        /// </summary>
+        /// <remarks>
+        /// This comprehensive test validates that the boolean conversion system can handle
+        /// multiple string representations of boolean values (true/True/TRUE/1 for true,
+        /// false/False/FALSE/0 for false), providing flexibility in configuration files.
+        /// </remarks>
         [TestMethod]
         public void ConfigSection_StringToBoolConversion_ShouldHandleVariousFormats()
         {
@@ -363,6 +480,14 @@ BoolValue={input}";
             }
         }
 
+        /// <summary>
+        /// Verifies that invalid type conversions throw appropriate exceptions.
+        /// </summary>
+        /// <remarks>
+        /// This test ensures that when configuration values cannot be converted to the target
+        /// property type, the system throws meaningful exceptions rather than silently failing
+        /// or producing unexpected results, enabling proper error handling and debugging.
+        /// </remarks>
         [TestMethod]
         public void ConfigSection_InvalidTypeConversion_ShouldThrow()
         {
@@ -389,6 +514,14 @@ IntValue=not_a_number";
 
         #region Save Tests
 
+        /// <summary>
+        /// Verifies that saving configuration persists all modified properties to the configuration file.
+        /// </summary>
+        /// <remarks>
+        /// This test validates the complete save functionality, ensuring that all property changes
+        /// are written back to the configuration file with correct formatting and that custom
+        /// key mappings are respected during the save operation.
+        /// </remarks>
         [TestMethod]
         public void ConfigSection_Save_ShouldPersistAllProperties()
         {
@@ -418,6 +551,14 @@ IntValue=not_a_number";
             savedContent.Should().Contain("CustomName=Mapped Value", "ConfigName mapped property should be saved with custom key");
         }
 
+        /// <summary>
+        /// Verifies that DateTime properties are saved in ISO 8601 format for consistency and interoperability.
+        /// </summary>
+        /// <remarks>
+        /// This test ensures that DateTime values are serialized using ISO 8601 format when saving
+        /// to configuration files, providing a standardized, unambiguous date representation that
+        /// can be reliably parsed across different systems and cultures.
+        /// </remarks>
         [TestMethod]
         public void ConfigSection_SaveDateTimeAsISO8601_ShouldUseCorrectFormat()
         {

@@ -36,6 +36,11 @@ namespace ByteForge.Toolkit.Tests.Unit.Data.Database
         /// <summary>
         /// Tests that the DBAccess constructor with DatabaseOptions parameter works correctly.
         /// </summary>
+        /// <remarks>
+        /// This test validates the fundamental initialization process of DBAccess instances.
+        /// It ensures that DatabaseOptions are properly captured, database type is correctly determined,
+        /// and connection string generation works as expected for the core database access functionality.
+        /// </remarks>
         [TestMethod]
         public void Constructor_WithValidDatabaseOptions_ShouldInitializeCorrectly()
         {
@@ -55,6 +60,11 @@ namespace ByteForge.Toolkit.Tests.Unit.Data.Database
         /// <summary>
         /// Tests that the DBAccess constructor throws ArgumentNullException for null options.
         /// </summary>
+        /// <remarks>
+        /// This test ensures robust defensive programming by validating that null DatabaseOptions
+        /// are properly rejected with appropriate exception types. This prevents runtime errors
+        /// and provides clear error messages for developers using the API incorrectly.
+        /// </remarks>
         [TestMethod]
         public void Constructor_WithNullDatabaseOptions_ShouldThrowArgumentNullException()
         {
@@ -67,6 +77,11 @@ namespace ByteForge.Toolkit.Tests.Unit.Data.Database
         /// <summary>
         /// Tests that DBAccess can be constructed with different database types.
         /// </summary>
+        /// <remarks>
+        /// This test validates the multi-database support capabilities of DBAccess.
+        /// It ensures that both SQL Server and ODBC database types are properly configured
+        /// and that the DbType property correctly reflects the intended database backend.
+        /// </remarks>
         [TestMethod]
         public void Constructor_WithDifferentDatabaseTypes_ShouldSetCorrectDbType()
         {
@@ -90,6 +105,11 @@ namespace ByteForge.Toolkit.Tests.Unit.Data.Database
         /// <summary>
         /// Tests that the Options property returns the correct DatabaseOptions instance.
         /// </summary>
+        /// <remarks>
+        /// This test validates proper encapsulation and reference handling of DatabaseOptions.
+        /// It ensures that the same reference is maintained and all configuration properties
+        /// are accessible, which is critical for runtime configuration access and debugging.
+        /// </remarks>
         [TestMethod]
         public void Options_PropertyAccess_ShouldReturnCorrectInstance()
         {
@@ -110,6 +130,11 @@ namespace ByteForge.Toolkit.Tests.Unit.Data.Database
         /// <summary>
         /// Tests that the DbType property returns the correct database type.
         /// </summary>
+        /// <remarks>
+        /// This test validates the database type identification functionality.
+        /// Correct database type detection is crucial for implementing database-specific
+        /// behaviors, query syntax differences, and connection management strategies.
+        /// </remarks>
         [TestMethod]
         public void DbType_PropertyAccess_ShouldReturnCorrectDatabaseType()
         {
@@ -128,6 +153,11 @@ namespace ByteForge.Toolkit.Tests.Unit.Data.Database
         /// <summary>
         /// Tests that the ConnectionString property returns a properly formatted connection string.
         /// </summary>
+        /// <remarks>
+        /// This test validates connection string generation from DatabaseOptions.
+        /// Proper connection string formatting is essential for database connectivity,
+        /// security (integrated authentication), and performance optimization.
+        /// </remarks>
         [TestMethod]
         public void ConnectionString_PropertyAccess_ShouldReturnFormattedConnectionString()
         {
@@ -155,6 +185,11 @@ namespace ByteForge.Toolkit.Tests.Unit.Data.Database
         /// <summary>
         /// Tests that RecordsAffected property initializes correctly and updates after operations.
         /// </summary>
+        /// <remarks>
+        /// This test validates the tracking mechanism for database operation results.
+        /// RecordsAffected provides valuable feedback for data modification operations,
+        /// enabling applications to verify operation success and implement audit logging.
+        /// </remarks>
         [TestMethod]
         public void RecordsAffected_InitialValue_ShouldBeZero()
         {
@@ -168,6 +203,11 @@ namespace ByteForge.Toolkit.Tests.Unit.Data.Database
         /// <summary>
         /// Tests that LastException property initializes as null.
         /// </summary>
+        /// <remarks>
+        /// This test ensures clean initialization of error tracking mechanisms.
+        /// Starting with null LastException provides a clear baseline for error detection
+        /// and prevents false positive error reporting from previous operations.
+        /// </remarks>
         [TestMethod]
         public void LastException_InitialValue_ShouldBeNull()
         {
@@ -181,6 +221,11 @@ namespace ByteForge.Toolkit.Tests.Unit.Data.Database
         /// <summary>
         /// Tests that RecordsAffected is updated after a successful query operation.
         /// </summary>
+        /// <remarks>
+        /// This test validates the proper updating of RecordsAffected counter during data modification.
+        /// Accurate record counting is essential for transaction verification, bulk operation
+        /// monitoring, and providing feedback to users about operation impact.
+        /// </remarks>
         [TestMethod]
         public void RecordsAffected_AfterSuccessfulQuery_ShouldBeUpdated()
         {
@@ -210,6 +255,11 @@ namespace ByteForge.Toolkit.Tests.Unit.Data.Database
         /// <summary>
         /// Tests that LastException is set when a query fails.
         /// </summary>
+        /// <remarks>
+        /// This test ensures proper error capture and reporting mechanisms.
+        /// LastException provides detailed error information for debugging and logging,
+        /// enabling applications to provide meaningful error messages and handle failures appropriately.
+        /// </remarks>
         [TestMethod]
         public void LastException_AfterFailedQuery_ShouldContainExceptionDetails()
         {
@@ -235,6 +285,11 @@ namespace ByteForge.Toolkit.Tests.Unit.Data.Database
         /// <summary>
         /// Tests that a valid database configuration can successfully connect to the test database.
         /// </summary>
+        /// <remarks>
+        /// This integration test validates the entire connection process from configuration to database.
+        /// It ensures that valid database configurations successfully establish connections,
+        /// which is fundamental for all subsequent database operations and application functionality.
+        /// </remarks>
         [TestMethod]
         public void TestConnection_WithValidConfiguration_ShouldReturnTrue()
         {
@@ -252,6 +307,11 @@ namespace ByteForge.Toolkit.Tests.Unit.Data.Database
         /// <summary>
         /// Tests that an invalid database configuration fails to connect.
         /// </summary>
+        /// <remarks>
+        /// This test validates proper error handling for invalid database configurations.
+        /// It ensures that connection failures are properly detected and reported,
+        /// preventing applications from proceeding with invalid database connections.
+        /// </remarks>
         [TestMethod]
         public void TestConnection_WithInvalidConfiguration_ShouldReturnFalse()
         {
@@ -274,6 +334,11 @@ namespace ByteForge.Toolkit.Tests.Unit.Data.Database
         /// <summary>
         /// Tests that the DataBaseType enumeration contains expected values.
         /// </summary>
+        /// <remarks>
+        /// This test validates the completeness of the database type enumeration.
+        /// It ensures that all supported database types are properly defined,
+        /// which is essential for multi-database support and type-specific behavior implementation.
+        /// </remarks>
         [TestMethod]
         public void DataBaseType_Enumeration_ShouldContainExpectedValues()
         {
@@ -293,6 +358,11 @@ namespace ByteForge.Toolkit.Tests.Unit.Data.Database
         /// <summary>
         /// Tests that different timeout configurations are properly applied.
         /// </summary>
+        /// <remarks>
+        /// This test validates timeout configuration handling for database operations.
+        /// Proper timeout management is crucial for preventing application hangs,
+        /// managing resource usage, and ensuring responsive user experiences.
+        /// </remarks>
         [TestMethod]
         public void DatabaseOptions_DifferentTimeouts_ShouldBeAppliedCorrectly()
         {
@@ -312,6 +382,11 @@ namespace ByteForge.Toolkit.Tests.Unit.Data.Database
         /// <summary>
         /// Tests that AutoTrimStrings configuration is properly applied.
         /// </summary>
+        /// <remarks>
+        /// This test validates string trimming configuration for database string values.
+        /// AutoTrimStrings functionality is important for data consistency and handling
+        /// database systems that pad string values with trailing spaces.
+        /// </remarks>
         [TestMethod]
         public void DatabaseOptions_AutoTrimStrings_ShouldBeConfigurable()
         {
@@ -333,6 +408,11 @@ namespace ByteForge.Toolkit.Tests.Unit.Data.Database
         /// <summary>
         /// Tests that database connection establishment is reasonably fast.
         /// </summary>
+        /// <remarks>
+        /// This performance test ensures database connections are established within acceptable timeframes.
+        /// Connection performance is critical for application responsiveness and user experience,
+        /// particularly in applications with frequent database interactions.
+        /// </remarks>
         [TestMethod]
         public void TestConnection_Performance_ShouldConnectWithinReasonableTime()
         {
@@ -349,6 +429,11 @@ namespace ByteForge.Toolkit.Tests.Unit.Data.Database
         /// <summary>
         /// Tests that multiple DBAccess instances can be created without performance degradation.
         /// </summary>
+        /// <remarks>
+        /// This performance test validates scalability of DBAccess instance creation.
+        /// Multiple instance creation is common in multi-threaded applications and connection pooling
+        /// scenarios, so maintaining good performance is essential for application scalability.
+        /// </remarks>
         [TestMethod]
         public void Constructor_MultipleInstances_ShouldNotDegradePerformance()
         {
@@ -378,6 +463,11 @@ namespace ByteForge.Toolkit.Tests.Unit.Data.Database
         /// <summary>
         /// Tests behavior with extremely short timeout values.
         /// </summary>
+        /// <remarks>
+        /// This edge case test validates handling of extreme timeout configurations.
+        /// While very short timeouts may not be practical, the system should handle them gracefully
+        /// without throwing exceptions during configuration, allowing for specialized testing scenarios.
+        /// </remarks>
         [TestMethod]
         public void DatabaseOptions_ExtremelyShortTimeouts_ShouldBeAccepted()
         {
@@ -396,6 +486,11 @@ namespace ByteForge.Toolkit.Tests.Unit.Data.Database
         /// <summary>
         /// Tests behavior with very long timeout values.
         /// </summary>
+        /// <remarks>
+        /// This edge case test validates handling of extended timeout configurations.
+        /// Long timeouts may be necessary for complex queries or slow networks,
+        /// and the system should accommodate these requirements without configuration errors.
+        /// </remarks>
         [TestMethod]
         public void DatabaseOptions_VeryLongTimeouts_ShouldBeAccepted()
         {

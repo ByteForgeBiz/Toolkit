@@ -26,6 +26,14 @@ namespace ByteForge.Toolkit.Tests.Unit.Utils
             ConsoleUtil.IsConsoleAvailable.Should().BeFalse();
         }
 
+        /// <summary>
+        /// Tests the <see cref="ConsoleUtil.DrawProgressBar"/> method with various progress values.
+        /// </summary>
+        /// <remarks>
+        /// This test is ignored because progress bar drawing requires visual inspection and cannot be effectively 
+        /// tested in an automated unit test environment. When enabled manually, it demonstrates the progress bar
+        /// functionality by drawing multiple progress states with delays for visual verification.
+        /// </remarks>
         [TestMethod]
         [TestCategory("Unit")]
         [TestCategory("Utils")]

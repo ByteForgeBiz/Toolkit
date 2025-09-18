@@ -58,6 +58,11 @@ namespace ByteForge.Toolkit.Tests.Unit.Data.Database
         /// <summary>
         /// Tests that simple named parameter assignments work for SQL Server.
         /// </summary>
+        /// <remarks>
+        /// This test validates the fundamental named parameter parsing logic for SQL Server stored procedures.
+        /// It ensures that only value parameters (@value1, @value2) are extracted for parameter binding,
+        /// while named parameters (@param1, @param2) are recognized as stored procedure parameter names.
+        /// </remarks>
         [TestMethod]
         public void ParseParameters_SQLServer_BasicNamedAssignment_ShouldExtractValueParameters()
         {
@@ -80,6 +85,11 @@ namespace ByteForge.Toolkit.Tests.Unit.Data.Database
         /// <summary>
         /// Tests that standalone parameters work for SQL Server.
         /// </summary>
+        /// <remarks>
+        /// This test validates traditional parameter parsing for standard SQL Server queries.
+        /// Standalone parameters in WHERE clauses and other SQL constructs should be detected
+        /// and returned for parameter binding without special named assignment processing.
+        /// </remarks>
         [TestMethod]
         public void ParseParameters_SQLServer_StandaloneParameters_ShouldExtractAllParameters()
         {
@@ -100,6 +110,11 @@ namespace ByteForge.Toolkit.Tests.Unit.Data.Database
         /// <summary>
         /// Tests mixed scenarios with both named assignments and standalone parameters.
         /// </summary>
+        /// <remarks>
+        /// This test validates complex parsing scenarios common in enterprise applications.
+        /// Queries may combine stored procedure calls with named parameters and traditional
+        /// parameterized SQL, requiring intelligent parsing to handle both patterns correctly.
+        /// </remarks>
         [TestMethod]
         public void ParseParameters_SQLServer_MixedScenario_ShouldHandleBothTypes()
         {
@@ -125,6 +140,11 @@ namespace ByteForge.Toolkit.Tests.Unit.Data.Database
         /// <summary>
         /// Tests that ODBC treats all @ symbols as parameters (no named assignment logic).
         /// </summary>
+        /// <remarks>
+        /// This test ensures backward compatibility and database-specific behavior for ODBC connections.
+        /// ODBC databases don't support SQL Server's named parameter syntax, so all @ symbols
+        /// must be treated as positional parameters for proper parameter binding.
+        /// </remarks>
         [TestMethod]
         public void ParseParameters_ODBC_NamedAssignmentSyntax_ShouldTreatAllAsParameters()
         {
@@ -147,6 +167,11 @@ namespace ByteForge.Toolkit.Tests.Unit.Data.Database
         /// <summary>
         /// Tests that ODBC allows parameter repetition.
         /// </summary>
+        /// <remarks>
+        /// This test validates ODBC-specific parameter handling that allows the same parameter
+        /// to appear multiple times in a query. This behavior is important for ODBC drivers
+        /// that expect positional parameter binding rather than named parameter binding.
+        /// </remarks>
         [TestMethod]
         public void ParseParameters_ODBC_RepeatedParameters_ShouldIncludeAllOccurrences()
         {
@@ -170,6 +195,11 @@ namespace ByteForge.Toolkit.Tests.Unit.Data.Database
         /// <summary>
         /// Tests that empty queries return empty parameter lists.
         /// </summary>
+        /// <remarks>
+        /// This edge case test ensures robust handling of empty or whitespace-only queries.
+        /// Parameter parsing should gracefully handle edge cases without throwing exceptions,
+        /// maintaining application stability in dynamic query generation scenarios.
+        /// </remarks>
         [TestMethod]
         public void ParseParameters_EmptyQuery_ShouldReturnEmptyList()
         {
@@ -187,6 +217,11 @@ namespace ByteForge.Toolkit.Tests.Unit.Data.Database
         /// <summary>
         /// Tests that queries without parameters return empty lists.
         /// </summary>
+        /// <remarks>
+        /// This test validates parameter parsing behavior for static, non-parameterized queries.
+        /// Applications may mix parameterized and static SQL, so parameter parsing must
+        /// efficiently handle queries without parameters without unnecessary processing.
+        /// </remarks>
         [TestMethod]
         public void ParseParameters_NoParameters_ShouldReturnEmptyList()
         {
@@ -204,6 +239,11 @@ namespace ByteForge.Toolkit.Tests.Unit.Data.Database
         /// <summary>
         /// Tests that parameters in string literals are ignored.
         /// </summary>
+        /// <remarks>
+        /// This test validates context-aware parsing that distinguishes between actual parameters
+        /// and parameter-like text within string literals. Proper string context handling prevents
+        /// false parameter detection and ensures accurate parameter extraction.
+        /// </remarks>
         [TestMethod]
         public void ParseParameters_ParametersInStrings_ShouldIgnoreStringContent()
         {
@@ -225,6 +265,11 @@ namespace ByteForge.Toolkit.Tests.Unit.Data.Database
         /// <summary>
         /// Tests that parameters in comments are ignored.
         /// </summary>
+        /// <remarks>
+        /// This test ensures that both single-line and multi-line comments are properly excluded
+        /// from parameter parsing. Comment awareness prevents extraction of commented-out
+        /// parameters and supports well-documented SQL scripts.
+        /// </remarks>
         [TestMethod]
         public void ParseParameters_ParametersInComments_ShouldIgnoreComments()
         {
@@ -254,6 +299,11 @@ namespace ByteForge.Toolkit.Tests.Unit.Data.Database
         /// <summary>
         /// Tests that parameter names with underscores and numbers are handled correctly.
         /// </summary>
+        /// <remarks>
+        /// This test validates identifier parsing for parameters following common naming conventions.
+        /// Enterprise applications often use underscores and numbers in parameter names,
+        /// so robust identifier recognition is essential for broad compatibility.
+        /// </remarks>
         [TestMethod]
         public void ParseParameters_ComplexParameterNames_ShouldParseCorrectly()
         {
@@ -276,6 +326,11 @@ namespace ByteForge.Toolkit.Tests.Unit.Data.Database
         /// <summary>
         /// Tests case insensitive parameter handling.
         /// </summary>
+        /// <remarks>
+        /// This test validates case-insensitive parameter deduplication consistent with SQL Server behavior.
+        /// Parameter names should be treated case-insensitively to prevent duplicate parameter
+        /// creation and ensure consistency with database parameter handling semantics.
+        /// </remarks>
         [TestMethod]
         public void ParseParameters_CaseInsensitive_ShouldDeduplicateCorrectly()
         {
