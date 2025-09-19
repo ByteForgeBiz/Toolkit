@@ -237,7 +237,7 @@ namespace ByteForge.Toolkit
         /// <remarks>
         /// This method uses a type conversion mechanism to map each row in the query result to
         /// an object of type <typeparamref name="T"/>. Ensure that the column names in the query result match the
-        /// property names of <typeparamref name="T"/> for successful mapping.
+        /// property names of <typeparamref name="T"/> for successful mapping, or use <see cref="DBColumnAttribute"/> to define custom mappings.
         /// </remarks>
         public T[] GetRecords<T>(string query, params object[] arguments) where T : class, new()
         {

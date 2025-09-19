@@ -244,11 +244,16 @@
     <None Include="Properties\CHANGELOG.md" />
     <None Include="readme.md" />
     <None Include="Security\readme.md" />
+    <None Include="settings.local.json" />
     <None Include="Utils\readme.md" />
   </ItemGroup>
   <ItemGroup>
     <Content Include=".gitignore" />
     <Content Include="FodyWeavers.xml" />
+    <Content Include="HTML\CSS\ByteForge-ui.css" />
+    <Content Include="HTML\JavaScript\ByteForge-calendar.js" />
+    <Content Include="HTML\JavaScript\ByteForge-modal.js" />
+    <Content Include="HTML\JavaScript\ByteForge-utilities.js" />
   </ItemGroup>
   <Import Project="..\packages\NETStandard.Library.2.0.3\build\netstandard2.0\NETStandard.Library.targets" Condition="Exists('..\packages\NETStandard.Library.2.0.3\build\netstandard2.0\NETStandard.Library.targets')" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" Condition="Exists('$(MSBuildToolsPath)\Microsoft.CSharp.targets')" />
@@ -265,7 +270,9 @@
   <ItemGroup>
     <AsmInfo Include="Properties\AssemblyInfo.cs" Visible="False" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Folder Include="HTML\Examples\" />
+  </ItemGroup>
   <Target Name="Messages" BeforeTargets="PrepareForBuild">
     <Message Text="CentralLocationPath: '$(CentralLocationPath)'" Importance="high" />
     <Message Text="Importing ByteForge.Tasks.targets..." Importance="high" Condition="Exists('$(CentralLocationPath)\ByteForge.Tasks.targets')" />

@@ -1,0 +1,22 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(rm:*)",
+      "Bash(move:*)",
+      "Bash(mkdir:*)",
+      "Bash(rename:*)",
+      "Bash(powershell:*)",
+      "Bash(BuildSolution.bat)",
+      "Bash(cmd /c:*)",
+      "Bash(sqlcmd:*)",
+      "Bash(msbuild:*)",
+      "Bash(dotnet test:*)",
+      "Bash(dotnet build:*)",
+      "Bash(dotnet restore:*)",
+      "Bash(BuildSolution.bat Debug)",
+      "Bash(\"C:\\Users\\pauls\\source\\TelecomInc\\ByteForge.Toolkit\\Tests\\ByteForge.Toolkit.Tests\\BuildSolution.bat\" Debug)",
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
