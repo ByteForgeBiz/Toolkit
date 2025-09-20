@@ -149,6 +149,7 @@
     <Compile Include="CLI\GlobalOption.cs" />
     <Compile Include="CLI\RootCommandBuilder.cs" />
     <Compile Include="Configuration\Attributes\ArrayAttribute.cs" />
+    <Compile Include="Configuration\Attributes\DictionaryAttribute.cs" />
     <Compile Include="Configuration\Attributes\DefaultValueProviderAttribute.cs" />
     <Compile Include="Configuration\Attributes\DoNotPersistAttribute.cs" />
     <Compile Include="Configuration\DefaultValueHelper.cs" />
@@ -244,7 +245,6 @@
     <None Include="Properties\CHANGELOG.md" />
     <None Include="readme.md" />
     <None Include="Security\readme.md" />
-    <None Include="settings.local.json" />
     <None Include="Utils\readme.md" />
   </ItemGroup>
   <ItemGroup>

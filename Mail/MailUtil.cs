@@ -238,6 +238,8 @@ namespace ByteForge.Toolkit
     /// </summary>
     public class MailServerSettings
     {
+        private const int DefaultPort = 587;
+        private const SecurityProtocolType DefaultSecurityProtocol = SecurityProtocolType.Tls12;
         /// <summary>
         /// Gets or sets the mail server address.
         /// </summary>
@@ -248,15 +250,15 @@ namespace ByteForge.Toolkit
         /// Gets or sets the port number used for SMTP.
         /// </summary>
         [ConfigName("iPort")]
-        [DefaultValue(587)]
-        public int Port { get; set; } = 587;
+        [DefaultValue(DefaultPort)]
+        public int Port { get; set; } = DefaultPort;
 
         /// <summary>
         /// Gets or sets the security protocol type used for SMTP connections.
         /// </summary>
         [ConfigName("sSecurityProtocol")]
-        [DefaultValue(SecurityProtocolType.Tls12)]
-        public SecurityProtocolType SecurityProtocol { get; set; } = SecurityProtocolType.Tls12;
+        [DefaultValue(DefaultSecurityProtocol)]
+        public SecurityProtocolType SecurityProtocol { get; set; } = DefaultSecurityProtocol;
 
         /// <summary>
         /// Gets or sets the encrypted username used for SMTP authentication.

@@ -16,6 +16,10 @@ namespace ByteForge.Toolkit.Logging
     /// </summary>
     public class SessionFileLoggerOptions : FileLoggerOptions
     {
+        private const SessionIdFormat DefaultSessionIdFormat = SessionIdFormat.Timestamp;
+        private const bool DefaultWriteSessionHeader = true;
+        private const bool DefaultWriteSessionFooter = true;
+        private const bool DefaultCleanupOldSessions = true;
         /// <summary>
         /// Initializes a new instance of the <see cref="SessionFileLoggerOptions"/> class with default values.
         /// Sets up session-specific defaults including the file naming pattern.
@@ -32,32 +36,32 @@ namespace ByteForge.Toolkit.Logging
         /// The default is <see cref="SessionIdFormat.Timestamp"/>.
         /// This is used to replace the {sessionid} placeholder in the FileNamingPattern.
         /// </summary>
-        [DefaultValue(SessionIdFormat.Timestamp)]
-        public SessionIdFormat SessionIdFormat { get; set; } = SessionIdFormat.Timestamp;
+        [DefaultValue(DefaultSessionIdFormat)]
+        public SessionIdFormat SessionIdFormat { get; set; } = DefaultSessionIdFormat;
 
         /// <summary>
         /// Gets or sets a value indicating whether to write a session header with metadata
         /// at the beginning of the log file.
         /// The default is <see langword="true"/>.
         /// </summary>
-        [DefaultValue(true)]
-        public bool WriteSessionHeader { get; set; } = true;
+        [DefaultValue(DefaultWriteSessionHeader)]
+        public bool WriteSessionHeader { get; set; } = DefaultWriteSessionHeader;
 
         /// <summary>
         /// Gets or sets a value indicating whether to write a session footer when closing
         /// the log file.
         /// The default is <see langword="true"/>.
         /// </summary>
-        [DefaultValue(true)]
-        public bool WriteSessionFooter { get; set; } = true;
+        [DefaultValue(DefaultWriteSessionFooter)]
+        public bool WriteSessionFooter { get; set; } = DefaultWriteSessionFooter;
 
         /// <summary>
         /// Gets or sets a value indicating whether to automatically clean up old session files
         /// on startup, according to <see cref="AsyncOptions.RetentionDays"/>.
         /// The default is <see langword="true"/>.
         /// </summary>
-        [DefaultValue(true)]
-        public bool CleanupOldSessions { get; set; } = true;
+        [DefaultValue(DefaultCleanupOldSessions)]
+        public bool CleanupOldSessions { get; set; } = DefaultCleanupOldSessions;
 
         /// <summary>
         /// Gets or sets a custom session ID provider function.

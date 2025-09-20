@@ -14,6 +14,10 @@ namespace ByteForge.Toolkit.Logging
     /// </summary>
     public abstract class AsyncOptions
     {
+        private const int DefaultRetentionDays = 0;
+        private const bool DefaultUseAsyncLogging = false;
+        private const int DefaultAsyncQueueSize = 1000;
+        
         /// <summary>
         /// Initializes a new instance of the <see cref="AsyncOptions"/> class.
         /// </summary>
@@ -23,20 +27,20 @@ namespace ByteForge.Toolkit.Logging
         /// Gets or sets the number of days to retain log files.
         /// A value of 0 indicates unlimited retention.
         /// </summary>
-        [DefaultValue(0)]
-        public int RetentionDays { get; set; }
+        [DefaultValue(DefaultRetentionDays)]
+        public int RetentionDays { get; set; } = DefaultRetentionDays;
 
         /// <summary>
         /// Gets or sets a value indicating whether to use asynchronous logging.
         /// </summary>
-        [DefaultValue(false)]
-        public bool UseAsyncLogging { get; set; }
+        [DefaultValue(DefaultUseAsyncLogging)]
+        public bool UseAsyncLogging { get; set; } = DefaultUseAsyncLogging;
 
         /// <summary>
         /// Gets or sets the size of the asynchronous logging queue.
         /// The default value is 1000.
         /// </summary>
-        [DefaultValue(1000)]
-        public int AsyncQueueSize { get; set; } = 1000;
+        [DefaultValue(DefaultAsyncQueueSize)]
+        public int AsyncQueueSize { get; set; } = DefaultAsyncQueueSize;
     }
 }

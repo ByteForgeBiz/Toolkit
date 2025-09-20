@@ -119,6 +119,11 @@ namespace ByteForge.Toolkit
         private readonly HashSet<string> _arraySectionNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
         /// <summary>
+        /// Stores section names that represent dictionaries.
+        /// </summary>
+        private readonly HashSet<string> _dictionarySectionNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+        /// <summary>
         /// The directory where the configuration file is located.
         /// </summary>
         private string _configDirectory = null;
@@ -341,7 +346,7 @@ namespace ByteForge.Toolkit
 
             // Create a wrapper that binds the configuration section to the concrete type
             // This enables strongly-typed access to configuration values
-            var section = new ConfigSection<T>(sectionName, InternalRoot, _arraySectionNames);
+            var section = new ConfigSection<T>(sectionName, InternalRoot, _arraySectionNames, _dictionarySectionNames);
 
             // Thread-safe addition to the concurrent dictionary
             // Only add if the key doesn't already exist
@@ -448,8 +453,8 @@ namespace ByteForge.Toolkit
                     continue;
                 }
 
-                // Skip array section values - these are handled specially
-                if (_arraySectionNames.Contains(section))
+                // Skip array and dictionary section values - these are handled specially
+                if (_arraySectionNames.Contains(section) || _dictionarySectionNames.Contains(section))
                     continue;
 
                 // Process key-value pairs
@@ -498,19 +503,26 @@ namespace ByteForge.Toolkit
                 // Add new sections that don't exist in the file yet
                 if (!existingSections.Contains(configSection.Key))
                 {
-                    // Add a blank line before new sections for readability
-                    iniData.Add(string.Empty);
-                    iniData.Add($"[{configSection.Key}]");
+                    var newSection = new List<string>
+                    {
+                        // Add a blank line before new sections for readability
+                        string.Empty,
+                        $"[{configSection.Key}]"
+                    };
 
                     // Add all keys in this new section
                     foreach (var child in configSection.GetChildren())
                     {
                         if (!string.IsNullOrEmpty(child.Value))
-                            iniData.Add($"{child.Key}={child.Value}");
+                            newSection.Add($"{child.Key}={child.Value}");
                     }
 
                     // Add a blank line after new sections for readability
-                    iniData.Add(string.Empty);
+                    newSection.Add(string.Empty);
+
+                    // Only add the section if it has keys (more than just the section header and blank lines)
+                    if (newSection.Count > 3)
+                        iniData.AddRange(newSection);
                 }
                 else
                 {

@@ -88,7 +88,7 @@ namespace ByteForge.Toolkit
         /// Due to the nature of console output, automated testing of this method is not feasible.
         /// It would require capturing and validating console output, which is not practical in a unit test environment.
         /// </testing>
-        public static void DrawProgressBar(float pct, string message = null)
+        public static void DrawProgressBar(double pct, string message = null)
         {
             if (!ConsoleUtil.IsConsoleAvailable) return;
 
@@ -111,7 +111,7 @@ namespace ByteForge.Toolkit
         /// <param name="message">Optional message to display with the progress bar.</param>
         /// <param name="wdt">Width of the progress bar in characters.</param>
         /// <returns>A formatted string representing the progress bar.</returns>
-        static string BuildProgressBar(ref float pct, string message, int wdt)
+        static string BuildProgressBar(ref double pct, string message, int wdt)
         {
             pct = Math.Min(100, Math.Max(0, pct));
             var filledWidth = (int)(pct / 100f * wdt);

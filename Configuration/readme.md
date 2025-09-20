@@ -15,7 +15,7 @@ A powerful, INI-based configuration system with section support, strong typing, 
 
 ### 🧱 Key Components
 - **Configuration**: Singleton manager with dynamic object access
-- **ConfigSection<T>**: Generic typed section support with array handling
+- **ConfigSection<T>**: Generic typed section support with array and dictionary handling
 - **DefaultValueHelper**: Resolves default values from attributes or custom providers
 - **GlobalizationInfo**: Comprehensive formatting for dates, numbers, and currency
 
@@ -25,6 +25,7 @@ A powerful, INI-based configuration system with section support, strong typing, 
 - **ConfigNameAttribute**: Maps properties to custom INI key names
 - **DefaultValueProviderAttribute**: Specifies custom default value methods
 - **ArrayAttribute**: Enables array/collection support with flexible section naming
+- **DictionaryAttribute**: Enables Dictionary<string, string> support with separate INI sections
 
 ### 🧪 Basic Example
 ```csharp
@@ -32,7 +33,7 @@ Configuration.Initialize("settings.ini");
 var dbSettings = Configuration.GetSection<DatabaseSettings>();
 ```
 
-#### Custom Section with Arrays:
+#### Custom Section with Arrays and Dictionaries:
 ```csharp
 public class DatabaseSettings
 {
@@ -46,6 +47,12 @@ public class DatabaseSettings
     
     [Array("ServerList")] // Uses custom section name
     public List<string> Servers { get; set; }
+
+    [Dictionary] // Uses default section name "SettingsDict"
+    public Dictionary<string, string> Settings { get; set; }
+
+    [Dictionary("CustomConfig")] // Uses custom section name
+    public Dictionary<string, string> CustomOptions { get; set; }
 
     [DoNotPersist] // Loads from INI but doesn't save back
     public DateTime LastAccessed { get; set; }
@@ -62,6 +69,8 @@ ConnectionString=Server=main;Database=App
 Timeout=45
 ConnectionStrings=ConnectionStringsArray
 Servers=ServerList
+Settings=SettingsDict
+CustomOptions=CustomConfig
 
 [ConnectionStringsArray]
 0=Server=db1;Database=App
@@ -72,6 +81,16 @@ Servers=ServerList
 0=db1.company.com
 1=db2.company.com
 2=db3.company.com
+
+[SettingsDict]
+MaxRetries=3
+CacheTimeout=300
+EnableLogging=true
+
+[CustomConfig]
+Theme=Dark
+Language=en-US
+Region=US-West
 ```
 
 ### 🏗️ Array Support
@@ -130,6 +149,87 @@ For predictable ordering, use zero-padded numeric keys:
 02=Third
 10=Tenth
 99=NinetyNinth
+```
+
+### 🗺️ Dictionary Support
+
+The configuration system supports dictionaries through the `[Dictionary]` attribute for dictionary properties with string keys and values:
+
+#### Supported Dictionary Types:
+- `Dictionary<string, string>`
+- `IDictionary<string, string>`
+- `IReadOnlyDictionary<string, string>`
+- `ICollection<KeyValuePair<string, string>>`
+- `IEnumerable<KeyValuePair<string, string>>`
+- `IReadOnlyCollection<KeyValuePair<string, string>>`
+
+#### Dictionary Section Naming:
+- **Default**: `{PropertyName}Dict`
+- **Custom**: `[Dictionary("CustomSectionName")]`
+- **Override**: Set value in INI file to use different section name
+
+#### Example Dictionary Usage:
+```csharp
+public class AppSettings
+{
+    [Dictionary] // Uses default section name "FileFormatsDict"
+    public Dictionary<string, string> FileFormats { get; set; }
+    
+    [Dictionary("CustomSettings")] // Uses custom section name
+    public IDictionary<string, string> AdvancedOptions { get; set; }
+    
+    [Dictionary("ReadOnlyConfig")] // Uses interface for read-only access
+    public IReadOnlyDictionary<string, string> Configuration { get; set; }
+    
+    [Dictionary("CollectionData")] // Uses KeyValuePair collection interface
+    public ICollection<KeyValuePair<string, string>> CollectionSettings { get; set; }
+    
+    [Dictionary("EnumerableData")] // Uses enumerable interface for iteration
+    public IEnumerable<KeyValuePair<string, string>> EnumerableSettings { get; set; }
+}
+```
+
+#### Generated INI Structure:
+```ini
+[AppSettings]
+FileFormats=FileFormatsDict
+AdvancedOptions=CustomSettings
+Configuration=ReadOnlyConfig
+CollectionSettings=CollectionData
+EnumerableSettings=EnumerableData
+
+[FileFormatsDict]
+TCI='TCI_'MMddyyyy'_WIN_Return.txt'
+CRC='CRC_'MMddyyyy'_Return.csv'
+GICS='GICS_'MMddyyyy'_Return.csv'
+
+[CustomSettings]
+OutputFolder=\\server\output
+UseQuotes=true
+Timeout=30
+
+[ReadOnlyConfig]
+Theme=Dark
+Language=en-US
+ReadOnlyMode=true
+
+[CollectionData]
+DataSource=SQLServer
+MaxConnections=100
+Timeout=30
+
+[EnumerableData]
+LogLevel=Info
+CacheEnabled=true
+DebugMode=false
+```
+
+#### Dictionary Usage in Code:
+```csharp
+var settings = Configuration.GetSection<AppSettings>();
+settings.FileFormats["TCI"] = "'TCI_'MMddyyyy'_WIN_Return.txt'";
+settings.AdvancedOptions["OutputFolder"] = "\\server\output";
+Configuration.Save();
 ```
 
 ### 🧭 Globalization Example

@@ -15,17 +15,20 @@ namespace ByteForge.Toolkit.Logging
     /// </summary>
     public class FileLoggerOptions : AsyncOptions
     {
+        private const bool DefaultUseDaily = false;
+        private const int DefaultMaxFileSizeMB = 0;
+        private const string DefaultFileNamingPattern = "{basename}";
         /// <summary>
         /// Gets or sets whether to create a new log file each day.
         /// </summary>
-        [DefaultValue(false)]
-        public bool UseDaily { get; set; }
+        [DefaultValue(DefaultUseDaily)]
+        public bool UseDaily { get; set; } = DefaultUseDaily;
 
         /// <summary>
         /// Gets or sets the maximum file size in megabytes before rolling over (0 for unlimited).
         /// </summary>
-        [DefaultValue(0)]
-        public int MaxFileSizeMB { get; set; }
+        [DefaultValue(DefaultMaxFileSizeMB)]
+        public int MaxFileSizeMB { get; set; } = DefaultMaxFileSizeMB;
 
         /// <summary>
         /// Gets or sets the file naming pattern for log files.
@@ -52,8 +55,8 @@ namespace ByteForge.Toolkit.Logging
         /// </list>
         /// The default is <c>"{basename}"</c> (no pattern).
         /// </summary>
-        [DefaultValue("{basename}")]
-        public string FileNamingPattern { get; set; } = "{basename}";
+        [DefaultValue(DefaultFileNamingPattern)]
+        public string FileNamingPattern { get; set; } = DefaultFileNamingPattern;
 
         /// <summary>
         /// Gets or sets a custom file name provider function.

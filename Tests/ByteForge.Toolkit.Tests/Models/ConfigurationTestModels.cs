@@ -204,4 +204,82 @@ namespace ByteForge.Toolkit.Tests.Models
         public static string GetDefaultPath() => @"C:\Temp\DefaultData";
         public static int GetDefaultTimeout() => 60;
     }
+
+    /// <summary>
+    /// Configuration model for testing dictionary support with all supported types.
+    /// </summary>
+    public class DictionaryTestConfig
+    {
+        [Dictionary]
+        public Dictionary<string, string> FileFormats { get; set; }
+        
+        [Dictionary("MyCustomSection")]
+        public Dictionary<string, string> CustomSettings { get; set; }
+        
+        [Dictionary]
+        public IDictionary<string, string> InterfaceDictionary { get; set; }
+        
+        [Dictionary]
+        public IReadOnlyDictionary<string, string> ReadOnlyDictionary { get; set; }
+        
+        [Dictionary]
+        public ICollection<KeyValuePair<string, string>> CollectionKeyValuePairs { get; set; }
+        
+        [Dictionary]
+        public IEnumerable<KeyValuePair<string, string>> EnumerableKeyValuePairs { get; set; }
+        
+        [Dictionary]
+        public IReadOnlyCollection<KeyValuePair<string, string>> ReadOnlyCollectionKeyValuePairs { get; set; }
+    }
+
+    /// <summary>
+    /// Configuration model with unsupported dictionary types for error testing.
+    /// </summary>
+    public class UnsupportedDictionaryTestConfig
+    {
+        [Dictionary]
+        public Dictionary<int, string> UnsupportedDict { get; set; }
+    }
+
+    /// <summary>
+    /// Real-world configuration model similar to GHM export system.
+    /// </summary>
+    public class GHMExportTestConfig
+    {
+        public string WiredFolder { get; set; }
+        public string WirelessFolder { get; set; }
+        public int RetainFor { get; set; }
+        
+        [Dictionary("GHMFormats")]
+        public Dictionary<string, string> FormatConfigurations { get; set; }
+        
+        [Dictionary]
+        public Dictionary<string, string> OutputPaths { get; set; }
+    }
+
+    /// <summary>
+    /// Complex dictionary configuration for testing nested scenarios.
+    /// </summary>
+    public class ComplexDictionaryTestConfig
+    {
+        public string Name { get; set; }
+        
+        [Dictionary("DatabaseConnections")]
+        public Dictionary<string, string> Connections { get; set; }
+        
+        [Dictionary("FeatureFlags")]
+        public IDictionary<string, string> Features { get; set; }
+        
+        [Array("Environments")]
+        public List<string> SupportedEnvironments { get; set; }
+        
+        [DefaultValue(true)]
+        public bool IsEnabled { get; set; }
+        
+        [DoNotPersist]
+        public DateTime LastUpdated { get; set; }
+        
+        [Ignore]
+        public int ConnectionCount => Connections?.Count ?? 0;
+    }
 }

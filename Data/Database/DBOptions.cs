@@ -41,6 +41,12 @@ namespace ByteForge.Toolkit
     public class DatabaseOptions
     {
         private static readonly object _lock = new object();
+        
+        private const int DefaultConnectionTimeout = 10;
+        private const int DefaultCommandTimeout = 240;
+        private const bool DefaultUseTrustedConnection = false;
+        private const bool DefaultAutoTrimStrings = true;
+        private const bool DefaultAllowNullStrings = false;
 
         /// <summary>
         /// Gets or sets the type of database (SQLServer or ODBC).
@@ -151,9 +157,9 @@ namespace ByteForge.Toolkit
         /// timing out. This is particularly important in scenarios where network
         /// connectivity might be unreliable.
         /// </remarks>
-        [DefaultValue(10)]
+        [DefaultValue(DefaultConnectionTimeout)]
         [ConfigName("iConnectionTimeout")]
-        public int ConnectionTimeout { get; set; } = 10;
+        public int ConnectionTimeout { get; set; } = DefaultConnectionTimeout;
 
         /// <summary>
         /// Gets or sets the command timeout duration in seconds.
@@ -170,9 +176,9 @@ namespace ByteForge.Toolkit
         /// but may need to be increased for long-running reports or data imports.
         /// </para>
         /// </remarks>
-        [DefaultValue(240)]
+        [DefaultValue(DefaultCommandTimeout)]
         [ConfigName("iCommandTimeout")]
-        public int CommandTimeout { get; set; } = 240;
+        public int CommandTimeout { get; set; } = DefaultCommandTimeout;
 
         /// <summary>
         /// Gets or sets whether the connection uses a trusted connection.
@@ -190,9 +196,9 @@ namespace ByteForge.Toolkit
         /// is available and provides better security than storing credentials.
         /// </para>
         /// </remarks>
-        [DefaultValue(false)]
+        [DefaultValue(DefaultUseTrustedConnection)]
         [ConfigName("bTrustedConnection")]
-        public bool UseTrustedConnection { get; set; } = false;
+        public bool UseTrustedConnection { get; set; } = DefaultUseTrustedConnection;
 
         /// <summary>
         /// Gets or sets whether string values should be automatically trimmed.
@@ -203,9 +209,9 @@ namespace ByteForge.Toolkit
         /// <remarks>
         /// When enabled, string values stored to the database will be automatically trimmed of leading and trailing whitespace.
         /// </remarks>
-        [DefaultValue(true)]
+        [DefaultValue(DefaultAutoTrimStrings)]
         [ConfigName("bAutoTrimStrings")]
-        public bool AutoTrimStrings { get; set; } = true;
+        public bool AutoTrimStrings { get; set; } = DefaultAutoTrimStrings;
 
         /// <summary>
         /// Gets or sets a value indicating whether null strings are allowed.
@@ -216,9 +222,9 @@ namespace ByteForge.Toolkit
         /// <remarks>
         /// When enabled, string properties can be set to null and will be stored as NULL in the database.
         /// </remarks>
-        [DefaultValue(false)]
+        [DefaultValue(DefaultAllowNullStrings)]
         [ConfigName("bAllowNullStrings")]
-        public bool AllowNullStrings { get; set; } = false;
+        public bool AllowNullStrings { get; set; } = DefaultAllowNullStrings;
 
         /// <summary>
         /// Gets or sets the database user name in a clear format.

@@ -43,6 +43,9 @@ namespace ByteForge.Toolkit
     /// </example>
     public class LogSettings
     {
+        private const LogLevel DefaultTraceLogLevel = LogLevel.All;
+        private const bool DefaultClearLogOnStartup = false;
+        private const bool DefaultUseSessionLogging = false;
         /// <summary>
         /// Gets or sets the path to the log file.
         /// </summary>
@@ -84,9 +87,9 @@ namespace ByteForge.Toolkit
         /// Error, and Fatal messages, but ignore Trace and Debug messages.
         /// </para>
         /// </remarks>
-        [DefaultValue(LogLevel.All)]
+        [DefaultValue(DefaultTraceLogLevel)]
         [ConfigName("eTraceLogLevel")]
-        public LogLevel TraceLogLevel { get; set; }
+        public LogLevel TraceLogLevel { get; set; } = DefaultTraceLogLevel;
 
         /// <summary>
         /// Gets or sets a value indicating whether the log should be cleared on startup.
@@ -103,17 +106,17 @@ namespace ByteForge.Toolkit
         /// a log rotation strategy instead.
         /// </para>
         /// </remarks>
-        [DefaultValue(false)]
+        [DefaultValue(DefaultClearLogOnStartup)]
         [ConfigName("bClearLogOnStartup")]
-        public bool ClearLogOnStartup { get; set; }
+        public bool ClearLogOnStartup { get; set; } = DefaultClearLogOnStartup;
 
         /// <summary>
         /// Gets or sets a value indicating whether to use session-based logging.
         /// When true, each application run gets its own unique log file.
         /// </summary>
-        [DefaultValue(false)]
+        [DefaultValue(DefaultUseSessionLogging)]
         [ConfigName("bUseSessionLogging")]
-        public bool UseSessionLogging { get; set; }
+        public bool UseSessionLogging { get; set; } = DefaultUseSessionLogging;
 
         /// <summary>
         /// Gets the default log file path.
