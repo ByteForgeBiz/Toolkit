@@ -260,6 +260,7 @@
     <None Include="FodyWeavers.xsd">
       <SubType>Designer</SubType>
     </None>
+    <None Include="HTML\readme.md" />
     <None Include="Logging\readme.md" />
     <None Include="Mail\readme.md" />
     <None Include="Properties\CHANGELOG.md" />
