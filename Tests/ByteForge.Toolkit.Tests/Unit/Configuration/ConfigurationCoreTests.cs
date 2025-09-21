@@ -434,7 +434,7 @@ CurrencySymbol=$";
             var savedContent = File.ReadAllText(_tempConfigPath);
             savedContent.Should().Contain("StringValue=Modified String", "modified string should be saved");
             savedContent.Should().Contain("IntValue=999", "modified int should be saved");
-            savedContent.Should().Contain("BoolValue=True", "modified bool should be saved");
+            savedContent.Should().Contain("BoolValue=true", "modified bool should be saved");
         }
 
         /// <summary>

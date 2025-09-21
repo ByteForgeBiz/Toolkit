@@ -24,6 +24,13 @@ namespace ByteForge.Toolkit.Tests.Unit.Utils
             ConsoleUtil.IsConsoleAvailable.Should().BeFalse();
         }
 
+#if false
+
+        /*
+         * This test is disabled by default because it requires a console to be present for visual verification.
+         * Instead of polluting the test list with a test that cannot be automated, we leave it here for documentation.
+         */
+
         /// <summary>
         /// Tests the <see cref="ConsoleUtil.DrawProgressBar"/> method with various progress values.
         /// </summary>
@@ -35,7 +42,6 @@ namespace ByteForge.Toolkit.Tests.Unit.Utils
         [TestMethod]
         [TestCategory("Unit")]
         [TestCategory("Utils")]
-        [@Ignore("DrawProgressBar cannot be effectively tested in an automated unit test environment.")]
 #pragma warning disable MSTEST0015
         public void ConsoleUtil_Should_DrawProgressBar()
         {
@@ -52,5 +58,7 @@ namespace ByteForge.Toolkit.Tests.Unit.Utils
             Console.WriteLine(); // Move to the next line after the progress bar is complete
         }
 #pragma warning restore MSTEST0015
+
+#endif
     }
 }

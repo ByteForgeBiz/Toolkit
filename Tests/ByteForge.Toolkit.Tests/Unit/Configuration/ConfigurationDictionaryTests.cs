@@ -447,9 +447,10 @@ DefaultKey=DefaultValue";
         public void ConfigSection_DictionaryWithoutSectionReference_ShouldUseDefaultNaming()
         {
             // Arrange - Don't specify the section reference in main section
-            var configContent = @"[TestSection]
+            var sectionName = "TestSection";
+            var configContent = $@"[{sectionName}]
 
-[FileFormatsDict]
+[{sectionName}#FileFormatsDict]
 AutoKey=AutoValue";
             
             IConfigurationManager config = new ByteForge.Toolkit.Configuration();
@@ -533,21 +534,23 @@ SomeOtherProperty=Value";
             _tempConfigPath = TestConfigurationHelper.CreateTempConfigFile(configContent);
             config.Initialize(_tempConfigPath);
 
-            var section = config.GetSection<DictionaryTestConfig>("TestSection");
+            var sectionName = "TestSection";
+            var section = config.GetSection<DictionaryTestConfig>(sectionName);
             section.FileFormats = new Dictionary<string, string>
             {
                 {"TCI", "TCI_MMddyyyy_WIN_Return.txt"},
                 {"CRC", "CRC_MMddyyyy_Return.csv"},
                 {"GICS", "GICS_MMddyyyy_Return.csv"}
             };
+            var propertyName = nameof(section.FileFormats);
 
             // Act
             config.Save();
 
             // Assert
             var savedContent = System.IO.File.ReadAllText(_tempConfigPath);
-            savedContent.Should().Contain("FileFormats=FileFormatsDict", "should save section reference");
-            savedContent.Should().Contain("[FileFormatsDict]", "should create dictionary section");
+            savedContent.Should().Contain($"FileFormats={sectionName}#{propertyName}Dict", "should save section reference");
+            savedContent.Should().Contain($"[{sectionName}#{propertyName}Dict]", "should create dictionary section");
             savedContent.Should().Contain("TCI=TCI_MMddyyyy_WIN_Return.txt", "should save TCI entry");
             savedContent.Should().Contain("CRC=CRC_MMddyyyy_Return.csv", "should save CRC entry");
             savedContent.Should().Contain("GICS=GICS_MMddyyyy_Return.csv", "should save GICS entry");
@@ -557,24 +560,26 @@ SomeOtherProperty=Value";
         /// Verifies that empty dictionaries are saved correctly.
         /// </summary>
         [TestMethod]
-        public void ConfigSection_SaveEmptyDictionary_ShouldCreateEmptySection()
+        public void ConfigSection_SaveEmptyDictionary_ShouldNotCreateEmptySection()
         {
             // Arrange
-            var configContent = @"[TestSection]";
+            var sectionName = "TestSection";
+            var configContent = $"[{sectionName}]";
             IConfigurationManager config = new ByteForge.Toolkit.Configuration();
             _tempConfigPath = TestConfigurationHelper.CreateTempConfigFile(configContent);
             config.Initialize(_tempConfigPath);
 
-            var section = config.GetSection<DictionaryTestConfig>("TestSection");
+            var section = config.GetSection<DictionaryTestConfig>(sectionName);
             section.FileFormats = [];
+            var propertyName = nameof(section.FileFormats);
 
             // Act
             config.Save();
 
             // Assert
             var savedContent = System.IO.File.ReadAllText(_tempConfigPath);
-            savedContent.Should().Contain("FileFormats=FileFormatsDict", "should save section reference even for empty dictionary");
-            savedContent.Should().NotContain("[FileFormatsDict]", "should not create empty dictionary section");
+            savedContent.Should().Contain($"FileFormats={sectionName}#{propertyName}Dict", "should save section reference even for empty dictionary");
+            savedContent.Should().NotContain($"[{sectionName}#{propertyName}Dict]", "should not create empty dictionary section");
         }
 
         /// <summary>
@@ -584,12 +589,13 @@ SomeOtherProperty=Value";
         public void ConfigSection_SaveDictionaryWithCustomSectionName_ShouldUseCustomName()
         {
             // Arrange
-            var configContent = @"[TestSection]";
+            var sectionName = "TestSection";
+            var configContent = $"[{sectionName}]";
             IConfigurationManager config = new ByteForge.Toolkit.Configuration();
             _tempConfigPath = TestConfigurationHelper.CreateTempConfigFile(configContent);
             config.Initialize(_tempConfigPath);
 
-            var section = config.GetSection<DictionaryTestConfig>("TestSection");
+            var section = config.GetSection<DictionaryTestConfig>(sectionName);
             section.CustomSettings = new Dictionary<string, string>
             {
                 {"Setting1", "Value1"},
@@ -601,8 +607,8 @@ SomeOtherProperty=Value";
 
             // Assert
             var savedContent = System.IO.File.ReadAllText(_tempConfigPath);
-            savedContent.Should().Contain("CustomSettings=MyCustomSection", "should save custom section reference");
-            savedContent.Should().Contain("[MyCustomSection]", "should create custom section");
+            savedContent.Should().Contain($"CustomSettings={sectionName}#MyCustomSection", "should save custom section reference");
+            savedContent.Should().Contain($"[{sectionName}#MyCustomSection]", "should create custom section");
             savedContent.Should().Contain("Setting1=Value1", "should save custom section entries");
             savedContent.Should().Contain("Setting2=Value2", "should save custom section entries");
         }

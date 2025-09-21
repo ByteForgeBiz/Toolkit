@@ -45,11 +45,6 @@ namespace ByteForge.Toolkit
         public static GlobalizationInfo Globalization => DefaultInstance.Globalization;
 
         /// <summary>
-        /// Gets the dynamic object that provides access to the configuration settings.
-        /// </summary>
-        public static Configuration Obj => (Configuration)DefaultInstance;
-
-        /// <summary>
         /// Gets the root of the configuration.
         /// </summary>
         public static IConfigurationRoot Root => DefaultInstance.Root;
@@ -157,6 +152,10 @@ namespace ByteForge.Toolkit
         /// Lock object for thread safety on this instance.
         /// </summary>
         private readonly object _instanceLock = new object();
+
+        /// <summary>
+        /// Lock object for static Save method to ensure thread safety.
+        /// </summary>
         private static readonly object _staticLock = new object();
 
         // ==========================

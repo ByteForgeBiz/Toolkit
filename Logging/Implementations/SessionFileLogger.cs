@@ -51,7 +51,7 @@ namespace ByteForge.Toolkit.Logging
             if (Settings.CleanupOldSessions)
                 CleanupOldSessions();
 
-            InitializeFileLogger();
+            InitializeFileLogger(Settings);
         }
 
         /// <summary>

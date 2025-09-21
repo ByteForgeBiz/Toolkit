@@ -478,15 +478,17 @@ StringArray=EmptyArraySection
             _tempConfigPath = TestConfigurationHelper.CreateTempConfigFile(configContent);
             ((IConfigurationManager)config).Initialize(_tempConfigPath);
 
-            var section = ((IConfigurationManager)config).GetSection<ArrayTestConfig>("TestSection");
-            section.StringArray = new[] { "Save1", "Save2", "Save3" };
+            var sectionName = "TestSection";
+            var section = ((IConfigurationManager)config).GetSection<ArrayTestConfig>(sectionName);
+            section.StringArray = ["Save1", "Save2", "Save3"];
+            var propertyName = nameof(section.StringArray);
 
             // Act
             ((IConfigurationManager)config).Save();
 
             // Assert
-            var savedContent = System.IO.File.ReadAllText(_tempConfigPath);
-            savedContent.Should().Contain("[StringArrayArray]", "array section should be created");
+            var savedContent = File.ReadAllText(_tempConfigPath);
+            savedContent.Should().Contain($"[{sectionName}#{propertyName}Array]", "array section should be created");
             savedContent.Should().Contain("0=Save1", "first item should use index 0");
             savedContent.Should().Contain("1=Save2", "second item should use index 1");
             savedContent.Should().Contain("2=Save3", "third item should use index 2");
@@ -504,20 +506,22 @@ StringArray=EmptyArraySection
         public void ConfigSection_SaveCustomNamedArray_ShouldUseCustomSection()
         {
             // Arrange
-            var configContent = @"[TestSection]";
+            var sectionName = "TestSection";
+            var configContent = $"[{sectionName}]";
             var config = new ByteForge.Toolkit.Configuration();
             _tempConfigPath = TestConfigurationHelper.CreateTempConfigFile(configContent);
             ((IConfigurationManager)config).Initialize(_tempConfigPath);
 
-            var section = ((IConfigurationManager)config).GetSection<ArrayTestConfig>("TestSection");
+            var section = ((IConfigurationManager)config).GetSection<ArrayTestConfig>(sectionName);
             section.CustomNamedArray = new List<string> { "Custom1", "Custom2" };
+            var propertyName = nameof(section.CustomNamedArray);
 
             // Act
             ((IConfigurationManager)config).Save();
 
             // Assert
-            var savedContent = System.IO.File.ReadAllText(_tempConfigPath);
-            savedContent.Should().Contain("[CustomArraySection]", "custom array section should be created");
+            var savedContent = File.ReadAllText(_tempConfigPath);
+            savedContent.Should().Contain($"[{sectionName}#CustomArraySection]", "custom array section should be created");
             savedContent.Should().Contain("0=Custom1", "custom array first item should be saved");
             savedContent.Should().Contain("1=Custom2", "custom array second item should be saved");
         }
@@ -555,7 +559,7 @@ StringArray=StringArrayArray
             ((IConfigurationManager)config).Save();
 
             // Assert
-            var savedContent = System.IO.File.ReadAllText(_tempConfigPath);
+            var savedContent = File.ReadAllText(_tempConfigPath);
             savedContent.Should().Contain("0=New1", "first new item should be saved");
             savedContent.Should().Contain("1=New2", "second new item should be saved");
             savedContent.Should().NotContain("2=Old3", "old third item should be removed");
@@ -594,7 +598,7 @@ StringArray=StringArrayArray
             ((IConfigurationManager)config).Save();
 
             // Assert
-            var savedContent = System.IO.File.ReadAllText(_tempConfigPath);
+            var savedContent = File.ReadAllText(_tempConfigPath);
             savedContent.Should().NotContain("0=Item1", "null array should clear all items");
             savedContent.Should().NotContain("1=Item2", "null array should clear all items");
         }

@@ -543,7 +543,7 @@ IntValue=not_a_number";
             var savedContent = System.IO.File.ReadAllText(_tempConfigPath);
             savedContent.Should().Contain("StringValue=Test String", "string property should be saved");
             savedContent.Should().Contain("IntValue=42", "int property should be saved");
-            savedContent.Should().Contain("BoolValue=True", "bool property should be saved");
+            savedContent.Should().Contain("BoolValue=true", "bool property should be saved");
             savedContent.Should().Contain("DoubleValue=3.14159", "double property should be saved");
             savedContent.Should().Contain("CustomName=Mapped Value", "ConfigName mapped property should be saved with custom key");
         }

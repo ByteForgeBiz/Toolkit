@@ -56,7 +56,7 @@ namespace ByteForge.Toolkit.Logging
         /// The default is <c>"{basename}"</c> (no pattern).
         /// </summary>
         [DefaultValue(DefaultFileNamingPattern)]
-        public string FileNamingPattern { get; set; } = DefaultFileNamingPattern;
+        public virtual string FileNamingPattern { get; set; } = DefaultFileNamingPattern;
 
         /// <summary>
         /// Gets or sets a custom file name provider function.

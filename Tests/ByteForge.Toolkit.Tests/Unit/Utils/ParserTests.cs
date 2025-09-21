@@ -39,44 +39,44 @@ namespace ByteForge.Toolkit.Tests.Unit.Utils
         }
 
         /// <summary>
-        /// Verifies that ParseValue correctly parses primitive types.
+        /// Verifies that Parse correctly parses primitive types.
         /// </summary>
         /// <remarks>
         /// Ensures all built-in primitive types are supported.
         /// </remarks>
         [TestMethod]
-        public void ParseValue_PrimitiveTypes_ShouldParseCorrectly()
+        public void Parse_PrimitiveTypes_ShouldParseCorrectly()
         {
             // Arrange
-            var parser = new Parser();
+            IParser parser = new Parser();
 
             // Act & Assert
-            parser.ParseValue(typeof(int), "42").Should().Be(42);
-            parser.ParseValue(typeof(long), "9223372036854775807").Should().Be(9223372036854775807L);
-            parser.ParseValue(typeof(short), "32767").Should().Be((short)32767);
-            parser.ParseValue(typeof(uint), "42").Should().Be(42U);
-            parser.ParseValue(typeof(ulong), "42").Should().Be(42UL);
-            parser.ParseValue(typeof(ushort), "42").Should().Be((ushort)42);
-            parser.ParseValue(typeof(byte), "255").Should().Be((byte)255);
-            parser.ParseValue(typeof(double), "3.14159").Should().Be(3.14159);
-            parser.ParseValue(typeof(float), "3.14").Should().Be(3.14f);
-            parser.ParseValue(typeof(decimal), "123.45").Should().Be(123.45m);
-            parser.ParseValue(typeof(bool), "true").Should().Be(true);
-            parser.ParseValue(typeof(char), "A").Should().Be('A');
-            parser.ParseValue(typeof(string), "Hello").Should().Be("Hello");
+            parser.Parse(typeof(int), "42").Should().Be(42);
+            parser.Parse(typeof(long), "9223372036854775807").Should().Be(9223372036854775807L);
+            parser.Parse(typeof(short), "32767").Should().Be((short)32767);
+            parser.Parse(typeof(uint), "42").Should().Be(42U);
+            parser.Parse(typeof(ulong), "42").Should().Be(42UL);
+            parser.Parse(typeof(ushort), "42").Should().Be((ushort)42);
+            parser.Parse(typeof(byte), "255").Should().Be((byte)255);
+            parser.Parse(typeof(double), "3.14159").Should().Be(3.14159);
+            parser.Parse(typeof(float), "3.14").Should().Be(3.14f);
+            parser.Parse(typeof(decimal), "123.45").Should().Be(123.45m);
+            parser.Parse(typeof(bool), "true").Should().Be(true);
+            parser.Parse(typeof(char), "A").Should().Be('A');
+            parser.Parse(typeof(string), "Hello").Should().Be("Hello");
         }
 
         /// <summary>
-        /// Verifies that ParseValue correctly parses complex types.
+        /// Verifies that Parse correctly parses complex types.
         /// </summary>
         /// <remarks>
         /// Ensures complex built-in types like DateTime, Guid, etc. are supported.
         /// </remarks>
         [TestMethod]
-        public void ParseValue_ComplexTypes_ShouldParseCorrectly()
+        public void Parse_ComplexTypes_ShouldParseCorrectly()
         {
             // Arrange
-            var parser = new Parser();
+            IParser parser = new Parser();
             var guid = Guid.NewGuid();
             var dateTime = new DateTime(2024, 1, 15, 10, 30, 45);
             var timeSpan = new TimeSpan(1, 2, 3);
@@ -84,169 +84,172 @@ namespace ByteForge.Toolkit.Tests.Unit.Utils
             var version = new Version(1, 2, 3, 4);
 
             // Act & Assert
-            parser.ParseValue(typeof(Guid), guid.ToString()).Should().Be(guid);
-            parser.ParseValue(typeof(DateTime), "2024-01-15T10:30:45").Should().Be(dateTime);
-            parser.ParseValue(typeof(TimeSpan), "01:02:03").Should().Be(timeSpan);
-            parser.ParseValue(typeof(Uri), "https://example.com").Should().Be(uri);
-            parser.ParseValue(typeof(Version), "1.2.3.4").Should().Be(version);
+            parser.Parse(typeof(Guid), guid.ToString()).Should().Be(guid);
+            parser.Parse(typeof(DateTime), "2024-01-15T10:30:45").Should().Be(dateTime);
+            parser.Parse(typeof(TimeSpan), "01:02:03").Should().Be(timeSpan);
+            parser.Parse(typeof(Uri), "https://example.com").Should().Be(uri);
+            parser.Parse(typeof(Version), "1.2.3.4").Should().Be(version);
         }
 
         /// <summary>
-        /// Verifies that ParseValue correctly parses enum types.
+        /// Verifies that Parse correctly parses enum types.
         /// </summary>
         /// <remarks>
         /// Ensures enum parsing works for custom enum types.
         /// </remarks>
         [TestMethod]
-        public void ParseValue_EnumType_ShouldParseCorrectly()
+        public void Parse_EnumType_ShouldParseCorrectly()
         {
             // Arrange
-            var parser = new Parser();
+            IParser parser = new Parser();
 
             // Act & Assert
-            parser.ParseValue(typeof(TestEnum), "Value1").Should().Be(TestEnum.Value1);
-            parser.ParseValue(typeof(TestEnum), "Value2").Should().Be(TestEnum.Value2);
-            parser.ParseValue(typeof(TestEnum), "Value3").Should().Be(TestEnum.Value3);
+            parser.Parse(typeof(TestEnum), "Value1").Should().Be(TestEnum.Value1);
+            parser.Parse(typeof(TestEnum), "Value2").Should().Be(TestEnum.Value2);
+            parser.Parse(typeof(TestEnum), "Value3").Should().Be(TestEnum.Value3);
         }
 
         /// <summary>
-        /// Verifies that ParseValue correctly handles special types.
+        /// Verifies that Parse correctly handles special types.
         /// </summary>
         /// <remarks>
         /// Ensures special types like byte arrays and char arrays work.
         /// </remarks>
         [TestMethod]
-        public void ParseValue_SpecialTypes_ShouldParseCorrectly()
+        public void Parse_SpecialTypes_ShouldParseCorrectly()
         {
             // Arrange
-            var parser = new Parser();
+            IParser parser = new Parser();
 
             // Act & Assert
             var base64Input = Convert.ToBase64String([1, 2, 3, 4]);
-            var byteArrayResult = (byte[])parser.ParseValue(typeof(byte[]), base64Input);
+            var byteArrayResult = (byte[])parser.Parse(typeof(byte[]), base64Input);
             byteArrayResult.Should().BeEquivalentTo(new byte[] { 1, 2, 3, 4 });
 
-            var charArrayResult = (char[])parser.ParseValue(typeof(char[]), "Hello");
+            var charArrayResult = (char[])parser.Parse(typeof(char[]), "Hello");
             charArrayResult.Should().BeEquivalentTo(['H', 'e', 'l', 'l', 'o']);
 
-            var cultureResult = (CultureInfo)parser.ParseValue(typeof(CultureInfo), "en-US");
+            var cultureResult = (CultureInfo)parser.Parse(typeof(CultureInfo), "en-US");
             cultureResult.Name.Should().Be("en-US");
 
-            var typeResult = (Type)parser.ParseValue(typeof(Type), "System.String");
+            var typeResult = (Type)parser.Parse(typeof(Type), "System.String");
             typeResult.Should().Be(typeof(string));
         }
 
         /// <summary>
-        /// Verifies that ParseValue generic method works correctly.
+        /// Verifies that Parse generic method works correctly.
         /// </summary>
         /// <remarks>
         /// Ensures generic parsing provides type safety and convenience.
         /// </remarks>
         [TestMethod]
-        public void ParseValue_Generic_ShouldParseCorrectly()
+        public void Parse_Generic_ShouldParseCorrectly()
         {
-            // Arrange
-            var parser = new Parser();
-
-            // Act & Assert
-            parser.ParseValue<int>("42").Should().Be(42);
-            parser.ParseValue<bool>("true").Should().BeTrue();
-            parser.ParseValue<string>("Hello").Should().Be("Hello");
-            parser.ParseValue<TestEnum>("Value1").Should().Be(TestEnum.Value1);
+            // Act & Assert - Using static generic methods
+            Parser.Parse<int>("42").Should().Be(42);
+            Parser.Parse<bool>("true").Should().BeTrue();
+            Parser.Parse<string>("Hello").Should().Be("Hello");
+            Parser.Parse<TestEnum>("Value1").Should().Be(TestEnum.Value1);
         }
 
         /// <summary>
-        /// Verifies that ParseValue handles null type gracefully.
+        /// Verifies that Parse handles null type gracefully.
         /// </summary>
         /// <remarks>
         /// Ensures null type input returns null rather than throwing exception.
         /// </remarks>
         [TestMethod]
-        public void ParseValue_NullType_ShouldReturnNull()
+        public void Parse_NullType_ShouldReturnNull()
         {
             // Arrange
-            var parser = new Parser();
+            IParser parser = new Parser();
 
             // Act
-            var result = parser.ParseValue(null, "any_value");
+            var result = parser.Parse(null, "any_value");
 
             // Assert
             result.Should().BeNull();
         }
 
         /// <summary>
-        /// Verifies that TryParseValue returns true for valid input.
+        /// Verifies that TryParse returns true for valid input.
         /// </summary>
         /// <remarks>
-        /// Ensures TryParseValue succeeds for valid parsing scenarios.
+        /// Ensures TryParse succeeds for valid parsing scenarios.
         /// </remarks>
         [TestMethod]
-        public void TryParseValue_ValidInput_ShouldReturnTrueWithCorrectResult()
+        public void TryParse_ValidInput_ShouldReturnTrueWithCorrectResult()
         {
             // Arrange
-            var parser = new Parser();
+            IParser parser = new Parser();
 
             // Act & Assert
-            var success1 = parser.TryParseValue(typeof(int), "42", out var result1);
+            var success1 = parser.TryParse(typeof(int), "42", out var result1);
             success1.Should().BeTrue();
             result1.Should().Be(42);
 
-            var success2 = parser.TryParseValue<bool>("true", out var result2);
+            var success2 = parser.TryParse(typeof(bool), "true", out var result2);
             success2.Should().BeTrue();
-            result2.Should().BeTrue();
+            result2.Should().Be(true);
 
-            var success3 = parser.TryParseValue<string>("Hello", out var result3);
+            var success3 = parser.TryParse(typeof(string), "Hello", out var result3);
             success3.Should().BeTrue();
             result3.Should().Be("Hello");
         }
 
         /// <summary>
-        /// Verifies that TryParseValue returns false for invalid input.
+        /// Verifies that TryParse returns false for invalid input.
         /// </summary>
         /// <remarks>
-        /// Ensures TryParseValue fails gracefully for invalid input.
+        /// Ensures TryParse fails gracefully for invalid input.
         /// </remarks>
         [TestMethod]
-        public void TryParseValue_InvalidInput_ShouldReturnFalseWithDefaultResult()
+        public void TryParse_InvalidInput_ShouldReturnFalseWithDefaultResult()
         {
             // Arrange
-            var parser = new Parser();
+            IParser parser = new Parser();
 
             // Act & Assert
-            var success1 = parser.TryParseValue(typeof(int), "invalid", out var result1);
+            var success1 = parser.TryParse(typeof(int), "invalid", out var result1);
             success1.Should().BeFalse();
             result1.Should().BeNull();
 
-            var success2 = parser.TryParseValue<int>("invalid", out var result2);
+            var success2 = parser.TryParse(typeof(int), "invalid", out var result2);
             success2.Should().BeFalse();
-            result2.Should().Be(default);
+            result2.Should().BeNull();
 
-            var success3 = parser.TryParseValue<DateTime>("invalid_date", out var result3);
+            var success3 = parser.TryParse(typeof(DateTime), "invalid_date", out var result3);
             success3.Should().BeFalse();
-            result3.Should().Be(default);
+            result3.Should().BeNull();
         }
 
         /// <summary>
-        /// Verifies that RegisterTypeParser adds custom parsers correctly.
+        /// Verifies that RegisterType adds custom parsers correctly.
         /// </summary>
         /// <remarks>
         /// Ensures custom type parsers can be registered and used.
         /// </remarks>
         [TestMethod]
-        public void RegisterTypeParser_CustomType_ShouldAddAndParseCorrectly()
+        public void RegisterType_CustomType_ShouldAddAndParseCorrectly()
         {
             // Arrange
-            var parser = new Parser();
+            IParser parser = new Parser();
             var customType = typeof(System.Drawing.Point);
             
             // Act
-            parser.RegisterTypeParser(customType, value =>
-            {
-                var parts = value.Split(',');
-                return new System.Drawing.Point(int.Parse(parts[0]), int.Parse(parts[1]));
-            });
+            parser.RegisterType(customType, 
+                value =>
+                {
+                    var parts = value.Split(',');
+                    return new System.Drawing.Point(int.Parse(parts[0]), int.Parse(parts[1]));
+                },
+                value =>
+                {
+                    var point = (System.Drawing.Point)value;
+                    return $"{point.X},{point.Y}";
+                });
             
-            var result = parser.ParseValue(customType, "10,20");
+            var result = parser.Parse(customType, "10,20");
 
             // Assert
             result.Should().BeOfType<System.Drawing.Point>();
@@ -256,20 +259,21 @@ namespace ByteForge.Toolkit.Tests.Unit.Utils
         }
 
         /// <summary>
-        /// Verifies that RegisterTypeParser throws ArgumentNullException for null arguments.
+        /// Verifies that RegisterType throws ArgumentNullException for null arguments.
         /// </summary>
         /// <remarks>
-        /// Ensures proper validation for RegisterTypeParser method.
+        /// Ensures proper validation for RegisterType method.
         /// </remarks>
         [TestMethod]
-        public void RegisterTypeParser_NullArguments_ShouldThrowArgumentNullException()
+        public void RegisterType_NullArguments_ShouldThrowArgumentNullException()
         {
             // Arrange
-            var parser = new Parser();
+            IParser parser = new Parser();
 
             // Act & Assert
-            AssertionHelpers.AssertThrows<ArgumentNullException>(() => parser.RegisterTypeParser(null, _ => null));
-            AssertionHelpers.AssertThrows<ArgumentNullException>(() => parser.RegisterTypeParser(typeof(int), null));
+            AssertionHelpers.AssertThrows<ArgumentNullException>(() => parser.RegisterType(null, _ => null, _ => ""));
+            AssertionHelpers.AssertThrows<ArgumentNullException>(() => parser.RegisterType(typeof(int), null, _ => ""));
+            AssertionHelpers.AssertThrows<ArgumentNullException>(() => parser.RegisterType(typeof(int), _ => null, null));
         }
 
         /// <summary>
@@ -328,28 +332,28 @@ namespace ByteForge.Toolkit.Tests.Unit.Utils
         [TestMethod]
         public void TryParse_StaticMethods_ShouldWorkCorrectly()
         {
-            // Act & Assert
-            var success1 = Parser.TryParse(typeof(int), "42", out var result1);
+            // Act & Assert - Using Default instance since static TryParse doesn't exist
+            var success1 = Parser.Default.TryParse(typeof(int), "42", out var result1);
             success1.Should().BeTrue();
             result1.Should().Be(42);
 
-            var success2 = Parser.TryParse<bool>("true", out var result2);
+            var success2 = Parser.Default.TryParse(typeof(bool), "true", out var result2);
             success2.Should().BeTrue();
-            result2.Should().BeTrue();
+            result2.Should().Be(true);
 
-            var success3 = Parser.TryParse<int>("invalid", out var result3);
+            var success3 = Parser.Default.TryParse(typeof(int), "invalid", out var result3);
             success3.Should().BeFalse();
-            result3.Should().Be(default);
+            result3.Should().BeNull();
         }
 
         /// <summary>
-        /// Verifies static RegisterParser method works correctly.
+        /// Verifies static RegisterType method works correctly.
         /// </summary>
         /// <remarks>
         /// Ensures static registration affects the default instance.
         /// </remarks>
         [TestMethod]
-        public void RegisterParser_StaticMethod_ShouldWorkCorrectly()
+        public void RegisterType_StaticMethod_ShouldWorkCorrectly()
         {
             // Arrange
             var customType = typeof(System.Drawing.Size);
@@ -357,11 +361,17 @@ namespace ByteForge.Toolkit.Tests.Unit.Utils
             try
             {
                 // Act
-                Parser.RegisterParser(customType, value =>
-                {
-                    var parts = value.Split('x');
-                    return new System.Drawing.Size(int.Parse(parts[0]), int.Parse(parts[1]));
-                });
+                Parser.RegisterType(customType, 
+                    value =>
+                    {
+                        var parts = value.Split('x');
+                        return new System.Drawing.Size(int.Parse(parts[0]), int.Parse(parts[1]));
+                    },
+                    value =>
+                    {
+                        var size = (System.Drawing.Size)value;
+                        return $"{size.Width}x{size.Height}";
+                    });
                 
                 var result = Parser.Parse(customType, "100x200");
 
@@ -385,25 +395,25 @@ namespace ByteForge.Toolkit.Tests.Unit.Utils
         /// Ensures robust handling of edge cases and boundary values.
         /// </remarks>
         [TestMethod]
-        public void ParseValue_EdgeCases_ShouldHandleCorrectly()
+        public void Parse_EdgeCases_ShouldHandleCorrectly()
         {
             // Arrange
-            var parser = new Parser();
+            IParser parser = new Parser();
 
             // Act & Assert
             // Empty string for string type
-            parser.ParseValue<string>("").Should().Be("");
+            parser.Parse(typeof(string), "").Should().Be("");
             
             // Minimum and maximum values
-            parser.ParseValue<int>(int.MaxValue.ToString()).Should().Be(int.MaxValue);
-            parser.ParseValue<int>(int.MinValue.ToString()).Should().Be(int.MinValue);
+            parser.Parse(typeof(int), int.MaxValue.ToString()).Should().Be(int.MaxValue);
+            parser.Parse(typeof(int), int.MinValue.ToString()).Should().Be(int.MinValue);
             
             // Boolean edge cases
-            parser.ParseValue<bool>("True").Should().BeTrue();
-            parser.ParseValue<bool>("False").Should().BeFalse();
+            parser.Parse(typeof(bool), "True").Should().Be(true);
+            parser.Parse(typeof(bool), "False").Should().Be(false);
             
             // Whitespace handling for char
-            parser.ParseValue<char>(" ").Should().Be(' ');
+            parser.Parse(typeof(char), " ").Should().Be(' ');
         }
 
         /// <summary>
@@ -413,16 +423,16 @@ namespace ByteForge.Toolkit.Tests.Unit.Utils
         /// Ensures proper error handling for invalid parsing scenarios.
         /// </remarks>
         [TestMethod]
-        public void ParseValue_InvalidInput_ShouldThrowAppropriateExceptions()
+        public void Parse_InvalidInput_ShouldThrowAppropriateExceptions()
         {
             // Arrange
-            var parser = new Parser();
+            IParser parser = new Parser();
 
             // Act & Assert
-            AssertionHelpers.AssertThrows<FormatException>(() => parser.ParseValue<int>("invalid"));
-            AssertionHelpers.AssertThrows<FormatException>(() => parser.ParseValue<DateTime>("invalid_date"));
-            AssertionHelpers.AssertThrows<FormatException>(() => parser.ParseValue<Guid>("invalid_guid"));
-            AssertionHelpers.AssertThrows<ArgumentException>(() => parser.ParseValue<TestEnum>("InvalidValue"));
+            AssertionHelpers.AssertThrows<FormatException>(() => parser.Parse(typeof(int), "invalid"));
+            AssertionHelpers.AssertThrows<FormatException>(() => parser.Parse(typeof(DateTime), "invalid_date"));
+            AssertionHelpers.AssertThrows<FormatException>(() => parser.Parse(typeof(Guid), "invalid_guid"));
+            AssertionHelpers.AssertThrows<ArgumentException>(() => parser.Parse(typeof(TestEnum), "InvalidValue"));
         }
 
         /// <summary>
@@ -432,14 +442,14 @@ namespace ByteForge.Toolkit.Tests.Unit.Utils
         /// Ensures fallback mechanism works for types not explicitly registered.
         /// </remarks>
         [TestMethod]
-        public void ParseValue_UnregisteredType_ShouldUseConvertChangeType()
+        public void Parse_UnregisteredType_ShouldUseConvertChangeType()
         {
             // Arrange
-            var parser = new Parser();
+            IParser parser = new Parser();
 
             // Act
             // sbyte is not explicitly registered, should fall back to Convert.ChangeType
-            var result = parser.ParseValue(typeof(sbyte), "42");
+            var result = parser.Parse(typeof(sbyte), "42");
 
             // Assert
             result.Should().Be((sbyte)42);
@@ -453,10 +463,10 @@ namespace ByteForge.Toolkit.Tests.Unit.Utils
         /// Ensures parsing is efficient for repeated use across different types.
         /// </remarks>
         [TestMethod]
-        public void ParseValue_Performance_ShouldHandleMultipleParsesQuickly()
+        public void Parse_Performance_ShouldHandleMultipleParsesQuickly()
         {
             // Arrange
-            var parser = new Parser();
+            IParser parser = new Parser();
             var iterations = 1000;
             var startTime = DateTime.UtcNow;
             var testCount = 0;
@@ -464,12 +474,12 @@ namespace ByteForge.Toolkit.Tests.Unit.Utils
             // Act
             for (var i = 0; i < iterations; i++)
             {
-                parser.ParseValue(typeof(int), "42").Should().NotBeNull();
-                parser.ParseValue(typeof(bool), "true").Should().NotBeNull();
-                parser.ParseValue(typeof(string), "Hello").Should().NotBeNull();
-                parser.ParseValue(typeof(DateTime), "2024-01-15").Should().NotBeNull();
-                parser.ParseValue(typeof(double), "3.14159").Should().NotBeNull();
-                parser.ParseValue(typeof(Guid), Guid.NewGuid().ToString()).Should().NotBeNull();
+                parser.Parse(typeof(int), "42").Should().NotBeNull();
+                parser.Parse(typeof(bool), "true").Should().NotBeNull();
+                parser.Parse(typeof(string), "Hello").Should().NotBeNull();
+                parser.Parse(typeof(DateTime), "2024-01-15").Should().NotBeNull();
+                parser.Parse(typeof(double), "3.14159").Should().NotBeNull();
+                parser.Parse(typeof(Guid), Guid.NewGuid().ToString()).Should().NotBeNull();
                 testCount += 6;
             }
 
@@ -486,10 +496,10 @@ namespace ByteForge.Toolkit.Tests.Unit.Utils
         /// Ensures the parser can be used safely in multi-threaded environments.
         /// </remarks>
         [TestMethod]
-        public void ParseValue_ThreadSafety_ShouldHandleConcurrentAccess()
+        public void Parse_ThreadSafety_ShouldHandleConcurrentAccess()
         {
             // Arrange
-            var parser = new Parser();
+            IParser parser = new Parser();
             var tasks = new System.Threading.Tasks.Task[10];
 
             // Act
@@ -499,9 +509,9 @@ namespace ByteForge.Toolkit.Tests.Unit.Utils
                 {
                     for (var j = 0; j < 100; j++)
                     {
-                        var intResult = parser.ParseValue<int>("42");
-                        var boolResult = parser.ParseValue<bool>("true");
-                        var stringResult = parser.ParseValue<string>("Hello");
+                        var intResult = (int)parser.Parse(typeof(int), "42");
+                        var boolResult = (bool)parser.Parse(typeof(bool), "true");
+                        var stringResult = (string)parser.Parse(typeof(string), "Hello");
                         
                         intResult.Should().Be(42, "concurrent parsing should produce consistent results");
                         boolResult.Should().BeTrue("concurrent parsing should produce consistent results");
@@ -522,16 +532,18 @@ namespace ByteForge.Toolkit.Tests.Unit.Utils
         /// Ensures custom parsers take precedence over default implementations.
         /// </remarks>
         [TestMethod]
-        public void RegisterTypeParser_OverrideBuiltIn_ShouldUseCustomParser()
+        public void RegisterType_OverrideBuiltIn_ShouldUseCustomParser()
         {
             // Arrange
-            var parser = new Parser();
-            var originalResult = parser.ParseValue<bool>("true");
+            IParser parser = new Parser();
+            var originalResult = (bool)parser.Parse(typeof(bool), "true");
 
             // Act
             // Register a custom bool parser that always returns false
-            parser.RegisterTypeParser(typeof(bool), _ => false);
-            var customResult = parser.ParseValue<bool>("true");
+            parser.RegisterType(typeof(bool), 
+                _ => false,
+                value => value.ToString().ToLower());
+            var customResult = (bool)parser.Parse(typeof(bool), "true");
 
             // Assert
             originalResult.Should().BeTrue("original parser should work normally");

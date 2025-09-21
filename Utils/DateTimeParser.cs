@@ -160,6 +160,10 @@ namespace ByteForge.Toolkit
         /// <returns><see langword="true" /> if the <paramref name="input"/> parameter was converted successfully; otherwise, <see langword="false" />.</returns>
         public bool TryParseValue(string input, IFormatProvider formatProvider, out DateTime result)
         {
+            result = default;
+            if (string.IsNullOrWhiteSpace(input))
+                return false;
+
             try
             {
                 result = ParseValue(input, formatProvider);
@@ -167,7 +171,6 @@ namespace ByteForge.Toolkit
             }
             catch
             {
-                result = default;
                 return false;
             }
         }

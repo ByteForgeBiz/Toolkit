@@ -87,19 +87,26 @@ namespace ByteForge.Toolkit.Logging
 
             if (delayInitialization) return;
 
-            InitializeFileLogger();
+            InitializeFileLogger(Settings);
         }
 
         /// <summary>
-        /// Initializes the file logger by setting up the current log file path and removing outdated log files.
+        /// Initializes the file logger with the specified configuration options.
         /// </summary>
+        /// <param name="options">The configuration options for the file logger. This parameter cannot be <see langword="null"/>.</param>
         /// <remarks>
-        /// This method prepares the file logger for use by ensuring the log file path is updated
-        /// and any old log files  are cleaned up. It should be called before writing logs to ensure the logger is
-        /// properly configured.
+        /// This method configures the file logger based on the provided <see cref="FileLoggerOptions"/>. 
+        /// It updates the logger's settings, including file size limits, retention policies, and naming patterns, 
+        /// and performs any necessary cleanup of old log files.
         /// </remarks>
-        protected void InitializeFileLogger()
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="options"/> is <see langword="null"/>.</exception>
+        protected void InitializeFileLogger(FileLoggerOptions options)
         {
+            if (options == null) throw new ArgumentNullException(nameof(options));
+            Settings.MaxFileSizeMB = options.MaxFileSizeMB;
+            Settings.RetentionDays = options.RetentionDays;
+            Settings.FileNamingPattern = options.FileNamingPattern;
+            Settings.UseDaily = options.UseDaily;
             UpdateCurrentFilePath();
             CleanupOldFiles();
         }

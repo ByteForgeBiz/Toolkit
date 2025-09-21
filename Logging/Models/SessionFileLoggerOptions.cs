@@ -20,16 +20,11 @@ namespace ByteForge.Toolkit.Logging
         private const bool DefaultWriteSessionHeader = true;
         private const bool DefaultWriteSessionFooter = true;
         private const bool DefaultCleanupOldSessions = true;
-        /// <summary>
-        /// Initializes a new instance of the <see cref="SessionFileLoggerOptions"/> class with default values.
-        /// Sets up session-specific defaults including the file naming pattern.
-        /// </summary>
-        public SessionFileLoggerOptions()
-        {
-            RetentionDays = 7;
-            // Set default session naming pattern
-            FileNamingPattern = "{basename}_{sessionid}";
-        }
+        private const string DefaultFileNamingPattern = "{basename}_{sessionid}";
+
+        /// <inheritdoc/>
+        [DefaultValue(DefaultFileNamingPattern)]
+        public override string FileNamingPattern { get; set; } = DefaultFileNamingPattern;
 
         /// <summary>
         /// Gets or sets the format for generating session IDs.

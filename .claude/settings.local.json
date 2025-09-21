@@ -1,11 +1,12 @@
 {
   "permissions": {
     "allow": [
+      "Bash(dotnet build:*)",
+      "Bash(dotnet restore:*)",
       "Bash(BuildSolution.bat)",
-      "Bash(.BuildSolution.bat)",
-      "Bash(powershell:*)",
+      "Bash(./BuildSolution.bat)",
       "Bash(dotnet test:*)",
-      "Bash(dotnet build:*)"
+      "Bash(csc:*)"
     ],
     "deny": [],
     "ask": []

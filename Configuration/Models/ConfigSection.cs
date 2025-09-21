@@ -22,25 +22,7 @@ namespace ByteForge.Toolkit
     /// <typeparam name="T">The type of the configuration section.</typeparam>
     internal class ConfigSection<T> : IConfigSection<T> where T : class, new()
     {
-        /// <summary>
-        /// Synchronization lock for thread safety.
-        /// </summary>
-        private readonly object _lock = new object();
-
-        /// <summary>
-        /// The name of the configuration section.
-        /// </summary>
-        private readonly string _sectionName;
-
-        /// <summary>
-        /// The root configuration object.
-        /// </summary>
-        private readonly IConfigurationRoot _root;
-
-        /// <summary>
-        /// The property information for the type <typeparamref name="T"/>.
-        /// </summary>
-        private readonly PropertyInfo[] _properties;
+        #region Fields
 
         /// <summary>
         /// Stores mapping of property names to array section names.
@@ -52,8 +34,46 @@ namespace ByteForge.Toolkit
         /// </summary>
         private readonly Dictionary<string, string> _dictionaryNames = new Dictionary<string, string>();
 
+        /// <summary>
+        /// Synchronization lock for thread safety.
+        /// </summary>
+        private readonly object _lock = new object();
+
+        /// <summary>
+        /// The property information for the type <typeparamref name="T"/>.
+        /// </summary>
+        private readonly PropertyInfo[] _properties;
+
+        /// <summary>
+        /// The root configuration object.
+        /// </summary>
+        private readonly IConfigurationRoot _root;
+
+        /// <summary>
+        /// The name of the configuration section.
+        /// </summary>
+        private readonly string _sectionName;
+
         private readonly HashSet<string> _arraySections = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         private readonly HashSet<string> _dictionarySections = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+        #endregion
+
+        #region Properties
+
+        /// <summary>
+        /// Gets the strongly-typed value of the configuration section.
+        /// </summary>
+        public T Value { get; }
+
+        /// <summary>
+        /// Gets the value of the configuration section as an object.
+        /// </summary>
+        object IConfigSection.Value => (object)Value;
+
+        #endregion
+
+        #region Constructors
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ConfigSection{T}"/> class.
@@ -83,6 +103,10 @@ namespace ByteForge.Toolkit
             ((IConfigSection)this).LoadFromConfiguration();
         }
 
+        #endregion
+
+        #region Public Methods
+
         /// <summary>
         /// Loads the configuration values from the configuration root and populates the section's properties.
         /// </summary>
@@ -103,176 +127,39 @@ namespace ByteForge.Toolkit
         }
 
         /// <summary>
-        /// Loads a single property from the configuration section.
+        /// Saves the current values of the section's properties to the configuration root.
         /// </summary>
-        /// <param name="section">The configuration section containing the property data.</param>
-        /// <param name="prop">The property to load.</param>
-        private void LoadPropertyFromConfiguration(IConfigurationSection section, PropertyInfo prop)
+        /// <remarks>
+        /// This method persists all properties of the object that are both readable and writable, 
+        /// unless they are marked with the <see cref="DoNotPersistAttribute"/>.
+        /// Properties are saved under their corresponding configuration keys, which are determined by the  
+        /// <see cref="ConfigNameAttribute"/> if present, or the property name otherwise.
+        /// Array properties are stored in a dedicated configuration section, and their entries are
+        /// cleared and rewritten during the save operation. Default values, as determined by 
+        /// <see cref="DefaultValueHelper.ResolveDefaultValue"/>, are not persisted to the configuration.
+        /// </remarks>
+        void IConfigSection.SaveToConfiguration()
         {
-            var attr = prop.GetCustomAttribute<ConfigNameAttribute>();
-            var propType = Nullable.GetUnderlyingType(prop.PropertyType) ?? prop.PropertyType;
-            var name = attr?.Name ?? prop.Name;
-            var value = section[name];
-            
-            // Normalize value
-            value = string.IsNullOrWhiteSpace(value) ? null : value?.Trim();
-
-            // Handle special property types
-            if (TryLoadArrayProperty(prop, name, value)) return;
-            if (TryLoadDictionaryProperty(prop, name, value)) return;
-            if (TryLoadDefaultValue(prop, value)) return;
-            
-            // Load standard property value
-            LoadStandardProperty(prop, propType, value);
+            lock (_lock)
+                ThreadUnsafeSaveToConfiguration();
         }
 
-        /// <summary>
-        /// Attempts to load an array property decorated with <see cref="ArrayAttribute"/>.
-        /// </summary>
-        /// <param name="prop">The property to load.</param>
-        /// <param name="name">The property name for configuration lookup.</param>
-        /// <param name="value">The raw configuration value.</param>
-        /// <returns>True if the property was an array and was loaded; otherwise, false.</returns>
-        private bool TryLoadArrayProperty(PropertyInfo prop, string name, string value)
-        {
-            var arrayAttr = prop.GetCustomAttribute<ArrayAttribute>();
-            if (arrayAttr == null) return false;
+        #endregion
 
-            var arrName = value ?? arrayAttr.SectionName ?? $"{name}Array";
-            
-            if (!_arrayNames.ContainsKey(name))
-                _arrayNames[name] = arrName;
-
-            var (list, elementType) = CreateListFromPropertyType(prop.PropertyType);
-            var arraySection = _root.GetSection(arrName);
-            
-            foreach (var child in arraySection?.GetChildren())
-            {
-                var elementValue = child.Value;
-                if (string.IsNullOrWhiteSpace(elementValue))
-                    break;
-
-                try
-                {
-                    var element = Parser.Parse(elementType, elementValue);
-                    list.Add(element);
-                }
-                catch (Exception ex)
-                {
-                    throw new FormatException($"Failed to parse array element '{elementValue}' for property '{prop.Name}' of type '{elementType.FullName}'.", ex);
-                }
-            }
-
-            SetArrayValue(prop, list);
-            return true;
-        }
+        #region Private Methods
 
         /// <summary>
-        /// Attempts to load a dictionary property decorated with <see cref="DictionaryAttribute"/>.
+        /// Clears all entries from a configuration section.
         /// </summary>
-        /// <param name="prop">The property to load.</param>
-        /// <param name="name">The property name for configuration lookup.</param>
-        /// <param name="value">The raw configuration value.</param>
-        /// <returns>True if the property was a dictionary and was loaded; otherwise, false.</returns>
-        private bool TryLoadDictionaryProperty(PropertyInfo prop, string name, string value)
+        /// <param name="sectionName">The section name to clear.</param>
+        private void ClearSection(string sectionName)
         {
-            var dictAttr = prop.GetCustomAttribute<DictionaryAttribute>();
-            if (dictAttr == null) return false;
-
-            if (!IsSupportedDictionaryType(prop.PropertyType))
-            {
-                throw new NotSupportedException($"Property '{prop.Name}' with DictionaryAttribute must be of a supported dictionary type (Dictionary<string, string>, IDictionary<string, string>, IReadOnlyDictionary<string, string>, ICollection<KeyValuePair<string, string>>, IEnumerable<KeyValuePair<string, string>>, IReadOnlyCollection<KeyValuePair<string, string>>). Found: {prop.PropertyType.FullName}");
-            }
-
-            var dictName = value ?? dictAttr.SectionName ?? $"{name}Dict";
-            
-            if (!_dictionaryNames.ContainsKey(name))
-                _dictionaryNames[name] = dictName;
-
-            var dictionary = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-            var dictSection = _root.GetSection(dictName);
-            
-            foreach (var child in dictSection?.GetChildren())
-            {
-                if (!string.IsNullOrWhiteSpace(child.Key) && !string.IsNullOrWhiteSpace(child.Value))
-                {
-                    dictionary[child.Key] = child.Value;
-                }
-            }
-
-            SetDictionaryValue(prop, dictionary);
-            return true;
-        }
-
-        /// <summary>
-        /// Attempts to load a default value for a property with missing or empty configuration.
-        /// </summary>
-        /// <param name="prop">The property to load.</param>
-        /// <param name="value">The raw configuration value.</param>
-        /// <returns>True if a default value was applied; otherwise, false.</returns>
-        private bool TryLoadDefaultValue(PropertyInfo prop, string value)
-        {
-            if (!string.IsNullOrEmpty(value)) return false;
-
-            var propValue = prop.GetValue(Value);
-            var defaultValue = DefaultValueHelper.ResolveDefaultValue(prop);
-            
-            if (Equals(propValue, defaultValue) == false)
-                prop.SetValue(Value, defaultValue);
-            
-            return true;
-        }
-
-        /// <summary>
-        /// Loads a standard property value using the Parser utility.
-        /// </summary>
-        /// <param name="prop">The property to load.</param>
-        /// <param name="propType">The property type.</param>
-        /// <param name="value">The raw configuration value.</param>
-        private void LoadStandardProperty(PropertyInfo prop, Type propType, string value)
-        {
-            try
-            {
-                var parsedValue = Parser.Parse(propType, value);
-                prop.SetValue(Value, parsedValue);
-            }
-            catch (Exception ex)
-            {
-                throw new FormatException($"Failed to parse value '{value}' for property '{prop.Name}' of type '{propType.FullName}'.", ex);
-            }
-        }
-
-        /// <summary>
-        /// Sets the value of an array or list property.
-        /// </summary>
-        /// <param name="prop">The property to set.</param>
-        /// <param name="list">The list of values to assign.</param>
-        private void SetArrayValue(PropertyInfo prop, IList list)
-        {
-            var propType = prop.PropertyType;
-            if (propType.IsArray)
-            {
-                var array = Array.CreateInstance(propType.GetElementType(), list.Count);
-                list?.CopyTo(array, 0);
-                prop.SetValue(Value, array);
-                return;
-            }
-
-            var genericDef = propType.IsGenericType ? propType.GetGenericTypeDefinition() : null;
-            if (genericDef == typeof(List<>) || 
-                genericDef == typeof(IList<>) || 
-                genericDef == typeof(ICollection<>) || 
-                genericDef == typeof(IEnumerable<>) ||
-                propType == typeof(IList) || 
-                propType == typeof(ICollection) || 
-                propType == typeof(IEnumerable)
-                )
-            {
-                prop.SetValue(Value, list);
-                return;
-            }
-
-            throw new InvalidOperationException($"Property type '{propType.FullName}' is not a supported array or list type.");
+            var sectionToClear = _root.GetSection(sectionName);
+            var keysToRemove = sectionToClear.GetChildren()
+                                    .Select(c => c.Path)
+                                    .ToList();
+            foreach (var key in keysToRemove)
+                _root[key] = null;
         }
 
         /// <summary>
@@ -281,6 +168,22 @@ namespace ByteForge.Toolkit
         /// <param name="propertyType">The property type.</param>
         /// <returns>A tuple containing the list instance and the element type.</returns>
         private (IList, Type) CreateListFromPropertyType(Type propertyType)
+        {
+            var elementType = GetElementTypeFromProperty(propertyType);
+            var listType = typeof(List<>).MakeGenericType(elementType);
+            return ((IList)Activator.CreateInstance(listType), elementType);
+        }
+
+        /// <summary>
+        /// Determines the element type of a given property type, such as an array or a generic collection.
+        /// </summary>
+        /// <param name="propertyType">The <see cref="Type"/> of the property to analyze.<br/>
+        /// This can be an array type, a generic collection type, or any type implementing <see cref="IEnumerable"/>.</param>
+        /// <returns>The <see cref="Type"/> of the elements contained in the property.<br/>
+        /// For non-generic <see cref="IEnumerable"/> types, this returns <see cref="object"/>.</returns>
+        /// <exception cref="InvalidOperationException">Thrown if the property type is a generic collection with an invalid number of generic arguments (not exactly one).</exception>
+        /// <exception cref="NotSupportedException">Thrown if the property type is not an array, a supported generic collection, or a type implementing <see cref="IEnumerable"/>.</exception>
+        private static Type GetElementTypeFromProperty(Type propertyType)
         {
             Type elementType;
             var genericDef = propertyType.IsGenericType ? propertyType.GetGenericTypeDefinition() : null;
@@ -300,9 +203,20 @@ namespace ByteForge.Toolkit
                 elementType = typeof(object);
             else
                 throw new NotSupportedException($"Property type '{propertyType.FullName}' is not a supported array or list type.");
+            return elementType;
+        }
 
-            var listType = typeof(List<>).MakeGenericType(elementType);
-            return ((IList)Activator.CreateInstance(listType), elementType);
+        /// <summary>
+        /// Gets the correctly formatted name for array or dictionary sections.
+        /// </summary>
+        /// <param name="value">The value from configuration.</param>
+        /// <param name="sectionName">The section name from attribute.</param>
+        /// <param name="name">The property name.</param>
+        /// <param name="suffix">The suffix to add (Array or Dict).</param>
+        /// <returns>The correctly formatted section name.</returns>
+        private string GetCorrectName(string value, string sectionName, string name, string suffix)
+        {
+            return value ?? (string.IsNullOrWhiteSpace(sectionName) ? $"{_sectionName}#{name}{suffix}" : $"{_sectionName}#{sectionName}");
         }
 
         /// <summary>
@@ -349,6 +263,111 @@ namespace ByteForge.Toolkit
         }
 
         /// <summary>
+        /// Loads a single property from the configuration section.
+        /// </summary>
+        /// <param name="section">The configuration section containing the property data.</param>
+        /// <param name="prop">The property to load.</param>
+        private void LoadPropertyFromConfiguration(IConfigurationSection section, PropertyInfo prop)
+        {
+            var attr = prop.GetCustomAttribute<ConfigNameAttribute>();
+            var propType = Nullable.GetUnderlyingType(prop.PropertyType) ?? prop.PropertyType;
+            var name = attr?.Name ?? prop.Name;
+            var value = section[name];
+            
+            // Normalize value
+            value = string.IsNullOrWhiteSpace(value) ? null : value?.Trim();
+
+            // Handle special property types
+            if (TryLoadArrayProperty(prop, name, value)) return;
+            if (TryLoadDictionaryProperty(prop, name, value)) return;
+            if (TryLoadDefaultValue(prop, value)) return;
+            
+            // Load standard property value
+            LoadStandardProperty(prop, propType, value);
+        }
+
+        /// <summary>
+        /// Loads a standard property value using the Parser utility.
+        /// </summary>
+        /// <param name="prop">The property to load.</param>
+        /// <param name="propType">The property type.</param>
+        /// <param name="value">The raw configuration value.</param>
+        private void LoadStandardProperty(PropertyInfo prop, Type propType, string value)
+        {
+            try
+            {
+                var parsedValue = Parser.Parse(propType, value);
+                prop.SetValue(Value, parsedValue);
+            }
+            catch (Exception ex)
+            {
+                throw new FormatException($"Failed to parse value '{value}' for property '{prop.Name}' of type '{propType.FullName}'.", ex);
+            }
+        }
+
+        /// <summary>
+        /// Saves a single property to the configuration.
+        /// </summary>
+        /// <param name="prop">The property to save.</param>
+        private void SavePropertyToConfiguration(PropertyInfo prop)
+        {
+            var attr = prop.GetCustomAttribute<ConfigNameAttribute>();
+            var name = attr?.Name ?? prop.Name;
+            var propValue = prop.GetValue(Value);
+
+            // Handle special property types
+            if (TrySaveArrayProperty(prop, name, propValue)) return;
+            if (TrySaveDictionaryProperty(prop, name, propValue)) return;
+            if (TrySaveDefaultProperty(prop, name, propValue)) return;
+            
+            // Save standard property value
+            SaveStandardProperty(name, propValue);
+        }
+
+        /// <summary>
+        /// Saves a standard property value to the configuration.
+        /// </summary>
+        /// <param name="name">The property name for configuration storage.</param>
+        /// <param name="propValue">The property value.</param>
+        private void SaveStandardProperty(string name, object propValue)
+        {
+            _root[_sectionName + ":" + name] = Parser.Stringify(propValue, propValue?.GetType());
+        }
+
+        /// <summary>
+        /// Sets the value of an array or list property.
+        /// </summary>
+        /// <param name="prop">The property to set.</param>
+        /// <param name="list">The list of values to assign.</param>
+        private void SetArrayValue(PropertyInfo prop, IList list)
+        {
+            var propType = prop.PropertyType;
+            if (propType.IsArray)
+            {
+                var array = Array.CreateInstance(propType.GetElementType(), list.Count);
+                list?.CopyTo(array, 0);
+                prop.SetValue(Value, array);
+                return;
+            }
+
+            var genericDef = propType.IsGenericType ? propType.GetGenericTypeDefinition() : null;
+            if (genericDef == typeof(List<>) || 
+                genericDef == typeof(IList<>) || 
+                genericDef == typeof(ICollection<>) || 
+                genericDef == typeof(IEnumerable<>) ||
+                propType == typeof(IList) || 
+                propType == typeof(ICollection) || 
+                propType == typeof(IEnumerable)
+                )
+            {
+                prop.SetValue(Value, list);
+                return;
+            }
+
+            throw new InvalidOperationException($"Property type '{propType.FullName}' is not a supported array or list type.");
+        }
+
+        /// <summary>
         /// Sets the value of a dictionary property.
         /// </summary>
         /// <param name="prop">The property to set.</param>
@@ -377,24 +396,6 @@ namespace ByteForge.Toolkit
         }
 
         /// <summary>
-        /// Saves the current values of the section's properties to the configuration root.
-        /// </summary>
-        /// <remarks>
-        /// This method persists all properties of the object that are both readable and writable, 
-        /// unless they are marked with the <see cref="DoNotPersistAttribute"/>.
-        /// Properties are saved under their corresponding configuration keys, which are determined by the  
-        /// <see cref="ConfigNameAttribute"/> if present, or the property name otherwise.
-        /// Array properties are stored in a dedicated configuration section, and their entries are
-        /// cleared and rewritten during the save operation. Default values, as determined by 
-        /// <see cref="DefaultValueHelper.ResolveDefaultValue"/>, are not persisted to the configuration.
-        /// </remarks>
-        void IConfigSection.SaveToConfiguration()
-        {
-            lock (_lock)
-                ThreadUnsafeSaveToConfiguration();
-        }
-
-        /// <summary>
         /// Saves the current object's properties to the configuration storage.
         /// </summary>
         /// <remarks>
@@ -419,22 +420,109 @@ namespace ByteForge.Toolkit
         }
 
         /// <summary>
-        /// Saves a single property to the configuration.
+        /// Attempts to load an array property decorated with <see cref="ArrayAttribute"/>.
         /// </summary>
-        /// <param name="prop">The property to save.</param>
-        private void SavePropertyToConfiguration(PropertyInfo prop)
+        /// <param name="prop">The property to load.</param>
+        /// <param name="name">The property name for configuration lookup.</param>
+        /// <param name="value">The raw configuration value.</param>
+        /// <returns>True if the property was an array and was loaded; otherwise, false.</returns>
+        private bool TryLoadArrayProperty(PropertyInfo prop, string name, string value)
         {
-            var attr = prop.GetCustomAttribute<ConfigNameAttribute>();
-            var name = attr?.Name ?? prop.Name;
-            var propValue = prop.GetValue(Value);
+            var arrayAttr = prop.GetCustomAttribute<ArrayAttribute>();
+            if (arrayAttr == null) return false;
 
-            // Handle special property types
-            if (TrySaveArrayProperty(prop, name, propValue)) return;
-            if (TrySaveDictionaryProperty(prop, name, propValue)) return;
-            if (TrySaveDefaultProperty(prop, name, propValue)) return;
+            var arrName = GetCorrectName(value, arrayAttr.SectionName, name, "Array");
             
-            // Save standard property value
-            SaveStandardProperty(name, propValue);
+            if (!_arrayNames.ContainsKey(name))
+                _arrayNames[name] = arrName;
+
+            var (list, elementType) = CreateListFromPropertyType(prop.PropertyType);
+            var arraySection = _root.GetSection(arrName);
+            
+            foreach (var child in arraySection?.GetChildren())
+            {
+                var elementValue = child.Value;
+                if (string.IsNullOrWhiteSpace(elementValue))
+                    break;
+
+                try
+                {
+                    var element = Parser.Parse(elementType, elementValue);
+                    list.Add(element);
+                }
+                catch (Exception ex)
+                {
+                    throw new FormatException($"Failed to parse array element '{elementValue}' for property '{prop.Name}' of type '{elementType.FullName}'.", ex);
+                }
+            }
+
+            // If no elements were found, attempt to load default values
+            if (list.Count == 0)
+            { 
+                var defaultValue = DefaultValueHelper.ResolveDefaultValue(prop);
+                if (defaultValue is IEnumerable enumerable)
+                    foreach (var item in enumerable)
+                        list.Add(item);
+            }
+
+            SetArrayValue(prop, list);
+            return true;
+        }
+
+        /// <summary>
+        /// Attempts to load a default value for a property with missing or empty configuration.
+        /// </summary>
+        /// <param name="prop">The property to load.</param>
+        /// <param name="value">The raw configuration value.</param>
+        /// <returns>True if a default value was applied; otherwise, false.</returns>
+        private bool TryLoadDefaultValue(PropertyInfo prop, string value)
+        {
+            if (!string.IsNullOrEmpty(value)) return false;
+
+            var propValue = prop.GetValue(Value);
+            var defaultValue = DefaultValueHelper.ResolveDefaultValue(prop);
+            
+            if (Equals(propValue, defaultValue) == false)
+                prop.SetValue(Value, defaultValue);
+            
+            return true;
+        }
+
+        /// <summary>
+        /// Attempts to load a dictionary property decorated with <see cref="DictionaryAttribute"/>.
+        /// </summary>
+        /// <param name="prop">The property to load.</param>
+        /// <param name="name">The property name for configuration lookup.</param>
+        /// <param name="value">The raw configuration value.</param>
+        /// <returns>True if the property was a dictionary and was loaded; otherwise, false.</returns>
+        private bool TryLoadDictionaryProperty(PropertyInfo prop, string name, string value)
+        {
+            var dictAttr = prop.GetCustomAttribute<DictionaryAttribute>();
+            if (dictAttr == null) return false;
+
+            if (!IsSupportedDictionaryType(prop.PropertyType))
+            {
+                throw new NotSupportedException($"Property '{prop.Name}' with DictionaryAttribute must be of a supported dictionary type (Dictionary<string, string>, IDictionary<string, string>, IReadOnlyDictionary<string, string>, ICollection<KeyValuePair<string, string>>, IEnumerable<KeyValuePair<string, string>>, IReadOnlyCollection<KeyValuePair<string, string>>). Found: {prop.PropertyType.FullName}");
+            }
+
+            var dictName = GetCorrectName(value, dictAttr.SectionName, name, "Dict");
+
+            if (!_dictionaryNames.ContainsKey(name))
+                _dictionaryNames[name] = dictName;
+
+            var dictionary = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            var dictSection = _root.GetSection(dictName);
+            
+            foreach (var child in dictSection?.GetChildren())
+            {
+                if (!string.IsNullOrWhiteSpace(child.Key) && !string.IsNullOrWhiteSpace(child.Value))
+                {
+                    dictionary[child.Key] = child.Value;
+                }
+            }
+
+            SetDictionaryValue(prop, dictionary);
+            return true;
         }
 
         /// <summary>
@@ -456,6 +544,8 @@ namespace ByteForge.Toolkit
             // Clear existing array entries
             ClearSection(arraySectionName);
 
+            var elementType = GetElementTypeFromProperty(prop.PropertyType);
+
             var i = 0;
             if (propValue is IEnumerable enumerable)
             {
@@ -463,7 +553,7 @@ namespace ByteForge.Toolkit
                 foreach (var item in enumerable)
                 {
                     if (item == null) continue;
-                    _root[$"{arraySectionName}:{(i++).ToString().PadLeft(num, '0')}"] = item.ToString();
+                    _root[$"{arraySectionName}:{(i++).ToString().PadLeft(num, '0')}"] = Parser.Stringify(item, elementType);
                 }
             }
 
@@ -529,44 +619,6 @@ namespace ByteForge.Toolkit
             return true;
         }
 
-        /// <summary>
-        /// Saves a standard property value to the configuration.
-        /// </summary>
-        /// <param name="name">The property name for configuration storage.</param>
-        /// <param name="propValue">The property value.</param>
-        private void SaveStandardProperty(string name, object propValue)
-        {
-            var value = propValue?.ToString();
-            
-            // Convert DateTime to ISO 8601 format
-            if (propValue is DateTime dateTimeValue)
-                value = dateTimeValue.ToString("o", CultureInfo.InvariantCulture);
-                
-            _root[_sectionName + ":" + name] = value;
-        }
-
-        /// <summary>
-        /// Clears all entries from a configuration section.
-        /// </summary>
-        /// <param name="sectionName">The section name to clear.</param>
-        private void ClearSection(string sectionName)
-        {
-            var sectionToClear = _root.GetSection(sectionName);
-            var keysToRemove = sectionToClear.GetChildren()
-                                    .Select(c => c.Path)
-                                    .ToList();
-            foreach (var key in keysToRemove)
-                _root[key] = null;
-        }
-
-        /// <summary>
-        /// Gets the strongly-typed value of the configuration section.
-        /// </summary>
-        public T Value { get; }
-
-        /// <summary>
-        /// Gets the value of the configuration section as an object.
-        /// </summary>
-        object IConfigSection.Value => (object)Value;
+        #endregion
     }
 }

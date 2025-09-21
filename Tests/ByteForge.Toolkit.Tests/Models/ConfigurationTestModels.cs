@@ -282,4 +282,98 @@ namespace ByteForge.Toolkit.Tests.Models
         [Ignore]
         public int ConnectionCount => Connections?.Count ?? 0;
     }
+
+    /// <summary>
+    /// Configuration model for testing unsupported dictionary value types.
+    /// </summary>
+    public class UnsupportedDictionaryValueTestConfig
+    {
+        [Dictionary]
+        public Dictionary<string, object> UnsupportedValueDict { get; set; }
+    }
+
+    /// <summary>
+    /// Configuration model for testing KeyValuePair collections with unsupported types.
+    /// </summary>
+    public class UnsupportedKeyValuePairTestConfig
+    {
+        [Dictionary]
+        public ICollection<KeyValuePair<int, string>> UnsupportedKeyCollection { get; set; }
+        
+        [Dictionary]
+        public IEnumerable<KeyValuePair<string, int>> UnsupportedValueCollection { get; set; }
+    }
+
+    /// <summary>
+    /// Enhanced test model for testing complex naming scenarios.
+    /// </summary>
+    public class NamingConventionTestConfig
+    {
+        [Array]
+        public string[] DefaultNamedArray { get; set; }
+        
+        [Array("SpecificArraySection")]
+        public List<string> CustomNamedArray { get; set; }
+        
+        [Dictionary]
+        public Dictionary<string, string> DefaultNamedDict { get; set; }
+        
+        [Dictionary("SpecificDictSection")]
+        public IDictionary<string, string> CustomNamedDict { get; set; }
+        
+        public string RegularProperty { get; set; }
+    }
+
+    /// <summary>
+    /// Test model for validating complex inheritance scenarios with defaults.
+    /// </summary>
+    public class InheritanceTestConfig : DatabaseConfig
+    {
+        [DefaultValue("Extended")]
+        public string ExtendedProperty { get; set; }
+        
+        [Array("ExtendedFeatures")]
+        public List<string> AdditionalFeatures { get; set; }
+        
+        [Dictionary("ExtendedSettings")]
+        public Dictionary<string, string> ExtendedSettings { get; set; }
+    }
+
+    /// <summary>
+    /// Test model for complex mixed array and dictionary scenarios.
+    /// </summary>
+    public class MixedComplexTestConfig
+    {
+        public string Name { get; set; }
+        
+        [Array("PrimaryArray")]
+        public string[] PrimaryItems { get; set; }
+        
+        [Array("SecondaryArray")]  
+        public List<int> SecondaryItems { get; set; }
+        
+        [Dictionary("PrimaryDict")]
+        public Dictionary<string, string> PrimarySettings { get; set; }
+        
+        [Dictionary("SecondaryDict")]
+        public IReadOnlyDictionary<string, string> SecondarySettings { get; set; }
+        
+        [DefaultValue(true)]
+        public bool IsActive { get; set; }
+        
+        [DoNotPersist]
+        public DateTime ProcessedTime { get; set; }
+        
+        [Ignore]
+        public int TotalItems => (PrimaryItems?.Length ?? 0) + (SecondaryItems?.Count ?? 0);
+    }
+
+    /// <summary>
+    /// Test model for custom TimeSpan type registration testing.
+    /// </summary>
+    public class CustomTimeSpanTestConfig
+    {
+        public string StringValue { get; set; }
+        public TimeSpan TimeSpanValue { get; set; }
+    }
 }
