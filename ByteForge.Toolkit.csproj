@@ -160,7 +160,9 @@
     <Compile Include="Configuration\Attributes\DictionaryAttribute.cs" />
     <Compile Include="Configuration\Attributes\DefaultValueProviderAttribute.cs" />
     <Compile Include="Configuration\Attributes\DoNotPersistAttribute.cs" />
-    <Compile Include="Configuration\DefaultValueHelper.cs" />
+    <Compile Include="Configuration\Helpers\DefaultValueHelper.cs" />
+    <Compile Include="Configuration\Helpers\IParsingHelper.cs" />
+    <Compile Include="Configuration\Helpers\ParsingHelper.cs" />
     <Compile Include="Data\Audio\AudioFormatDetector.cs" />
     <Compile Include="Data\CSV\BufferedReader.cs" />
     <Compile Include="Data\CSV\ConversionException.cs" />
@@ -181,6 +183,7 @@
     <Compile Include="Data\Database\DBAccess.ScriptExecution.cs" />
     <Compile Include="Data\Database\TypeConverter.cs" />
     <Compile Include="Json\DeltaContractResolver.cs" />
+    <Compile Include="Json\JsonDeltaSerializer.cs" />
     <Compile Include="Logging\Implementations\ConsoleLogger.cs" />
     <Compile Include="Logging\Implementations\NullLogger.cs" />
     <Compile Include="Logging\Implementations\SessionFileLogger.cs" />
