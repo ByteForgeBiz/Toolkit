@@ -46,7 +46,7 @@ namespace ByteForge.Toolkit.CommandLine
         /// <param name="aliases">The aliases for the option.</param>
         public OptionAttribute(string description, params string[] aliases) : this(description)
         {
-            Aliases = aliases;
+            Aliases = aliases ?? Array.Empty<string>();
         }
     }
 }

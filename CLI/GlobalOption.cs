@@ -49,9 +49,11 @@ namespace ByteForge.Toolkit.CommandLine
         /// <param name="expectsValue">Whether the option expects a value.</param>
         /// <param name="aliases">Custom aliases for the option.</param>
         public GlobalOption(string name, string description, Action action, bool expectsValue = false, params string[] aliases)
-            : this(name, description, expectsValue ? (Action<string>)(value => action()) : (value => action()), expectsValue, aliases)
-        {
-        }
+            : this(name,
+                   description,
+                   action == null ? throw new ArgumentNullException(nameof(action)) : (expectsValue ? (Action<string>)(value => action()) : (value => action())),
+                   expectsValue,
+                   aliases) { }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="GlobalOption"/> class with value support.
