@@ -193,7 +193,8 @@ namespace ByteForge.Toolkit.Tests.Unit.CLI
             Action action = () => { };
 
             // Act & Assert
-            Assert.ThrowsException<ArgumentException>(() => new GlobalOption(name, description, action));
+            Action act = () => new GlobalOption(name, description, action);
+            act.Should().Throw<ArgumentException>();
         }
 
         /// <summary>
@@ -208,7 +209,8 @@ namespace ByteForge.Toolkit.Tests.Unit.CLI
             Action action = () => { };
 
             // Act & Assert
-            Assert.ThrowsException<ArgumentException>(() => new GlobalOption(name, description, action));
+            Action act = () => new GlobalOption(name, description, action);
+            act.Should().Throw<ArgumentException>();
         }
 
         /// <summary>
@@ -223,7 +225,8 @@ namespace ByteForge.Toolkit.Tests.Unit.CLI
             Action action = () => { };
 
             // Act & Assert
-            Assert.ThrowsException<ArgumentException>(() => new GlobalOption(name, description, action));
+            Action act = () => new GlobalOption(name, description, action);
+            act.Should().Throw<ArgumentException>();
         }
 
         /// <summary>
@@ -238,7 +241,8 @@ namespace ByteForge.Toolkit.Tests.Unit.CLI
             Action action = () => { };
 
             // Act & Assert
-            Assert.ThrowsException<ArgumentNullException>(() => new GlobalOption(name, description, action));
+            Action act = () => new GlobalOption(name, description, action);
+            act.Should().Throw<ArgumentNullException>();
         }
 
         /// <summary>
@@ -253,7 +257,8 @@ namespace ByteForge.Toolkit.Tests.Unit.CLI
             Action action = null;
 
             // Act & Assert
-            Assert.ThrowsException<ArgumentNullException>(() => new GlobalOption(name, description, action));
+            Action act = () => new GlobalOption(name, description, action);
+            act.Should().Throw<ArgumentNullException>();
         }
 
         /// <summary>
@@ -268,7 +273,8 @@ namespace ByteForge.Toolkit.Tests.Unit.CLI
             Action<string> action = null;
 
             // Act & Assert
-            Assert.ThrowsException<ArgumentNullException>(() => new GlobalOption(name, description, action));
+            Action act = () => new GlobalOption(name, description, action);
+            act.Should().Throw<ArgumentNullException>();
         }
 
         #endregion

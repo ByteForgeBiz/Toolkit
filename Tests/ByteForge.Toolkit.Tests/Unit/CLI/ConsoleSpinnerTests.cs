@@ -225,7 +225,8 @@ namespace ByteForge.Toolkit.Tests.Unit.CLI
             spinner.Start();
 
             // Act & Assert
-            try { spinner.Start(); } catch (Exception ex) { Assert.Fail($"Unexpected exception: {ex}"); }
+            Action act = () => spinner.Start();
+            act.Should().NotThrow();
             spinner.IsRunning.Should().BeTrue();
 
             // Cleanup
@@ -239,7 +240,8 @@ namespace ByteForge.Toolkit.Tests.Unit.CLI
             using var spinner = new ConsoleSpinner("Testing...");
 
             // Act & Assert
-            try { spinner.Stop(); } catch (Exception ex) { Assert.Fail($"Unexpected exception: {ex}"); }
+            Action act = () => spinner.Stop();
+            act.Should().NotThrow();
             spinner.IsRunning.Should().BeFalse();
         }
 
@@ -267,11 +269,11 @@ namespace ByteForge.Toolkit.Tests.Unit.CLI
             var styles = Enum.GetValues(typeof(SpinnerStyle));
 
             // Assert
-            Assert.IsGreaterThan(0, styles.Length, "Styles should not be empty");
+            styles.Length.Should().BeGreaterThan(0, "Styles should not be empty");
             var names = styles.Cast<object>().Select(o => o.ToString()).ToList();
-            Assert.Contains(nameof(SpinnerStyle.Default), names);
-            Assert.Contains(nameof(SpinnerStyle.Dots), names);
-            Assert.Contains(nameof(SpinnerStyle.Arrows), names);
+            names.Should().Contain(nameof(SpinnerStyle.Default));
+            names.Should().Contain(nameof(SpinnerStyle.Dots));
+            names.Should().Contain(nameof(SpinnerStyle.Arrows));
         }
 
         [TestMethod]
@@ -382,7 +384,8 @@ namespace ByteForge.Toolkit.Tests.Unit.CLI
             var spinner = new ConsoleSpinner("Dispose test");
 
             // Act & Assert
-            try { spinner.Dispose(); } catch (Exception ex) { Assert.Fail($"Unexpected exception: {ex}"); }
+            Action act = () => spinner.Dispose();
+            act.Should().NotThrow();
         }
 
         [TestMethod]
@@ -393,7 +396,8 @@ namespace ByteForge.Toolkit.Tests.Unit.CLI
 
             // Act & Assert
             spinner.Dispose();
-            try { spinner.Dispose(); } catch (Exception ex) { Assert.Fail($"Unexpected exception: {ex}"); }
+            Action act = () => spinner.Dispose();
+            act.Should().NotThrow();
         }
 
         [TestMethod]
