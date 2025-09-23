@@ -349,6 +349,8 @@ string connectionString = options.GetConnectionString();
 - **[Configuration Module](../../Configuration/readme.md)**: For INI-based configuration management
 - **[Logging Module](../../Logging/readme.md)**: For comprehensive operation logging
 - **[Security Module](../../Security/readme.md)**: For credential encryption/decryption
+- **[Net Module](../../Net/readme.md)**: For complementary secure file transfer in ETL workflows
+- **[Core Module](../../Core/readme.md)**: Embedded WinSCP extraction used indirectly by Net
 - **System.Data.SqlClient**: For SQL Server connectivity
 - **System.Data.Odbc**: For ODBC database connectivity
 

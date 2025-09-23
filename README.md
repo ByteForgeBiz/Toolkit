@@ -1,6 +1,6 @@
 ﻿# README.md
 
-**ByteForge.Toolkit** is a modular .NET Framework 4.8 library designed to streamline development with high-performance utilities, structured configuration management, secure encryption, logging, and more. This project is organized into cohesive components, each documented individually.
+**ByteForge.Toolkit** is a modular .NET Framework 4.8 library designed to streamline development with high-performance utilities, structured configuration management, secure encryption, logging, networking/file transfer and more. This project is organized into cohesive components, each documented individually.
 
 ## 📚 Modules
 
@@ -12,8 +12,11 @@
 | [DataStructures](./DataStructures/readme.md) | AVL tree and URL utility classes |
 | [Logging](./Logging/readme.md) | Thread-safe logging system with async file/console output |
 | [Mail](./Mail/readme.md) | Email utility with HTML support and attachment handling |
+| [Net](./Net/readme.md) | FTP / FTPS / SFTP client with batching, progress & concurrency |
 | [Security](./Security/readme.md) | AES-based string encryption with key generation and Galois Field logic |
-| [Utils](./Utils/readme.md) | Miscellaneous helpers: timing, path utilities, progress bar |
+| [Utils](./Utils/readme.md) | Miscellaneous helpers: parsing, timing, IO, console, templates |
+| [HTML](./HTML/readme.md) | NPD UI framework (modals, calendar, utilities, theming) |
+| [Core](./Core/readme.md) | Core services & embedded WinSCP resource deployment |
 
 ---
 
@@ -27,6 +30,7 @@ Each module can be used independently or integrated as part of a larger applicat
 - Windows OS (some features are Windows-specific)
 - Microsoft.Extensions.Configuration (for Configuration module)
 - System.CommandLine NuGet package (for CLI module)
+- WinSCP (embedded deployment handled automatically by Core / Net modules)
 
 ## 🧑‍💻 Author
 

@@ -376,5 +376,8 @@ This Mail module provides a robust, enterprise-ready email solution with intelli
 | [DataStructures](../DataStructures/readme.md) | AVL tree and URL utility classes |
 | [Logging](../Logging/readme.md) | Thread-safe logging system with async file/console output |
 | [Mail](../Mail/readme.md) | Email utility with HTML support and attachment handling |
+| [Net](../Net/readme.md) | FTP/FTPS/SFTP high-level transfer client |
 | [Security](../Security/readme.md) | AES-based string encryption with key generation and Galois Field logic |
 | [Utils](../Utils/readme.md) | Miscellaneous helpers: timing, path utilities, progress bar |
+| [Core](../Core/readme.md) | Embedded resource deployment (WinSCP) |
+| [HTML](../HTML/readme.md) | NPD UI framework components |

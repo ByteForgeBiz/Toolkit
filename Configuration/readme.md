@@ -483,7 +483,7 @@ catch (Exception ex)
 - `Save()` writes the entire configuration state
 - Comments and manual INI formatting may be lost during save
 - Use `[DoNotPersist]` for data that should load but not save back
-- Use `[Ignore]` for computed properties that should be completely bypassed
+- Use `[Ignore]` for computed properties that should never touch INI files
 
 #### Thread Safety
 - Configuration class is thread-safe for concurrent read operations
@@ -541,5 +541,8 @@ catch (Exception ex)
 | [DataStructures](../DataStructures/readme.md) | AVL tree and URL utility classes |
 | [Logging](../Logging/readme.md) | Thread-safe logging system with async file/console output |
 | [Mail](../Mail/readme.md) | Email utility with HTML support and attachment handling |
+| [Net](../Net/readme.md) | FTP/FTPS/SFTP high-level transfer client |
 | [Security](../Security/readme.md) | AES-based string encryption with key generation and Galois Field logic |
 | [Utils](../Utils/readme.md) | Miscellaneous helpers: timing, path utilities, progress bar |
+| [Core](../Core/readme.md) | Embedded resource deployment (WinSCP) |
+| [HTML](../HTML/readme.md) | NPD UI framework components |
