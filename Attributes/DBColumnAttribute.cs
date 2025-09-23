@@ -50,6 +50,11 @@ namespace ByteForge.Toolkit
         public bool IsUnique { get; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether the associated entity allows null values.
+        /// </summary>
+        public bool IsNullable { get; set; } = true;
+
+        /// <summary>
         /// Gets the converter function to transform the column value.
         /// </summary>
         /// <remarks>

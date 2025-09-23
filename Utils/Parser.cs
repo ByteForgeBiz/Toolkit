@@ -226,6 +226,10 @@ namespace ByteForge.Toolkit
         /// <inheritdoc />
         bool IParser.TryParse(Type type, string value, out object result)
         {
+            result = null;
+            if (string.IsNullOrWhiteSpace(value))
+                return false;
+
             try
             {
                 result = ((IParser)this).Parse(type, value);
@@ -233,7 +237,6 @@ namespace ByteForge.Toolkit
             }
             catch
             {
-                result = null;
                 return false;
             }
         }

@@ -214,7 +214,7 @@ namespace ByteForge.Toolkit
             }
 
             // Fallback to the original type mapping logic
-            var columnType = Nullable.GetUnderlyingType(column.DataType) ?? column.DataType;
+            var columnType = TypeHelper.ResolveType(column.DataType);
 
             if (columnType == typeof(string))
             {

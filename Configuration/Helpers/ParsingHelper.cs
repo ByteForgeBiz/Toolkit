@@ -83,7 +83,7 @@ namespace ByteForge.Toolkit
                 return;
             }
 
-            var type = ResolveType(prop);
+            var type = TypeHelper.ResolveType(prop);
             ((IParsingHelper)this).ParseAndPopulateObject(type, result, value);
             prop.SetValue(owner, result);
         }
@@ -102,7 +102,7 @@ namespace ByteForge.Toolkit
         /// </remarks>
         void IParsingHelper.ParseAndPopulateObject(Type type, object target, string value)
         {
-            type = ResolveType(type) ?? throw new ArgumentException("Type cannot be resolved.", nameof(type));
+            type = TypeHelper.ResolveType(type) ?? throw new ArgumentException("Type cannot be resolved.", nameof(type));
             target = target ?? throw new ArgumentNullException(nameof(target));
             if (string.IsNullOrWhiteSpace(value))
                 return;
@@ -118,27 +118,6 @@ namespace ByteForge.Toolkit
                     continue;
                 subProp.SetValue(target, subValue);
             }
-        }
-
-        /// <summary>
-        /// Resolves the effective (non-nullable) type represented by the provided property.
-        /// </summary>
-        /// <param name="prop">The property whose type is to be resolved.</param>
-        /// <returns>The resolved non-nullable <see cref="Type"/>.</returns>
-        private Type ResolveType(PropertyInfo prop) => ResolveType(prop.PropertyType);
-
-        /// <summary>
-        /// Resolves the effective (non-nullable) type for the supplied <paramref name="type"/>.
-        /// If the type is a nullable generic (e.g., <c>Nullable&lt;T&gt;</c>) its underlying type is returned.
-        /// </summary>
-        /// <param name="type">A type that may represent a nullable wrapper.</param>
-        /// <returns>The unwrapped non-nullable <see cref="Type"/>, or the original type if no unwrapping is required; <c>null</c> if input was <c>null</c>.</returns>
-        private Type ResolveType(Type type)
-        {
-            if (type == null) return null;
-            if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Nullable<>))
-                type = Nullable.GetUnderlyingType(type);
-            return type;
         }
     }
 }

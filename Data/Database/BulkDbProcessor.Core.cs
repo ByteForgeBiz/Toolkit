@@ -57,6 +57,11 @@ namespace ByteForge.Toolkit
         protected virtual int BatchSize => DefaultBatchSize;
 
         /// <summary>
+        /// Gets or sets a value indicating whether null strings should be converted to empty strings during processing.
+        /// </summary>
+        public bool NullStringsAreEmpty { get; set; } = false;
+
+        /// <summary>
         /// Gets or sets a value indicating whether the destination table should be created.
         /// </summary>
         /// <value>
@@ -98,7 +103,7 @@ namespace ByteForge.Toolkit
         /// This property controls how long SqlBulkCopy operations will wait before timing out.
         /// Can be overridden in derived classes to customize timeout behavior.
         /// </remarks>
-        protected virtual int BulkCopyTimeout => 600;
+        public int BulkCopyTimeout { get; set; } = 600;
 
         /// <summary>
         /// Gets the cached property to column mapping.
@@ -165,22 +170,5 @@ namespace ByteForge.Toolkit
         /// that are not also primary keys.
         /// </remarks>
         public string[] UniqueIndexes { get; private set; }
-
-        // Events (sorted)
-        /// <summary>
-        /// Event that fires when a batch operation encounters an error.
-        /// </summary>
-        /// <remarks>
-        /// The first parameter is a message describing the error, and the second parameter is the exception that occurred.
-        /// </remarks>
-        public event Action<string, Exception> ErrorOccurred;
-
-        /// <summary>
-        /// Event that fires when batch processing progress is made.
-        /// </summary>
-        /// <remarks>
-        /// The parameter is a float value representing the percentage of completion (0-100).
-        /// </remarks>
-        public event Action<float> ProgressChanged;
     }
 }

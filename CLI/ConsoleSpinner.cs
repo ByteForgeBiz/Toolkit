@@ -275,7 +275,7 @@ namespace ByteForge.Toolkit
             PositionX = positionX;
             PositionY = positionY;
             Delay = delayMs ?? 100;
-            Color = color ?? ConsoleColor.DarkYellow;
+            Color = color ?? Console.ForegroundColor;
             _spinChars = !string.IsNullOrEmpty(spinChars) ? spinChars : GetSpinnerChars(SpinnerStyle.Braille);
 
             if (!ConsoleUtil.IsConsoleAvailable) return;

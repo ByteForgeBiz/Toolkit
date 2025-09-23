@@ -173,7 +173,7 @@ namespace ByteForge.Toolkit.Tests.Unit.Data.Database
             var action = new Action(() => processor.BulkUpsert(_dbAccess, [entity]));
             
             action.Should().Throw<InvalidOperationException>()
-                  .And.Message.Should().Contain("must have either non-identity primary key(s) or unique index(es) for upsert operations");
+                  .And.Message.Should().Contain("must have either primary key(s) or unique index(es) for upsert operations");
         }
 
         /// <summary>
@@ -195,7 +195,7 @@ namespace ByteForge.Toolkit.Tests.Unit.Data.Database
             var action = new Action(() => processor.BulkDelete(_dbAccess, [entity]));
             
             action.Should().Throw<InvalidOperationException>()
-                  .And.Message.Should().Contain("must have either non-identity primary key(s) or unique index(es) for upsert operations");
+                  .And.Message.Should().Contain("must have either primary key(s) or unique index(es) for upsert operations");
         }
 
         #endregion
@@ -418,7 +418,7 @@ namespace ByteForge.Toolkit.Tests.Unit.Data.Database
             var entities = BulkTestEntity.CreateBatch(5000, "LARGE"); // 5000 records
             var progressReports = new List<float>();
 
-            processor.ProgressChanged += progress => progressReports.Add(progress);
+            processor.Progress += (s, e) => progressReports.Add((float)e.Progress);
 
             // Act & Assert - Should complete within reasonable time and memory
             DatabaseTestHelper.AssertExecutionTime(
@@ -456,8 +456,8 @@ namespace ByteForge.Toolkit.Tests.Unit.Data.Database
             var progressReports = new List<float>();
             var errorMessages = new List<string>();
 
-            processor.ProgressChanged += progress => progressReports.Add(progress);
-            processor.ErrorOccurred += (message, ex) => errorMessages.Add(message);
+            processor.Progress += (s, e) => progressReports.Add((float)e.Progress);
+            processor.Error += (s, e) => errorMessages.Add(e.Message);
 
             // Act
             var result = processor.BulkInsert(_dbAccess, [entity]);

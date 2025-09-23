@@ -19,36 +19,71 @@ namespace ByteForge.Toolkit
         /// </remarks>
         protected virtual void AddRecordToDataTable(T record, DataTable dt)
         {
+            object colValue;
             var values = new List<object>();
 
             foreach (var prop in Properties)
             {
-                var mappedColumn = ColumnMap[prop];
-                if (!dt.Columns.Contains(mappedColumn))
+                var columnAttr = prop.GetCustomAttribute<DBColumnAttribute>();
+                var col = ColumnMap[prop];
+                if (!dt.Columns.Contains(col))
                     continue;
 
-                var propType = Nullable.GetUnderlyingType(prop.PropertyType) ?? prop.PropertyType;
+                var propType = TypeHelper.ResolveType(prop);
                 var propValue = prop.GetValue(record);
 
                 if (propValue == null)
-                    values.Add(DBNull.Value);
+                    colValue = (DBNull.Value);
                 else if (propType == typeof(DateTime) && (DateTime)propValue == DateTime.MinValue)
-                    values.Add(DBNull.Value);
+                    colValue = (DBNull.Value);
                 else if (propType.IsEnum)
-                    values.Add((int)propValue);
+                    colValue = ((int)propValue);
                 else
-                    values.Add(propValue);
+                    colValue = (propValue);
+
+                /*
+                 * Apply any custom converter function if specified in the attribute.
+                 * Also, enforce non-nullability by setting default values for non-nullable columns.
+                 */
+                if (columnAttr?.Converter != null)
+                    colValue = columnAttr.Converter(colValue);
 
                 // Handle dynamic string length adjustment only if MaxLength is not explicitly set
                 if (propType == typeof(string))
                 {
-                    var columnAttr = prop.GetCustomAttribute<DBColumnAttribute>();
                     if (columnAttr?.MaxLength <= 0)
                     {
-                        var column = dt.Columns[mappedColumn];
-                        column.MaxLength = Math.Max(column.MaxLength, (propValue?.ToString() ?? "").Length);
+                        var column = dt.Columns[col];
+                        var newMaxLength = Math.Max(column.MaxLength, (propValue?.ToString() ?? "").Length);
+                        column.MaxLength = newMaxLength;
                     }
+                    else if (colValue is string strValue && strValue.Length > columnAttr.MaxLength)
+                    {
+                        // Truncate strings that exceed the defined MaxLength
+                        colValue = strValue.Substring(0, columnAttr.MaxLength);
+                    }
+
+                    /*
+                     * Convert null strings to empty strings if the option is enabled.
+                     */
+                    if (NullStringsAreEmpty && colValue == DBNull.Value)
+                        colValue = string.Empty;
                 }
+
+                /*
+                 * If the column is marked as non-nullable and the value is DBNull, 
+                 * set it to the default value for the property type.
+                 */
+                if (columnAttr?.IsNullable == false && colValue == DBNull.Value)
+                    colValue = TypeHelper.GetDefault(propType);
+
+                /*
+                 * Identity columns should be set to DBNull so that the database can auto-generate the value.  
+                 */
+                if (columnAttr?.IsIdentity == true)
+                    colValue = null;
+
+                values.Add(colValue);
             }
 
             dt.Rows.Add(values.ToArray());
@@ -67,8 +102,8 @@ namespace ByteForge.Toolkit
         /// </remarks>
         protected void InitializePropertyMapping()
         {
-            Properties = typeof(T).GetProperties(BindingFlags.Public | BindingFlags.Instance)
-                .Where(p => p.GetCustomAttributes(typeof(DBColumnAttribute), true).Any())
+            Properties = typeof(T).GetProperties(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.FlattenHierarchy)
+                .Where(p => p.CanRead && p.GetCustomAttributes(typeof(DBColumnAttribute), true).Any())
                 .ToArray();
 
             if (Properties.Length == 0)
@@ -141,6 +176,7 @@ namespace ByteForge.Toolkit
                         column.Unique = true;
                 }
             }
+            OnDebug($"Created DataTable for type {typeof(T).Name} with {dt.Columns.Count} columns.");
 
             return dt;
         }
@@ -161,6 +197,11 @@ namespace ByteForge.Toolkit
         {
             var sqlScript = GenerateCreateTableSql(dt, tableName, dropTable);
 
+            if (dropTable)
+                OnMessage($"Creating table {tableName} (dropping if exists)...");
+            else
+                OnMessage($"Creating table {tableName}...");
+
             try
             {
                 var result = db.ExecuteScript(sqlScript);
@@ -169,7 +210,7 @@ namespace ByteForge.Toolkit
             }
             catch (Exception ex)
             {
-                ErrorOccurred?.Invoke($"Failed to create table {tableName}", ex);
+                OnError($"Failed to create table {tableName}", ex);
                 throw;
             }
         }
@@ -199,7 +240,7 @@ namespace ByteForge.Toolkit
                     continue;
                 }
 
-                var propType = Nullable.GetUnderlyingType(prop.PropertyType) ?? prop.PropertyType;
+                var propType = TypeHelper.ResolveType(prop);
                 var value = prop.GetValue(record);
 
                 if (value == null)
@@ -335,7 +376,7 @@ namespace ByteForge.Toolkit
         private Type GetColumnType(Type propertyType)
         {
             // Handle nullable types
-            var underlyingType = Nullable.GetUnderlyingType(propertyType) ?? propertyType;
+            var underlyingType = TypeHelper.ResolveType(propertyType);
 
             // Map common .NET types to their SQL Server equivalents
             if (underlyingType.IsEnum)

@@ -270,7 +270,7 @@ namespace ByteForge.Toolkit
         private void LoadPropertyFromConfiguration(IConfigurationSection section, PropertyInfo prop)
         {
             var attr = prop.GetCustomAttribute<ConfigNameAttribute>();
-            var propType = Nullable.GetUnderlyingType(prop.PropertyType) ?? prop.PropertyType;
+            var propType = TypeHelper.ResolveType(prop);
             var name = attr?.Name ?? prop.Name;
             var value = section[name];
             

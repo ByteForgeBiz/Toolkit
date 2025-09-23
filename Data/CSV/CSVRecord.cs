@@ -19,7 +19,6 @@ namespace ByteForge.Toolkit
     {
         private readonly PropertyInfo[] properties;
         private readonly Dictionary<PropertyInfo, string> propertyColumnMapping;
-        private readonly Dictionary<string, PropertyInfo> columnPropertyMapping;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="CSVRecord"/> class.
@@ -31,15 +30,11 @@ namespace ByteForge.Toolkit
                 .Where(p => p.GetCustomAttributes(typeof(CSVColumnAttribute)).Any())
                 .ToArray();
             propertyColumnMapping = new Dictionary<PropertyInfo, string>();
-            columnPropertyMapping = new Dictionary<string, PropertyInfo>(StringComparer.OrdinalIgnoreCase);
             foreach (var property in properties)
             {
                 var columnAttribute = property.GetCustomAttribute<CSVColumnAttribute>();
                 if (columnAttribute != null)
-                {
                     propertyColumnMapping.Add(property, columnAttribute.Name ?? property.Name);
-                    columnPropertyMapping.Add(columnAttribute.Name ?? property.Name, property);
-                }
             }
         }
 

@@ -163,6 +163,8 @@
     <Compile Include="Configuration\Helpers\DefaultValueHelper.cs" />
     <Compile Include="Configuration\Helpers\IParsingHelper.cs" />
     <Compile Include="Configuration\Helpers\ParsingHelper.cs" />
+    <Compile Include="Core\Core.cs" />
+    <Compile Include="Core\Core.WinScpResourceManager.cs" />
     <Compile Include="Data\Audio\AudioFormatDetector.cs" />
     <Compile Include="Data\CSV\BufferedReader.cs" />
     <Compile Include="Data\CSV\ConversionException.cs" />
@@ -173,6 +175,7 @@
     <Compile Include="Data\CSV\ICSVRecord.cs" />
     <Compile Include="Data\CSV\ValidationErrors.cs" />
     <Compile Include="Data\Database\BulkDbProcessor.Core.cs" />
+    <Compile Include="Data\Database\BulkDbProcessor.Events.cs" />
     <Compile Include="Data\Database\BulkDbProcessor.Operations.cs" />
     <Compile Include="Data\Database\BulkDbProcessor.SqlGeneration.cs" />
     <Compile Include="Data\Database\BulkDbProcessor.TableManagement.cs" />
@@ -212,6 +215,7 @@
     <Compile Include="Utils\DateTimeUtil.cs" />
     <Compile Include="Utils\EnumExtensions.cs" />
     <Compile Include="Utils\IParser.cs" />
+    <Compile Include="Utils\NameCapitalizer.cs" />
     <Compile Include="Utils\Parser.cs" />
     <Compile Include="Utils\DateTimeParser.cs" />
     <Compile Include="Configuration\Interfaces\IConfigSection.cs" />
@@ -235,6 +239,7 @@
     <Compile Include="Logging\Implementations\FileLogger.cs" />
     <Compile Include="Data\CSV\CSVReader.cs" />
     <Compile Include="Mail\MailUtil.cs" />
+    <Compile Include="Utils\TypeHelper.cs" />
     <Compile Include="Utils\Utils.cs" />
     <Compile Include="Logging\Models\LogEntry.cs" />
     <Compile Include="CLI\Attributes\CommandAttribute.cs" />
@@ -278,12 +283,8 @@
     <Content Include="HTML\JavaScript\ByteForge-calendar.js" />
     <Content Include="HTML\JavaScript\ByteForge-modal.js" />
     <Content Include="HTML\JavaScript\ByteForge-utilities.js" />
-    <Content Include="WinSCP.exe">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="WinSCPnet.dll">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
+    <EmbeddedResource Include="Dependencies\WinSCP.exe" />
+    <EmbeddedResource Include="Dependencies\WinSCPnet.dll" />
   </ItemGroup>
   <Import Project="..\packages\NETStandard.Library.2.0.3\build\netstandard2.0\NETStandard.Library.targets" Condition="Exists('..\packages\NETStandard.Library.2.0.3\build\netstandard2.0\NETStandard.Library.targets')" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" Condition="Exists('$(MSBuildToolsPath)\Microsoft.CSharp.targets')" />

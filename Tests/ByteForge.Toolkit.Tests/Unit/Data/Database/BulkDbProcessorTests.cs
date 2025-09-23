@@ -173,7 +173,7 @@ namespace ByteForge.Toolkit.Tests.Unit.Data.Database
             var entity = BulkTestEntity.Create("SINGLE001", "Single Test Entity");
             var progressReports = new List<float>();
             
-            processor.ProgressChanged += progress => progressReports.Add(progress);
+            processor.Progress += (s, e) => progressReports.Add((float)e.Progress);
 
             // Act
             var result = processor.BulkInsert(_dbAccess, [entity]);
@@ -207,8 +207,8 @@ namespace ByteForge.Toolkit.Tests.Unit.Data.Database
             var progressReports = new List<float>();
             var errorMessages = new List<string>();
 
-            processor.ProgressChanged += progress => progressReports.Add(progress);
-            processor.ErrorOccurred += (message, ex) => errorMessages.Add(message);
+            processor.Progress += (s, e) => progressReports.Add((float)e.Progress);
+            processor.Error += (s, e) => errorMessages.Add(e.Message);
 
             // Act
             var result = processor.BulkInsert(_dbAccess, entities);
@@ -244,7 +244,7 @@ namespace ByteForge.Toolkit.Tests.Unit.Data.Database
             var processor = new BulkDbProcessor<BulkTestEntity>(BulkTestTableName);
             var progressReports = new List<float>();
 
-            processor.ProgressChanged += progress => progressReports.Add(progress);
+            processor.Progress += (s, e) => progressReports.Add((float)e.Progress);
 
             // Act
             var result = processor.BulkInsert(_dbAccess, []);
@@ -314,7 +314,7 @@ namespace ByteForge.Toolkit.Tests.Unit.Data.Database
             var entities = BulkTestEntity.CreateBatch(25, "UPSERT");
             var progressReports = new List<float>();
 
-            processor.ProgressChanged += progress => progressReports.Add(progress);
+            processor.Progress += (s, e) => progressReports.Add((float)e.Progress);
 
             // Act
             var result = processor.BulkUpsert(_dbAccess, entities);
@@ -436,10 +436,11 @@ namespace ByteForge.Toolkit.Tests.Unit.Data.Database
             var processor = new BulkDbProcessor<BulkTestEntity>(BulkTestTableName);
             var errorMessages = new List<string>();
             var errorExceptions = new List<Exception>();
-            
-            processor.ErrorOccurred += (message, ex) => {
-                errorMessages.Add(message);
-                errorExceptions.Add(ex);
+
+            processor.Error += (s, e) =>
+            {
+                errorMessages.Add(e.Message);
+                errorExceptions.Add(e.Exception);
             };
             
             // Debug: Check what keys the processor found
@@ -662,9 +663,10 @@ namespace ByteForge.Toolkit.Tests.Unit.Data.Database
             var errorMessages = new List<string>();
             var errorExceptions = new List<Exception>();
 
-            processor.ErrorOccurred += (message, ex) => {
-                errorMessages.Add(message);
-                errorExceptions.Add(ex);
+            processor.Error += (s, e) =>
+            {
+                errorMessages.Add(e.Message);
+                errorExceptions.Add(e.Exception);
             };
 
             // Act & Assert - Bulk Insert
@@ -707,7 +709,7 @@ namespace ByteForge.Toolkit.Tests.Unit.Data.Database
             var entities = BulkTestEntity.CreateBatch(5, "ERROR");
             var errorMessages = new List<string>();
 
-            processor.ErrorOccurred += (message, ex) => errorMessages.Add(message);
+            processor.Error += (s, e) => errorMessages.Add(e.Message);
 
             // Act
             var result = processor.BulkInsert(invalidDbAccess, entities);
@@ -740,7 +742,7 @@ namespace ByteForge.Toolkit.Tests.Unit.Data.Database
             var entity = BulkTestEntity.Create("NOCREATE001", "No Create Test");
             var errorMessages = new List<string>();
 
-            processor.ErrorOccurred += (message, ex) => errorMessages.Add(message);
+            processor.Error += (s, e) => errorMessages.Add(e.Message);
 
             // Act
             var result = processor.BulkInsert(_dbAccess, [entity]);
@@ -805,7 +807,7 @@ namespace ByteForge.Toolkit.Tests.Unit.Data.Database
             var entities = BulkTestEntity.CreateBatch(1000, "PERF");
             var progressReports = new List<float>();
 
-            processor.ProgressChanged += progress => progressReports.Add(progress);
+            processor.Progress += (s, e) => progressReports.Add((float)e.Progress);
 
             // Act & Assert - Should complete within reasonable time
             DatabaseTestHelper.AssertExecutionTime(

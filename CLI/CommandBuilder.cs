@@ -165,7 +165,7 @@ namespace ByteForge.Toolkit.CommandLine
         {
             foreach (var param in method.GetParameters())
             {
-                var paramType = Nullable.GetUnderlyingType(param.ParameterType) ?? param.ParameterType;
+                var paramType = TypeHelper.ResolveType(param);
 
                 if (paramType.IsEnum)
                     continue;
@@ -277,7 +277,7 @@ namespace ByteForge.Toolkit.CommandLine
         /// <returns>The created option.</returns>
         private static Option CreateTypedOption(Type paramType, string name, string description)
         {
-            var underlyingType = Nullable.GetUnderlyingType(paramType) ?? paramType;
+            var underlyingType = TypeHelper.ResolveType(paramType);
             if (underlyingType.IsArray)
                 throw new ArgumentException("Arrays are not supported as command parameters");
 

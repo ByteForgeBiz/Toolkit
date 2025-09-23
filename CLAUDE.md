@@ -11,14 +11,16 @@ ByteForge.Toolkit is a modular .NET Framework 4.8 library providing high-perform
 ### Building the Project
 
 **Recommended approach using the build script:**
-```bash
+```powershell
 # Build Debug configuration (default) - builds both AnyCPU and x86
 cd "Tests\ByteForge.Toolkit.Tests"
-BuildSolution.bat
+.\BuildSolution.bat
 
 # Build Release configuration
-BuildSolution.bat Release
+.\BuildSolution.bat Release
 ```
+
+**Note:** Always use PowerShell to run building scripts - it consistently works best in this environment.
 
 **Manual MSBuild commands:**
 
