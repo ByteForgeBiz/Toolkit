@@ -835,6 +835,9 @@ namespace ByteForge.Toolkit.Net
         {
             if (_session?.Opened != true)
                 throw new InvalidOperationException($"Not connected to {_config.Protocol} server. Call ConnectAsync() first.");
+
+            // Just a small delay to respect the cancellation token and to make the compiler happy 
+            await Task.Run(() => { }, cancellationToken).ConfigureAwait(false);
         }
 
         /// <summary>

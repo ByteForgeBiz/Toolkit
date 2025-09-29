@@ -11,10 +11,10 @@ namespace ByteForge.Toolkit.CommandLine
         /// <summary>
         /// Initializes a new instance of the <see cref="CommandAttribute"/> class.
         /// </summary>
-        /// <param name="description">The description of the command.</param>
         /// <param name="name">The name of the command.</param>
+        /// <param name="description">The description of the command.</param>
         /// <param name="aliases">The aliases for the command.</param>
-        public CommandAttribute(string description, string name, params string[] aliases)
+        public CommandAttribute(string name, string description, params string[] aliases)
         {
             Name = name;
             Description = description;

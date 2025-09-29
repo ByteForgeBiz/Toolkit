@@ -341,7 +341,7 @@ namespace ByteForge.Toolkit.Logging
 
                 Debug.Assert(!string.IsNullOrEmpty(CurrentFilePath), "CurrentFilePath should not be null or empty here.");
 
-                File.AppendAllText(CurrentFilePath, logMessage + Environment.NewLine);
+                File.AppendAllText(CurrentFilePath, logMessage + Environment.NewLine, Settings.FileEncoding);
             }
         }
 

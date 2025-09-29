@@ -100,6 +100,7 @@ namespace ByteForge.Toolkit
             {
                 OnError("Batch insert failed", ex);
                 OnFinished(true, "Bulk insert failed.");
+                LastException = ex;
                 return false;
             }
         }
@@ -134,6 +135,7 @@ namespace ByteForge.Toolkit
                 OnWarning("Bulk upsert aborted: entity type does not support upsert (missing suitable keys).");
                 OnError("Bulk upsert failed", ex);
                 OnFinished(true, "Bulk upsert aborted due to configuration.");
+                LastException = ex;
                 throw;
             }
 
@@ -204,6 +206,7 @@ namespace ByteForge.Toolkit
             {
                 OnError("Bulk upsert failed", ex);
                 OnFinished(true, "Bulk upsert failed.");
+                LastException = ex;
                 return false;
             }
             finally
@@ -255,6 +258,7 @@ namespace ByteForge.Toolkit
                 OnWarning("Bulk delete aborted: entity type does not support delete (missing suitable keys).");
                 OnError("Bulk delete failed", ex);
                 OnFinished(true, "Bulk delete aborted due to configuration.");
+                LastException = ex;
                 throw;
             }
 
@@ -326,6 +330,7 @@ namespace ByteForge.Toolkit
             {
                 OnError("Bulk delete failed", ex);
                 OnFinished(true, "Bulk delete failed.");
+                LastException = ex;
                 return false;
             }
             finally

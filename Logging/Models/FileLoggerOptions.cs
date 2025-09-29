@@ -1,5 +1,6 @@
 ﻿using System;
 using System.ComponentModel;
+using System.Text;
 
 namespace ByteForge.Toolkit.Logging
 {
@@ -18,11 +19,25 @@ namespace ByteForge.Toolkit.Logging
         private const bool DefaultUseDaily = false;
         private const int DefaultMaxFileSizeMB = 0;
         private const string DefaultFileNamingPattern = "{basename}";
+
         /// <summary>
         /// Gets or sets whether to create a new log file each day.
         /// </summary>
         [DefaultValue(DefaultUseDaily)]
         public bool UseDaily { get; set; } = DefaultUseDaily;
+
+        /// <summary>
+        /// Gets or sets the encoding used for writing to the log file.
+        /// </summary>
+        /// <remarks>
+        /// This property determines the character encoding applied when writing log entries to the file.  
+        /// Use this to specify an encoding such as <see cref="System.Text.Encoding.UTF8"/> or 
+        /// <see cref="System.Text.Encoding.Unicode"/>  based on the requirements of the log file consumers.
+        /// </remarks>
+        [DefaultValueProvider(typeof(FileLoggerOptions), nameof(GetDefaultEncoding))]
+        public Encoding FileEncoding { get; set; } = Encoding.UTF8;
+
+        private static Encoding GetDefaultEncoding() => Encoding.UTF8;
 
         /// <summary>
         /// Gets or sets the maximum file size in megabytes before rolling over (0 for unlimited).

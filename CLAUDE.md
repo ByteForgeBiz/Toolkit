@@ -13,7 +13,6 @@ ByteForge.Toolkit is a modular .NET Framework 4.8 library providing high-perform
 **Recommended approach using the build script:**
 ```powershell
 # Build Debug configuration (default) - builds both AnyCPU and x86
-cd "Tests\ByteForge.Toolkit.Tests"
 .\BuildSolution.bat
 
 # Build Release configuration
@@ -22,11 +21,10 @@ cd "Tests\ByteForge.Toolkit.Tests"
 
 **Note:** Always use PowerShell to run building scripts - it consistently works best in this environment.
 
-**Manual MSBuild commands:**
+**Manual MSBuild commands:** **DO NOT USE!** 
 
-**DO NOT USE!** 
 The BuildSolution.bat script auto-detects Visual Studio installations and handles NuGet restore automatically. 
-Build logs are saved to `Tests\ByteForge.Toolkit.Tests\bin\Debug\Build.log` or `bin\Release\Build.log`.
+Build logs are saved to `Logs\Build\{SolutionName}.log`.
 
 ### Package Management
 - Uses PackageReference format in .csproj file
@@ -76,7 +74,6 @@ The project includes a sophisticated build system in `ByteForge.Tasks.targets` t
 - Copies files between central location and project directories
 - Automatically updates version numbers based on file changes
 - Cleans up obsolete files
-- Uses robocopy for efficient file synchronization
 
 ## Architecture Overview
 

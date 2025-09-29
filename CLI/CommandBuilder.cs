@@ -46,18 +46,27 @@ namespace ByteForge.Toolkit.CommandLine
         public static IEnumerable<Command> BuildFromAssembly(Assembly assembly)
         {
             var commands = new List<Command>();
+            var globalNameTracker = new NameTracker(); // Track names across all commands to prevent conflicts
 
+            // First pass: Build command groups from classes with CommandAttribute
+            var groupCount = 0;
             foreach (var type in assembly.GetTypes())
             {
-                // Build command group if class has a command attribute
                 var cmdAttr = type.GetCustomAttribute<CommandAttribute>();
                 if (cmdAttr != null)
                 {
-                    var commandGroup = BuildCommandGroup(type, cmdAttr);
+                    groupCount++;
+                    var commandGroup = BuildCommandGroup(type, cmdAttr, globalNameTracker);
                     if (commandGroup != null)
                         commands.Add(commandGroup);
                 }
+
+                var staticCommands = BuildStaticCommands(type, globalNameTracker);
+                if (staticCommands.Any())
+                    commands.AddRange(staticCommands);
             }
+
+            commands.Sort((a, b) => string.Compare(a.Name, b.Name, StringComparison.OrdinalIgnoreCase));
 
             return commands;
         }
@@ -67,14 +76,22 @@ namespace ByteForge.Toolkit.CommandLine
         /// </summary>
         /// <param name="type">The type to build the command group from.</param>
         /// <param name="groupAttr">The command attribute for the group.</param>
+        /// <param name="globalNameTracker">The global name tracker to prevent conflicts across all commands.</param>
         /// <returns>The built command group.</returns>
-        private static Command BuildCommandGroup(Type type, CommandAttribute groupAttr)
+        private static Command BuildCommandGroup(Type type, CommandAttribute groupAttr, NameTracker globalNameTracker)
         {
             var groupCommand = new Command(groupAttr.Name, groupAttr.Description);
             var groupTracker = new NameTracker(); // Track names across all commands in group
 
             try
             {
+                // Check for conflicts with global names (including other command groups and static commands)
+                if (!globalNameTracker.TryAddName(groupAttr.Name))
+                {
+                    Log.Warning($"Type {type.FullName} has a command group name '{groupAttr.Name}' that conflicts with an existing command. Skipping group.");
+                    return null;
+                }
+
                 if (!groupTracker.TryAddName(groupAttr.Name))
                 {
                     Log.Warning($"Type {type.FullName} has a command group name that conflicts with an existing name. Skipping group.");
@@ -83,9 +100,17 @@ namespace ByteForge.Toolkit.CommandLine
 
                 if (groupAttr.Aliases?.Length > 0)
                 {
-                    if (!groupTracker.TryAddNames(groupAttr.Aliases))
+                    // Check for global conflicts first
+                    if (!globalNameTracker.TryAddNames(groupAttr.Aliases))
+                    {
+                        Log.Warning($"Command group {groupAttr.Name} has aliases that conflict with existing commands. Skipping alias assignment.");
+                    }
+                    else if (!groupTracker.TryAddNames(groupAttr.Aliases))
                     {
                         Log.Warning($"Command group {groupAttr.Name} has duplicate aliases. Skipping alias assignment.");
+                        // Remove from global tracker since we're not using these aliases
+                        foreach (var alias in groupAttr.Aliases)
+                            globalNameTracker.TryAddName(alias); // This removes them from tracking
                     }
                     else
                     {
@@ -153,6 +178,85 @@ namespace ByteForge.Toolkit.CommandLine
             }
 
             return groupCommand;
+        }
+
+        /// <summary>
+        /// Builds top-level commands from static methods with CommandAttribute in the specified type.
+        /// </summary>
+        /// <param name="type">The type to scan for static methods with CommandAttribute.</param>
+        /// <param name="globalNameTracker">The global name tracker to prevent conflicts across all commands.</param>
+        /// <returns>A collection of top-level commands built from static methods.</returns>
+        private static IEnumerable<Command> BuildStaticCommands(Type type, NameTracker globalNameTracker)
+        {
+            var commands = new List<Command>();
+
+            foreach (var method in type.GetMethods(BindingFlags.Public | BindingFlags.Static))
+            {
+                var cmdAttr = method.GetCustomAttribute<CommandAttribute>();
+                if (cmdAttr == null) continue;
+
+                if (!ValidateMethodParameters(method, out var error))
+                {
+                    Log.Warning($"Skipping static command {cmdAttr.Name} in {type.FullName}: {error}");
+                    continue;
+                }
+
+                // Check for global name conflicts
+                if (!globalNameTracker.TryAddName(cmdAttr.Name))
+                {
+                    Log.Warning($"Static command name '{cmdAttr.Name}' in {type.FullName} conflicts with existing command. Skipping command.");
+                    continue;
+                }
+
+                var command = new Command(cmdAttr.Name, cmdAttr.Description);
+                var commandTracker = new NameTracker();
+                commandTracker.TryAddName(cmdAttr.Name);
+
+                // Handle aliases for the static command
+                if (cmdAttr.Aliases?.Length > 0)
+                {
+                    if (!globalNameTracker.TryAddNames(cmdAttr.Aliases))
+                    {
+                        Log.Warning($"Static command '{cmdAttr.Name}' has aliases that conflict with existing commands. Skipping alias assignment.");
+                    }
+                    else if (!commandTracker.TryAddNames(cmdAttr.Aliases))
+                    {
+                        Log.Warning($"Static command '{cmdAttr.Name}' has duplicate aliases. Skipping alias assignment.");
+                        // Remove from global tracker since we're not using these aliases
+                        foreach (var alias in cmdAttr.Aliases)
+                            globalNameTracker.TryAddName(alias);
+                    }
+                    else
+                    {
+                        foreach (var alias in cmdAttr.Aliases)
+                            command.AddAlias(alias);
+                    }
+                }
+
+                // Add options from method parameters
+                if (AddOptionsFromParameters(command, method))
+                {
+                    // Create command handler for static method
+                    command.Handler = CommandHandler.Create(method);
+                    commands.Add(command);
+
+                    // Add command and alias names to token list
+                    foreach (var name in commandTracker)
+                        _tokenList[name] = name;
+                }
+                else
+                {
+                    Log.Warning($"Failed to add options from parameters for static command: {cmdAttr.Name}");
+                    // Remove names from global tracker if we're not using this command
+                    globalNameTracker.TryAddName(cmdAttr.Name);
+                    if (cmdAttr.Aliases != null)
+                    {
+                        foreach (var alias in cmdAttr.Aliases)
+                            globalNameTracker.TryAddName(alias);
+                    }
+                }
+            }
+            return commands;
         }
 
         /// <summary>

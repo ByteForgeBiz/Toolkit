@@ -206,7 +206,7 @@ namespace ByteForge.Toolkit
             {
                 var result = db.ExecuteScript(sqlScript);
                 if (!result.Success)
-                    throw result.LastException;
+                    throw LastException = result.LastException;
             }
             catch (Exception ex)
             {

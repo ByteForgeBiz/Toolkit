@@ -12,11 +12,9 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <ThisDir>$([System.IO.Path]::GetDirectoryName('$(MSBuildThisFile)'))</ThisDir>
     <ParentDir>$([System.IO.Path]::GetFullPath('$(ProjectDir)\..'))</ParentDir>
-    <CentralLocationPath Condition="'$(CentralLocationPath)' == ''">$(ThisDir)</CentralLocationPath>
-    <CopyFiles>True</CopyFiles>
-    <CopyFiles Condition=" '$(ThisDir)' == '$(CentralLocationPath)' ">False</CopyFiles>
+    <CentralLocationPath Condition="'$(CentralLocationPath)' == ''">$([System.IO.Path]::GetDirectoryName('$(MSBuildThisFile)'))</CentralLocationPath>
+    <CopyFiles>$([System.String]::new($(ParentDir)).EndsWith('TelecomInc').Equals(False))</CopyFiles>
     <CentralVersionFile>$(CentralLocationPath)\version.txt</CentralVersionFile>
     <CleanupUnusedFilesAfterBuild Condition="'$(CleanupUnusedFilesAfterBuild)' == ''">true</CleanupUnusedFilesAfterBuild>
   </PropertyGroup>
@@ -61,8 +59,7 @@
       <Using Namespace="System.IO" />
       <Using Namespace="System.Linq" />
       <Using Namespace="System.Collections.Generic" />
-      <Code Type="Fragment" Language="cs">
-        <![CDATA[
+      <Code Type="Fragment" Language="cs"><![CDATA[
 try
 {
     // Initialize counters
@@ -98,7 +95,7 @@ try
     // Setup exclusion lists with defaults
     var excludeFoldersList = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
     {
-        ".git", ".vs", "bin", "obj", "TestResults", ".vscode", "packages", ".claude"
+        ".git", ".vs", "bin", "obj", "TestResults", ".vscode", "packages"
     };
     if (ExcludeFolders != null)
         foreach (var folder in ExcludeFolders)
@@ -106,7 +103,7 @@ try
     
     var excludeFilesList = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
     {
-        "version.txt", "ByteForge.Tasks.targets"
+        "BuildSolution.bat", "ByteForge.Tasks.targets"
     };
     if (ExcludeFiles != null)
         foreach (var file in ExcludeFiles)
@@ -117,7 +114,7 @@ try
         excludePatternsList.AddRange(ExcludePatterns);
     
     // Add default patterns
-    excludePatternsList.AddRange(new[] { "*.sln", "*.user", "*.json", "*.config", "*.tmp", "*~" });
+    excludePatternsList.AddRange(new[] { "*.sln", "*.user", "*.rcj", "*.tmp", "*~" });
     
     // Helper function to check if path should be excluded
     Func<string, bool> isExcluded = (string relativePath) =>
@@ -284,7 +281,8 @@ catch (Exception ex)
                  @(Resource);
                  $(MSBuildProjectFile);
                  $(MSBuildProjectFile).user;
-                 $(MSBuildProjectDirectory)\.*\**\*.*;
+                 $(MSBuildProjectDirectory)\.vs\**\*.*;
+                 $(MSBuildProjectDirectory)\.vscode\**\*.*;
                  $(MSBuildProjectDirectory)\bin\**\*.*;
                  $(MSBuildProjectDirectory)\obj\**\*.*;
                  $(MSBuildProjectDirectory)\**\*.md" />
@@ -451,7 +449,8 @@ catch (Exception ex) {
       <Using Namespace="System.IO" />
       <Using Namespace="System.Linq" />
       <Using Namespace="System.Collections.Generic" />
-      <Code Type="Fragment" Language="cs"><![CDATA[
+      <Code Type="Fragment" Language="cs">
+        <![CDATA[
       
 try
 {
@@ -492,8 +491,15 @@ try
         ".gitignore",
         ".gitattributes",
         
+        // Files with these extensions will be kept
+        ".sln",
+        ".config",
+        ".bat",
+        ".md",
+        ".json",
+        
         // Infrastructure Files
-        "robo.rcj",
+        "BuildSolution.bat",
         "ByteForge.Tasks.targets",
         
         // Project files
@@ -515,11 +521,10 @@ try
     
     excludedFiles = obsoleteFiles.Where(fi => excludeFolders.Any(folder => fi.FullName.ToLowerInvariant().Split('\\', '/').Contains(folder.ToLowerInvariant()))).ToList();
     obsoleteFiles = obsoleteFiles.Where(fi => !excludeFolders.Any(folder => fi.FullName.ToLowerInvariant().Split('\\', '/').Contains(folder.ToLowerInvariant()))).ToList();
-    
     Log.LogMessage(MessageImportance.High, $"After excluding {excludedFiles.Count} files (from excluded folders), we have {obsoleteFiles.Count} files to delete.");
 
-    excludedFiles = obsoleteFiles.Where(fi => excludeFiles.Any(f => fi.Name.ToLowerInvariant() == f.ToLowerInvariant())).ToList();
-    obsoleteFiles = obsoleteFiles.Where(fi => !excludeFiles.Any(f => fi.Name.ToLowerInvariant() == f.ToLowerInvariant())).ToList();
+    excludedFiles = obsoleteFiles.Where(fi => excludeFiles.Any(f => fi.Name.ToLowerInvariant().EndsWith(f.ToLowerInvariant()))).ToList();
+    obsoleteFiles = obsoleteFiles.Where(fi => !excludeFiles.Any(f => fi.Name.ToLowerInvariant().EndsWith(f.ToLowerInvariant()))).ToList();
     Log.LogMessage(MessageImportance.High, $"After excluding {excludedFiles.Count} files, we have {obsoleteFiles.Count} files to delete.");
 
     excludedFiles = obsoleteFiles.Where(fi => projectFiles.Any(pf => NormalizePath(fi.FullName).Substring(centralPathLength + 1).TrimStart('/', '\\').ToLowerInvariant() == (pf.ToLowerInvariant()))).ToList();

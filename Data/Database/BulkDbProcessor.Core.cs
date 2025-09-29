@@ -170,5 +170,14 @@ namespace ByteForge.Toolkit
         /// that are not also primary keys.
         /// </remarks>
         public string[] UniqueIndexes { get; private set; }
+
+        /// <summary>
+        /// Gets the most recent exception encountered during the operation of the application.
+        /// </summary>
+        /// <remarks>
+        /// This property is updated whenever an exception is caught and logged by the application.  
+        /// It can be used to inspect the details of the most recent error for debugging or logging purposes.
+        /// </remarks>
+        public Exception LastException { get; private set; }
     }
 }

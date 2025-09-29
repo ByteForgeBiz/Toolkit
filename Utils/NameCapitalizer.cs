@@ -11,16 +11,16 @@ namespace ByteForge.Toolkit
     /// hyphenated structures, and common edge cases.
     /// </summary>
     /// <remarks>
-    /// Rules implemented:
-    /// - Particles in <see cref="LowercaseParticles"/> remain lowercase unless they are the first token.
-    /// - Special prefixes in <see cref="SpecialPrefixes"/> are normalized to their canonical casing.
-    /// - Prefixes "Mc"/"Mac" attempt intelligent second-letter capitalization with exception handling.
-    /// - Hyphenated components are capitalized individually.
-    /// - Handles apostrophe-based prefixes like "O'" and "D'".
-    /// - Preserves spacing normalization; multiple internal spaces collapse to single spaces.
+    /// Rules implemented:<br/>
+    /// - Particles in <see cref="LowercaseParticles"/> remain lowercase unless they are the first token.<br/>
+    /// - Special prefixes in <see cref="SpecialPrefixes"/> are normalized to their canonical casing.<br/>
+    /// - Prefixes "Mc"/"Mac" attempt intelligent second-letter capitalization with exception handling.<br/>
+    /// - Hyphenated components are capitalized individually.<br/>
+    /// - Handles apostrophe-based prefixes like "O'" and "D'".<br/>
+    /// - Preserves spacing normalization; multiple internal spaces collapse to single spaces.<br/>
     /// </remarks>
     /// <example>
-    /// Examples:
+    /// Examples:<br/>
     /// <code>
     /// NameCapitalizer.CapitalizeName("mCdonald");        // "McDonald"
     /// NameCapitalizer.CapitalizeName("sean o'connor");    // "Sean O'Connor"

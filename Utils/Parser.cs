@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Text;
 
 namespace ByteForge.Toolkit
 {
@@ -120,6 +121,7 @@ namespace ByteForge.Toolkit
                 { typeof(Uri), value => new Uri(value) },
                 { typeof(ushort), value => ushort.Parse(value, culture) },
                 { typeof(Version), value => Version.Parse(value) },
+                { typeof(Encoding), value => Encoding.GetEncoding(value) },
             };
 
             _typeStringifiers = new Dictionary<Type, Func<object, string>>
@@ -150,6 +152,7 @@ namespace ByteForge.Toolkit
                 { typeof(Uri), value => ((Uri)value).AbsoluteUri },
                 { typeof(ushort), value => ((ushort)value).ToString(culture) },
                 { typeof(Version), value => ((Version)value).ToString() },
+                { typeof(Encoding), value => ((Encoding)value).WebName },
             };
         }
 

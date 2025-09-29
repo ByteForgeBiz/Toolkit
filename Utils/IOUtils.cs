@@ -32,6 +32,30 @@ namespace ByteForge.Toolkit
         }
 
         /// <summary>
+        /// Retrieves an array of <see cref="FileInfo"/> objects that match the specified search pattern in the given directory.
+        /// </summary>
+        /// <param name="path">The path to the directory to search. This cannot be null or empty.</param>
+        /// <param name="searchPattern">A string containing one or more search patterns, separated by ';' or '|', 
+        /// to match against the names of files in the directory. 
+        /// Wildcards such as '*' and '?' are supported.</param>
+        /// <param name="searchOption">Specifies whether to search only the current directory or all subdirectories. 
+        /// The default is <see cref="SearchOption.TopDirectoryOnly"/>.</param>
+        /// <returns>
+        /// An array of <see cref="FileInfo"/> objects representing the files that match the specified search pattern.
+        /// If no files match, an empty array is returned.
+        /// </returns>
+        /// <remarks>
+        /// This method supports multiple search patterns separated by ';' or '|'. For example, a
+        /// <paramref name="searchPattern"/> of "*.txt;*.csv" will match all files with a ".txt" or ".csv"
+        /// extension.
+        /// </remarks>
+        public static FileInfo[] GetFileInfos(string path, string searchPattern, SearchOption searchOption = SearchOption.TopDirectoryOnly)
+        {
+            var patterns = searchPattern.Split(';', '|');
+            return patterns.SelectMany(p => new DirectoryInfo(path).GetFiles(p, searchOption)).ToArray();
+        }
+
+        /// <summary>
         /// Gets the universal path for the specified path.
         /// </summary>
         /// <param name="path">The path to convert to a universal path.</param>

@@ -48,14 +48,14 @@ namespace ByteForge.Toolkit
         [DefaultValueProvider(typeof(GlobalizationInfo), nameof(GetDefaultCultureInfo))]
         public CultureInfo CultureInfo { get; set; } = CultureInfo.InvariantCulture;
 
-         /*
-          *  ___       _           ___                   _      
-          * |   \ __ _| |_ ___    | __|__ _ _ _ __  __ _| |_ ___
-          * | |) / _` |  _/ -_)   | _/ _ \ '_| '  \/ _` |  _(_-<
-          * |___/\__,_|\__\___|   |_|\___/_| |_|_|_\__,_|\__/__/
-          *                                                     
-          */
-        
+        /*
+         *  ___       _           ___                   _      
+         * |   \ __ _| |_ ___    | __|__ _ _ _ __  __ _| |_ ___
+         * | |) / _` |  _/ -_)   | _/ _ \ '_| '  \/ _` |  _(_-<
+         * |___/\__,_|\__\___|   |_|\___/_| |_|_|_\__,_|\__/__/
+         *                                                     
+         */
+
         /// <summary>
         /// Gets or sets the date format string.
         /// </summary>
