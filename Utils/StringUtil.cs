@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Text;
 
 namespace ByteForge.Toolkit
 {
@@ -77,6 +78,72 @@ namespace ByteForge.Toolkit
                 result.Append(currentLine.ToString());
 
             return result.ToString();
+        }
+
+        /// <summary>
+        /// Splits a PascalCase string into separate words.
+        /// </summary>
+        /// <param name="pascalCaseString">The PascalCase string to split.</param>
+        /// <returns>An array of words extracted from the PascalCase string.</returns>
+        /// <example>
+        /// <code>
+        /// string[] words = SplitPascalCase("ExtendedPropertyLevel0Type");
+        /// // Returns: ["Extended", "Property", "Level", "0", "Type"]
+        /// </code>
+        /// </example>
+        public static string SplitPascalCase(string pascalCaseString)
+        {
+            if (string.IsNullOrEmpty(pascalCaseString))
+                return string.Empty;
+
+            var words = new List<string>();
+            var currentWord = new StringBuilder();
+
+            for (var i = 0; i < pascalCaseString.Length; i++)
+            {
+                var currentChar = pascalCaseString[i];
+
+                // Check if we're at a word boundary
+                var isWordBoundary = false;
+
+                if (i > 0)
+                {
+                    var previousChar = pascalCaseString[i - 1];
+
+                    // Uppercase letter after lowercase letter or digit
+                    if (char.IsUpper(currentChar) && (char.IsLower(previousChar) || char.IsDigit(previousChar)))
+                        isWordBoundary = true;
+
+                    // Digit after letter
+                    if (char.IsDigit(currentChar) && char.IsLetter(previousChar))
+                        isWordBoundary = true;
+
+                    // Letter after digit
+                    if (char.IsLetter(currentChar) && char.IsDigit(previousChar))
+                        isWordBoundary = true;
+
+                    // Uppercase letter followed by lowercase letter (handles acronyms)
+                    if (i < pascalCaseString.Length - 1 &&
+                        char.IsUpper(previousChar) &&
+                        char.IsUpper(currentChar) &&
+                        char.IsLower(pascalCaseString[i + 1]))
+                        isWordBoundary = true;
+                }
+
+                if (isWordBoundary && currentWord.Length > 0)
+                {
+                    words.Add(currentWord.ToString());
+                    currentWord.Clear();
+                }
+
+                currentWord.Append(currentChar);
+            }
+
+            // Add the last word
+            if (currentWord.Length > 0)
+                words.Add(currentWord.ToString());
+
+            return string.Join(" ", words);
         }
     }
 }

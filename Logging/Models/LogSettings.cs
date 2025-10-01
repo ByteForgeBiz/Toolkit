@@ -88,7 +88,7 @@ namespace ByteForge.Toolkit
         /// </para>
         /// </remarks>
         [DefaultValue(DefaultTraceLogLevel)]
-        [ConfigName("eTraceLogLevel")]
+        [ConfigName("eLogLevel")]
         public LogLevel TraceLogLevel { get; set; } = DefaultTraceLogLevel;
 
         /// <summary>

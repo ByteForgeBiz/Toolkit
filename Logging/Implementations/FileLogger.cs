@@ -141,8 +141,8 @@ namespace ByteForge.Toolkit.Logging
             var extension = Path.GetExtension(baseFilePath);
 
             var pattern = options.FileNamingPattern ?? "{basename}";
-            if (options.UseDaily)
-                pattern += (pattern.ToLowerInvariant().Contains("{date") ? "" : "{date:yyyy-MM-dd}");
+            if (options.UseDaily && !pattern.ToLowerInvariant().Contains("{date"))
+                pattern += "-{date:yyyy-MM-dd}";
 
             // Replace basic placeholders
             var fileName = pattern
@@ -244,7 +244,7 @@ namespace ByteForge.Toolkit.Logging
             try
             {
                 var directory = Path.GetDirectoryName(_baseFilePath);
-                var filePattern = $"{Path.GetFileNameWithoutExtension(_baseFilePath)}_*{Path.GetExtension(_baseFilePath)}";
+                var filePattern = $"{Path.GetFileNameWithoutExtension(_baseFilePath)}*{Path.GetExtension(_baseFilePath)}";
                 var cutoffDate = DateTime.Now.AddDays(-Settings.RetentionDays);
 
                 var files = Directory.GetFiles(directory, filePattern)
@@ -275,16 +275,7 @@ namespace ByteForge.Toolkit.Logging
         private void ProcessMessageQueue()
         {
             foreach (var entry in _messageQueue.GetConsumingEnumerable(_cancellationTokenSource.Token))
-            {
-                try
-                {
-                    WriteLogEntry(entry);
-                }
-                catch (Exception)
-                {
-                    // Handle logging errors appropriately
-                }
-            }
+                WriteLogEntry(entry);
         }
 
         /// <summary>

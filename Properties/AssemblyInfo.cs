@@ -31,8 +31,8 @@ using System.Runtime.InteropServices;
 //
 // You can specify all the values or you can default the Build and Revision Numbers
 // by using the '*' as shown below:
-[assembly: AssemblyVersion("12.12.0.1001")]
-[assembly: AssemblyFileVersion("12.12.0.1001")]
+[assembly: AssemblyVersion("12.14.0.1001")]
+[assembly: AssemblyFileVersion("12.14.0.1001")]
 
 // Make internal members visible to the test assembly
 [assembly: InternalsVisibleTo("ByteForge.Toolkit.Tests")]

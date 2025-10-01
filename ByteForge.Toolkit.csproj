@@ -184,6 +184,7 @@
     <Compile Include="Data\Database\DBAccess.Logging.cs" />
     <Compile Include="Data\Database\DBAccess.Methods.cs" />
     <Compile Include="Data\Database\DBAccess.Parameters.cs" />
+    <Compile Include="Data\Database\DBAccess.Properties.cs" />
     <Compile Include="Data\Database\DBAccess.ScriptExecution.cs" />
     <Compile Include="Data\Database\TypeConverter.cs" />
     <Compile Include="Json\DeltaContractResolver.cs" />

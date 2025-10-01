@@ -12,7 +12,8 @@
       "Bash(csc:*)",
       "Bash(TestPolymorphic.exe)",
       "Bash(dir:*)",
-      "Bash(timeout:*)"
+      "Bash(timeout:*)",
+      "Bash(.BuildSolution.bat)"
     ],
     "deny": [],
     "ask": []

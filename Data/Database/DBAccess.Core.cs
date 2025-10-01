@@ -3,14 +3,12 @@
 namespace ByteForge.Toolkit
 {
     /*
-     *  ___  ___   _                   
-     * |   \| _ ) /_\  __ __ ___ ______
-     * | |) | _ \/ _ \/ _/ _/ -_)_-<_-<
-     * |___/|___/_/ \_\__\__\___/__/__/
-     *                                 
-     */
-
-    /*
+     *  ___  ___   _                     ___             
+     * |   \| _ ) /_\  __ __ ___ ______ / __|___ _ _ ___ 
+     * | |) | _ \/ _ \/ _/ _/ -_)_-<_-<| (__/ _ \ '_/ -_)
+     * |___/|___/_/ \_\__\__\___/__/__(_)___\___/_| \___|
+     *
+     *
      * The `DBAccess` class configuration schema is designed to provide flexible and secure database connection settings.
      * The configuration is typically defined in a configuration file and includes the following key properties:
      *

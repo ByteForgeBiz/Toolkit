@@ -112,7 +112,7 @@ namespace ByteForge.Toolkit
                                 _alternateLogger ??= new FileLogger(Path.Combine(Path.GetTempPath(), $"LogError.{Guid.NewGuid()}.log"))
                                 {
                                     Name = "Alternate",
-                                    MinLogLevel = LogLevel.Verbose
+                                    MinLogLevel = LogLevel.All,
                                 };
         private ILogger _alternateLogger;
 

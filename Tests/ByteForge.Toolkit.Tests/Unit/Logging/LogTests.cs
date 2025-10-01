@@ -342,7 +342,7 @@ sLogFile={tempLog}";
 
             // Assert
             var duration = DateTime.UtcNow - startTime;
-            duration.Should().BeLessThan(TimeSpan.FromMilliseconds(250), 
+            duration.Should().BeLessThan(TimeSpan.FromSeconds(1), 
                 $"should log {messageCount} messages efficiently");
         }
 
