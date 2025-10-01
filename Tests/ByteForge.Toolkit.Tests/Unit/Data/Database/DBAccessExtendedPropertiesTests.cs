@@ -151,7 +151,7 @@ namespace ByteForge.Toolkit.Tests.Unit.Data.Database
             var result = property.ToString();
 
             // Assert
-            result.Should().Be("Description = Test Description (on dbo.TestTable.TestColumn)");
+            result.Should().Be("Description = ‘Test Description’ (on dbo.TestTable.TestColumn)");
         }
 
         /// <summary>
@@ -173,7 +173,7 @@ namespace ByteForge.Toolkit.Tests.Unit.Data.Database
             var result = property.ToString();
 
             // Assert
-            result.Should().Be("Description = Test Description (on dbo.TestTable)");
+            result.Should().Be("Description = ‘Test Description’ (on dbo.TestTable)");
         }
 
         #endregion
@@ -742,6 +742,7 @@ namespace ByteForge.Toolkit.Tests.Unit.Data.Database
         /// Cleans up any test extended properties that might remain.
         /// </summary>
         /// <param name="dbAccess">The database access instance to use.</param>
+        
         private static void CleanupTestExtendedProperties(DBAccess dbAccess)
         {
             try

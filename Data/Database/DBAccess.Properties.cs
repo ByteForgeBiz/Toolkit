@@ -164,7 +164,7 @@ namespace ByteForge.Toolkit
                 if (!string.IsNullOrEmpty(Level2Name))
                     objectPath += "." + Level2Name;
 
-                return $"{Name} = {Value} (on {objectPath})";
+                return $"{Name} = ‘{Value}’ (on {objectPath})";
             }
         }
 
