@@ -280,7 +280,6 @@ IntValue=42";
             
             // Assert
             config.IsInitialized.Should().BeTrue("explicit interface IsInitialized should work");
-            config.Root.Should().NotBeNull("explicit interface Root should work");
             section.Should().NotBeNull("explicit interface GetSection should work");
             section.StringValue.Should().Be("Test Value", "section should load correctly through interface");
         }
@@ -331,7 +330,6 @@ IntValue=99";
 
             // Assert
             ByteForge.Toolkit.Configuration.IsInitialized.Should().BeTrue("static IsInitialized should work");
-            ByteForge.Toolkit.Configuration.Root.Should().NotBeNull("static Root should work");
             section.Should().NotBeNull("static GetSection should work");
             section.StringValue.Should().Be("Static Test", "static methods should work correctly");
         }

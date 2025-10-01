@@ -18,11 +18,6 @@ namespace ByteForge.Toolkit
         bool IsInitialized { get; }
 
         /// <summary>
-        /// Gets the root configuration object built from the INI file.
-        /// </summary>
-        IConfigurationRoot Root { get; }
-
-        /// <summary>
         /// Gets the globalization information for culture-aware formatting.
         /// </summary>
         GlobalizationInfo Globalization { get; }

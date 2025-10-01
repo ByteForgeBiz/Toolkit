@@ -414,9 +414,7 @@ namespace ByteForge.Toolkit
             // Only properties that can be read and written will be persisted
             // Unless marked with DoNotPersistAttribute
             foreach (var prop in _properties.Where(p => p.CanRead && p.CanWrite && p.GetCustomAttributes<DoNotPersistAttribute>().Any() == false))
-            {
                 SavePropertyToConfiguration(prop);
-            }
         }
 
         /// <summary>

@@ -10,7 +10,8 @@ namespace ByteForge.Toolkit
      *                     |___/                                                          
      */
     /// <summary>
-    /// Specifies a custom name for a property in the configuration section.<br/><br/>
+    /// Specifies a custom name for a property in the configuration section.<br/>
+    /// <br/>
     /// This is useful when the property name in the class does not match the name used in the 
     /// configuration file. <br/>
     /// By applying this attribute to a property, you can map the property 

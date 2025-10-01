@@ -45,11 +45,6 @@ namespace ByteForge.Toolkit
         public static GlobalizationInfo Globalization => DefaultInstance.Globalization;
 
         /// <summary>
-        /// Gets the root of the configuration.
-        /// </summary>
-        public static IConfigurationRoot Root => DefaultInstance.Root;
-
-        /// <summary>
         /// Gets a value indicating whether the configuration has been initialized.
         /// </summary>
         public static bool IsInitialized => DefaultInstance.IsInitialized;
@@ -64,7 +59,8 @@ namespace ByteForge.Toolkit
         /// <typeparam name="T">The type of the section to add.</typeparam>
         /// <param name="sectionName">The name of the section. If null, uses the type name.</param>
         /// <returns>The added section instance.</returns>
-        public static T AddSection<T>(string sectionName = null) where T : class, new() => DefaultInstance.AddSection<T>(sectionName);
+        public static T AddSection<T>(string sectionName = null) where T : class, new() 
+        => DefaultInstance.AddSection<T>(sectionName);
 
         /// <summary>
         /// Gets a section of the configuration.
@@ -72,13 +68,15 @@ namespace ByteForge.Toolkit
         /// <typeparam name="T">The type of the section to get.</typeparam>
         /// <param name="sectionName">The name of the section. If null, uses the type name.</param>
         /// <returns>The section instance.</returns>
-        public static T GetSection<T>(string sectionName = null) where T : class, new() => DefaultInstance.GetSection<T>(sectionName);
+        public static T GetSection<T>(string sectionName = null) where T : class, new() 
+        => DefaultInstance.GetSection<T>(sectionName);
 
         /// <summary>
         /// Initializes the configuration settings by loading the INI file from the specified path.
         /// </summary>
         /// <param name="path">The path to the INI file.</param>
-        public static void Initialize(string path) => DefaultInstance.Initialize(path);
+        public static void Initialize(string path) 
+        => DefaultInstance.Initialize(path);
 
         /// <summary>
         /// Initializes the configuration settings by loading the INI file from the specified directory and file name.
@@ -87,17 +85,20 @@ namespace ByteForge.Toolkit
         /// <param name="fileName">The INI file name.</param>
         /// <exception cref="ArgumentNullException">Thrown if directory or fileName is null or empty.</exception>
         /// <exception cref="InvalidOperationException">Thrown if already initialized.</exception>
-        public static void Initialize(string directory, string fileName) => DefaultInstance.Initialize(directory, fileName);
+        public static void Initialize(string directory, string fileName) 
+        => DefaultInstance.Initialize(directory, fileName);
 
         /// <summary>
         /// Initializes the configuration settings by loading the default INI file.
         /// </summary>
-        public static void Initialize() => DefaultInstance.Initialize();
+        public static void Initialize() 
+        => DefaultInstance.Initialize();
 
         /// <summary>
         /// Saves the current configuration settings to the INI file.
         /// </summary>
-        public static void Save() => DefaultInstance.Save();
+        public static void Save() 
+        => DefaultInstance.Save();
 
         // ===========================
         // Private Instance Fields
@@ -106,7 +107,8 @@ namespace ByteForge.Toolkit
         /// <summary>
         /// Stores configuration sections by name.
         /// </summary>
-        private readonly ConcurrentDictionary<string, object> _sections = new ConcurrentDictionary<string, object>();
+        private readonly ConcurrentDictionary<string, ConcurrentDictionary<Type, object>> _sections = 
+                     new ConcurrentDictionary<string, ConcurrentDictionary<Type, object>>();
 
         /// <summary>
         /// Stores section names that represent arrays.
@@ -211,6 +213,10 @@ namespace ByteForge.Toolkit
         /// Gets the appropriate default INI filename based on the application type.
         /// </summary>
         /// <returns>The default INI file name.</returns>
+        /// <exception cref="AssemblyException">
+        /// Thrown if unable to determine the entry assembly.<br/>
+        /// If this exception is ever thrown, look for the Four Horsemen of the .NET Apocalypse: THE END IS NIGH!
+        /// </exception>
         private string GetDefaultConfigFile()
         {
             // For web applications, use a standard "local.ini" file
@@ -219,8 +225,11 @@ namespace ByteForge.Toolkit
 
             // For desktop/service applications, use the executable name as the INI name
             // This creates a natural association between the app and its config
-            var assembly = Assembly.GetEntryAssembly() ?? Assembly.GetCallingAssembly() ?? Assembly.GetExecutingAssembly();
-    
+            var assembly = Assembly.GetEntryAssembly() ?? 
+                           Assembly.GetCallingAssembly() ?? 
+                           Assembly.GetExecutingAssembly() ??
+                           throw new AssemblyException("Unable to determine the entry assembly for configuration file naming.");
+
             // Assembly.GetEntryAssembly() might return null in certain scenarios:
             // 1. Code running in a non-.NET executable (COM interop)
             // 2. Code running in SQL CLR
@@ -238,11 +247,6 @@ namespace ByteForge.Toolkit
         /// Gets a value indicating whether the configuration has been initialized.
         /// </summary>
         bool IConfigurationManager.IsInitialized => _isInitialized;
-
-        /// <summary>
-        /// Gets the root configuration object built from the INI file.
-        /// </summary>
-        IConfigurationRoot IConfigurationManager.Root => InternalRoot;
 
         /// <summary>
         /// Gets the globalization information for culture-aware formatting.
@@ -347,9 +351,20 @@ namespace ByteForge.Toolkit
             // This enables strongly-typed access to configuration values
             var section = new ConfigSection<T>(sectionName, InternalRoot, _arraySectionNames, _dictionarySectionNames);
 
+            // Prepare to add to the concurrent dictionary
+            if (_sections.TryGetValue(sectionName, out var dic))
+            {
+                if (!dic.TryAdd(typeof(T), section))
+                    throw new InvalidOperationException($"The section '{sectionName}' is already registered with type '{typeof(T).FullName}'.");
+
+                return (T)section.Value;
+            }
+
             // Thread-safe addition to the concurrent dictionary
             // Only add if the key doesn't already exist
-            if (_sections.TryAdd(sectionName, section))
+            dic = new ConcurrentDictionary<Type, object>();
+            if (dic.TryAdd(typeof(T), section) && 
+                _sections.TryAdd(sectionName, dic))
                 return (T)section.Value;
 
             // Section with this name already exists - prevent duplicates to avoid confusion
@@ -365,13 +380,17 @@ namespace ByteForge.Toolkit
         T IConfigurationManager.GetSection<T>(string sectionName)
         {
             sectionName ??= typeof(T).Name;
-            if (_sections.TryGetValue(sectionName, out var section))
-                return (T)((IConfigSection<T>)section).Value;
+            if (_sections.TryGetValue(sectionName, out var dic) && 
+                dic.TryGetValue(typeof(T), out var section))
+                    return (T)((IConfigSection<T>)section).Value;
             lock (_instanceLock)
             {
                 // Double-check pattern
-                if (_sections.TryGetValue(sectionName, out var section2))
+                if (_sections.TryGetValue(sectionName, out var dic2) &&
+                    dic2.TryGetValue(typeof(T), out var section2))
                     return (T)((IConfigSection<T>)section2).Value;
+
+                // Section doesn't exist yet - add it now
                 return ((IConfigurationManager)this).AddSection<T>(sectionName);
             }
         }
@@ -424,8 +443,9 @@ namespace ByteForge.Toolkit
 
             // First, ensure all sections are saved to the configuration root
             // This updates the in-memory configuration with any changes made to section objects
-            foreach (var s in _sections.Values.Cast<IConfigSection>())
-                s.SaveToConfiguration();
+            foreach (var dic in _sections.Values)
+                foreach (var s in dic.Values.OfType<IConfigSection>())
+                    s.SaveToConfiguration();
 
             // Process the existing INI file line by line, preserving structure and comments
             foreach (var line in iniLines)

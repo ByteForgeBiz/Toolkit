@@ -57,7 +57,7 @@ namespace ByteForge.Toolkit.Tests.Unit.CLI
             var aliases = new[] { "tc", "test" };
 
             // Act
-            var attribute = new CommandAttribute(description, name, aliases);
+            var attribute = new CommandAttribute(name, description, aliases);
 
             // Assert
             attribute.Description.Should().Be(description);
@@ -76,7 +76,7 @@ namespace ByteForge.Toolkit.Tests.Unit.CLI
             var name = "test-command";
 
             // Act
-            var attribute = new CommandAttribute(description, name);
+            var attribute = new CommandAttribute(name, description);
 
             // Assert
             attribute.Description.Should().Be(description);
@@ -96,7 +96,7 @@ namespace ByteForge.Toolkit.Tests.Unit.CLI
             var name = "test-command";
 
             // Act
-            var attribute = new CommandAttribute(description, name);
+            var attribute = new CommandAttribute(name, description);
 
             // Assert
             attribute.Description.Should().BeNull();
@@ -114,7 +114,7 @@ namespace ByteForge.Toolkit.Tests.Unit.CLI
             string name = null;
 
             // Act
-            var attribute = new CommandAttribute(description, name);
+            var attribute = new CommandAttribute(name, description);
 
             // Assert
             attribute.Description.Should().Be(description);
@@ -132,7 +132,7 @@ namespace ByteForge.Toolkit.Tests.Unit.CLI
             var name = string.Empty;
 
             // Act
-            var attribute = new CommandAttribute(description, name);
+            var attribute = new CommandAttribute(name, description);
 
             // Assert
             attribute.Description.Should().BeEmpty();
@@ -151,7 +151,7 @@ namespace ByteForge.Toolkit.Tests.Unit.CLI
             var aliases = new[] { "t", "tst", "testing", "test-cmd" };
 
             // Act
-            var attribute = new CommandAttribute(description, name, aliases);
+            var attribute = new CommandAttribute(name, description, aliases);
 
             // Assert
             attribute.Aliases.Should().HaveCount(4);
@@ -215,7 +215,7 @@ namespace ByteForge.Toolkit.Tests.Unit.CLI
             var aliases = new[] { " ", "\t" };
 
             // Act
-            var attribute = new CommandAttribute(description, name, aliases);
+            var attribute = new CommandAttribute(name, description, aliases);
 
             // Assert
             attribute.Description.Should().Be("   ");
@@ -236,7 +236,7 @@ namespace ByteForge.Toolkit.Tests.Unit.CLI
             var aliases = new[] { "@special", "#cmd" };
 
             // Act
-            var attribute = new CommandAttribute(description, name, aliases);
+            var attribute = new CommandAttribute(name, description, aliases);
 
             // Assert
             attribute.Description.Should().Be(description);
@@ -257,7 +257,7 @@ namespace ByteForge.Toolkit.Tests.Unit.CLI
             var aliases = new[] { "🚀", "café" };
 
             // Act
-            var attribute = new CommandAttribute(description, name, aliases);
+            var attribute = new CommandAttribute(name, description, aliases);
 
             // Assert
             attribute.Description.Should().Be("测试命令");
@@ -278,7 +278,7 @@ namespace ByteForge.Toolkit.Tests.Unit.CLI
             var aliases = new[] { new string('c', 100), new string('d', 200) };
 
             // Act
-            var attribute = new CommandAttribute(description, name, aliases);
+            var attribute = new CommandAttribute(name, description, aliases);
 
             // Assert
             attribute.Description.Should().HaveLength(1000);

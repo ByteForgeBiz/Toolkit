@@ -80,8 +80,6 @@ namespace ByteForge.Toolkit
             }
             if (dbSection.Contains(":"))
                 throw new ArgumentException("The database section cannot contain a colon.", nameof(dbSection));
-            if (Configuration.Root.GetSection(dbSection) == null)
-                throw new ArgumentException($"The database section '{dbSection}' does not exist.", nameof(dbSection));
 
             Options = Configuration.GetSection<DatabaseOptions>(dbSection);
         }

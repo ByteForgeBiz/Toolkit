@@ -73,7 +73,6 @@ CurrencySymbol=$";
 
             // Assert
             config.IsInitialized.Should().BeTrue("configuration should be initialized");
-            config.Root.Should().NotBeNull("root configuration should be available");
         }
 
         /// <summary>
@@ -98,7 +97,6 @@ CurrencySymbol=$";
 
             // Assert
             config.IsInitialized.Should().BeTrue("configuration should be initialized");
-            config.Root.Should().NotBeNull("root configuration should be available");
         }
 
         /// <summary>
@@ -320,7 +318,7 @@ CurrencySymbol=$";
             Action act = () => config.AddSection<BasicTestConfig>();
             
             act.Should().Throw<InvalidOperationException>()
-                .WithMessage("*section*already exists*", "duplicate section should throw InvalidOperationException");
+                .WithMessage("*section*already registered*", "duplicate section should throw InvalidOperationException");
         }
 
         /// <summary>
