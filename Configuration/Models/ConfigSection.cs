@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
+using System.Threading;
 
 namespace ByteForge.Toolkit
 {
@@ -57,6 +58,11 @@ namespace ByteForge.Toolkit
         private readonly HashSet<string> _arraySections = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         private readonly HashSet<string> _dictionarySections = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
+        /// <summary>
+        /// The reader-writer lock for coordinating configuration access between readers and writers.
+        /// </summary>
+        private readonly ReaderWriterLockSlim _configLock;
+
         #endregion
 
         #region Properties
@@ -80,7 +86,7 @@ namespace ByteForge.Toolkit
         /// </summary>
         /// <param name="sectionName">The name of the section.</param>
         /// <param name="root">The root configuration.</param>
-        public ConfigSection(string sectionName, IConfigurationRoot root) : this(sectionName, root, null, null) { }
+        public ConfigSection(string sectionName, IConfigurationRoot root) : this(sectionName, root, null, null, null) { }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ConfigSection{T}"/> class.
@@ -89,7 +95,8 @@ namespace ByteForge.Toolkit
         /// <param name="root">The root configuration.</param>
         /// <param name="arraySections">Existing array sections to track.</param>
         /// <param name="dictionarySections">Existing dictionary sections to track.</param>
-        public ConfigSection(string sectionName, IConfigurationRoot root, HashSet<string> arraySections, HashSet<string> dictionarySections) 
+        /// <param name="configLock">The reader-writer lock for coordinating configuration access.</param>
+        public ConfigSection(string sectionName, IConfigurationRoot root, HashSet<string> arraySections, HashSet<string> dictionarySections, ReaderWriterLockSlim configLock = null) 
         {
             _root = root;
             _sectionName = sectionName;
@@ -99,6 +106,7 @@ namespace ByteForge.Toolkit
                             .ToArray();
             _arraySections = arraySections ?? new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             _dictionarySections = dictionarySections ?? new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            _configLock = configLock;
             Value = new T();
             ((IConfigSection)this).LoadFromConfiguration();
         }
@@ -112,18 +120,47 @@ namespace ByteForge.Toolkit
         /// </summary>
         void IConfigSection.LoadFromConfiguration()
         {
-            // Thread-safety lock ensures only one thread can modify the configuration at a time
-            lock (_lock)
+            // Use read lock to coordinate with save operations that modify configuration
+            if (_configLock != null)
             {
-                // Get the specified section from the configuration root
-                var section = _root.GetSection(_sectionName);
-                
-                // Process each writable property
-                foreach (var prop in _properties.Where(p => p.CanWrite))
+                _configLock.EnterReadLock();
+                try
                 {
-                    LoadPropertyFromConfiguration(section, prop);
+                    // Thread-safety lock ensures only one thread can modify the configuration at a time
+                    lock (_lock)
+                    {
+                        LoadFromConfigurationCore();
+                    }
+                }
+                finally
+                {
+                    _configLock.ExitReadLock();
                 }
             }
+            else
+            {
+                // Fallback for when no config lock is available (legacy compatibility)
+                lock (_lock)
+                {
+                    LoadFromConfigurationCore();
+                }
+            }
+        }
+
+        /// <summary>
+        /// Core implementation of LoadFromConfiguration without external locking.
+        /// </summary>
+        private void LoadFromConfigurationCore()
+        {
+            // Get the specified section from the configuration root
+            var section = _root.GetSection(_sectionName);
+
+            // Process each writable property
+            foreach (var prop in _properties.Where(p => p.CanWrite))
+            {
+                LoadPropertyFromConfiguration(section, prop);
+            }
+
         }
 
         /// <summary>
@@ -430,14 +467,17 @@ namespace ByteForge.Toolkit
             if (arrayAttr == null) return false;
 
             var arrName = GetCorrectName(value, arrayAttr.SectionName, name, "Array");
-            
+
             if (!_arrayNames.ContainsKey(name))
                 _arrayNames[name] = arrName;
 
             var (list, elementType) = CreateListFromPropertyType(prop.PropertyType);
             var arraySection = _root.GetSection(arrName);
-            
-            foreach (var child in arraySection?.GetChildren())
+
+            // Create defensive copy to avoid "Collection was modified during enumeration" in concurrent scenarios
+            // Note: Read lock is already held by the calling LoadFromConfiguration method
+            var children = arraySection?.GetChildren()?.ToArray() ?? Array.Empty<IConfigurationSection>();
+            foreach (var child in children)
             {
                 var elementValue = child.Value;
                 if (string.IsNullOrWhiteSpace(elementValue))
@@ -456,7 +496,7 @@ namespace ByteForge.Toolkit
 
             // If no elements were found, attempt to load default values
             if (list.Count == 0)
-            { 
+            {
                 var defaultValue = DefaultValueHelper.ResolveDefaultValue(prop);
                 if (defaultValue is IEnumerable enumerable)
                     foreach (var item in enumerable)
@@ -510,14 +550,13 @@ namespace ByteForge.Toolkit
 
             var dictionary = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
             var dictSection = _root.GetSection(dictName);
-            
-            foreach (var child in dictSection?.GetChildren())
-            {
+
+            // Create defensive copy to avoid "Collection was modified during enumeration" in concurrent scenarios
+            // Note: Read lock is already held by the calling LoadFromConfiguration method
+            var children = dictSection?.GetChildren()?.ToArray() ?? Array.Empty<IConfigurationSection>();
+            foreach (var child in children)
                 if (!string.IsNullOrWhiteSpace(child.Key) && !string.IsNullOrWhiteSpace(child.Value))
-                {
                     dictionary[child.Key] = child.Value;
-                }
-            }
 
             SetDictionaryValue(prop, dictionary);
             return true;

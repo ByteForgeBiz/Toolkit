@@ -3,7 +3,16 @@
     "allow": [
       "Bash(BuildSolution.bat)",
       "Bash(cmd /c:*)",
-      "Bash(powershell:*)"
+      "Bash(powershell:*)",
+      "Bash(BuildSolution.bat Debug)",
+      "Bash(dotnet test:*)",
+      "Bash(rm:*)",
+      "Bash(grep:*)",
+      "Bash(timeout 30 dotnet test \"Tests\\ByteForge.Toolkit.Tests\\ByteForge.Toolkit.Tests.csproj\" --no-build --filter \"FullyQualifiedName~Configuration\" --logger \"console;verbosity=quiet\")",
+      "Bash(csc:*)",
+      "Bash(TestPolymorphic.exe)",
+      "Bash(dir:*)",
+      "Bash(timeout:*)"
     ],
     "deny": [],
     "ask": []

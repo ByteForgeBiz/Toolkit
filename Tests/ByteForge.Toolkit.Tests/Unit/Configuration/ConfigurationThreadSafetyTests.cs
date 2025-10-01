@@ -288,14 +288,9 @@ StringArray=TestStringArray
 
 #region Performance Tests
 
-#if false
-        /*
-         * This test was commented out because it requires polymorphic section handling,
-         * which is not currently supported in the configuration system.
-         */
-
         /// <summary>
         /// Verifies that loading large configurations performs acceptably.
+        /// This test verifies polymorphic section handling - multiple types per section name.
         /// </summary>
         [TestMethod]
         public void Configuration_LoadLargeConfiguration_ShouldPerformAcceptably()
@@ -303,8 +298,8 @@ StringArray=TestStringArray
             // Arrange - Create large configuration
             var configBuilder = new StringBuilder();
             configBuilder.AppendLine("[MainSection]");
-            configBuilder.AppendLine("LargeArray=LargeArraySection");
-            configBuilder.AppendLine("LargeDict=LargeDictSection");
+            configBuilder.AppendLine("StringArray=LargeArraySection");
+            configBuilder.AppendLine("FileFormats=LargeDictSection");
             configBuilder.AppendLine();
 
             // Large array section
@@ -340,17 +335,9 @@ StringArray=TestStringArray
             dictSection.FileFormats.Should().HaveCount(1000, "large dictionary should load completely");
         }
 
-#endif
-
-#if false
-
-        /*
-         * This test was commented out because it requires polymorphic section handling,
-         * which is not currently supported in the configuration system.
-         */
-
         /// <summary>
         /// Verifies that saving large configurations performs acceptably.
+        /// This test verifies polymorphic section handling - multiple types per section name.
         /// </summary>
         [TestMethod]
         public void Configuration_SaveLargeConfiguration_ShouldPerformAcceptably()
@@ -429,21 +416,13 @@ IntValue=0";
             finalContent.Should().Contain("[TestSection]", "section structure should be maintained");
         }
 
-        #endif
-
 #endregion
 
         #region Stress Tests
 
-#if false
-
-        /*
-         * This test was commented out because it requires polymorphic section handling,
-         * which is not currently supported in the configuration system.
-         */
-
         /// <summary>
         /// Comprehensive stress test combining multiple concurrent operations.
+        /// This test verifies polymorphic section handling - multiple types per section name.
         /// </summary>
         [TestMethod]
         public void Configuration_ComprehensiveStressTest_ShouldHandleLoad()
@@ -532,8 +511,6 @@ IntValue=0";
             var content = File.ReadAllText(_tempConfigPath);
             content.Should().NotBeEmpty("configuration file should not be empty after stress test");
         }
-
-#endif
 
         #endregion
 

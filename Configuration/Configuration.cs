@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Threading;
 using System.Web;
 
 namespace ByteForge.Toolkit
@@ -159,6 +160,17 @@ namespace ByteForge.Toolkit
         /// Lock object for static Save method to ensure thread safety.
         /// </summary>
         private static readonly object _staticLock = new object();
+
+        /// <summary>
+        /// Reader-writer lock to coordinate configuration access between readers (loading) and writers (saving).
+        /// Multiple readers can access concurrently, but writers require exclusive access.
+        /// </summary>
+        private readonly ReaderWriterLockSlim _configLock = new ReaderWriterLockSlim();
+
+        /// <summary>
+        /// Gets the configuration lock for coordinating access between readers and writers.
+        /// </summary>
+        internal ReaderWriterLockSlim ConfigLock => _configLock;
 
         // ==========================
         // Public Instance Properties
@@ -349,7 +361,7 @@ namespace ByteForge.Toolkit
 
             // Create a wrapper that binds the configuration section to the concrete type
             // This enables strongly-typed access to configuration values
-            var section = new ConfigSection<T>(sectionName, InternalRoot, _arraySectionNames, _dictionarySectionNames);
+            var section = new ConfigSection<T>(sectionName, InternalRoot, _arraySectionNames, _dictionarySectionNames, _configLock);
 
             // Prepare to add to the concurrent dictionary
             if (_sections.TryGetValue(sectionName, out var dic))
@@ -411,7 +423,16 @@ namespace ByteForge.Toolkit
             // Locking to ensure thread safety during the save operation
             lock (_staticLock)
             {
-                ThreadUnsafeSave();
+                // Use write lock to prevent concurrent reads during configuration modification
+                _configLock.EnterWriteLock();
+                try
+                {
+                    ThreadUnsafeSave();
+                }
+                finally
+                {
+                    _configLock.ExitWriteLock();
+                }
             }
         }
 
@@ -517,7 +538,9 @@ namespace ByteForge.Toolkit
                 sectionEndPositions[section] = iniData.Count;
 
             // Process all sections in the configuration root
-            foreach (var configSection in _root.GetChildren())
+            // Create defensive copy to avoid "Collection was modified during enumeration" in concurrent scenarios
+            var configSections = _root.GetChildren()?.ToArray() ?? Array.Empty<IConfigurationSection>();
+            foreach (var configSection in configSections)
             {
                 // Add new sections that don't exist in the file yet
                 if (!existingSections.Contains(configSection.Key))
@@ -530,7 +553,9 @@ namespace ByteForge.Toolkit
                     };
 
                     // Add all keys in this new section
-                    foreach (var child in configSection.GetChildren())
+                    // Create defensive copy to avoid concurrent modification issues
+                    var configChildren = configSection.GetChildren()?.ToArray() ?? Array.Empty<IConfigurationSection>();
+                    foreach (var child in configChildren)
                     {
                         if (!string.IsNullOrEmpty(child.Value))
                             newSection.Add($"{child.Key}={child.Value}");
@@ -549,7 +574,9 @@ namespace ByteForge.Toolkit
                     var insertPosition = sectionEndPositions[configSection.Key];
                     var keysAdded = 0;
 
-                    foreach (var child in configSection.GetChildren())
+                    // Create defensive copy to avoid concurrent modification issues
+                    var existingChildren = configSection.GetChildren()?.ToArray() ?? Array.Empty<IConfigurationSection>();
+                    foreach (var child in existingChildren)
                     {
                         var configKey = $"{configSection.Key}:{child.Key}";
                         if (!string.IsNullOrEmpty(child.Value) && !existingKeys.Contains(configKey))

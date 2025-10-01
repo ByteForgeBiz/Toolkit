@@ -616,17 +616,9 @@ ExistingValue=Test";
             savedContent.Should().Contain("Server=NewServer", "new section values should be saved");
         }
 
-#if false
-
-        /*
-         * This test requires configuration polymorphism to handle multiple section types in one config.
-         * Since the current configuration system does not support this, the test is commented out.
-         *
-         * Once polymorphic section handling is implemented, this test can be enabled to verify complex save scenarios.
-         */
-
         /// <summary>
         /// Verifies that the ThreadUnsafeSave method handles complex section updates correctly.
+        /// This test verifies polymorphic section handling - multiple types per section name.
         /// </summary>
         [TestMethod]
         public void Configuration_ThreadUnsafeSave_WithComplexUpdates_ShouldHandleCorrectly()
@@ -677,8 +669,6 @@ CRC=OldCRC";
             savedContent.Should().Contain("GICS=NewGICS", "new dictionary items should be added");
             savedContent.Should().NotContain("CRC=OldCRC", "removed dictionary items should not be present");
         }
-
-#endif
 
         #endregion
 
