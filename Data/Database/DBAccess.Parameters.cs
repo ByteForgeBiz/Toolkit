@@ -140,12 +140,13 @@ namespace ByteForge.Toolkit
             // For SQL Server, handle named parameter assignment syntax (@paramName = @valueParam)
 
             // Find named parameter assignments and extract only the value parameters (right side of =)
-            var namedAssignments = Regex.Matches(noComments, @"@[A-Za-z]\w*\s*=\s*(@[A-Za-z]\w*)(?=(?:[^']*'[^']*')*[^']*$)");
+            // Exclude assignments that are preceded by comparison keywords (these are comparisons, not parameter assignments)
+            var namedAssignments = Regex.Matches(noComments, @"(?<!(WHERE|HAVING|AND|OR|WHEN|ON|CASE|THEN|ELSE|NOT|EXISTS|IN|ANY|ALL|SOME)\s+)@[A-Za-z]\w*\s*=\s*(@[A-Za-z]\w*)(?=(?:[^']*'[^']*')*[^']*$)", RegexOptions.IgnoreCase);
             var assignedParams = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
             foreach (Match match in namedAssignments)
             {
-                var valueParam = match.Groups[1].Value;
+                var valueParam = match.Groups[2].Value; // Now group 2 because of the lookbehind
                 assignedParams.Add(valueParam);
                 if (set.Add(valueParam) || allowRepetition)
                     parameters.Add(valueParam);
@@ -161,10 +162,11 @@ namespace ByteForge.Toolkit
                 if (assignedParams.Contains(param))
                     continue;
 
-                // Skip if this parameter is the left side of any assignment (to parameter or literal)
-                var isLeftSideOfAssignment = Regex.IsMatch(noComments,
-                    Regex.Escape(param) + @"\s*=\s*(?:@[A-Za-z]\w*|'[^']*'|""[^""]*""|[^,\s)]+)(?=(?:[^']*'[^']*')*[^']*$)");
-                if (isLeftSideOfAssignment)
+                // Skip if this parameter is the left side of an assignment that is NOT a comparison
+                // (i.e., skip assignments that are NOT preceded by comparison keywords)
+                var isAssignmentNotComparison = Regex.IsMatch(noComments, @"(?<!(WHERE|HAVING|AND|OR|WHEN|ON|CASE|THEN|ELSE|NOT|EXISTS|IN|ANY|ALL|SOME)\s+)" +
+                    Regex.Escape(param) + @"\s*=\s*(?:@[A-Za-z]\w*|'[^']*'|""[^""]*""|[^,\s)]+)(?=(?:[^']*'[^']*')*[^']*$)", RegexOptions.IgnoreCase);
+                if (isAssignmentNotComparison)
                     continue;
 
                 // This is a standalone parameter
