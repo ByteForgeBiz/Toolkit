@@ -155,6 +155,7 @@
     <Compile Include="Attributes\DBColumnAttribute.cs" />
     <Compile Include="CLI\CommandParser.cs" />
     <Compile Include="CLI\GlobalOption.cs" />
+    <Compile Include="CLI\ParseResult.cs" />
     <Compile Include="CLI\RootCommandBuilder.cs" />
     <Compile Include="Configuration\AssemblyException.cs" />
     <Compile Include="Configuration\Attributes\ArrayAttribute.cs" />

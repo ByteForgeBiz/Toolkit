@@ -55,7 +55,13 @@ namespace ByteForge.Toolkit
             }
 
             if (cmd.Parameters.Count > 0)
-                Log.Debug(string.Join(", " + Environment.NewLine, cmd.Parameters.Cast<DbParameter>().Select(p => $"{p.ParameterName} = '{p.Value}'")));
+                Log.Debug(string.Join(", " + Environment.NewLine, 
+                            cmd.Parameters.Cast<DbParameter>()
+                                          .Select(p => @$"{p.ParameterName} = '{(p.Value is DateTime dt ? 
+                                                                                    dt.HasTimeComponent() ?
+                                                                                    dt.ToString("yyyy-MM-dd HH:mm:ss.fff") :
+                                                                                    dt.ToString("yyyy-MM-dd") :
+                                                                                    p.Value)}'")));
         }
 
 
@@ -155,9 +161,9 @@ namespace ByteForge.Toolkit
                 if (assignedParams.Contains(param))
                     continue;
 
-                // Skip if this parameter is the left side of a named assignment
+                // Skip if this parameter is the left side of any assignment (to parameter or literal)
                 var isLeftSideOfAssignment = Regex.IsMatch(noComments,
-                    Regex.Escape(param) + @"\s*=\s*@[A-Za-z]\w*(?=(?:[^']*'[^']*')*[^']*$)");
+                    Regex.Escape(param) + @"\s*=\s*(?:@[A-Za-z]\w*|'[^']*'|""[^""]*""|[^,\s)]+)(?=(?:[^']*'[^']*')*[^']*$)");
                 if (isLeftSideOfAssignment)
                     continue;
 
@@ -202,6 +208,34 @@ namespace ByteForge.Toolkit
              */
             var type = value.GetType();
 
+            DbType? dbType;
+            dbType = type.Name switch
+            {
+                "String" => System.Data.DbType.String,
+                "Char" => System.Data.DbType.StringFixedLength,
+                "Char[]" => System.Data.DbType.String,
+                "Byte[]" => System.Data.DbType.Binary,
+                "Byte" => System.Data.DbType.Byte,
+                "SByte" => System.Data.DbType.SByte,
+                "Int16" => System.Data.DbType.Int16,
+                "UInt16" => System.Data.DbType.UInt16,
+                "Int32" => System.Data.DbType.Int32,
+                "UInt32" => System.Data.DbType.UInt32,
+                "Single" => System.Data.DbType.Single,
+                "Double" => System.Data.DbType.Double,
+                "Boolean" => System.Data.DbType.Boolean,
+                "DateTime" => System.Data.DbType.DateTime,
+                "DateTimeOffset" => System.Data.DbType.DateTimeOffset,
+                "TimeSpan" => System.Data.DbType.Time,
+                _ => null,
+            };
+
+            if (dbType.HasValue)
+            {
+                prm.DbType = dbType.Value;
+                return;
+            }
+
             /*
              * String is omitted because it's the default type
              * Special handling for ODBC which has more restrictive type mappings
@@ -210,16 +244,10 @@ namespace ByteForge.Toolkit
             {
                 prm.DbType = type.Name switch
                 {
-                    "Boolean" => System.Data.DbType.Boolean,
-                    "Byte" => System.Data.DbType.Byte,
-                    "DateTime" => System.Data.DbType.DateTime,
+                    "Guid" => System.Data.DbType.String,    // GUID as string for ODBC
+                    "Int64" => System.Data.DbType.Int32,    // Access doesn't have BigInt, use Int32
+                    "UInt64" => System.Data.DbType.UInt32,
                     "Decimal" => System.Data.DbType.Double, // Use Double for ODBC compatibility with Access Currency
-                    "Double" => System.Data.DbType.Double,
-                    "Guid" => System.Data.DbType.String, // GUID as string for ODBC
-                    "Int16" => System.Data.DbType.Int16,
-                    "Int32" => System.Data.DbType.Int32,
-                    "Int64" => System.Data.DbType.Int32, // Access doesn't have BigInt, use Int32
-                    "Single" => System.Data.DbType.Single,
                     _ => System.Data.DbType.String,
                 };
             }
@@ -227,16 +255,10 @@ namespace ByteForge.Toolkit
             {
                 prm.DbType = type.Name switch
                 {
-                    "Boolean" => System.Data.DbType.Boolean,
-                    "Byte" => System.Data.DbType.Byte,
-                    "DateTime" => System.Data.DbType.DateTime,
-                    "Decimal" => System.Data.DbType.Decimal,
-                    "Double" => System.Data.DbType.Double,
                     "Guid" => System.Data.DbType.Guid,
-                    "Int16" => System.Data.DbType.Int16,
-                    "Int32" => System.Data.DbType.Int32,
                     "Int64" => System.Data.DbType.Int64,
-                    "Single" => System.Data.DbType.Single,
+                    "UInt64" => System.Data.DbType.UInt64,
+                    "Decimal" => System.Data.DbType.Decimal,
                     _ => System.Data.DbType.String,
                 };
             }

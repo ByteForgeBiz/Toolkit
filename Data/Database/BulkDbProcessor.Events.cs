@@ -87,7 +87,7 @@ namespace ByteForge.Toolkit
         /// <param name="message">The debug message to be sent. Cannot be null or empty.</param>
         protected virtual void OnDebug(string message)
         {
-            Log.Verbose(message);
+            Log.Debug(message);
             if (string.IsNullOrEmpty(message)) return;
             Message?.Invoke(this, new MessageEventArgs(message, MessageKind.Debug));
         }

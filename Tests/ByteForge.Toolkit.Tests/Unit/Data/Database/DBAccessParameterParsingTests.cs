@@ -449,6 +449,42 @@ namespace ByteForge.Toolkit.Tests.Unit.Data.Database
                 string.Equals(p, "@USERNAME", StringComparison.OrdinalIgnoreCase));
         }
 
+        /// <summary>
+        /// Tests that parameters assigned to literal values are excluded from parameter collection.
+        /// </summary>
+        /// <remarks>
+        /// This test validates that the parser correctly excludes parameters when they are assigned
+        /// literal values rather than other parameters. Parameters like @input = 'literal' or
+        /// @input = 123 should not be included in the parameter collection since they don't need
+        /// external values provided by the caller.
+        /// </remarks>
+        [TestMethod]
+        public void ParseParameters_SQLServer_ParametersAssignedToLiterals_ShouldExcludeLiteralAssignments()
+        {
+            // Arrange
+            var dbAccess = CreateDBAccessWithType(DBAccess.DataBaseType.SQLServer);
+            var query = @"EXEC MyStoredProc 
+                @stringParam = 'literal string',
+                @numberParam = 123,
+                @quotedParam = ""double quoted"",
+                @realParam = @actualValue,
+                @anotherRealParam = @secondValue";
+
+            // Act
+            var parameters = InvokeParseParameters(dbAccess, query);
+
+            // Assert
+            parameters.Should().NotBeNull();
+            parameters.Should().HaveCount(2);
+            parameters.Should().Contain("@actualValue");
+            parameters.Should().Contain("@secondValue");
+            parameters.Should().NotContain("@stringParam");
+            parameters.Should().NotContain("@numberParam");
+            parameters.Should().NotContain("@quotedParam");
+            parameters.Should().NotContain("@realParam");
+            parameters.Should().NotContain("@anotherRealParam");
+        }
+
         #endregion
 
         #region Integration Tests with AddParametersToCommand

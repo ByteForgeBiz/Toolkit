@@ -28,7 +28,7 @@ namespace ByteForge.Toolkit.CLI
         /// An optional dictionary of token replacements. If provided, arguments matching a key will be replaced with the corresponding value before parsing.
         /// </param>
         /// <exception cref="ArgumentNullException">Thrown when <paramref name="builder"/> or <paramref name="parser"/> is <c>null</c>.</exception>
-        internal CommandParser(RootCommandBuilder builder, 
+        internal CommandParser(RootCommandBuilder builder,
                                System.CommandLine.Parsing.Parser parser,
                                IDictionary<string, string> tokenReplacer = null)
         {
@@ -67,8 +67,8 @@ namespace ByteForge.Toolkit.CLI
             var filteredArgs = ProcessGlobalOptions(caseCorrectedArgs.ToArray());
 
             // Parse the (possibly modified) arguments
-            var result = _parser.Parse(filteredArgs);
-            
+            var result = new ParseResult(_parser.Parse(filteredArgs));
+
             // Display parameter explanation if enabled and not a help command
             if (_builder.EnableParameterExplanation && !IsHelpCommand(result))
                 Console.WriteLine(DescribeCommand(result));
@@ -140,8 +140,8 @@ namespace ByteForge.Toolkit.CLI
                     if (sym == null) return null;
 
                     // The symbol is an Argument or Option
-                    var val = (s is Argument arg) ? sym.GetValueForArgument(arg)
-                            : (s is Option opt) ? sym.GetValueForOption(opt)
+                    var val = (s is Argument arg) ? cmd.GetValueForArgument(arg)
+                            : (s is Option opt) ? cmd.GetValueForOption(opt)
                             : null;
                     return new
                     {
@@ -151,7 +151,7 @@ namespace ByteForge.Toolkit.CLI
                     };
                 })
                 // Only include symbols with values
-                .Where(s => s != null && s.Value != null) 
+                .Where(s => s != null && s.Value != null)
                 .ToList();
 
             if (passedSymbols.Count == 0)
@@ -177,17 +177,17 @@ namespace ByteForge.Toolkit.CLI
         {
             var path = new List<string>();
             var current = commandResult;
-            
+
             // Build the command path from the bottom up
             while (current != null)
             {
                 path.Add(current.Command.Name);
                 current = current.Parent as CommandResult;
             }
-            
+
             // Reverse to get root-to-leaf order
             path.Reverse();
-            
+
             // Join the path components with spaces to match command-line usage
             return string.Join(" ", path);
         }
@@ -206,10 +206,10 @@ namespace ByteForge.Toolkit.CLI
             // System.CommandLine automatically adds a help option to all commands
             var helpOption = parseResult.CommandResult.Command.Options
                 .FirstOrDefault(o => o.Name == "help" || o.Aliases.Contains("-h") || o.Aliases.Contains("/?"));
-            
+
             if (helpOption != null && parseResult.FindResultFor(helpOption) != null)
                 return true;
-            
+
             // Some additional checks that might indicate a help request
             return parseResult.Errors.Any(e => e.Message.Contains("help")) ||
                    parseResult.CommandResult.Command.Name.Equals("help", StringComparison.OrdinalIgnoreCase);
@@ -315,7 +315,7 @@ namespace ByteForge.Toolkit.CLI
             {
                 var aliases = option.AllAliases?.Take(3).ToArray() ?? new string[0];
                 var aliasText = aliases.Length > 0 ? string.Join(", ", aliases) : $"--{option.Name}";
-                
+
                 if (option.ExpectsValue)
                 {
                     Console.WriteLine($"  {aliasText} <value>    {option.Description}");
