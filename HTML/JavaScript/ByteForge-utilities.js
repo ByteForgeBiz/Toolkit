@@ -21,23 +21,67 @@
 // =============================================================================
 
 /**
- * Checks if the pressed key is numeric.
- * Allows numbers, numpad numbers, and navigation keys (backspace, tab, arrows, delete).
- * @param {KeyboardEvent} event - The keyboard event.
- * @returns {boolean} True if the key is numeric, otherwise false.
- */
+* Checks if the pressed key is numeric.
+* Allows numbers, numpad numbers, and common navigation/editing keys (backspace, tab, arrows, delete, home, end, etc.).
+* @param {KeyboardEvent} event - The keyboard event.
+* @returns {boolean} True if the key is numeric or allowed control/navigation key, otherwise false.
+*/
 function CheckNumeric(event) {
     var key = event.which || event.keyCode;
-    var isNumeric = (
-        (key >= 48 && key <= 57) || // Numbers 0-9
-        (key >= 96 && key <= 105) || // Numpad 0-9
-        [8, 9, 37, 39, 46].includes(key) // Backspace, Tab, Left Arrow, Right Arrow, Delete
-    );
 
-    if (!isNumeric)
+    // Allow: numbers (top row and numpad)
+    if ((key >= 48 && key <= 57) || (key >= 96 && key <= 105)) return true;
+
+    // Allow: navigation/editing keys
+    if (
+        [
+            8,   // Backspace
+            9,   // Tab
+            13,  // Enter
+            27,  // Escape
+            35,  // End
+            36,  // Home
+            37,  // Left Arrow
+            38,  // Up Arrow
+            39,  // Right Arrow
+            40,  // Down Arrow
+            45,  // Insert
+            46,  // Delete
+            33,  // Page Up
+            34   // Page Down
+        ].includes(key)
+    ) return true;
+
+    // Allow: modifier keys (Shift, Ctrl, Alt, Meta)
+    if (
+        event.shiftKey ||
+        event.ctrlKey ||
+        event.altKey ||
+        event.metaKey
+    ) return true;
+
+    // Prevent all other keys
+    event.preventDefault();
+    return false;
+}
+
+/**
+ * Attaches a paste event handler to an input element to allow only numeric characters.
+ * @param {HTMLInputElement|HTMLTextAreaElement} element - The input or textarea element.
+ */
+function allowOnlyNumericPaste(element) {
+    element.addEventListener('paste', function (event) {
         event.preventDefault();
-
-    return isNumeric;
+        var paste = (event.clipboardData || window.clipboardData).getData('text');
+        var filtered = paste.replace(/\D/g, ''); // Remove non-digits
+        // Insert filtered text at cursor position
+        var start = element.selectionStart;
+        var end = element.selectionEnd;
+        var value = element.value;
+        element.value = value.substring(0, start) + filtered + value.substring(end);
+        // Move cursor to end of inserted text
+        element.setSelectionRange(start + filtered.length, start + filtered.length);
+    });
 }
 
 /**
@@ -316,7 +360,7 @@ function focusNext(currentElement) {
     var focusableElements = Array.from(document.querySelectorAll(
         'input:not([disabled]), select:not([disabled]), textarea:not([disabled]), button:not([disabled]), [tabindex]:not([tabindex="-1"])'
     ));
-    
+
     var currentIndex = focusableElements.indexOf(currentElement);
     if (currentIndex >= 0 && currentIndex < focusableElements.length - 1) {
         focusableElements[currentIndex + 1].focus();
@@ -354,6 +398,40 @@ function updateThemedImages() {
             image.setAttribute('src', src.replace('dark', 'light'));
         }
     });
+}
+
+/**
+ * Formats a phone number by removing non-digit characters and applying a standard format.
+ * Displays phone numbers in US 10-digit format: (123) 456-7890.
+ * For numbers longer than 10 digits, formats as international: +<countryCode> (<areaCode>) <prefix>-<lineNumber>
+ * @param {string} phoneNumber - The phone number to format.
+ * @returns {string} The formatted phone number for display.
+ */
+function formatPhoneNumber(phoneNumber) {
+    if (!phoneNumber || /^\s*$/.test(phoneNumber))
+        return phoneNumber;
+
+    // Remove any non-digit characters
+    const cleaned = phoneNumber.replace(/\D/g, '');
+
+    // If it's an 11-digit number starting with '1', remove the leading '1' for display
+    let digits = cleaned;
+    if (digits.length === 11 && digits.startsWith('1')) {
+        digits = digits.substring(1);
+    }
+
+    if (digits.length < 10) {
+        return digits;
+    }
+
+    if (digits.length === 10) {
+        return `(${digits.substring(0, 3)}) ${digits.substring(3, 6)}-${digits.substring(6)}`;
+    }
+
+    // For numbers longer than 10 digits, show as international format
+    const countryCode = digits.substring(0, digits.length - 10);
+    const remaining = digits.substring(digits.length - 10);
+    return `+${countryCode} (${remaining.substring(0, 3)}) ${remaining.substring(3, 6)}-${remaining.substring(6)}`;
 }
 
 // =============================================================================
@@ -444,3 +522,17 @@ if (document.readyState === 'loading') {
 } else {
     initializeUtilities();
 }
+
+// =============================================================================
+// MISCELLANEOUS UTILITIES
+// =============================================================================
+
+/**
+ * Checks if the given object is a jQuery element.
+ * @param {any} obj - The object to check.
+ * @returns {boolean} True if the object is a jQuery element, otherwise false.
+ */
+function isJQueryElement(obj) {
+    return obj instanceof jQuery || (obj && obj.jquery);
+}
+

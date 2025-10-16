@@ -485,6 +485,30 @@ namespace ByteForge.Toolkit.Tests.Unit.Data.Database
             parameters.Should().NotContain("@anotherRealParam");
         }
 
+        /// <summary>
+        /// Tests that parameters in WHERE clause comparisons are not excluded.
+        /// </summary>
+        /// <remarks>
+        /// This test validates that the parser correctly distinguishes between stored procedure
+        /// parameter assignments (@param = literal) and SQL comparison operations in WHERE clauses.
+        /// Comparisons like "WHERE @name = ''" should still include @name as a parameter.
+        /// </remarks>
+        [TestMethod]
+        public void ParseParameters_SQLServer_ParametersInWhereClause_ShouldIncludeComparisonParameters()
+        {
+            // Arrange
+            var dbAccess = CreateDBAccessWithType(DBAccess.DataBaseType.SQLServer);
+            var query = "SELECT COUNT(*) FROM TestEntities WHERE Name = @name OR @name = ''";
+
+            // Act
+            var parameters = InvokeParseParameters(dbAccess, query);
+
+            // Assert
+            parameters.Should().NotBeNull();
+            parameters.Should().HaveCount(1);
+            parameters.Should().Contain("@name");
+        }
+
         #endregion
 
         #region Integration Tests with AddParametersToCommand

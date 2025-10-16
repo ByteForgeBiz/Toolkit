@@ -143,6 +143,7 @@
     <Reference Include="System.IO.Compression" />
     <Reference Include="System.IO.Compression.FileSystem" />
     <Reference Include="System.Numerics" />
+    <Reference Include="System.Transactions" />
     <Reference Include="System.Web" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
@@ -187,6 +188,7 @@
     <Compile Include="Data\Database\DBAccess.Parameters.cs" />
     <Compile Include="Data\Database\DBAccess.Properties.cs" />
     <Compile Include="Data\Database\DBAccess.ScriptExecution.cs" />
+    <Compile Include="Data\Database\DBAccess.Transactions.cs" />
     <Compile Include="Data\Database\TypeConverter.cs" />
     <Compile Include="Json\DeltaContractResolver.cs" />
     <Compile Include="Json\JsonDeltaSerializer.cs" />
@@ -218,7 +220,7 @@
     <Compile Include="Utils\DateTimeUtil.cs" />
     <Compile Include="Utils\EnumExtensions.cs" />
     <Compile Include="Utils\IParser.cs" />
-    <Compile Include="Utils\NameCapitalizer.cs" />
+    <Compile Include="Utils\NameUtil.cs" />
     <Compile Include="Utils\Parser.cs" />
     <Compile Include="Utils\DateTimeParser.cs" />
     <Compile Include="Configuration\Interfaces\IConfigSection.cs" />
@@ -307,9 +309,7 @@
   <ItemGroup>
     <AsmInfo Include="Properties\AssemblyInfo.cs" Visible="False" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="HTML\Examples\" />
-  </ItemGroup>
+  <ItemGroup />
   <Target Name="Messages" BeforeTargets="PrepareForBuild">
     <Message Text="CentralLocationPath: '$(CentralLocationPath)'" Importance="high" />
     <Message Text="Importing ByteForge.Tasks.targets..." Importance="high" Condition="Exists('$(CentralLocationPath)\ByteForge.Tasks.targets')" />

@@ -105,8 +105,8 @@ namespace ByteForge.Toolkit
             catch (Exception ex)
             {
                 result.Success = false;
-                result.LastException = ex;
-                LastException = ex;
+                result.LastException = LastException = ex;
+                RollbackTransaction();
                 Log.Error("Error executing script in ExecuteScript", ex);
             }
 

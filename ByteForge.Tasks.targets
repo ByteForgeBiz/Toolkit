@@ -3,31 +3,23 @@
   
   <!-- ===== KEEP ALL YOUR EXISTING INFRASTRUCTURE ===== -->
   
+  <PropertyGroup>
+    <ProjectDir Condition="'$(ProjectDir)' == ''">$(MSBuildProjectDirectory)\</ProjectDir>
+  </PropertyGroup>
+
   <Target Name="DisplayProjectInfo" BeforeTargets="PrepareForBuild">
     <Message Text="Project Dir: '$(ProjectDir)'" Importance="high" />
   </Target>
   
   <PropertyGroup>
-      <RequiredProperties>ProjectDir</RequiredProperties>
-  </PropertyGroup>
-
-  <PropertyGroup>
-    <ParentDir>$([System.IO.Path]::GetFullPath('$(ProjectDir)\..'))</ParentDir>
+    <ParentDir>$([System.IO.Path]::GetFullPath('$(ProjectDir)..'))</ParentDir>
     <CentralLocationPath Condition="'$(CentralLocationPath)' == ''">$([System.IO.Path]::GetDirectoryName('$(MSBuildThisFile)'))</CentralLocationPath>
     <CopyFiles>$([System.String]::new($(ParentDir)).EndsWith('TelecomInc').Equals(False))</CopyFiles>
     <CentralVersionFile>$(CentralLocationPath)\version.txt</CentralVersionFile>
     <CleanupUnusedFilesAfterBuild Condition="'$(CleanupUnusedFilesAfterBuild)' == ''">true</CleanupUnusedFilesAfterBuild>
   </PropertyGroup>
 
-  <Target Name="VerifyRequiredProperties" BeforeTargets="PrepareForBuild">
-    <ItemGroup>
-      <_RequiredProperty Include="$(RequiredProperties)"/>
-    </ItemGroup>
-    <Message Importance="high" Text="Required property: %(_RequiredProperty.Identity) : $(%(_RequiredProperty.Identity))" Condition="'$(%(_RequiredProperty.Identity))' != ''" />
-    <Error Text="Missing required property: %(_RequiredProperty.Identity)" Condition="'$(%(_RequiredProperty.Identity))' == ''" />
-  </Target>
-  
-  <Target Name="DebugProperties" BeforeTargets="VerifyRequiredProperties">
+  <Target Name="DebugProperties" BeforeTargets="PrepareForBuild">
     <Message Importance="high" Text="*** Debugging Properties Values ***" />
     <Message Importance="high" Text="CentralLocationPath          = '$(CentralLocationPath)'" />
     <Message Importance="high" Text="CopyFiles                    = '$(CopyFiles)'" />
@@ -62,239 +54,250 @@
       <Code Type="Fragment" Language="cs"><![CDATA[
 try
 {
-    // Initialize counters
-    int copiedCount = 0;
-    int skippedCount = 0;
+  // Initialize counters
+  int copiedCount = 0;
+  int skippedCount = 0;
+  
+  // Normalize paths
+  var sourcePath = Path.GetFullPath(SourcePath.TrimEnd('\\', '/'));
+  var targetPath = Path.GetFullPath(TargetPath.TrimEnd('\\', '/'));
+  
+  var directionIcon = SyncDirection == "ToProject" ? "📥" : "📤";
+  var directionText = SyncDirection == "ToProject" ? "Central → Project" : "Project → Central";
+  
+  Log.LogMessage(MessageImportance.High, $"{directionIcon} Bidirectional Sync: {directionText}");
+  Log.LogMessage(MessageImportance.High, $"   Source: {sourcePath}");
+  Log.LogMessage(MessageImportance.High, $"   Target: {targetPath}");
+  
+  if (!Directory.Exists(sourcePath))
+  {
+    Log.LogMessage(MessageImportance.High, $"⏩ Source directory does not exist, skipping sync");
+    FilesCopied = 0;
+    FilesSkipped = 0;
+    Success = true;
+    return true;
+  }
+  
+  // Create target directory if needed
+  if (!Directory.Exists(targetPath))
+  {
+    Directory.CreateDirectory(targetPath);
+    Log.LogMessage(MessageImportance.High, $"📁 Created target directory: {targetPath}");
+  }
+  
+  // Setup exclusion lists with defaults
+  var excludeFoldersList = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+  {
+    ".git", 
+    ".vs", 
+    ".vscode", 
+    "bin", 
+    "obj", 
+    "TestResults", 
+    "packages"
+  };
+  if (ExcludeFolders != null)
+    foreach (var folder in ExcludeFolders)
+      excludeFoldersList.Add(folder);
+  
+  var excludeFilesList = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+  {
+    "BuildSolution.bat", 
+    "ByteForge.Tasks.targets"
+  };
+  
+  if (ExcludeFiles != null)
+    foreach (var file in ExcludeFiles)
+      excludeFilesList.Add(file);
+  
+  var excludePatternsList = new List<string>();
+  if (ExcludePatterns != null)
+    excludePatternsList.AddRange(ExcludePatterns);
+  
+  // Add default patterns
+  excludePatternsList.AddRange(new[] { 
+    "*.sln", 
+    "*.user", 
+    "*.tmp", 
+    "*~" 
+  });
+  
+  // Helper function to check if path should be excluded
+  Func<string, bool> isExcluded = (string relativePath) =>
+  {
+    var pathParts = relativePath.Split(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
     
-    // Normalize paths
-    var sourcePath = Path.GetFullPath(SourcePath.TrimEnd('\\', '/'));
-    var targetPath = Path.GetFullPath(TargetPath.TrimEnd('\\', '/'));
+    // Check folder exclusions
+    if (pathParts.Any(part => excludeFoldersList.Contains(part)))
+      return true;
     
-    var directionIcon = SyncDirection == "ToProject" ? "📥" : "📤";
-    var directionText = SyncDirection == "ToProject" ? "Central → Project" : "Project → Central";
+    var fileName = Path.GetFileName(relativePath);
     
-    Log.LogMessage(MessageImportance.High, $"{directionIcon} Bidirectional Sync: {directionText}");
-    Log.LogMessage(MessageImportance.High, $"   Source: {sourcePath}");
-    Log.LogMessage(MessageImportance.High, $"   Target: {targetPath}");
+    // Check file exclusions
+    if (excludeFilesList.Contains(fileName))
+      return true;
     
-    if (!Directory.Exists(sourcePath))
+    // Check pattern exclusions
+    foreach (var pattern in excludePatternsList)
     {
-        Log.LogMessage(MessageImportance.High, $"⏩ Source directory does not exist, skipping sync");
-        FilesCopied = 0;
-        FilesSkipped = 0;
+      if (fileName.EndsWith(pattern.TrimStart('*'), StringComparison.OrdinalIgnoreCase))
         return true;
     }
     
-    // Create target directory if needed
-    if (!Directory.Exists(targetPath))
+    return false;
+  };
+
+  // Helper function to get relative path (compatible with .NET Framework 4.8)
+  Func<string, string, string> getRelativePath = (string fromPath, string toPath) =>
+  {
+    if (string.IsNullOrEmpty(fromPath)) throw new ArgumentNullException("fromPath");
+    if (string.IsNullOrEmpty(toPath)) throw new ArgumentNullException("toPath");
+
+    Uri fromUri = new Uri(fromPath.EndsWith(Path.DirectorySeparatorChar.ToString()) ? fromPath : fromPath + Path.DirectorySeparatorChar);
+    Uri toUri = new Uri(toPath);
+
+    if (fromUri.Scheme != toUri.Scheme) 
+      return toPath;
+
+    Uri relativeUri = fromUri.MakeRelativeUri(toUri);
+    string relativePath = Uri.UnescapeDataString(relativeUri.ToString());
+
+    if (toUri.Scheme.Equals("file", StringComparison.InvariantCultureIgnoreCase))
+      relativePath = relativePath.Replace('/', Path.DirectorySeparatorChar);
+
+    return relativePath;
+  };
+
+  // Get all files from source
+  var sourceFiles = Directory.EnumerateFiles(sourcePath, "*", SearchOption.AllDirectories)
+      .Where(file => 
+             {
+                 var relativePath = getRelativePath(sourcePath, file);
+                 return !isExcluded(relativePath);
+             })
+      .ToList();
+  
+  Log.LogMessage(MessageImportance.High, $"📊 Found {sourceFiles.Count} files to evaluate");
+  
+  // Process each file - ONLY copy if source is newer
+  foreach (var sourceFile in sourceFiles)
+  {
+    try
     {
-        Directory.CreateDirectory(targetPath);
-        Log.LogMessage(MessageImportance.High, $"📁 Created target directory: {targetPath}");
+      var relativePath = getRelativePath(sourcePath, sourceFile);
+      var targetFile = Path.Combine(targetPath, relativePath);
+      var targetDir = Path.GetDirectoryName(targetFile);
+      
+      // Create target directory if needed
+      if (!Directory.Exists(targetDir))
+        Directory.CreateDirectory(targetDir);
+      
+      var sourceInfo = new FileInfo(sourceFile);
+      bool shouldCopy = false;
+      
+      if (!File.Exists(targetFile))
+      {
+        // Target doesn't exist, copy it
+        shouldCopy = true;
+        Log.LogMessage(MessageImportance.Normal, $"➕ New: {relativePath}");
+      }
+      else
+      {
+        var targetInfo = new FileInfo(targetFile);
+        
+        // Only copy if source is newer than target
+        if (sourceInfo.LastWriteTime > targetInfo.LastWriteTime)
+        {
+          shouldCopy = true;
+          Log.LogMessage(MessageImportance.Normal, $"🔄 Newer: {relativePath} ({sourceInfo.LastWriteTime:HH:mm:ss} > {targetInfo.LastWriteTime:HH:mm:ss})");
+        }
+        else
+        {
+          skippedCount++;
+          Log.LogMessage(MessageImportance.Low, $"⏩ Skip: {relativePath} (target is newer or same)");
+        }
+      }
+      
+      if (shouldCopy)
+      {
+        // Remove read-only attribute if needed
+        if (File.Exists(targetFile))
+        {
+          var targetInfo = new FileInfo(targetFile);
+          if ((targetInfo.Attributes & FileAttributes.ReadOnly) != 0)
+            File.SetAttributes(targetFile, targetInfo.Attributes & ~FileAttributes.ReadOnly);
+        }
+        
+        File.Copy(sourceFile, targetFile, true);
+        
+        // Preserve timestamps
+        File.SetLastWriteTime(targetFile, sourceInfo.LastWriteTime);
+        File.SetLastAccessTime(targetFile, sourceInfo.LastAccessTime);
+        File.SetCreationTime(targetFile, sourceInfo.CreationTime);
+        
+        copiedCount++;
+      }
     }
-    
-    // Setup exclusion lists with defaults
-    var excludeFoldersList = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+    catch (Exception ex)
     {
-        ".git", ".vs", "bin", "obj", "TestResults", ".vscode", "packages"
-    };
-    if (ExcludeFolders != null)
-        foreach (var folder in ExcludeFolders)
-            excludeFoldersList.Add(folder);
-    
-    var excludeFilesList = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
-    {
-        "BuildSolution.bat", "ByteForge.Tasks.targets"
-    };
-    if (ExcludeFiles != null)
-        foreach (var file in ExcludeFiles)
-            excludeFilesList.Add(file);
-    
-    var excludePatternsList = new List<string>();
-    if (ExcludePatterns != null)
-        excludePatternsList.AddRange(ExcludePatterns);
-    
-    // Add default patterns
-    excludePatternsList.AddRange(new[] { "*.sln", "*.user", "*.rcj", "*.tmp", "*~" });
-    
-    // Helper function to check if path should be excluded
-    Func<string, bool> isExcluded = (string relativePath) =>
-    {
-        var pathParts = relativePath.Split(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
-        
-        // Check folder exclusions
-        if (pathParts.Any(part => excludeFoldersList.Contains(part)))
-            return true;
-        
-        var fileName = Path.GetFileName(relativePath);
-        
-        // Check file exclusions
-        if (excludeFilesList.Contains(fileName))
-            return true;
-        
-        // Check pattern exclusions
-        foreach (var pattern in excludePatternsList)
-        {
-            if (fileName.EndsWith(pattern.TrimStart('*'), StringComparison.OrdinalIgnoreCase))
-                return true;
-        }
-        
-        return false;
-    };
-    
-    // Helper function to get relative path (compatible with .NET Framework 4.8)
-    Func<string, string, string> getRelativePath = (string fromPath, string toPath) =>
-    {
-        if (string.IsNullOrEmpty(fromPath)) throw new ArgumentNullException("fromPath");
-        if (string.IsNullOrEmpty(toPath)) throw new ArgumentNullException("toPath");
-
-        Uri fromUri = new Uri(fromPath.EndsWith(Path.DirectorySeparatorChar.ToString()) ? fromPath : fromPath + Path.DirectorySeparatorChar);
-        Uri toUri = new Uri(toPath);
-
-        if (fromUri.Scheme != toUri.Scheme) { return toPath; }
-
-        Uri relativeUri = fromUri.MakeRelativeUri(toUri);
-        string relativePath = Uri.UnescapeDataString(relativeUri.ToString());
-
-        if (toUri.Scheme.Equals("file", StringComparison.InvariantCultureIgnoreCase))
-        {
-            relativePath = relativePath.Replace('/', Path.DirectorySeparatorChar);
-        }
-
-        return relativePath;
-    };
-    
-    // Get all files from source
-    var sourceFiles = Directory.EnumerateFiles(sourcePath, "*", SearchOption.AllDirectories)
-        .Where(file => 
-        {
-            var relativePath = getRelativePath(sourcePath, file);
-            return !isExcluded(relativePath);
-        })
-        .ToList();
-    
-    Log.LogMessage(MessageImportance.High, $"📊 Found {sourceFiles.Count} files to evaluate");
-    
-    // Process each file - ONLY copy if source is newer
-    foreach (var sourceFile in sourceFiles)
-    {
-        try
-        {
-            var relativePath = getRelativePath(sourcePath, sourceFile);
-            var targetFile = Path.Combine(targetPath, relativePath);
-            var targetDir = Path.GetDirectoryName(targetFile);
-            
-            // Create target directory if needed
-            if (!Directory.Exists(targetDir))
-            {
-                Directory.CreateDirectory(targetDir);
-            }
-            
-            var sourceInfo = new FileInfo(sourceFile);
-            bool shouldCopy = false;
-            
-            if (!File.Exists(targetFile))
-            {
-                // Target doesn't exist, copy it
-                shouldCopy = true;
-                Log.LogMessage(MessageImportance.Normal, $"➕ New: {relativePath}");
-            }
-            else
-            {
-                var targetInfo = new FileInfo(targetFile);
-                
-                // Only copy if source is newer than target
-                if (sourceInfo.LastWriteTime > targetInfo.LastWriteTime)
-                {
-                    shouldCopy = true;
-                    Log.LogMessage(MessageImportance.Normal, $"🔄 Newer: {relativePath} ({sourceInfo.LastWriteTime:HH:mm:ss} > {targetInfo.LastWriteTime:HH:mm:ss})");
-                }
-                else
-                {
-                    skippedCount++;
-                    Log.LogMessage(MessageImportance.Low, $"⏩ Skip: {relativePath} (target is newer or same)");
-                }
-            }
-            
-            if (shouldCopy)
-            {
-                // Remove read-only attribute if needed
-                if (File.Exists(targetFile))
-                {
-                    var targetInfo = new FileInfo(targetFile);
-                    if ((targetInfo.Attributes & FileAttributes.ReadOnly) != 0)
-                    {
-                        File.SetAttributes(targetFile, targetInfo.Attributes & ~FileAttributes.ReadOnly);
-                    }
-                }
-                
-                File.Copy(sourceFile, targetFile, true);
-                
-                // Preserve timestamps
-                File.SetLastWriteTime(targetFile, sourceInfo.LastWriteTime);
-                File.SetLastAccessTime(targetFile, sourceInfo.LastAccessTime);
-                File.SetCreationTime(targetFile, sourceInfo.CreationTime);
-                
-                copiedCount++;
-            }
-        }
-        catch (Exception ex)
-        {
-            Log.LogWarning($"⚠️ Failed to sync {sourceFile}: {ex.Message}");
-        }
+      Log.LogWarning($"⚠️ Failed to sync {sourceFile}: {ex.Message}");
     }
-    
-    // Set output parameters
-    FilesCopied = copiedCount;
-    FilesSkipped = skippedCount;
-    
-    // Summary
-    Log.LogMessage(MessageImportance.High, $"📋 {directionText} Summary:");
-    Log.LogMessage(MessageImportance.High, $"   📁 Files copied: {copiedCount}");
-    Log.LogMessage(MessageImportance.High, $"   ⏩ Files skipped: {skippedCount}");
-    Log.LogMessage(MessageImportance.High, $"   ✅ Total evaluated: {copiedCount + skippedCount}");
-    
-    return true;
+  }
+  
+  // Set output parameters
+  FilesCopied = copiedCount;
+  FilesSkipped = skippedCount;
+  
+  // Summary
+  Log.LogMessage(MessageImportance.High, $"📋 {directionText} Summary:");
+  Log.LogMessage(MessageImportance.High, $"   📁 Files copied   : {copiedCount}");
+  Log.LogMessage(MessageImportance.High, $"   ⏩ Files skipped  : {skippedCount}");
+  Log.LogMessage(MessageImportance.High, $"   ✅ Total evaluated: {copiedCount + skippedCount}");
+  
+  Success = true;
 }
 catch (Exception ex)
 {
-    Log.LogError($"💥 Bidirectional Sync failed: {ex.Message}");
-    Log.LogError($"Stack trace: {ex.StackTrace}");
-    return false;
+  Log.LogError($"💥 Bidirectional Sync failed: {ex.Message}");
+  Log.LogError($"Stack trace: {ex.StackTrace}");
+  Success = false;
 }
 ]]></Code>
     </Task>
   </UsingTask>
 
-  <!-- ===== KEEP ALL YOUR EXISTING TASKS ===== -->
+  <Target Name="CleanupUnusedFiles"
+          AfterTargets="ForceCleanupFiles"
+          Condition="'$(CleanupUnusedFilesAfterBuild)' == 'true' AND '$(CI)' != 'true'">
   
-  <Target Name="CleanupUnusedFiles" AfterTargets="ForceCleanupFiles" Condition="'$(CleanupUnusedFilesAfterBuild)' == 'true' or '$(CleanupUnusedFilesAfterBuild)' == ''">
     <Message Text="Starting cleanup of files not included in the project..." Importance="high" />
-    
+  
     <ItemGroup>
-      <FilesToDelete 
-        Include="$(MSBuildProjectDirectory)\**\*.*" 
-        Exclude="$(ProjectDir)packages.config;
-                 @(Compile);
-                 @(Content);
-                 @(None);
-                 @(EmbeddedResource);
-                 @(Resource);
-                 $(MSBuildProjectFile);
-                 $(MSBuildProjectFile).user;
-                 $(MSBuildProjectDirectory)\.vs\**\*.*;
-                 $(MSBuildProjectDirectory)\.vscode\**\*.*;
-                 $(MSBuildProjectDirectory)\bin\**\*.*;
-                 $(MSBuildProjectDirectory)\obj\**\*.*;
-                 $(MSBuildProjectDirectory)\**\*.md" />
+      <FilesToDelete
+        Include="$(ProjectDir)**\*.*"
+        Exclude="
+          @(Compile->'%(FullPath)');
+          @(Content->'%(FullPath)');
+          @(None->'%(FullPath)');
+          @(EmbeddedResource->'%(FullPath)');
+          @(Resource->'%(FullPath)');
+          $(MSBuildProjectFullPath);
+          $(MSBuildProjectFullPath).user;
+          $(ProjectDir)**\*.md;
+          $(ProjectDir)**\*.json;
+          $(ProjectDir)**\*.config;
+          $(ProjectDir).*\**\*;
+          $(ProjectDir)bin\**\*;
+          $(ProjectDir)obj\**\*" />
     </ItemGroup>
-    
+  
     <Message Text="Files to be deleted:" Importance="high" />
     <Message Text="  %(FilesToDelete.Identity)" Importance="high" />
-    
+  
     <Delete Files="@(FilesToDelete)" ContinueOnError="true">
       <Output TaskParameter="DeletedFiles" ItemName="DeletedFilesList" />
     </Delete>
-    
+  
     <Message Text="Successfully deleted the files listed above." Importance="high" Condition="'@(DeletedFilesList)' != ''" />
     <Message Text="No files were deleted." Importance="high" Condition="'@(DeletedFilesList)' == ''" />
   </Target>
@@ -332,19 +335,19 @@ catch (Exception ex)
       <Code Type="Fragment" Language="cs"><![CDATA[
 try
 {
-    foreach (var file in Files)
-    {
-        Log.LogMessage(MessageImportance.High, $"Updating version in {Path.GetFileName(file.ItemSpec)}");
-        string content = File.ReadAllText(file.ItemSpec);
-        content = Regex.Replace(content, Pattern, ReplacementText);
-        File.WriteAllText(file.ItemSpec, content);
-    }
-    return true;
+  foreach (var file in Files)
+  {
+    Log.LogMessage(MessageImportance.High, $"Updating version in {Path.GetFileName(file.ItemSpec)}");
+    string content = File.ReadAllText(file.ItemSpec);
+    content = Regex.Replace(content, Pattern, ReplacementText);
+    File.WriteAllText(file.ItemSpec, content);
+  }
+  Success = true;
 }
 catch (Exception ex)
 {
-    Log.LogError(ex.Message);
-    return false;
+  Log.LogError(ex.Message);
+  Success = false;
 }
 ]]></Code>
     </Task>
@@ -363,72 +366,81 @@ catch (Exception ex)
       <Using Namespace="System" />
       <Using Namespace="System.IO" />
       <Code Type="Fragment" Language="cs"><![CDATA[
-try {
-    // Only process if files were actually changed
-    if (ChangesMade == 0) {
-        Log.LogMessage(MessageImportance.High, "No files were changed, skipping version update");
-        return true;
-    }
+try 
+{
+  // Only process if files were actually changed
+  if (ChangesMade == 0) 
+  {
+    Log.LogMessage(MessageImportance.High, "No files were changed, skipping version update");
+    return true;
+  }
 
-    var versionFileExists = File.Exists(CentralVersionFile);
-    Log.LogMessage(MessageImportance.High, "Checking version file: {0}", CentralVersionFile);
-                        
-    // Create version file if it doesn't exist
-    if (!versionFileExists) {
-        Log.LogMessage(MessageImportance.High, "Version file does not exist. Creating...");
-        File.WriteAllText(CentralVersionFile, "1.0.0");
-    }
-        
-    var oldVersion = File.ReadAllText(CentralVersionFile);
-    var parts = oldVersion.Split('.');
-    var intMajor = int.Parse(parts[0]);
-    var intMinor = int.Parse(parts[1]);
-    var intPatch = int.Parse(parts[2]);
-                        
-    Log.LogMessage(MessageImportance.High, "Current Library Version: {0}", oldVersion);
-                        
-    // Check if new files were added
-    bool newFilesAdded = NewFilesCopied > 0;
-                        
-    if (newFilesAdded) {
-        Log.LogMessage(MessageImportance.High, "New files added to the library. Incrementing Minor.");
-        intMinor += 1;
-        intPatch  = 0;
-    } else {
-        Log.LogMessage(MessageImportance.High, "Some files were updated. Incrementing Patch");
-        intPatch += 1;
-    }
-        
-    // Correcting version number
-    if (intPatch > 49) {
-        Log.LogMessage(MessageImportance.High, "Patch would be 50, incrementing Minor.");
-        intMinor += 1;
-        intPatch  = 0;
-    }
-        
-    if (intMinor > 49) {
-        Log.LogMessage(MessageImportance.High, "Minor would be 50, incrementing Major.");
-        intMajor += 1;
-        intMinor = 0;
-        intPatch = 0;
-    }
-        
-    // Updating version file
-    var newVersion = string.Format("{0}.{1}.{2}.{3:MMdd}", intMajor, intMinor, intPatch, DateTime.Now);
-                        
-    // Save updated version
-    File.WriteAllText(CentralVersionFile, newVersion);
-        
-    var verChange = string.Format("Version changed from {0} to {1}", oldVersion, newVersion);
-    Log.LogMessage(MessageImportance.High, verChange);
-                        
-    Success = true;
+  var versionFileExists = File.Exists(CentralVersionFile);
+  Log.LogMessage(MessageImportance.High, "Checking version file: {0}", CentralVersionFile);
+                      
+  // Create version file if it doesn't exist
+  if (!versionFileExists) 
+  {
+    Log.LogMessage(MessageImportance.High, "Version file does not exist. Creating...");
+    File.WriteAllText(CentralVersionFile, "1.0.0");
+  }
+      
+  var oldVersion = File.ReadAllText(CentralVersionFile);
+  var parts = oldVersion.Split('.');
+  var intMajor = int.Parse(parts[0]);
+  var intMinor = int.Parse(parts[1]);
+  var intPatch = int.Parse(parts[2]);
+                      
+  Log.LogMessage(MessageImportance.High, "Current Library Version: {0}", oldVersion);
+                      
+  // Check if new files were added
+  bool newFilesAdded = NewFilesCopied > 0;
+                      
+  if (newFilesAdded) 
+  {
+    Log.LogMessage(MessageImportance.High, "New files added to the library. Incrementing Minor.");
+    intMinor += 1;
+    intPatch  = 0;
+  }
+  else 
+  {
+    Log.LogMessage(MessageImportance.High, "Some files were updated. Incrementing Patch");
+    intPatch += 1;
+  }
+      
+  // Correcting version number
+  if (intPatch > 49) 
+  {
+    Log.LogMessage(MessageImportance.High, "Patch would be 50, incrementing Minor.");
+    intMinor += 1;
+    intPatch  = 0;
+  }
+      
+  if (intMinor > 49) 
+  {
+    Log.LogMessage(MessageImportance.High, "Minor would be 50, incrementing Major.");
+    intMajor += 1;
+    intMinor = 0;
+    intPatch = 0;
+  }
+      
+  // Updating version file
+  var newVersion = string.Format("{0}.{1}.{2}.{3:MMdd}", intMajor, intMinor, intPatch, DateTime.Now);
+                      
+  // Save updated version
+  File.WriteAllText(CentralVersionFile, newVersion);
+      
+  var verChange = string.Format("Version changed from {0} to {1}", oldVersion, newVersion);
+  Log.LogMessage(MessageImportance.High, verChange);
+                      
+  Success = true;
 }
-catch (Exception ex) {
-    Log.LogError(string.Format("Failed to update central version file: {0}", ex.Message));
-    Success = false;
+catch (Exception ex) 
+{
+  Log.LogError(string.Format("Failed to update central version file: {0}", ex.Message));
+  Success = false;
 }
-    ]]></Code>
+]]></Code>
     </Task>
   </UsingTask>
 
@@ -451,167 +463,161 @@ catch (Exception ex) {
       <Using Namespace="System.Collections.Generic" />
       <Code Type="Fragment" Language="cs">
         <![CDATA[
-      
 try
 {
-    var NormalizePath = (string p) => p.Replace(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+  var NormalizePath = (string p) => p.Replace(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
 
-    // Normalize directory separator char
-    LocalPath = NormalizePath(LocalPath);
-    CentralPath = NormalizePath(CentralPath);
+  // Normalize directory separator char
+  LocalPath = NormalizePath(LocalPath);
+  CentralPath = NormalizePath(CentralPath);
+  
+  var localPathLength = LocalPath.Length;
+  var centralPathLength = CentralPath.Length;
+  
+  // Get all source files from project as relative paths
+  var projectFiles = ProjectItems
+      .Select(item => NormalizePath(item.ItemSpec))
+      .Select(dir => (dir.StartsWith(LocalPath, StringComparison.InvariantCultureIgnoreCase) ? dir.Substring(LocalPath.Length + 1) : dir).TrimStart('/', '\\'))
+      .ToList();
+      
+  Log.LogMessage(MessageImportance.High, $"Found {projectFiles.Count} project files.");
+
+  var excludeFolders = new[]
+  {
+    ".git",
+    ".vs",
+    "tests"
+  }.Concat(ExcludeFolders ?? new string[0])
+   .Select(f => Path.GetFileName(f.TrimEnd('\\', '/')))
+   .Distinct()
+   .ToList();
+
+  Log.LogMessage(MessageImportance.High, $"Found {excludeFolders.Count} excluded folders.");
+
+  // Build exclude list
+  var excludeFiles = new[]
+  {
+    // Git files
+    ".git",
+    ".gitignore",
+    ".gitattributes",
     
-    var localPathLength = LocalPath.Length;
-    var centralPathLength = CentralPath.Length;
+    // Files with these extensions will be kept
+    ".sln",
+    ".config",
+    ".bat",
+    ".md",
+    ".json",
     
-    // Get all source files from project as relative paths
-    var projectFiles = ProjectItems
-        .Select(item => NormalizePath(item.ItemSpec))
-        .Select(dir => (dir.StartsWith(LocalPath, StringComparison.InvariantCultureIgnoreCase) ? dir.Substring(LocalPath.Length + 1) : dir).TrimStart('/', '\\'))
-        .ToList();
-        
-    Log.LogMessage(MessageImportance.High, $"Found {projectFiles.Count} project files.");
-
-    var excludeFolders = new[]
-    {
-        ".git",
-        ".vs",
-        "tests"
-    }.Concat(ExcludeFolders ?? new string[0])
-     .Select(f => Path.GetFileName(f.TrimEnd('\\', '/')))
-     .Distinct()
-     .ToList();
-
-    Log.LogMessage(MessageImportance.High, $"Found {excludeFolders.Count} excluded folders.");
-
-    // Build exclude list
-    var excludeFiles = new[]
-    {
-        // Git files
-        ".git",
-        ".gitignore",
-        ".gitattributes",
-        
-        // Files with these extensions will be kept
-        ".sln",
-        ".config",
-        ".bat",
-        ".md",
-        ".json",
-        
-        // Infrastructure Files
-        "BuildSolution.bat",
-        "ByteForge.Tasks.targets",
-        
-        // Project files
-        "version.txt",
-        "packages.config",
-        "ByteForge.Toolkit.sln"
-    }.Concat(ExcludeFiles ?? new string[0])
-     .Select(f => Path.GetFileName(f))
-     .Distinct()
-     .ToList();
-
-    Log.LogMessage(MessageImportance.High, $"Found {excludeFiles.Count} excluded files.");
-
-    // Get all files in central location excluding patterns
-    var di = new DirectoryInfo(CentralPath);
-    List<FileInfo> excludedFiles = null;
-    var obsoleteFiles = di.EnumerateFiles("*.*", SearchOption.AllDirectories).ToList();
-    Log.LogMessage(MessageImportance.High, $"Found {obsoleteFiles.Count} files in central location.");
+    // Infrastructure Files
+    "BuildSolution.bat",
+    "ByteForge.Tasks.targets",
     
-    excludedFiles = obsoleteFiles.Where(fi => excludeFolders.Any(folder => fi.FullName.ToLowerInvariant().Split('\\', '/').Contains(folder.ToLowerInvariant()))).ToList();
-    obsoleteFiles = obsoleteFiles.Where(fi => !excludeFolders.Any(folder => fi.FullName.ToLowerInvariant().Split('\\', '/').Contains(folder.ToLowerInvariant()))).ToList();
-    Log.LogMessage(MessageImportance.High, $"After excluding {excludedFiles.Count} files (from excluded folders), we have {obsoleteFiles.Count} files to delete.");
+    // Project files
+    "version.txt",
+    "packages.config",
+    "ByteForge.Toolkit.sln"
+  }.Concat(ExcludeFiles ?? new string[0])
+   .Select(f => Path.GetFileName(f))
+   .Distinct()
+   .ToList();
 
-    excludedFiles = obsoleteFiles.Where(fi => excludeFiles.Any(f => fi.Name.ToLowerInvariant().EndsWith(f.ToLowerInvariant()))).ToList();
-    obsoleteFiles = obsoleteFiles.Where(fi => !excludeFiles.Any(f => fi.Name.ToLowerInvariant().EndsWith(f.ToLowerInvariant()))).ToList();
-    Log.LogMessage(MessageImportance.High, $"After excluding {excludedFiles.Count} files, we have {obsoleteFiles.Count} files to delete.");
+  Log.LogMessage(MessageImportance.High, $"Found {excludeFiles.Count} excluded files.");
 
-    excludedFiles = obsoleteFiles.Where(fi => projectFiles.Any(pf => NormalizePath(fi.FullName).Substring(centralPathLength + 1).TrimStart('/', '\\').ToLowerInvariant() == (pf.ToLowerInvariant()))).ToList();
-    obsoleteFiles = obsoleteFiles.Where(fi => !projectFiles.Any(pf => NormalizePath(fi.FullName).Substring(centralPathLength + 1).TrimStart('/', '\\').ToLowerInvariant() == (pf.ToLowerInvariant()))).ToList();
-    Log.LogMessage(MessageImportance.High, $"After excluding {excludedFiles.Count} files (from project files), we have {obsoleteFiles.Count} files to delete.");
+  // Get all files in central location excluding patterns
+  var di = new DirectoryInfo(CentralPath);
+  List<FileInfo> excludedFiles = null;
+  var obsoleteFiles = di.EnumerateFiles("*.*", SearchOption.AllDirectories).ToList();
+  Log.LogMessage(MessageImportance.High, $"Found {obsoleteFiles.Count} files in central location.");
+  
+  excludedFiles = obsoleteFiles.Where(fi => excludeFolders.Any(folder => fi.FullName.ToLowerInvariant().Split('\\', '/').Contains(folder.ToLowerInvariant()))).ToList();
+  obsoleteFiles = obsoleteFiles.Where(fi => !excludeFolders.Any(folder => fi.FullName.ToLowerInvariant().Split('\\', '/').Contains(folder.ToLowerInvariant()))).ToList();
+  Log.LogMessage(MessageImportance.High, $"After excluding {excludedFiles.Count} files (from excluded folders), we have {obsoleteFiles.Count} files to delete.");
 
-    if (obsoleteFiles.Count == 0) 
+  excludedFiles = obsoleteFiles.Where(fi => excludeFiles.Any(f => fi.Name.ToLowerInvariant().EndsWith(f.ToLowerInvariant()))).ToList();
+  obsoleteFiles = obsoleteFiles.Where(fi => !excludeFiles.Any(f => fi.Name.ToLowerInvariant().EndsWith(f.ToLowerInvariant()))).ToList();
+  Log.LogMessage(MessageImportance.High, $"After excluding {excludedFiles.Count} files, we have {obsoleteFiles.Count} files to delete.");
+
+  excludedFiles = obsoleteFiles.Where(fi => projectFiles.Any(pf => NormalizePath(fi.FullName).Substring(centralPathLength + 1).TrimStart('/', '\\').ToLowerInvariant() == (pf.ToLowerInvariant()))).ToList();
+  obsoleteFiles = obsoleteFiles.Where(fi => !projectFiles.Any(pf => NormalizePath(fi.FullName).Substring(centralPathLength + 1).TrimStart('/', '\\').ToLowerInvariant() == (pf.ToLowerInvariant()))).ToList();
+  Log.LogMessage(MessageImportance.High, $"After excluding {excludedFiles.Count} files (from project files), we have {obsoleteFiles.Count} files to delete.");
+
+  if (obsoleteFiles.Count == 0) 
+    Log.LogMessage(MessageImportance.High, "No obsolete files found in central location.");
+  else
+  {
+    Log.LogMessage(MessageImportance.High, "Found {0} obsolete files:", obsoleteFiles.Count);
+    foreach (var file in obsoleteFiles)
     {
-        Log.LogMessage(MessageImportance.High, "No obsolete files found in central location.");
+      Log.LogMessage(MessageImportance.High, $"Deleting: {file}");
+              
+      try
+      {
+        // Delete obsolete central file
+        var fullPath = file.FullName;
+        file.Delete();
+        
+        // Check if we have the same obsolete file in the local node.
+        var relativePath = fullPath.Substring(di.FullName.Length).TrimStart('\\', '/');
+        var localFile = Path.Combine(LocalPath, relativePath);
+        if (File.Exists(localFile))
+          File.Delete(localFile);
+      }
+      catch (Exception ex)
+      {
+        Log.LogWarning($"Failed to delete {file}: {ex.Message}");
+      }
     }
-    else
+  }
+  
+  // Now clean up all empty directories at once
+  Log.LogMessage(MessageImportance.High, "Cleaning up empty directories in central location...");
+  int emptyDirsDeleted = 0;
+  
+  // Define a recursive action to delete empty directories
+  Action<DirectoryInfo> deleteEmptyDirs = null;
+  deleteEmptyDirs = (dir) => {
+    // Skip if this is an excluded folder
+    if (excludeFolders.Any(ef => dir.FullName.ToLowerInvariant().Split('\\', '/').Contains(ef.ToLowerInvariant())))
+      return;
+    
+    // Process all subdirectories first (bottom-up approach)
+    foreach (var subDir in dir.GetDirectories())
+      deleteEmptyDirs(subDir);
+    
+    // Refresh directory info (subdirectories might have been deleted)
+    dir.Refresh();
+    
+    // If the directory is empty and not the root directory, delete it
+    if (dir.GetFiles().Length == 0 && 
+        dir.GetDirectories().Length == 0 && 
+        NormalizePath(dir.FullName) != NormalizePath(CentralPath))
     {
-        Log.LogMessage(MessageImportance.High, "Found {0} obsolete files:", obsoleteFiles.Count);
-        foreach (var file in obsoleteFiles)
-        {
-            Log.LogMessage(MessageImportance.High, $"Deleting: {file}");
-                    
-            try
-            {
-                // Delete obsolete central file
-                var fullPath = file.FullName;
-                file.Delete();
-                
-                // Check if we have the same obsolete file in the local node.
-                var relativePath = fullPath.Substring(di.FullName.Length).TrimStart('\\', '/');
-                var localFile = Path.Combine(LocalPath, relativePath);
-                if (File.Exists(localFile))
-                    File.Delete(localFile);
-            }
-            catch (Exception ex)
-            {
-                Log.LogWarning($"Failed to delete {file}: {ex.Message}");
-            }
-        }
+      try
+      {
+        Log.LogMessage(MessageImportance.Normal, $"Deleting empty directory: {dir.FullName}");
+        dir.Delete();
+        emptyDirsDeleted++;
+      }
+      catch (Exception ex)
+      {
+        Log.LogWarning($"Failed to delete directory {dir.FullName}: {ex.Message}");
+      }
     }
-    
-    // Now clean up all empty directories at once
-    Log.LogMessage(MessageImportance.High, "Cleaning up empty directories in central location...");
-    int emptyDirsDeleted = 0;
-    
-    // Define a recursive action to delete empty directories
-    Action<DirectoryInfo> deleteEmptyDirs = null;
-    deleteEmptyDirs = (dir) => {
-        // Skip if this is an excluded folder
-        if (excludeFolders.Any(ef => dir.FullName.ToLowerInvariant().Split('\\', '/').Contains(ef.ToLowerInvariant())))
-            return;
-        
-        // Process all subdirectories first (bottom-up approach)
-        foreach (var subDir in dir.GetDirectories())
-        {
-            deleteEmptyDirs(subDir);
-        }
-        
-        // Refresh directory info (subdirectories might have been deleted)
-        dir.Refresh();
-        
-        // If the directory is empty and not the root directory, delete it
-        if (dir.GetFiles().Length == 0 && 
-            dir.GetDirectories().Length == 0 && 
-            NormalizePath(dir.FullName) != NormalizePath(CentralPath))
-        {
-            try
-            {
-                Log.LogMessage(MessageImportance.Normal, $"Deleting empty directory: {dir.FullName}");
-                dir.Delete();
-                emptyDirsDeleted++;
-            }
-            catch (Exception ex)
-            {
-                Log.LogWarning($"Failed to delete directory {dir.FullName}: {ex.Message}");
-            }
-        }
-    };
-    
-    // Start the recursive directory cleanup from the root
-    deleteEmptyDirs(di);
-    
-    Log.LogMessage(MessageImportance.High, $"Deleted {emptyDirsDeleted} empty directories from central location.");
+  };
+  
+  // Start the recursive directory cleanup from the root
+  deleteEmptyDirs(di);
+  
+  Log.LogMessage(MessageImportance.High, $"Deleted {emptyDirsDeleted} empty directories from central location.");
 
-    Success = true;
+  Success = true;
 }
 catch (Exception ex)
 {
     Log.LogError($"Failed to cleanup central location: {ex.Message}");
     Success = false;
 }
-
 ]]></Code>
     </Task>
   </UsingTask>

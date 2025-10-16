@@ -6,7 +6,7 @@ using ByteForge.Toolkit.Tests.Helpers;
 namespace ByteForge.Toolkit.Tests.Unit.Utils
 {
     /// <summary>
-    /// Unit tests for <c>NameCapitalizer</c> covering capitalization rules, particles, prefixes, hyphenation, complex names, and edge cases.
+    /// Unit tests for <c>NameUtil</c> covering capitalization rules, particles, prefixes, hyphenation, complex names, and edge cases.
     /// </summary>
     [TestClass]
     [TestCategory("Unit")]
@@ -25,7 +25,7 @@ namespace ByteForge.Toolkit.Tests.Unit.Utils
             string input = null;
 
             // Act
-            var result = NameCapitalizer.CapitalizeName(input);
+            var result = NameUtil.CapitalizeName(input);
 
             // Assert
             result.Should().BeNull();
@@ -41,7 +41,7 @@ namespace ByteForge.Toolkit.Tests.Unit.Utils
             var input = string.Empty;
 
             // Act
-            var result = NameCapitalizer.CapitalizeName(input);
+            var result = NameUtil.CapitalizeName(input);
 
             // Assert
             result.Should().BeEmpty();
@@ -57,7 +57,7 @@ namespace ByteForge.Toolkit.Tests.Unit.Utils
             var input = "   ";
 
             // Act
-            var result = NameCapitalizer.CapitalizeName(input);
+            var result = NameUtil.CapitalizeName(input);
 
             // Assert
             result.Should().Be("   ");
@@ -73,7 +73,7 @@ namespace ByteForge.Toolkit.Tests.Unit.Utils
             var input = "john";
 
             // Act
-            var result = NameCapitalizer.CapitalizeName(input);
+            var result = NameUtil.CapitalizeName(input);
 
             // Assert
             result.Should().Be("John");
@@ -89,7 +89,7 @@ namespace ByteForge.Toolkit.Tests.Unit.Utils
             var input = "JOHN";
 
             // Act
-            var result = NameCapitalizer.CapitalizeName(input);
+            var result = NameUtil.CapitalizeName(input);
 
             // Assert
             result.Should().Be("John");
@@ -105,7 +105,7 @@ namespace ByteForge.Toolkit.Tests.Unit.Utils
             var input = "jOhN";
 
             // Act
-            var result = NameCapitalizer.CapitalizeName(input);
+            var result = NameUtil.CapitalizeName(input);
 
             // Assert
             result.Should().Be("John");
@@ -121,7 +121,7 @@ namespace ByteForge.Toolkit.Tests.Unit.Utils
             var input = "john    doe";
 
             // Act
-            var result = NameCapitalizer.CapitalizeName(input);
+            var result = NameUtil.CapitalizeName(input);
 
             // Assert
             result.Should().Be("John Doe");
@@ -137,7 +137,7 @@ namespace ByteForge.Toolkit.Tests.Unit.Utils
             var input = "  john doe  ";
 
             // Act
-            var result = NameCapitalizer.CapitalizeName(input);
+            var result = NameUtil.CapitalizeName(input);
 
             // Assert
             result.Should().Be("John Doe");
@@ -157,7 +157,7 @@ namespace ByteForge.Toolkit.Tests.Unit.Utils
             var input = "maria de la cruz";
 
             // Act
-            var result = NameCapitalizer.CapitalizeName(input);
+            var result = NameUtil.CapitalizeName(input);
 
             // Assert
             result.Should().Be("Maria de la Cruz");
@@ -173,7 +173,7 @@ namespace ByteForge.Toolkit.Tests.Unit.Utils
             var input = "de la cruz";
 
             // Act
-            var result = NameCapitalizer.CapitalizeName(input);
+            var result = NameUtil.CapitalizeName(input);
 
             // Assert
             result.Should().Be("De la Cruz");
@@ -189,7 +189,7 @@ namespace ByteForge.Toolkit.Tests.Unit.Utils
             var input = "jan van der berg";
 
             // Act
-            var result = NameCapitalizer.CapitalizeName(input);
+            var result = NameUtil.CapitalizeName(input);
 
             // Assert
             result.Should().Be("Jan van der Berg");
@@ -205,7 +205,7 @@ namespace ByteForge.Toolkit.Tests.Unit.Utils
             var input = "ludwig von beethoven";
 
             // Act
-            var result = NameCapitalizer.CapitalizeName(input);
+            var result = NameUtil.CapitalizeName(input);
 
             // Assert
             result.Should().Be("Ludwig von Beethoven");
@@ -221,7 +221,7 @@ namespace ByteForge.Toolkit.Tests.Unit.Utils
             var input = "pedro del rio y garcia";
 
             // Act
-            var result = NameCapitalizer.CapitalizeName(input);
+            var result = NameUtil.CapitalizeName(input);
 
             // Assert
             result.Should().Be("Pedro del Rio y Garcia");
@@ -241,7 +241,7 @@ namespace ByteForge.Toolkit.Tests.Unit.Utils
             var input = "mcdonald";
 
             // Act
-            var result = NameCapitalizer.CapitalizeName(input);
+            var result = NameUtil.CapitalizeName(input);
 
             // Assert
             result.Should().Be("McDonald");
@@ -257,7 +257,7 @@ namespace ByteForge.Toolkit.Tests.Unit.Utils
             var input = "macarthur";
 
             // Act
-            var result = NameCapitalizer.CapitalizeName(input);
+            var result = NameUtil.CapitalizeName(input);
 
             // Assert
             result.Should().Be("MacArthur");
@@ -273,7 +273,7 @@ namespace ByteForge.Toolkit.Tests.Unit.Utils
             var input = "mckay";
 
             // Act
-            var result = NameCapitalizer.CapitalizeName(input);
+            var result = NameUtil.CapitalizeName(input);
 
             // Assert
             result.Should().Be("Mckay");
@@ -289,7 +289,7 @@ namespace ByteForge.Toolkit.Tests.Unit.Utils
             var input = "mackenzie";
 
             // Act
-            var result = NameCapitalizer.CapitalizeName(input);
+            var result = NameUtil.CapitalizeName(input);
 
             // Assert
             result.Should().Be("Mackenzie");
@@ -305,7 +305,7 @@ namespace ByteForge.Toolkit.Tests.Unit.Utils
             var input = "mc";
 
             // Act
-            var result = NameCapitalizer.CapitalizeName(input);
+            var result = NameUtil.CapitalizeName(input);
 
             // Assert
             result.Should().Be("Mc");
@@ -321,7 +321,7 @@ namespace ByteForge.Toolkit.Tests.Unit.Utils
             var input = "mac";
 
             // Act
-            var result = NameCapitalizer.CapitalizeName(input);
+            var result = NameUtil.CapitalizeName(input);
 
             // Assert
             result.Should().Be("Mac");
@@ -341,7 +341,7 @@ namespace ByteForge.Toolkit.Tests.Unit.Utils
             var input = "o'connor";
 
             // Act
-            var result = NameCapitalizer.CapitalizeName(input);
+            var result = NameUtil.CapitalizeName(input);
 
             // Assert
             result.Should().Be("O'Connor");
@@ -357,7 +357,7 @@ namespace ByteForge.Toolkit.Tests.Unit.Utils
             var input = "d'angelo";
 
             // Act
-            var result = NameCapitalizer.CapitalizeName(input);
+            var result = NameUtil.CapitalizeName(input);
 
             // Assert
             result.Should().Be("D'Angelo");
@@ -373,7 +373,7 @@ namespace ByteForge.Toolkit.Tests.Unit.Utils
             var input = "o'";
 
             // Act
-            var result = NameCapitalizer.CapitalizeName(input);
+            var result = NameUtil.CapitalizeName(input);
 
             // Assert
             result.Should().Be("O'");
@@ -389,7 +389,7 @@ namespace ByteForge.Toolkit.Tests.Unit.Utils
             var input = "d'";
 
             // Act
-            var result = NameCapitalizer.CapitalizeName(input);
+            var result = NameUtil.CapitalizeName(input);
 
             // Assert
             result.Should().Be("D'");
@@ -409,7 +409,7 @@ namespace ByteForge.Toolkit.Tests.Unit.Utils
             var input = "jean-claude";
 
             // Act
-            var result = NameCapitalizer.CapitalizeName(input);
+            var result = NameUtil.CapitalizeName(input);
 
             // Assert
             result.Should().Be("Jean-Claude");
@@ -425,7 +425,7 @@ namespace ByteForge.Toolkit.Tests.Unit.Utils
             var input = "anne-marie-louise";
 
             // Act
-            var result = NameCapitalizer.CapitalizeName(input);
+            var result = NameUtil.CapitalizeName(input);
 
             // Assert
             result.Should().Be("Anne-Marie-Louise");
@@ -441,7 +441,7 @@ namespace ByteForge.Toolkit.Tests.Unit.Utils
             var input = "marie-christine de la tour";
 
             // Act
-            var result = NameCapitalizer.CapitalizeName(input);
+            var result = NameUtil.CapitalizeName(input);
 
             // Assert
             result.Should().Be("Marie-Christine de la Tour");
@@ -461,7 +461,7 @@ namespace ByteForge.Toolkit.Tests.Unit.Utils
             var input = "sean o'connor-mcdonald de la cruz";
 
             // Act
-            var result = NameCapitalizer.CapitalizeName(input);
+            var result = NameUtil.CapitalizeName(input);
 
             // Assert
             result.Should().Be("Sean O'Connor-mcdonald de la Cruz");
@@ -477,7 +477,7 @@ namespace ByteForge.Toolkit.Tests.Unit.Utils
             var input = "JOHN VAN DER BERG";
 
             // Act
-            var result = NameCapitalizer.CapitalizeName(input);
+            var result = NameUtil.CapitalizeName(input);
 
             // Assert
             result.Should().Be("John van der Berg");
@@ -493,7 +493,7 @@ namespace ByteForge.Toolkit.Tests.Unit.Utils
             var input = "maria de los angeles";
 
             // Act
-            var result = NameCapitalizer.CapitalizeName(input);
+            var result = NameUtil.CapitalizeName(input);
 
             // Assert
             result.Should().Be("Maria de Los Angeles");
@@ -513,7 +513,7 @@ namespace ByteForge.Toolkit.Tests.Unit.Utils
             string input = null;
 
             // Act
-            var result = NameCapitalizer.CapitalizeFullName(input);
+            var result = NameUtil.CapitalizeFullName(input);
 
             // Assert
             result.Should().BeNull();
@@ -529,7 +529,7 @@ namespace ByteForge.Toolkit.Tests.Unit.Utils
             var input = string.Empty;
 
             // Act
-            var result = NameCapitalizer.CapitalizeFullName(input);
+            var result = NameUtil.CapitalizeFullName(input);
 
             // Assert
             result.Should().BeEmpty();
@@ -545,7 +545,7 @@ namespace ByteForge.Toolkit.Tests.Unit.Utils
             var input = "john doe";
 
             // Act
-            var result = NameCapitalizer.CapitalizeFullName(input);
+            var result = NameUtil.CapitalizeFullName(input);
 
             // Assert
             result.Should().Be("John Doe");
@@ -561,7 +561,7 @@ namespace ByteForge.Toolkit.Tests.Unit.Utils
             var input = "smith, john";
 
             // Act
-            var result = NameCapitalizer.CapitalizeFullName(input);
+            var result = NameUtil.CapitalizeFullName(input);
 
             // Assert
             result.Should().Be("Smith,John");
@@ -577,7 +577,7 @@ namespace ByteForge.Toolkit.Tests.Unit.Utils
             var input = "smith, john de la";
 
             // Act
-            var result = NameCapitalizer.CapitalizeFullName(input);
+            var result = NameUtil.CapitalizeFullName(input);
 
             // Assert
             result.Should().Be("Smith,John de la");
@@ -593,7 +593,7 @@ namespace ByteForge.Toolkit.Tests.Unit.Utils
             var input = "smith, john, jr";
 
             // Act
-            var result = NameCapitalizer.CapitalizeFullName(input);
+            var result = NameUtil.CapitalizeFullName(input);
 
             // Assert
             result.Should().Be("Smith,John,Jr");
@@ -609,7 +609,7 @@ namespace ByteForge.Toolkit.Tests.Unit.Utils
             var input = "mcdonald, sean";
 
             // Act
-            var result = NameCapitalizer.CapitalizeFullName(input);
+            var result = NameUtil.CapitalizeFullName(input);
 
             // Assert
             result.Should().Be("McDonald,Sean");
@@ -625,7 +625,7 @@ namespace ByteForge.Toolkit.Tests.Unit.Utils
             var input = "cruz, maria de la";
 
             // Act
-            var result = NameCapitalizer.CapitalizeFullName(input);
+            var result = NameUtil.CapitalizeFullName(input);
 
             // Assert
             result.Should().Be("Cruz,Maria de la");
@@ -645,7 +645,7 @@ namespace ByteForge.Toolkit.Tests.Unit.Utils
             var input = "a";
 
             // Act
-            var result = NameCapitalizer.CapitalizeName(input);
+            var result = NameUtil.CapitalizeName(input);
 
             // Assert
             result.Should().Be("A");
@@ -661,7 +661,7 @@ namespace ByteForge.Toolkit.Tests.Unit.Utils
             var input = "john123";
 
             // Act
-            var result = NameCapitalizer.CapitalizeName(input);
+            var result = NameUtil.CapitalizeName(input);
 
             // Assert
             result.Should().Be("John123");
@@ -677,7 +677,7 @@ namespace ByteForge.Toolkit.Tests.Unit.Utils
             var input = "-";
 
             // Act
-            var result = NameCapitalizer.CapitalizeName(input);
+            var result = NameUtil.CapitalizeName(input);
 
             // Assert
             result.Should().Be("-");
@@ -693,7 +693,7 @@ namespace ByteForge.Toolkit.Tests.Unit.Utils
             var input = "john-";
 
             // Act
-            var result = NameCapitalizer.CapitalizeName(input);
+            var result = NameUtil.CapitalizeName(input);
 
             // Assert
             result.Should().Be("John-");
@@ -709,7 +709,7 @@ namespace ByteForge.Toolkit.Tests.Unit.Utils
             var input = "john--marie";
 
             // Act
-            var result = NameCapitalizer.CapitalizeName(input);
+            var result = NameUtil.CapitalizeName(input);
 
             // Assert
             result.Should().Be("John--Marie");

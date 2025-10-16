@@ -22,13 +22,13 @@ namespace ByteForge.Toolkit
     /// <example>
     /// Examples:<br/>
     /// <code>
-    /// NameCapitalizer.CapitalizeName("mCdonald");        // "McDonald"
-    /// NameCapitalizer.CapitalizeName("sean o'connor");    // "Sean O'Connor"
-    /// NameCapitalizer.CapitalizeName("maria de la cruz"); // "Maria de la Cruz"
-    /// NameCapitalizer.CapitalizeFullName("smith, john de la"); // "Smith, John de la"
+    /// NameUtil.CapitalizeName("mCdonald");        // "McDonald"
+    /// NameUtil.CapitalizeName("sean o'connor");    // "Sean O'Connor"
+    /// NameUtil.CapitalizeName("maria de la cruz"); // "Maria de la Cruz"
+    /// NameUtil.CapitalizeFullName("smith, john de la"); // "Smith, John de la"
     /// </code>
     /// </example>
-    public static class NameCapitalizer
+    public static class NameUtil
     {
         /// <summary>
         /// Particles that should remain lowercase unless they are the first component in the name.
@@ -199,6 +199,24 @@ namespace ByteForge.Toolkit
             }
 
             return CapitalizeName(fullName);
+        }
+
+        /// <summary>
+        /// Normalizes a user name by trimming whitespace, converting to lowercase, and removing domain information.
+        /// </summary>
+        /// <param name="name">The user name to normalize. This can include domain information (e.g., "DOMAIN\username" or "username@domain.com").</param>
+        /// <returns>The normalized user name, which is the input string converted to lowercase, with leading and trailing whitespace removed, and any domain information stripped. If <paramref name="name"/> is <see langword="null"/> or empty, the method returns the input as is.</returns>
+        public static string NormalizeUserName(string name)
+        {
+            if (string.IsNullOrEmpty(name))
+                return name;
+
+            var normalized = name.Trim().ToLowerInvariant();
+            if (normalized.Contains("\\"))
+                normalized = name.Split('\\').Last();
+            if (normalized.Contains("@"))
+                normalized = name.Split('@').First();
+            return normalized;
         }
     }
 }

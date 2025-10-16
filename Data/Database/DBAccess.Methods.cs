@@ -336,6 +336,7 @@ namespace ByteForge.Toolkit
             catch (Exception ex)
             {
                 LastException = ex;
+                RollbackTransaction();
                 LogQueryError(ex, query, arguments);
                 return default;
             }

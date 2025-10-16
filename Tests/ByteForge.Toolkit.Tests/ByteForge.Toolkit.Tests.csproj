@@ -5,6 +5,7 @@
     <LangVersion>latest</LangVersion>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <RunSettingsFilePath>C:\Users\pauls\source\TelecomInc\ByteForge.Toolkit\Tests\ByteForge.Toolkit.Tests\bin\Debug\net48\fine-code-coverage\coverage-tool-output\ByteForge.Toolkit.Tests-fcc-mscodecoverage-generated.runsettings</RunSettingsFilePath>
   </PropertyGroup>
 
   <ItemGroup>
