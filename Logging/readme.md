@@ -275,7 +275,7 @@ Log.Instance.Dispose();     // Clean shutdown
 | [Security](../Security/readme.md)             | AES-based string encryption with key generation and Galois Field logic          |
 | [Utils](../Utils/readme.md)                   | Miscellaneous helpers: timing, path utilities, progress bar                     |
 | [Core](../Core/readme.md)                     | Embedded resource deployment (WinSCP)                                           |
-| [HTML](../HTML/readme.md)                     | NPD UI framework components                                                     |
+| [HTML](../HTML/readme.md)                     | Web UI framework components                                                     |
 
 This logging framework provides enterprise-grade capabilities while maintaining simplicity for basic use cases, making it suitable for everything from small utilities to large-scale applications.
 

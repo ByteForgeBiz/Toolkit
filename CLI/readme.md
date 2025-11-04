@@ -258,4 +258,4 @@ return await parser.InvokeAsync(args);
 | [Security](../Security/readme.md)             | AES-based string encryption with key generation and Galois Field logic          |
 | [Utils](../Utils/readme.md)                   | Miscellaneous helpers: timing, path utilities, progress bar                     |
 | [Core](../Core/readme.md)                     | Embedded resource deployment (WinSCP)                                           |
-| [HTML](../HTML/readme.md)                     | NPD UI framework components                                                     |
+| [HTML](../HTML/readme.md)                     | Web UI framework components                                                     |

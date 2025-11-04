@@ -36,10 +36,9 @@ Cross-protocol (FTP / FTPS Explicit & Implicit / SFTP) high?level client built o
 ### 📚 Related Modules
 | Module                              | Description                                                                   |
 |-------------------------------------|-------------------------------------------------------------------------------|
-| [?? Home](./Home.md)                | Main toolkit documentation                                                    |
+| [🏠 Home](./Home.md)                | Main toolkit documentation                                                    |
 | [Core](./Core.md)                   | Embedded resource extraction (WinSCP)                                         |
 | [Configuration](./Configuration.md) | Store encrypted credentials / endpoints                                       |
 | [Security](./Security.md)           | Encrypt stored passwords before loading config                                |
 | [Logging](./Logging.md)             | Capture transfer diagnostics                                                  |
 | [Utils](./Utils.md)                 | Timing, path helpers & formatting                                             |
-

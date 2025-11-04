@@ -39,7 +39,7 @@ The toolkit is organized into 11 independent modules, each focusing on specific 
 |------------|--------------------------------------|----------------------------------------------------------------------|
 | **CLI**    | Command-line interface framework     | Attribute-based parsing, aliasing, typo correction, plugin discovery |
 | **Mail**   | Email processing system              | HTML support, intelligent attachments, automatic compression         |
-| **HTML**   | NPD UI framework                     | Modals, calendar widgets, professional styling, dark/light themes    |
+| **HTML**   | Web UI framework                     | Modals, calendar widgets, professional styling, dark/light themes    |
 | **Utils**  | Utility collection                   | Type parsing, template processing, timing, console operations        |
 
 ## Key Capabilities

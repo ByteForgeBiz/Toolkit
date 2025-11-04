@@ -380,5 +380,5 @@ This Mail module provides a robust, enterprise-ready email solution with intelli
 | [Security](./Security.md)             | AES-based string encryption with key generation and Galois Field logic          |
 | [Utils](./Utils.md)                   | Miscellaneous helpers: timing, path utilities, progress bar                     |
 | [Core](./Core.md)                     | Embedded resource deployment (WinSCP)                                           |
-| [HTML](./HTML.md)                     | NPD UI framework components                                                     |
+| [HTML](./HTML.md)                     | Web UI framework components                                                     |
 

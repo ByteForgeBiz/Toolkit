@@ -15,7 +15,7 @@
 | [Net](./Net/readme.md)                       | FTP / FTPS / SFTP client with batching, progress & concurrency                  |
 | [Security](./Security/readme.md)             | AES-based string encryption with key generation and Galois Field logic          |
 | [Utils](./Utils/readme.md)                   | Miscellaneous helpers: parsing, timing, IO, console, templates                  |
-| [HTML](./HTML/readme.md)                     | NPD UI framework (modals, calendar, utilities, theming)                         |
+| [HTML](./HTML/readme.md)                     | Web UI framework (modals, calendar, utilities, theming)                         |
 | [Core](./Core/readme.md)                     | Core services & embedded WinSCP resource deployment                             |
 
 ---
