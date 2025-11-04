@@ -1,4 +1,4 @@
-﻿# README.md
+# README.md
 
 **ByteForge.Toolkit** is a modular .NET Framework 4.8 library designed to streamline development with high-performance utilities, structured configuration management, secure encryption, logging, networking/file transfer and more. This project is organized into cohesive components, each documented individually.
 

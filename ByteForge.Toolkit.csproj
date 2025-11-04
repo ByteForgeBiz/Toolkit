@@ -273,6 +273,19 @@
     <None Include="DataStructures\readme.md" />
     <None Include="Data\CSV\readme.md" />
     <None Include="Data\Database\readme.md" />
+    <None Include="Docs\CLI.md" />
+    <None Include="Docs\Configuration.md" />
+    <None Include="Docs\Core.md" />
+    <None Include="Docs\Data.md" />
+    <None Include="Docs\DataStructures.md" />
+    <None Include="Docs\Home.md" />
+    <None Include="Docs\HTML.md" />
+    <None Include="Docs\Logging.md" />
+    <None Include="Docs\Mail.md" />
+    <None Include="Docs\Net.md" />
+    <None Include="Docs\Overview.md" />
+    <None Include="Docs\Security.md" />
+    <None Include="Docs\Utils.md" />
     <None Include="FodyWeavers.xsd">
       <SubType>Designer</SubType>
     </None>
@@ -280,6 +293,7 @@
     <None Include="Logging\readme.md" />
     <None Include="Mail\readme.md" />
     <None Include="Net\readme.md" />
+    <None Include="overview.md" />
     <None Include="Properties\CHANGELOG.md" />
     <None Include="readme.md" />
     <None Include="Security\readme.md" />
