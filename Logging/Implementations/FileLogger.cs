@@ -205,7 +205,21 @@ namespace ByteForge.Toolkit.Logging
             if (!File.Exists(filePath))
                 File.Create(filePath).Close();
 
-            using var fs = File.Open(filePath, FileMode.Open, FileAccess.ReadWrite, FileShare.Read);
+            var count = 0;
+            // Retry a few times if the file is locked
+            while (count < 5)
+            {
+                try
+                {
+                    using var fs = File.Open(filePath, FileMode.Open, FileAccess.ReadWrite, FileShare.Read);
+                    return;
+                }
+                catch (IOException)
+                {
+                    count++;
+                    Thread.Sleep(100);
+                }
+            }
             return;
         }
 

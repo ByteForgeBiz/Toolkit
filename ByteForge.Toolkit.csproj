@@ -219,6 +219,7 @@
     <Compile Include="CLI\ProgressSpinner.cs" />
     <Compile Include="Utils\DateTimeUtil.cs" />
     <Compile Include="Utils\EnumExtensions.cs" />
+    <Compile Include="Utils\HtmlUtil.cs" />
     <Compile Include="Utils\IParser.cs" />
     <Compile Include="Utils\NameUtil.cs" />
     <Compile Include="Utils\Parser.cs" />
