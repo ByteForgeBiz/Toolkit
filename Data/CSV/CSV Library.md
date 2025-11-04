@@ -1,4 +1,4 @@
-﻿# CSV.md
+# CSV.md
 
 ## ByteForge CSV Processing Library
 
@@ -40,4 +40,5 @@ reader.ReadFile("data.csv");
 - [Utils](../../Utils/readme.md)
 - [Logging](../../Logging/readme.md)
 - [Configuration](../../Configuration/readme.md)
+
 

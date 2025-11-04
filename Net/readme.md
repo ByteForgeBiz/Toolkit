@@ -20,25 +20,26 @@ Cross-protocol (FTP / FTPS Explicit & Implicit / SFTP) high?level client built o
 - Deterministic configuration factories for each protocol (`CreateFtpConfig`, `CreateFtpsConfig`, `CreateSftpConfig`)
 
 ### 🧱 Core Types
-| Type                   | Purpose                                       |
-|------------------------|-----------------------------------------------|
-| `FileTransferClient`   | Primary facade for all transfer operations    |
-| `FileTransferConfig`   | Connection + security settings (protocol, host, creds, timeouts) |
-| `TransferProtocol`     | Enum (FTP, FTPS_Explicit, FTPS_Implicit, SFTP) |
-| `FileTransferItem`     | Describes a single upload/download intent     |
-| `FileTransferResult`   | Result for a single transfer (success / error) |
-| `FileOperationResult`  | Result for non?transfer ops (delete etc.)    |
-| `FileTransferProgress` | Progress snapshot for multi-file transfers    |
-| `FileOperationProgress` | Progress snapshot for bulk operations         |
-| `RemoteFileInfo`       | Metadata for remote listing entries           |
-| `FileTransferException` | Domain exception wrapping underlying failures |
+| Type                     | Purpose                                                          |
+|--------------------------|------------------------------------------------------------------|
+| `FileTransferClient`     | Primary facade for all transfer operations                       |
+| `FileTransferConfig`     | Connection + security settings (protocol, host, creds, timeouts) |
+| `TransferProtocol`       | Enum (FTP, FTPS_Explicit, FTPS_Implicit, SFTP)                   |
+| `FileTransferItem`       | Describes a single upload/download intent                        |
+| `FileTransferResult`     | Result for a single transfer (success / error)                   |
+| `FileOperationResult`    | Result for non?transfer ops (delete etc.)                        |
+| `FileTransferProgress`   | Progress snapshot for multi-file transfers                       |
+| `FileOperationProgress`  | Progress snapshot for bulk operations                            |
+| `RemoteFileInfo`         | Metadata for remote listing entries                              |
+| `FileTransferException`  | Domain exception wrapping underlying failures                    |
 
 ### 📚 Related Modules
-| Module      | Description                                                                 |
-|-------------|-----------------------------------------------------------------------------|
-| [?? Home](../readme.md) | Main toolkit documentation                                                 |
-| [Core](../Core/readme.md) | Embedded resource extraction (WinSCP)                                      |
-| [Configuration](../Configuration/readme.md) | Store encrypted credentials / endpoints                                   |
-| [Security](../Security/readme.md) | Encrypt stored passwords before loading config                            |
-| [Logging](../Logging/readme.md) | Capture transfer diagnostics                                              |
-| [Utils](../Utils/readme.md) | Timing, path helpers & formatting                                         |
+| Module                                      | Description                                                                   |
+|---------------------------------------------|-------------------------------------------------------------------------------|
+| [?? Home](../readme.md)                     | Main toolkit documentation                                                    |
+| [Core](../Core/readme.md)                   | Embedded resource extraction (WinSCP)                                         |
+| [Configuration](../Configuration/readme.md) | Store encrypted credentials / endpoints                                       |
+| [Security](../Security/readme.md)           | Encrypt stored passwords before loading config                                |
+| [Logging](../Logging/readme.md)             | Capture transfer diagnostics                                                  |
+| [Utils](../Utils/readme.md)                 | Timing, path helpers & formatting                                             |
+

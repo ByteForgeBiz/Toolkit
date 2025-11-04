@@ -20,27 +20,27 @@ The toolkit is organized into 11 independent modules, each focusing on specific 
 ## Module Overview
 
 ### Core Infrastructure
-| Module          | Description                                 | Key Features                                      |
-|-----------------|---------------------------------------------|---------------------------------------------------|
-| **Core**        | Embedded resource deployment and core services | WinSCP binary extraction, dependency management   |
-| **Configuration**| INI-based configuration system             | Strongly-typed sections, arrays, dictionaries, globalization support |
-| **Logging**     | Thread-safe logging framework               | File rotation, async logging, session management, correlation tracking |
-| **Security**    | AES-based encryption system                 | Deterministic key generation, Galois Field mathematics, credential protection |
+| Module            | Description                                    | Key Features                                                                  |
+|-------------------|------------------------------------------------|-------------------------------------------------------------------------------|
+| **Core**          | Embedded resource deployment and core services | WinSCP binary extraction, dependency management                               |
+| **Configuration** | INI-based configuration system                 | Strongly-typed sections, arrays, dictionaries, globalization support          |
+| **Logging**       | Thread-safe logging framework                  | File rotation, async logging, session management, correlation tracking        |
+| **Security**      | AES-based encryption system                    | Deterministic key generation, Galois Field mathematics, credential protection |
 
 ### Data Processing & Storage
-| Module              | Description                        | Key Features                                      |
-|---------------------|-----------------------------------|---------------------------------------------------|
-| **Data**            | Comprehensive data processing     | CSV streaming, database access (SQL Server/ODBC), audio format detection |
-| **DataStructures**  | Efficient data structures         | AVL tree implementation, URL utilities            |
-| **Net**             | Cross-protocol file transfer      | FTP/FTPS/SFTP support, batching, progress reporting, concurrency |
+| Module                | Description                         | Key Features                                                             |
+|-----------------------|-------------------------------------|--------------------------------------------------------------------------|
+| **Data**              | Comprehensive data processing       | CSV streaming, database access (SQL Server/ODBC), audio format detection |
+| **DataStructures**    | Efficient data structures           | AVL tree implementation, URL utilities                                   |
+| **Net**               | Cross-protocol file transfer        | FTP/FTPS/SFTP support, batching, progress reporting, concurrency         |
 
 ### User Interface & Interaction
-| Module   | Description                        | Key Features                                      |
-|----------|------------------------------------|---------------------------------------------------|
-| **CLI**  | Command-line interface framework   | Attribute-based parsing, aliasing, typo correction, plugin discovery |
-| **Mail** | Email processing system            | HTML support, intelligent attachments, automatic compression |
-| **HTML** | NPD UI framework                   | Modals, calendar widgets, professional styling, dark/light themes |
-| **Utils**| Utility collection                 | Type parsing, template processing, timing, console operations |
+| Module     | Description                          | Key Features                                                         |
+|------------|--------------------------------------|----------------------------------------------------------------------|
+| **CLI**    | Command-line interface framework     | Attribute-based parsing, aliasing, typo correction, plugin discovery |
+| **Mail**   | Email processing system              | HTML support, intelligent attachments, automatic compression         |
+| **HTML**   | NPD UI framework                     | Modals, calendar widgets, professional styling, dark/light themes    |
+| **Utils**  | Utility collection                   | Type parsing, template processing, timing, console operations        |
 
 ## Key Capabilities
 

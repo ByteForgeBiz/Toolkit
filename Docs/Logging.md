@@ -262,19 +262,20 @@ Log.Instance.Dispose();     // Clean shutdown
 
 ## 📚 Related Modules
 
-| Module      | Description                                                                 |
-|-------------|-----------------------------------------------------------------------------|
-| [🏠 Home](./Home.md) | ByteForge.Toolkit main documentation                                       |
-| [CommandLine](./CLI.md) | Attribute-based CLI parsing with aliasing, typo correction, and plugin support |
-| [Configuration](./Configuration.md) | INI-based configuration system with typed section support                 |
-| [Data](./Data.md) | Comprehensive data processing with CSV, Database, Audio, and Exception handling |
-| [DataStructures](./DataStructures.md) | AVL tree and URL utility classes                                          |
-| [Logging](./Logging.md) | Thread-safe logging system with async file/console output                 |
-| [Mail](./Mail.md) | Email utility with HTML support and attachment handling                   |
-| [Net](./Net.md) | FTP/FTPS/SFTP high-level transfer client                                  |
-| [Security](./Security.md) | AES-based string encryption with key generation and Galois Field logic   |
-| [Utils](./Utils.md) | Miscellaneous helpers: timing, path utilities, progress bar              |
-| [Core](./Core.md) | Embedded resource deployment (WinSCP)                                    |
-| [HTML](./HTML.md) | NPD UI framework components                                               |
+| Module                                | Description                                                                     |
+|---------------------------------------|---------------------------------------------------------------------------------|
+| [🏠 Home](./Home.md)                  | ByteForge.Toolkit main documentation                                            |
+| [CommandLine](./CLI.md)               | Attribute-based CLI parsing with aliasing, typo correction, and plugin support  |
+| [Configuration](./Configuration.md)   | INI-based configuration system with typed section support                       |
+| [Data](./Data.md)                     | Comprehensive data processing with CSV, Database, Audio, and Exception handling |
+| [DataStructures](./DataStructures.md) | AVL tree and URL utility classes                                                |
+| [Logging](./Logging.md)               | Thread-safe logging system with async file/console output                       |
+| [Mail](./Mail.md)                     | Email utility with HTML support and attachment handling                         |
+| [Net](./Net.md)                       | FTP/FTPS/SFTP high-level transfer client                                        |
+| [Security](./Security.md)             | AES-based string encryption with key generation and Galois Field logic          |
+| [Utils](./Utils.md)                   | Miscellaneous helpers: timing, path utilities, progress bar                     |
+| [Core](./Core.md)                     | Embedded resource deployment (WinSCP)                                           |
+| [HTML](./HTML.md)                     | NPD UI framework components                                                     |
 
 This logging framework provides enterprise-grade capabilities while maintaining simplicity for basic use cases, making it suitable for everything from small utilities to large-scale applications.
+

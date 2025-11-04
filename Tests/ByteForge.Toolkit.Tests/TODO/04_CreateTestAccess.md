@@ -23,15 +23,15 @@ This document provides instructions for creating the TestAccess.accdb database f
 
 Create table with the following structure:
 
-| Field Name | Data Type | Size | Properties |
-|------------|-----------|------|------------|
-| ID | AutoNumber | Long Integer | Primary Key |
-| Name | Short Text | 100 | Required: Yes |
-| Description | Short Text | 255 | Required: No |
-| CreatedDate | Date/Time | - | Default: Now() |
-| IsActive | Yes/No | - | Default: Yes |
-| TestValue | Currency | - | Default: 0 |
-| TestGuid | Short Text | 36 | Required: No |
+| Field Name   | Data Type   | Size         | Properties     |
+|--------------|-------------|--------------|----------------|
+| ID           | AutoNumber  | Long Integer | Primary Key    |
+| Name         | Short Text  | 100          | Required: Yes  |
+| Description  | Short Text  | 255          | Required: No   |
+| CreatedDate  | Date/Time   | -            | Default: Now() |
+| IsActive     | Yes/No      | -            | Default: Yes   |
+| TestValue    | Currency    | -            | Default: 0     |
+| TestGuid     | Short Text  | 36           | Required: No   |
 
 **SQL DDL (for reference):**
 ```sql
@@ -50,15 +50,15 @@ CREATE TABLE TestEntities (
 
 Create table for comprehensive data type testing:
 
-| Field Name | Data Type | Size | Properties |
-|------------|-----------|------|------------|
-| ID | AutoNumber | Long Integer | Primary Key |
-| StringValue | Short Text | 500 | Required: No |
-| IntValue | Number | Long Integer | Required: No |
-| DecimalValue | Currency | - | Required: No |
-| BitValue | Yes/No | - | Required: No |
-| DateTimeValue | Date/Time | - | Required: No |
-| GuidValue | Short Text | 36 | Required: No |
+| Field Name    | Data Type   | Size         | Properties   |
+|---------------|-------------|--------------|--------------|
+| ID            | AutoNumber  | Long Integer | Primary Key  |
+| StringValue   | Short Text  | 500          | Required: No |
+| IntValue      | Number      | Long Integer | Required: No |
+| DecimalValue  | Currency    | -            | Required: No |
+| BitValue      | Yes/No      | -            | Required: No |
+| DateTimeValue | Date/Time   | -            | Required: No |
+| GuidValue     | Short Text  | 36           | Required: No |
 
 **SQL DDL (for reference):**
 ```sql
@@ -77,14 +77,14 @@ CREATE TABLE TestDataTypes (
 
 Create table for bulk operations testing:
 
-| Field Name | Data Type | Size | Properties |
-|------------|-----------|------|------------|
-| ID | AutoNumber | Long Integer | Primary Key |
-| Code | Short Text | 20 | Required: Yes, Indexed |
-| Name | Short Text | 100 | Required: Yes |
-| Category | Short Text | 50 | Required: No |
-| IsActive | Yes/No | - | Default: Yes |
-| CreatedDate | Date/Time | - | Default: Now() |
+| Field Name   | Data Type   | Size         | Properties             |
+|--------------|-------------|--------------|------------------------|
+| ID           | AutoNumber  | Long Integer | Primary Key            |
+| Code         | Short Text  | 20           | Required: Yes, Indexed |
+| Name         | Short Text  | 100          | Required: Yes          |
+| Category     | Short Text  | 50           | Required: No           |
+| IsActive     | Yes/No      | -            | Default: Yes           |
+| CreatedDate  | Date/Time   | -            | Default: Now()         |
 
 **SQL DDL (for reference):**
 ```sql
@@ -190,15 +190,15 @@ Test the database setup by:
 
 #### Data Type Mappings
 
-| SQL Server Type | Access Type | Notes |
-|----------------|-------------|-------|
-| INT IDENTITY | AutoNumber | Primary keys |
-| NVARCHAR(n) | Short Text(n) | Up to 255 chars |
-| TEXT | Long Text | For larger text |
-| DECIMAL/NUMERIC | Currency | Limited precision |
-| BIT | Yes/No | Boolean values |
-| DATETIME | Date/Time | Combined date/time |
-| UNIQUEIDENTIFIER | Short Text(36) | Store as string |
+| SQL Server Type  | Access Type    | Notes              |
+|------------------|----------------|--------------------|
+| INT IDENTITY     | AutoNumber     | Primary keys       |
+| NVARCHAR(n)      | Short Text(n)  | Up to 255 chars    |
+| TEXT             | Long Text      | For larger text    |
+| DECIMAL/NUMERIC  | Currency       | Limited precision  |
+| BIT              | Yes/No         | Boolean values     |
+| DATETIME         | Date/Time      | Combined date/time |
+| UNIQUEIDENTIFIER | Short Text(36) | Store as string    |
 
 #### Limitations
 

@@ -286,6 +286,7 @@
     <None Include="Docs\Overview.md" />
     <None Include="Docs\Security.md" />
     <None Include="Docs\Utils.md" />
+    <None Include="FixTables.ps1" />
     <None Include="FodyWeavers.xsd">
       <SubType>Designer</SubType>
     </None>

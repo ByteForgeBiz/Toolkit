@@ -86,16 +86,16 @@ The test project includes various test data files in the appropriate test direct
 
 The test suite aims for high code coverage with specific targets by module:
 
-| Module         | Target Coverage | Priority | Complexity |
-|----------------|-----------------|----------|------------|
-| DataStructures |             95% | High     | Low        |
-| Security       |             90% | High     | Medium     |
-| Configuration  |             85% | High     | Medium     |
-| Utils          |             85% | High     | Low        |
-| CSV            |             75% | Medium   | Medium     |
-| Logging        |             70% | Medium   | Medium     |
-| CLI            |             60% | Medium   | High       |
-| Database       |             30% | Low      | Very High  |
+| Module           | Target Coverage   | Priority   | Complexity   |
+|------------------|-------------------|------------|--------------|
+| DataStructures   | 95%               | High       | Low          |
+| Security         | 90%               | High       | Medium       |
+| Configuration    | 85%               | High       | Medium       |
+| Utils            | 85%               | High       | Low          |
+| CSV              | 75%               | Medium     | Medium       |
+| Logging          | 70%               | Medium     | Medium       |
+| CLI              | 60%               | Medium     | High         |
+| Database         | 30%               | Low        | Very High    |
 
 ## Contributing
 

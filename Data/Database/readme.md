@@ -1,4 +1,4 @@
-﻿# ByteForge.Toolkit Database Access Layer
+# ByteForge.Toolkit Database Access Layer
 
 A comprehensive, secure, and high-performance database access layer designed for SQL Server 2000 and ODBC databases. Features enterprise-grade security with encrypted credentials, bulk operations, async support, and extensive logging capabilities.
 
@@ -195,20 +195,20 @@ esPass=[encrypted_odbc_pass]
 
 ### Configuration Properties
 
-| Property | Config Key | Description | Default |
-|----------|------------|-------------|---------|
-| `DatabaseType` | `sType` | Database type (SQLServer/ODBC) | - |
-| `Server` | `sServer` | Server name or IP address | - |
-| `ServerDSN` | `sServerDSN` | ODBC DSN name | - |
-| `DatabaseName` | `sDatabaseName` | Database name | - |
-| `EncryptedUser` | `esUser` | Encrypted username | - |
-| `EncryptedPassword` | `esPass` | Encrypted password | - |
-| `ConnectionString` | `sConnectionString` | Direct connection string override | - |
-| `UseEncryption` | `bEncrypt` | Enable connection encryption | false |
-| `ConnectionTimeout` | `iConnectionTimeout` | Connection timeout (seconds) | 60 |
-| `CommandTimeout` | `iCommandTimeout` | Command timeout (seconds) | 240 |
-| `UseTrustedConnection` | `bTrustedConnection` | Use Windows Authentication | false |
-| `AutoTrimStrings` | `bAutoTrimStrings` | Auto-trim string values | true |
+| Property               | Config Key           | Description                       | Default   |
+|------------------------|----------------------|-----------------------------------|-----------|
+| `DatabaseType`         | `sType`              | Database type (SQLServer/ODBC)    | -         |
+| `Server`               | `sServer`            | Server name or IP address         | -         |
+| `ServerDSN`            | `sServerDSN`         | ODBC DSN name                     | -         |
+| `DatabaseName`         | `sDatabaseName`      | Database name                     | -         |
+| `EncryptedUser`        | `esUser`             | Encrypted username                | -         |
+| `EncryptedPassword`    | `esPass`             | Encrypted password                | -         |
+| `ConnectionString`     | `sConnectionString`  | Direct connection string override | -         |
+| `UseEncryption`        | `bEncrypt`           | Enable connection encryption      | false     |
+| `ConnectionTimeout`    | `iConnectionTimeout` | Connection timeout (seconds)      | 60        |
+| `CommandTimeout`       | `iCommandTimeout`    | Command timeout (seconds)         | 240       |
+| `UseTrustedConnection` | `bTrustedConnection` | Use Windows Authentication        | false     |
+| `AutoTrimStrings`      | `bAutoTrimStrings`   | Auto-trim string values           | true      |
 
 ## 🛡️ Security Features
 

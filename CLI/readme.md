@@ -246,16 +246,16 @@ return await parser.InvokeAsync(args);
 
 ## 📚 Related Modules
 
-| Module | Description |
-|--------|-------------|
-| [🏠 Home](../readme.md) | ByteForge.Toolkit main documentation |
-| [Configuration](../Configuration/readme.md) | INI-based configuration system with typed section support |
-| [Data](../Data/readme.md) | Comprehensive data processing with CSV, Database, Audio, and Exception handling |
-| [DataStructures](../DataStructures/readme.md) | AVL tree and URL utility classes |
-| [Logging](../Logging/readme.md) | Thread-safe logging system with async file/console output |
-| [Mail](../Mail/readme.md) | Email utility with HTML support and attachment handling |
-| [Net](../Net/readme.md) | FTP/FTPS/SFTP high-level transfer client |
-| [Security](../Security/readme.md) | AES-based string encryption with key generation and Galois Field logic |
-| [Utils](../Utils/readme.md) | Miscellaneous helpers: timing, path utilities, progress bar |
-| [Core](../Core/readme.md) | Embedded resource deployment (WinSCP) |
-| [HTML](../HTML/readme.md) | NPD UI framework components |
+| Module                                        | Description                                                                     |
+|-----------------------------------------------|---------------------------------------------------------------------------------|
+| [🏠 Home](../readme.md)                       | ByteForge.Toolkit main documentation                                            |
+| [Configuration](../Configuration/readme.md)   | INI-based configuration system with typed section support                       |
+| [Data](../Data/readme.md)                     | Comprehensive data processing with CSV, Database, Audio, and Exception handling |
+| [DataStructures](../DataStructures/readme.md) | AVL tree and URL utility classes                                                |
+| [Logging](../Logging/readme.md)               | Thread-safe logging system with async file/console output                       |
+| [Mail](../Mail/readme.md)                     | Email utility with HTML support and attachment handling                         |
+| [Net](../Net/readme.md)                       | FTP/FTPS/SFTP high-level transfer client                                        |
+| [Security](../Security/readme.md)             | AES-based string encryption with key generation and Galois Field logic          |
+| [Utils](../Utils/readme.md)                   | Miscellaneous helpers: timing, path utilities, progress bar                     |
+| [Core](../Core/readme.md)                     | Embedded resource deployment (WinSCP)                                           |
+| [HTML](../HTML/readme.md)                     | NPD UI framework components                                                     |
