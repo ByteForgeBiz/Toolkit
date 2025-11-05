@@ -320,7 +320,9 @@
   <!--          |___/                                   |__/                                                     -->
   <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
   <PropertyGroup>
-    <CentralLocationPath>$([System.IO.Path]::GetFullPath('$(ProjectDir)..\..\ByteForge.Toolkit'))</CentralLocationPath>
+    <CentralLocationPath Condition="'$(CentralLocationPath)'==''">$(ProjectDir)\..\')</CentralLocationPath>
+    <CentralLocationExists>false</CentralLocationExists>
+    <CentralLocationExists Condition="Exists('$(CentralLocationPath)\ByteForge.Tasks.targets')">true</CentralLocationExists>
   </PropertyGroup>
   <ItemGroup>
     <AsmInfo Include="Properties\AssemblyInfo.cs" Visible="False" />
@@ -328,8 +330,8 @@
   <ItemGroup />
   <Target Name="Messages" BeforeTargets="PrepareForBuild">
     <Message Text="CentralLocationPath: '$(CentralLocationPath)'" Importance="high" />
-    <Message Text="Importing ByteForge.Tasks.targets..." Importance="high" Condition="Exists('$(CentralLocationPath)\ByteForge.Tasks.targets')" />
-    <Message Text="NOT Importing ByteForge.Tasks.targets..." Importance="high" Condition="!Exists('$(CentralLocationPath)\ByteForge.Tasks.targets')" />
+    <Message Text="Importing ByteForge.Tasks.targets..." Importance="high" Condition="$(CentralLocationExists)" />
+    <Message Text="NOT Importing ByteForge.Tasks.targets..." Importance="high" Condition="!$(CentralLocationExists)" />
   </Target>
-  <Import Project="$(CentralLocationPath)\ByteForge.Tasks.targets" Condition="Exists('$(CentralLocationPath)\ByteForge.Tasks.targets')" />
+  <Import Project="$(CentralLocationPath)\ByteForge.Tasks.targets" Condition="$(CentralLocationExists)" />
 </Project>
