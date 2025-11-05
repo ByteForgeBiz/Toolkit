@@ -58,5 +58,7 @@
         /// <param name="cipherText">The cipher text to decrypt.</param>  
         /// <returns>The decrypted text.</returns>  
         public static string Decrypt(int seed, int size, string cipherText) => new Encryptor(seed, size).Decrypt(cipherText);
+
+        internal string SecretKey => secretKey;
     }
 }

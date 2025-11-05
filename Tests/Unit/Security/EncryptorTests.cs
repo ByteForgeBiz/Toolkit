@@ -1,6 +1,11 @@
+extern alias Modern;
+
 using AwesomeAssertions;
 using ByteForge.Toolkit.Tests.Helpers;
 using System.Security.Cryptography;
+
+using OldEncryptor = ByteForge.Toolkit.Encryptor;
+using NewEncryptor = Modern::ByteForge.Toolkit.Encryptor;
 
 namespace ByteForge.Toolkit.Tests.Unit.Security
 {
@@ -19,7 +24,7 @@ namespace ByteForge.Toolkit.Tests.Unit.Security
         public void Constructor_ValidParameters_ShouldCreateInstance()
         {
             // Arrange & Act
-            var encryptor = new Encryptor(13, 16);
+            var encryptor = new NewEncryptor(13, 16);
 
             // Assert
             encryptor.Should().NotBeNull();
@@ -35,8 +40,8 @@ namespace ByteForge.Toolkit.Tests.Unit.Security
         public void Default_ShouldReturnSameInstance()
         {
             // Arrange & Act
-            var default1 = Encryptor.Default;
-            var default2 = Encryptor.Default;
+            var default1 = NewEncryptor.Default;
+            var default2 = NewEncryptor.Default;
 
             // Assert
             default1.Should().BeSameAs(default2, "Default should be a singleton");
@@ -53,7 +58,7 @@ namespace ByteForge.Toolkit.Tests.Unit.Security
         public void Encrypt_ValidPlainText_ShouldReturnEncryptedText()
         {
             // Arrange
-            var encryptor = new Encryptor(13, 16);
+            var encryptor = new NewEncryptor(13, 16);
             var plainText = "Hello, World!";
 
             // Act
@@ -74,7 +79,7 @@ namespace ByteForge.Toolkit.Tests.Unit.Security
         public void Decrypt_ValidCipherText_ShouldReturnOriginalText()
         {
             // Arrange
-            var encryptor = new Encryptor(13, 16);
+            var encryptor = new NewEncryptor(13, 16);
             var plainText = "Hello, World!";
             var encrypted = encryptor.Encrypt(plainText);
 
@@ -95,7 +100,7 @@ namespace ByteForge.Toolkit.Tests.Unit.Security
         public void EncryptDecrypt_RoundTrip_ShouldPreserveOriginalText()
         {
             // Arrange
-            var encryptor = new Encryptor(13, 16);
+            var encryptor = new NewEncryptor(13, 16);
             var testCases = new[]
             {
                 "Simple text",
@@ -130,7 +135,7 @@ namespace ByteForge.Toolkit.Tests.Unit.Security
         public void Encrypt_NullInput_ShouldHandleGracefully()
         {
             // Arrange
-            var encryptor = new Encryptor(13, 16);
+            var encryptor = new NewEncryptor(13, 16);
 
             // Act & Assert
             var result = encryptor.Invoking(e => e.Encrypt(null))
@@ -147,7 +152,7 @@ namespace ByteForge.Toolkit.Tests.Unit.Security
         public void Decrypt_NullInput_ShouldHandleGracefully()
         {
             // Arrange
-            var encryptor = new Encryptor(13, 16);
+            var encryptor = new NewEncryptor(13, 16);
 
             // Act & Assert
             var result = encryptor.Invoking(e => e.Decrypt(null))
@@ -164,7 +169,7 @@ namespace ByteForge.Toolkit.Tests.Unit.Security
         public void Encrypt_EmptyString_ShouldHandleCorrectly()
         {
             // Arrange
-            var encryptor = new Encryptor(13, 16);
+            var encryptor = new NewEncryptor(13, 16);
             var plainText = string.Empty;
 
             // Act
@@ -185,7 +190,7 @@ namespace ByteForge.Toolkit.Tests.Unit.Security
         public void Encrypt_SameInput_ShouldProduceSameOutput()
         {
             // Arrange
-            var encryptor = new Encryptor(13, 16);
+            var encryptor = new NewEncryptor(13, 16);
             var plainText = "Consistent input";
 
             // Act
@@ -206,8 +211,8 @@ namespace ByteForge.Toolkit.Tests.Unit.Security
         public void Constructor_DifferentParameters_ShouldProduceDifferentResults()
         {
             // Arrange
-            var encryptor1 = new Encryptor(13, 16);
-            var encryptor2 = new Encryptor(17, 16);
+            var encryptor1 = new NewEncryptor(13, 16);
+            var encryptor2 = new NewEncryptor(17, 16);
             var plainText = "Test message";
 
             // Act
@@ -228,8 +233,8 @@ namespace ByteForge.Toolkit.Tests.Unit.Security
         public void Constructor_SameParameters_ShouldProduceSameResults()
         {
             // Arrange
-            var encryptor1 = new Encryptor(13, 16);
-            var encryptor2 = new Encryptor(13, 16);
+            var encryptor1 = new NewEncryptor(13, 16);
+            var encryptor2 = new NewEncryptor(13, 16);
             var plainText = "Test message";
 
             // Act
@@ -250,8 +255,8 @@ namespace ByteForge.Toolkit.Tests.Unit.Security
         public void Decrypt_WrongEncryptor_ShouldThrowCryptographicException()
         {
             // Arrange
-            var encryptor1 = new Encryptor(13, 16);
-            var encryptor2 = new Encryptor(17, 16);
+            var encryptor1 = new NewEncryptor(13, 16);
+            var encryptor2 = new NewEncryptor(17, 16);
             var plainText = "Secret message";
             var encrypted = encryptor1.Encrypt(plainText);
 
@@ -275,7 +280,7 @@ namespace ByteForge.Toolkit.Tests.Unit.Security
             var size = 16;
 
             // Act
-            var encrypted = Encryptor.Encrypt(seed, size, plainText);
+            var encrypted = NewEncryptor.Encrypt(seed, size, plainText);
 
             // Assert
             encrypted.Should().NotBeNullOrEmpty();
@@ -295,10 +300,10 @@ namespace ByteForge.Toolkit.Tests.Unit.Security
             var plainText = "Static decryption test";
             var seed = 42;
             var size = 16;
-            var encrypted = Encryptor.Encrypt(seed, size, plainText);
+            var encrypted = NewEncryptor.Encrypt(seed, size, plainText);
 
             // Act
-            var decrypted = Encryptor.Decrypt(seed, size, encrypted);
+            var decrypted = NewEncryptor.Decrypt(seed, size, encrypted);
 
             // Assert
             decrypted.Should().Be(plainText);
@@ -325,8 +330,8 @@ namespace ByteForge.Toolkit.Tests.Unit.Security
             // Act & Assert
             foreach (var (text, seed, size) in testCases)
             {
-                var encrypted = Encryptor.Encrypt(seed, size, text);
-                var decrypted = Encryptor.Decrypt(seed, size, encrypted);
+                var encrypted = NewEncryptor.Encrypt(seed, size, text);
+                var decrypted = NewEncryptor.Decrypt(seed, size, encrypted);
                 
                 decrypted.Should().Be(text, $"round-trip should work for seed={seed}, size={size}");
             }
@@ -345,8 +350,8 @@ namespace ByteForge.Toolkit.Tests.Unit.Security
             var plainText = "Testing default encryptor";
 
             // Act
-            var encrypted = Encryptor.Default.Encrypt(plainText);
-            var decrypted = Encryptor.Default.Decrypt(encrypted);
+            var encrypted = NewEncryptor.Default.Encrypt(plainText);
+            var decrypted = NewEncryptor.Default.Decrypt(encrypted);
 
             // Assert
             decrypted.Should().Be(plainText);
@@ -362,7 +367,7 @@ namespace ByteForge.Toolkit.Tests.Unit.Security
         public void LongText_ShouldBeHandledCorrectly()
         {
             // Arrange
-            var encryptor = new Encryptor(13, 16);
+            var encryptor = new NewEncryptor(13, 16);
             var longText = new string('A', 10000); // 10KB of 'A' characters
 
             // Act
@@ -384,7 +389,7 @@ namespace ByteForge.Toolkit.Tests.Unit.Security
         public void SpecialCharacters_ShouldBeHandledCorrectly()
         {
             // Arrange
-            var encryptor = new Encryptor(13, 16);
+            var encryptor = new NewEncryptor(13, 16);
             var specialText = "Special: \0\x01\x02\x03\xFF\u2603\u00A9"; // null, control chars, unicode
 
             // Act
@@ -405,7 +410,7 @@ namespace ByteForge.Toolkit.Tests.Unit.Security
         public void InvalidCipherText_ShouldThrowCryptographicException()
         {
             // Arrange
-            var encryptor = new Encryptor(13, 16);
+            var encryptor = new NewEncryptor(13, 16);
             var invalidCipherTexts = new[]
             {
                 "not_encrypted_text",
@@ -443,7 +448,7 @@ namespace ByteForge.Toolkit.Tests.Unit.Security
 
             foreach (var (seed, size) in testCases)
             {
-                var creating = () => new Encryptor(seed, size);
+                var creating = () => new NewEncryptor(seed, size);
                 creating.Should().NotThrow($"should handle seed={seed}, size={size}");
                 
                 var encryptor = creating();
@@ -483,6 +488,52 @@ namespace ByteForge.Toolkit.Tests.Unit.Security
             var duration = DateTime.UtcNow - startTime;
             duration.Should().BeLessThan(TimeSpan.FromSeconds(5), 
                 $"Should complete {iterations} encrypt/decrypt cycles in reasonable time");
+        }
+
+        /// <summary>
+        /// Verifies that text encrypted with the old Encryptor can be decrypted with the new Encryptor, and vice versa.
+        /// </summary>
+        /// <remarks>
+        /// Ensures backward compatibility between the old and new implementations.
+        /// </remarks>
+        [TestMethod]
+        public void Compatibility_OldAndNewEncryptors_ShouldBeCompatible()
+        {
+            // Arrange
+            var testCases = new[]
+            {
+                "Simple text",
+                "Text with numbers 12345",
+                "Special characters: !@#$%^&*()",
+                "Unicode characters: 你好世界",
+                "Mixed: Hello 世界! 123",
+                "",
+                " ", // Single space
+                "   ", // Multiple spaces
+                "Line1\nLine2\rLine3\r\nLine4",
+                "Tab\tSeparated\tValues",
+                "Longer text for testing compatibility between old and new encryptor implementations."
+            };
+
+            var seed = 13;
+            var size = 16;
+
+            var oldEncryptor = new OldEncryptor(seed, size);
+            var newEncryptor = new NewEncryptor(seed, size);
+
+            // Act & Assert
+            foreach (var testCase in testCases)
+            {
+                // Encrypt with old, decrypt with new
+                var encryptedByOld = oldEncryptor.Encrypt(testCase);
+                var decryptedByNew = newEncryptor.Decrypt(encryptedByOld);
+                decryptedByNew.Should().Be(testCase, $"Old encrypted '{testCase}' should be decrypted by new");
+
+                // Encrypt with new, decrypt with old
+                var encryptedByNew = newEncryptor.Encrypt(testCase);
+                var decryptedByOld = oldEncryptor.Decrypt(encryptedByNew);
+                decryptedByOld.Should().Be(testCase, $"New encrypted '{testCase}' should be decrypted by old");
+            }
         }
     }
 }

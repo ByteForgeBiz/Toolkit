@@ -66,31 +66,31 @@
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
     <PackageReference Include="Microsoft.Bcl.AsyncInterfaces">
-      <Version>9.0.9</Version>
+      <Version>9.0.10</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.Extensions.Configuration">
-      <Version>9.0.9</Version>
+      <Version>9.0.10</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions">
-      <Version>9.0.9</Version>
+      <Version>9.0.10</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.Extensions.Configuration.FileExtensions">
-      <Version>9.0.9</Version>
+      <Version>9.0.10</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.Extensions.Configuration.Ini">
-      <Version>9.0.9</Version>
+      <Version>9.0.10</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.Extensions.FileProviders.Abstractions">
-      <Version>9.0.9</Version>
+      <Version>9.0.10</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.Extensions.FileProviders.Physical">
-      <Version>9.0.9</Version>
+      <Version>9.0.10</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.Extensions.FileSystemGlobbing">
-      <Version>9.0.9</Version>
+      <Version>9.0.10</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.Extensions.Primitives">
-      <Version>9.0.9</Version>
+      <Version>9.0.10</Version>
     </PackageReference>
     <PackageReference Include="Newtonsoft.Json">
       <Version>13.0.4</Version>
@@ -108,7 +108,7 @@
       <Version>2.0.0-beta4.22272.1</Version>
     </PackageReference>
     <PackageReference Include="System.IO.Pipelines">
-      <Version>9.0.9</Version>
+      <Version>9.0.10</Version>
     </PackageReference>
     <PackageReference Include="System.Memory">
       <Version>4.6.3</Version>
@@ -120,10 +120,10 @@
       <Version>6.1.2</Version>
     </PackageReference>
     <PackageReference Include="System.Text.Encodings.Web">
-      <Version>9.0.9</Version>
+      <Version>9.0.10</Version>
     </PackageReference>
     <PackageReference Include="System.Text.Json">
-      <Version>9.0.9</Version>
+      <Version>9.0.10</Version>
     </PackageReference>
     <PackageReference Include="System.Threading.Tasks.Extensions">
       <Version>4.6.3</Version>
@@ -132,7 +132,7 @@
       <Version>4.6.1</Version>
     </PackageReference>
     <PackageReference Include="WinSCP">
-      <Version>6.5.3</Version>
+      <Version>6.5.4</Version>
     </PackageReference>
   </ItemGroup>
   <ItemGroup>

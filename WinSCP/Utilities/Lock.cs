@@ -1,0 +1,32 @@
+using System;
+using System.Threading;
+
+namespace ByteForge.WinSCP;
+
+public class Lock
+{
+	private readonly object _lock = new object();
+
+	private bool _locked;
+
+	public void Enter()
+	{
+		Monitor.Enter(_lock);
+		if (_locked)
+		{
+			Monitor.Exit(_lock);
+			throw new InvalidOperationException("Recursive calls not allowed");
+		}
+		_locked = true;
+	}
+
+	public void Exit()
+	{
+		if (!_locked)
+		{
+			throw new InvalidOperationException("Not locked");
+		}
+		_locked = false;
+		Monitor.Exit(_lock);
+	}
+}

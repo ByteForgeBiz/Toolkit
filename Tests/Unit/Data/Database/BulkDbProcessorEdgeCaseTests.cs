@@ -58,7 +58,7 @@ namespace ByteForge.Toolkit.Tests.Unit.Data.Database
         /// <summary>
         /// Cleans up any test data that might have been created during testing.
         /// </summary>
-        [ClassCleanup(ClassCleanupBehavior.EndOfClass)]
+        [ClassCleanup]
         public static void ClassCleanup()
         {
             try

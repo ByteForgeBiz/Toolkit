@@ -28,7 +28,7 @@ namespace ByteForge.Toolkit.Tests.Unit.CLI
         /// <remarks>This method is called once at the end of the test class lifecycle. It disposes of any
         /// resources  associated with the test class, such as the cancellation token, to ensure proper resource
         /// management.</remarks>
-        [ClassCleanup(ClassCleanupBehavior.EndOfClass)]
+        [ClassCleanup]
         public static void ClassCleanup()
         {
             _cancelTokenSource?.Dispose();
