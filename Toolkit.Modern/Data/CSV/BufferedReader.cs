@@ -63,7 +63,7 @@ namespace ByteForge.Toolkit
         /// Reads the next line from either the buffer or the underlying reader.
         /// </summary>
         /// <returns>The next line or null if at end of input.</returns>
-        public string ReadLine()
+        public string? ReadLine()
         {
             if (_buffer.Count > 0)
                 return _buffer.Dequeue();

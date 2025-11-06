@@ -23,6 +23,6 @@
         /// <summary>
         /// Gets or sets the current item being processed.
         /// </summary>
-        public FileTransferItem CurrentItem { get; set; }
+        public FileTransferItem? CurrentItem { get; set; }
     }
 }

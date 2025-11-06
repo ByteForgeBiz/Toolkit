@@ -31,7 +31,7 @@ namespace ByteForge.Toolkit.Logging
         /// <param name="level">The log level.</param>
         /// <param name="message">The message to log.</param>
         /// <param name="ex">Optional exception associated with the log message.</param>
-                public void Log(LogLevel level, string message, Exception ex = null)
+                public void Log(LogLevel level, string message, Exception? ex = null)
         {
             // Do nothing - this is a null logger
         }
@@ -95,7 +95,7 @@ namespace ByteForge.Toolkit.Logging
         /// </summary>
         /// <param name="message">The message to log.</param>
         /// <param name="ex">Optional exception associated with the error.</param>
-                public void LogError(string message, Exception ex = null)
+                public void LogError(string message, Exception? ex = null)
         {
             // Do nothing - this is a null logger
         }
@@ -105,7 +105,7 @@ namespace ByteForge.Toolkit.Logging
         /// </summary>
         /// <param name="message">The message to log.</param>
         /// <param name="ex">Optional exception associated with the critical error.</param>
-                public void LogCritical(string message, Exception ex = null)
+                public void LogCritical(string message, Exception? ex = null)
         {
             // Do nothing - this is a null logger
         }
@@ -115,7 +115,7 @@ namespace ByteForge.Toolkit.Logging
         /// </summary>
         /// <param name="message">The message to log.</param>
         /// <param name="ex">Optional exception associated with the fatal error.</param>
-                public void LogFatal(string message, Exception ex = null)
+                public void LogFatal(string message, Exception? ex = null)
         {
             // Do nothing - this is a null logger
         }

@@ -29,12 +29,10 @@
     <Using Include="Microsoft.VisualStudio.TestTools.UnitTesting" />
   </ItemGroup>
 
-
   <ItemGroup>
     <ProjectReference Include="..\Toolkit\ByteForge.Toolkit.csproj" />
     <ProjectReference Include="..\Toolkit.Modern\ByteForge.Toolkit.Modern.csproj" Aliases="Modern" />
   </ItemGroup>
-
 
   <ItemGroup>
     <None Include=".runsettings" />

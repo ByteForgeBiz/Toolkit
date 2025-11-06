@@ -32,6 +32,6 @@ namespace ByteForge.Toolkit
         /// The name of the configuration section containing the dictionary. 
         /// If <c>null</c>, defaults to "{PropertyName}Dict".
         /// </param>
-        public DictionaryAttribute(string sectionName = null) => SectionName = sectionName;
+        public DictionaryAttribute(string sectionName  = "") => SectionName = sectionName;
     }
 }

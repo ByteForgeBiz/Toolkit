@@ -44,7 +44,7 @@ namespace ByteForge.Toolkit.CLI
         /// </summary>
         /// <param name="symbol">The symbol to find the result for.</param>
         /// <returns>The result for the symbol, or <see langword="null"/> if not found.</returns>
-        public SymbolResult FindResultFor(Symbol symbol) => _inner.FindResultFor(symbol);
+        public SymbolResult? FindResultFor(Symbol symbol) => _inner.FindResultFor(symbol);
 
         /// <summary>
         /// Gets the value for the specified option.
@@ -52,14 +52,14 @@ namespace ByteForge.Toolkit.CLI
         /// <typeparam name="T">The type of the option value.</typeparam>
         /// <param name="option">The option to get the value for.</param>
         /// <returns>The value for the option.</returns>
-        public T GetValueForOption<T>(Option<T> option) => _inner.GetValueForOption(option);
+        public T? GetValueForOption<T>(Option<T> option) => _inner.GetValueForOption(option);
 
         /// <summary>
         /// Gets the value for the specified option.
         /// </summary>
         /// <param name="option">The option to get the value for.</param>
         /// <returns>The value for the option.</returns>
-        public object GetValueForOption(Option option) => _inner.GetValueForOption(option);
+        public object? GetValueForOption(Option option) => _inner.GetValueForOption(option);
 
         /// <summary>
         /// Gets the value for the specified argument.
@@ -74,6 +74,6 @@ namespace ByteForge.Toolkit.CLI
         /// </summary>
         /// <param name="argument">The argument to get the value for.</param>
         /// <returns>The value for the argument.</returns>
-        public object GetValueForArgument(Argument argument) => _inner.GetValueForArgument(argument);
+        public object? GetValueForArgument(Argument argument) => _inner.GetValueForArgument(argument);
     }
 }

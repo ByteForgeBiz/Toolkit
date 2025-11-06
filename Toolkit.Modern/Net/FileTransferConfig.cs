@@ -8,22 +8,22 @@
         /// <summary>
         /// Gets or sets the hostname or IP address of the server.
         /// </summary>
-        public string HostName { get; set; }
+        public string? HostName { get; set; }
 
         /// <summary>
         /// Gets or sets the username for authentication.
         /// </summary>
-        public string UserName { get; set; }
+        public string? UserName { get; set; }
 
         /// <summary>
         /// Gets or sets the password for authentication.
         /// </summary>
-        public string Password { get; set; }
+        public string? Password { get; set; }
 
         /// <summary>
         /// Gets or sets the path to the SSH private key file (for SFTP only).
         /// </summary>
-        public string SshPrivateKeyPath { get; set; }
+        public string? SshPrivateKeyPath { get; set; }
 
         /// <summary>
         /// Gets or sets the transfer protocol to use.

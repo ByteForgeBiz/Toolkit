@@ -118,6 +118,6 @@ namespace ByteForge.Toolkit
         /// <summary>
         /// Gets the last exception that occurred during a database operation.
         /// </summary>
-        public Exception LastException { get; private set; }
+        public Exception? LastException { get; private set; }
     }
 }

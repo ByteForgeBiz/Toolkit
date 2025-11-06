@@ -60,7 +60,7 @@ namespace ByteForge.Toolkit
         /// </remarks>
         [ConfigName("sLogFile")]
         [DefaultValueProvider(typeof(LogSettings), nameof(GetDefaultLogPath))]
-        public string LogFilePath { get; set; }
+        public string? LogFilePath { get; set; }
 
         /// <summary>
         /// Gets or sets the log level for tracing.
@@ -137,7 +137,8 @@ namespace ByteForge.Toolkit
             // paramName is ignored because the default log file path is determined by the calling assembly.
 
             var asm = Assembly.GetEntryAssembly() ?? Assembly.GetCallingAssembly() ?? Assembly.GetExecutingAssembly();
-            return Path.Combine(Path.GetDirectoryName(asm.Location), $"{asm.GetName().Name}.log");
+            var asmDir = Path.GetDirectoryName(asm.Location) ?? Directory.GetCurrentDirectory();
+            return Path.Combine(asmDir, $"{asm.GetName().Name}.log");
         }
     }
 }

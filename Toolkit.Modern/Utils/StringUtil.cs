@@ -47,7 +47,7 @@ namespace ByteForge.Toolkit
 
             foreach (var item in items)
             {
-                var itemString = item.ToString();
+                var itemString = item!.ToString();
 
                 // Skip empty items
                 if (string.IsNullOrEmpty(itemString))

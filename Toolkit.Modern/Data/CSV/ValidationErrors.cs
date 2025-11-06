@@ -79,6 +79,7 @@ namespace ByteForge.Toolkit
         {
             Field = field;
             OffendingValue = offendingValue;
+            Message = "";
         }
 
         /// <summary>

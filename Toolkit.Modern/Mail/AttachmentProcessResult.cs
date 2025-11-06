@@ -91,7 +91,7 @@ namespace ByteForge.Toolkit
         /// A non-empty error message implies that <see cref="Success"/> will be false.
         /// </para>
         /// </remarks>
-        public string Error { get; set; }
+        public string? Error { get; set; }
 
         /// <summary>
         /// Gets a value indicating whether the processing was successful.

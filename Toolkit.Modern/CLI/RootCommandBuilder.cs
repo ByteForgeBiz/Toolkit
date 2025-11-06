@@ -66,7 +66,7 @@ namespace ByteForge.Toolkit.CommandLine
         /// <summary>
         /// Gets or sets the action to be executed to display a banner before command parsing.
         /// </summary>
-        public Action BannerAction { get; set; }
+        public Action? BannerAction { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether parameter explanation is enabled.
@@ -232,7 +232,7 @@ namespace ByteForge.Toolkit.CommandLine
         /// <param name="enableConsoleAction">Action to execute when console logging should be enabled.</param>
         /// <param name="disableConsoleAction">Action to execute when console logging should be disabled.</param>
         /// <returns>The current <see cref="RootCommandBuilder"/> instance, allowing for method chaining.</returns>
-        public RootCommandBuilder AddConsoleLoggingOptions(Action enableConsoleAction = null, Action disableConsoleAction = null)
+        public RootCommandBuilder AddConsoleLoggingOptions(Action? enableConsoleAction = null, Action? disableConsoleAction = null)
         {
             if (enableConsoleAction != null)
                 AddGlobalOption("console", "Enable console logging output", enableConsoleAction, "c");

@@ -88,7 +88,7 @@ namespace ByteForge.Toolkit
         /// Due to the nature of console output, automated testing of this method is not feasible.
         /// It would require capturing and validating console output, which is not practical in a unit test environment.
         /// </testing>
-        public static void DrawProgressBar(double pct, string message = null)
+        public static void DrawProgressBar(double pct, string message  = "")
         {
             if (!ConsoleUtil.IsConsoleAvailable) return;
 

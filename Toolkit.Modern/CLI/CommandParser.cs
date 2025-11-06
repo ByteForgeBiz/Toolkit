@@ -30,7 +30,7 @@ namespace ByteForge.Toolkit.CLI
         /// <exception cref="ArgumentNullException">Thrown when <paramref name="builder"/> or <paramref name="parser"/> is <c>null</c>.</exception>
         internal CommandParser(RootCommandBuilder builder,
                                System.CommandLine.Parsing.Parser parser,
-                               IDictionary<string, string> tokenReplacer = null)
+                               IDictionary<string, string>? tokenReplacer = null)
         {
             _builder = builder ?? throw new ArgumentNullException(nameof(builder));
             _parser = parser ?? throw new ArgumentNullException(nameof(parser));
@@ -160,11 +160,11 @@ namespace ByteForge.Toolkit.CLI
             var plural = passedSymbols.Count != 1 ? "s" : string.Empty;
             descWriter.WriteLine($"\n{typeof(T).Name}{plural}:");
 
-            var len = passedSymbols.Max(a => a.Name.Length);
+            var len = passedSymbols.Max(a => a?.Name.Length) ?? 0;
             foreach (var symbol in passedSymbols)
             {
-                descWriter.WriteLine($"  {symbol.Name.PadRight(len)}: {symbol.Value}");
-                descWriter.WriteLine($"    > {symbol.Description}");
+                descWriter.WriteLine($"  {symbol?.Name.PadRight(len)}: {symbol?.Value}");
+                descWriter.WriteLine($"    > {symbol?.Description}");
             }
         }
 
@@ -259,12 +259,12 @@ namespace ByteForge.Toolkit.CLI
                             }
                             else
                             {
-                                globalOption.Action(null); // No value provided
+                                globalOption.Action(string.Empty); // No value provided
                             }
                         }
                         else
                         {
-                            globalOption.Action(null);
+                            globalOption.Action(string.Empty);
                         }
                         break;
                     }
@@ -313,7 +313,7 @@ namespace ByteForge.Toolkit.CLI
 
             foreach (var option in globalOptions)
             {
-                var aliases = option.AllAliases?.Take(3).ToArray() ?? new string[0];
+                var aliases = option.AllAliases?.Take(3).ToArray() ?? [];
                 var aliasText = aliases.Length > 0 ? string.Join(", ", aliases) : $"--{option.Name}";
 
                 if (option.ExpectsValue)

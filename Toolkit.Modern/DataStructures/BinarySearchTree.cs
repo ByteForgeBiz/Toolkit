@@ -14,7 +14,7 @@ namespace ByteForge.Toolkit
     /// Represents a binary search tree.
     /// </summary>
     /// <typeparam name="T">The type of the values in the tree, which must implement IComparable.</typeparam>
-    public class BinarySearchTree<T> where T : IComparable<T>
+    public class BinarySearchTree<T> where T : IComparable<T?>
     {
         /*
          *  _  _         _     
@@ -41,12 +41,12 @@ namespace ByteForge.Toolkit
             /// <summary>
             /// Gets or sets the left child of the node.
             /// </summary>
-            public Node Left { get; set; }
+            public Node? Left { get; set; }
 
             /// <summary>
             /// Gets or sets the right child of the node.
             /// </summary>
-            public Node Right { get; set; }
+            public Node? Right { get; set; }
 
             /// <summary>
             /// Gets or sets the height of the node.
@@ -56,17 +56,17 @@ namespace ByteForge.Toolkit
             /// <summary>
             /// Gets or sets the value of the node.
             /// </summary>
-            public object Value { get; set; }
+            public object? Value { get; set; }
         }
 
-        private Node root;
+        private Node? root;
 
         /// <summary>
         /// Returns the height of a node.
         /// </summary>
         /// <param name="N">The node whose height is to be returned.</param>
         /// <returns>The height of the node.</returns>
-        int Height(Node N)
+        int Height(Node? N)
         {
             if (N == null)
                 return 0;
@@ -106,12 +106,12 @@ namespace ByteForge.Toolkit
         /// <returns>The new root of the subtree after rotation.</returns>
         Node RightRotate(Node y)
         {
-            var x = y.Left;
-            var T2 = x.Right;
+            var x = y.Left!;
+            var T2 = x.Right!;
             x.Right = y;
             y.Left = T2;
-            y.Height = Math.Max(Height(y.Left), Height(y.Right)) + 1;
-            x.Height = Math.Max(Height(x.Left), Height(x.Right)) + 1;
+            y.Height = Math.Max(Height(y.Left), Height(y.Right!)) + 1;
+            x.Height = Math.Max(Height(x.Left!), Height(x.Right)) + 1;
             return x;
         }
 
@@ -121,13 +121,13 @@ namespace ByteForge.Toolkit
         /// <param name="x">The node to be rotated.</param>
         /// <returns>The new root of the subtree after rotation.</returns>
         Node LeftRotate(Node x)
-        {
-            var y = x.Right;
-            var T2 = y.Left;
+        {            
+            var y = x.Right!;
+            var T2 = y.Left!;
             y.Left = x;
             x.Right = T2;
-            x.Height = Math.Max(Height(x.Left), Height(x.Right)) + 1;
-            y.Height = Math.Max(Height(y.Left), Height(y.Right)) + 1;
+            x.Height = Math.Max(Height(x.Left!), Height(x.Right)) + 1;
+            y.Height = Math.Max(Height(y.Left), Height(y.Right!)) + 1;
             return y;
         }
 
@@ -136,11 +136,11 @@ namespace ByteForge.Toolkit
         /// </summary>
         /// <param name="N">The node whose balance factor is to be returned.</param>
         /// <returns>The balance factor of the node.</returns>
-        int GetBalance(Node N)
+        int GetBalance(Node? N)
         {
             if (N == null)
                 return 0;
-            return Height(N.Left) - Height(N.Right);
+            return Height(N.Left!) - Height(N.Right!);
         }
 
         /// <summary>
@@ -150,7 +150,7 @@ namespace ByteForge.Toolkit
         /// <param name="key">The key to be inserted.</param>
         /// <param name="wasInserted">Output parameter indicating whether a new node was inserted.</param>
         /// <returns>The new root of the subtree after insertion.</returns>
-        Node Insert(Node node, T key, ref bool wasInserted)
+        Node Insert(Node? node, T key, ref bool wasInserted)
         {
             /* 1. Perform the normal BST rotation */
             if (node == null)
@@ -178,22 +178,22 @@ namespace ByteForge.Toolkit
             // If this node becomes unbalanced, then there are 4 cases
 
             // Left Left Case
-            if (balance > 1 && key.CompareTo(node.Left.Key) < 0)
+            if (balance > 1 && key.CompareTo(node.Left!.Key) < 0)
                 return RightRotate(node);
 
             // Right Right Case
-            if (balance < -1 && key.CompareTo(node.Right.Key) > 0)
+            if (balance < -1 && key.CompareTo(node.Right!.Key) > 0)
                 return LeftRotate(node);
 
             // Left Right Case
-            if (balance > 1 && key.CompareTo(node.Left.Key) > 0)
+            if (balance > 1 && node.Left  != null && key.CompareTo(node.Left.Key) > 0)
             {
                 node.Left = LeftRotate(node.Left);
                 return RightRotate(node);
             }
 
             // Right Left Case
-            if (balance < -1 && key.CompareTo(node.Right.Key) < 0)
+            if (balance < -1 && key.CompareTo(node.Right!.Key) < 0)
             {
                 node.Right = RightRotate(node.Right);
                 return LeftRotate(node);
@@ -216,9 +216,9 @@ namespace ByteForge.Toolkit
                 return (NewNode(key));
 
             if (key.CompareTo(node.Key) < 0)
-                node.Left = Insert(node.Left, key);
+                node.Left = Insert(node.Left!, key);
             else if (key.CompareTo(node.Key) > 0)
-                node.Right = Insert(node.Right, key);
+                node.Right = Insert(node.Right!, key);
             else // Equal keys not allowed
                 return node;
 
@@ -231,22 +231,22 @@ namespace ByteForge.Toolkit
             // If this node becomes unbalanced, then there are 4 cases
 
             // Left Left Case
-            if (balance > 1 && key.CompareTo(node.Left.Key) < 0)
+            if (balance > 1 && node.Left  != null && key.CompareTo(node.Left.Key) < 0)
                 return RightRotate(node);
 
             // Right Right Case
-            if (balance < -1 && key.CompareTo(node.Right.Key) > 0)
+            if (balance < -1 && key.CompareTo(node.Right!.Key) > 0)
                 return LeftRotate(node);
 
             // Left Right Case
-            if (balance > 1 && key.CompareTo(node.Left.Key) > 0)
+            if (balance > 1 && key.CompareTo(node.Left!.Key) > 0)
             {
                 node.Left = LeftRotate(node.Left);
                 return RightRotate(node);
             }
 
             // Right Left Case
-            if (balance < -1 && key.CompareTo(node.Right.Key) < 0)
+            if (balance < -1 && node.Right!= null && key.CompareTo(node.Right.Key) < 0)
             {
                 node.Right = RightRotate(node.Right);
                 return LeftRotate(node);
@@ -277,7 +277,7 @@ namespace ByteForge.Toolkit
         /// <param name="key">The key to be removed.</param>
         /// <param name="wasRemoved">Output parameter indicating whether a node was removed.</param>
         /// <returns>The new root of the subtree after removal.</returns>
-        private Node Remove(Node node, T key, ref bool wasRemoved)
+        private Node? Remove(Node? node, T key, ref bool wasRemoved)
         {
             // STEP 1: PERFORM STANDARD BST DELETE
 
@@ -306,7 +306,7 @@ namespace ByteForge.Toolkit
                 // node with only one child or no child
                 if ((node.Left == null) || (node.Right == null))
                 {
-                    Node temp = null;
+                    Node? temp = null;
                     if (temp == node.Left)
                         temp = node.Right;
                     else
@@ -355,7 +355,7 @@ namespace ByteForge.Toolkit
             // Left Right Case
             if (balance > 1 && GetBalance(node.Left) < 0)
             {
-                node.Left = LeftRotate(node.Left);
+                node.Left = LeftRotate(node.Left!);
                 return RightRotate(node);
             }
 
@@ -366,7 +366,7 @@ namespace ByteForge.Toolkit
             // Right Left Case
             if (balance < -1 && GetBalance(node.Right) > 0)
             {
-                node.Right = RightRotate(node.Right);
+                node.Right = RightRotate(node.Right!);
                 return LeftRotate(node);
             }
 
@@ -379,7 +379,7 @@ namespace ByteForge.Toolkit
         /// <param name="node">The root of the subtree where the key is to be removed.</param>
         /// <param name="key">The key to be removed.</param>
         /// <returns>The new root of the subtree after removal.</returns>
-        private Node Remove(Node node, T key)
+        private Node? Remove(Node? node, T key)
         {
             // STEP 1: PERFORM STANDARD BST DELETE
 
@@ -403,7 +403,7 @@ namespace ByteForge.Toolkit
                 // node with only one child or no child
                 if ((node.Left == null) || (node.Right == null))
                 {
-                    Node temp = null;
+                    Node? temp = null;
                     if (temp == node.Left)
                         temp = node.Right;
                     else
@@ -411,9 +411,7 @@ namespace ByteForge.Toolkit
 
                     // No child case
                     if (temp == null)
-                    {
                         node = null;
-                    }
                     else // One child case
                         node = temp; // Copy the contents of the non-empty child
                 }
@@ -451,7 +449,7 @@ namespace ByteForge.Toolkit
             // Left Right Case
             if (balance > 1 && GetBalance(node.Left) < 0)
             {
-                node.Left = LeftRotate(node.Left);
+                node.Left = LeftRotate(node.Left!);
                 return RightRotate(node);
             }
 
@@ -462,7 +460,7 @@ namespace ByteForge.Toolkit
             // Right Left Case
             if (balance < -1 && GetBalance(node.Right) > 0)
             {
-                node.Right = RightRotate(node.Right);
+                node.Right = RightRotate(node.Right!);
                 return LeftRotate(node);
             }
 
@@ -507,7 +505,7 @@ namespace ByteForge.Toolkit
         /// <param name="root">The root of the subtree to be searched.</param>
         /// <param name="key">The key to be searched for.</param>
         /// <returns>The node containing the key if it is found, otherwise null.</returns>
-        private Node Search(Node root, T key)
+        private Node? Search(Node? root, T key)
         {
             // Base Cases: root is null or key is present at root
             if (root == null || root.Key.CompareTo(key) == 0)
@@ -536,7 +534,7 @@ namespace ByteForge.Toolkit
         /// </summary>
         /// <param name="key">The key to locate in the binary search tree.</param>
         /// <returns>The node containing the key if it is found, otherwise null.</returns>
-        public Node Find(T key)
+        public Node? Find(T key)
         {
             return Search(root, key);
         }
@@ -549,7 +547,7 @@ namespace ByteForge.Toolkit
         {
             var array = new T[Count];
             var index = 0;
-            ToArray(root, array, ref index);
+            ToArray(root!, array, ref index);
             return array;
         }
 
@@ -559,7 +557,7 @@ namespace ByteForge.Toolkit
         /// <param name="root">The root of the subtree to be traversed.</param>
         /// <param name="array">The array to which the keys are added.</param>
         /// <param name="index">The current index in the array.</param>
-        private void ToArray(Node root, T[] array, ref int index)
+        private void ToArray(Node? root, T[] array, ref int index)
         {
             if (root == null)
                 return;
@@ -634,7 +632,7 @@ namespace ByteForge.Toolkit
         /// </summary>
         /// <param name="node">The root of the subtree to traverse.</param>
         /// <returns>An enumerable collection of elements in in-order.</returns>
-        private IEnumerable<T> GetInOrderTraversal(Node node)
+        private IEnumerable<T> GetInOrderTraversal(Node? node)
         {
             if (node != null)
             {
@@ -662,7 +660,7 @@ namespace ByteForge.Toolkit
         /// </summary>
         /// <param name="node">The root of the subtree to traverse.</param>
         /// <returns>An enumerable collection of elements in pre-order.</returns>
-        private IEnumerable<T> GetPreOrderTraversal(Node node)
+        private IEnumerable<T> GetPreOrderTraversal(Node? node)
         {
             if (node != null)
             {
@@ -690,7 +688,7 @@ namespace ByteForge.Toolkit
         /// </summary>
         /// <param name="node">The root of the subtree to traverse.</param>
         /// <returns>An enumerable collection of elements in post-order.</returns>
-        private IEnumerable<T> GetPostOrderTraversal(Node node)
+        private IEnumerable<T> GetPostOrderTraversal(Node? node)
         {
             if (node != null)
             {

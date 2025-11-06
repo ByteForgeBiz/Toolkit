@@ -214,7 +214,7 @@ namespace ByteForge.Toolkit
             }
 
             // Fallback to the original type mapping logic
-            var columnType = TypeHelper.ResolveType(column.DataType);
+            var columnType = TypeHelper.ResolveType(column.DataType) ?? throw new ArgumentException("Column data type cannot be null", nameof(column));
 
             if (columnType == typeof(string))
             {
@@ -373,14 +373,14 @@ namespace ByteForge.Toolkit
 
             var parts = ParseObjectName(objectName);
             // Use the last part (table name) for the suffix
-            string tableName = parts.LastOrDefault() ?? "";
+            var tableName = parts.LastOrDefault() ?? "";
 
             if (string.IsNullOrEmpty(tableName))
                 return "";
 
             var result = new StringBuilder();
 
-            foreach (char c in tableName)
+            foreach (var c in tableName)
             {
                 if (char.IsLetterOrDigit(c))
                 {
@@ -396,7 +396,7 @@ namespace ByteForge.Toolkit
             }
 
             // Clean up the result
-            string suffix = result.ToString().Trim('_');
+            var suffix = result.ToString().Trim('_');
 
             // Ensure it starts with a letter or underscore
             if (!string.IsNullOrEmpty(suffix) && char.IsDigit(suffix[0]))
@@ -491,7 +491,7 @@ namespace ByteForge.Toolkit
                 return identifier;
 
             // Escape any existing square brackets by doubling them
-            string escaped = identifier.Replace("[", "[[").Replace("]", "]]");
+            var escaped = identifier.Replace("[", "[[").Replace("]", "]]");
 
             // Always wrap in square brackets for safety
             return $"[{escaped}]";

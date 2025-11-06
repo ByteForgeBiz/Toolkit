@@ -101,7 +101,7 @@ namespace ByteForge.Toolkit
         /// or <see cref="RecordsAffected"/>, depending on the type of statements executed.
         /// </para>
         /// </remarks>
-        public List<object> BatchResults { get; set; } = new List<object>();
+        public List<object?> BatchResults { get; set; } = new List<object?>();
 
         /// <summary>
         /// Gets or sets the result sets returned by the script.
@@ -153,6 +153,6 @@ namespace ByteForge.Toolkit
         /// This property will be <c>null</c> if <see cref="Success"/> is <see langword="true" />.
         /// </para>
         /// </remarks>
-        public Exception LastException { get; set; }
+        public Exception? LastException { get; set; }
     }
 }

@@ -31,7 +31,7 @@ namespace ByteForge.Toolkit
         /// <param name="row">The <see cref="DataRow"/> to convert.</param>
         /// <param name="allowNullStrings">If <see langword="true"/>, string properties will be set to null if the corresponding <see cref="DataRow"/> column is <see cref="DBNull"/>; otherwise, they will be set to an empty string.</param>
         /// <returns>An instance of <typeparamref name="T"/> with properties set from the DataRow.</returns>
-        public static T ConvertDataRowTo<T>(DataRow row, bool allowNullStrings = false) where T : class, new()
+        public static T ConvertDataRowTo<T>(DataRow? row, bool allowNullStrings = false) where T : class, new()
         {
             var obj = new T();
             PopulateObjectFromDataRow(row, obj, allowNullStrings);
@@ -46,9 +46,9 @@ namespace ByteForge.Toolkit
         /// <param name="row">The <see cref="DataRow"/> containing the data to populate the object.</param>
         /// <param name="obj">The object whose properties will be populated.</param>
         /// <param name="allowNullStrings">If <see langword="true"/>, string properties will be set to null if the corresponding <see cref="DataRow"/> column is <see cref="DBNull"/>; otherwise, they will be set to an empty string.</param>
-        public static void PopulateObjectFromDataRow<T>(DataRow row, T obj, bool allowNullStrings = false) where T : class
+        public static void PopulateObjectFromDataRow<T>(DataRow? row, T? obj, bool allowNullStrings = false) where T : class
         {
-            PopulateObjectFromDataRow(row, (object)obj, allowNullStrings);
+            PopulateObjectFromDataRow(row, (object?)obj, allowNullStrings);
         }
 
         /// <summary>
@@ -66,7 +66,7 @@ namespace ByteForge.Toolkit
         /// The method uses a cached mapping of property-to-column names for performance optimization.
         /// Supports custom converters specified in the <see cref="DBColumnAttribute"/>.
         /// </remarks>
-        public static void PopulateObjectFromDataRow(DataRow row, object obj, bool allowNullStrings = false)
+        public static void PopulateObjectFromDataRow(DataRow? row, object? obj, bool allowNullStrings = false)
         {
             if (row == null || obj == null)
                 return;
@@ -152,7 +152,7 @@ namespace ByteForge.Toolkit
         /// <typeparam name="T">The type to convert the value to.</typeparam>
         /// <param name="value">The value to convert.</param>
         /// <returns>The converted value of type <typeparamref name="T"/>.</returns>
-        public static T ConvertTo<T>(object value) => (T)ConvertTo(typeof(T), value);
+        public static T ConvertTo<T>(object? value) => (T)ConvertTo(typeof(T), value);
 
         /// <summary>
         /// Converts the specified value to the specified <see cref="Type"/>.
@@ -161,7 +161,7 @@ namespace ByteForge.Toolkit
         /// <param name="targetType">The type to convert the value to.</param>
         /// <param name="value">The value to convert.</param>
         /// <returns>The converted value as an object.</returns>
-        public static object ConvertTo(Type targetType, object value)
+        public static object? ConvertTo(Type? targetType, object? value)
         {
             if (targetType == null)
                 throw new ArgumentNullException(nameof(targetType));
@@ -185,7 +185,7 @@ namespace ByteForge.Toolkit
                 return value;
 
             // Handle Enum conversions
-            if (targetType.IsEnum)
+            if (targetType!.IsEnum)
                 return ConvertToEnum(value, targetType);
 
             // Handle special case conversions

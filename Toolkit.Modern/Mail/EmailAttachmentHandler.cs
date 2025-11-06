@@ -69,9 +69,11 @@ namespace ByteForge.Toolkit
         /// <param name="addAttachmentSummary">If true, adds a summary of attachments to the email body.</param>
         /// <returns>Result describing the processing outcome.</returns>
         /// <exception cref="ArgumentNullException">Thrown when the email parameter is null.</exception>
-        public AttachmentProcessResult ProcessAttachments(MailMessage email, List<string> filesToAttach,
-            Dictionary<string, string> fileNameMap = null, bool addAttachmentSummary = true)
+        public AttachmentProcessResult ProcessAttachments(MailMessage email, List<string>? filesToAttach,
+            Dictionary<string, string>? fileNameMap = null, bool addAttachmentSummary = true)
         {
+            fileNameMap ??= [];
+            filesToAttach ??= [];
             var result = new AttachmentProcessResult();
 
             if (!ValidateInputs(email, filesToAttach))
@@ -282,13 +284,14 @@ namespace ByteForge.Toolkit
         /// <param name="files">The list of files to compress.</param>
         /// <param name="outputZipFile">The output zip file path.</param>
         /// <param name="fileNameMap">Optional dictionary mapping file paths to desired names in the archive.</param>
-        private void CompressFiles(List<string> files, string outputZipFile, Dictionary<string, string> fileNameMap = null)
+        private void CompressFiles(List<string> files, string outputZipFile, Dictionary<string, string>? fileNameMap = null)
         {
-#pragma warning disable IDE0063 
+#pragma warning disable IDE0063
             /*
              * VS says to use simple 'using' statement.
              * But for some reason, that doesn't work with ZipArchive.
              */
+            fileNameMap ??= new Dictionary<string, string>();
             using (var fileStream = new FileStream(outputZipFile, FileMode.Create))
             {
                 using (var zip = new ZipArchive(fileStream, ZipArchiveMode.Create))
@@ -332,11 +335,12 @@ namespace ByteForge.Toolkit
         /// <param name="email">The email message to add the summary to.</param>
         /// <param name="files">The list of attached files.</param>
         /// <param name="fileNameMap">Optional dictionary mapping file paths to desired names.</param>
-        private void AddDirectAttachmentSummary(MailMessage email, List<FileInfo> files, Dictionary<string, string> fileNameMap = null)
+        private void AddDirectAttachmentSummary(MailMessage email, List<FileInfo> files, Dictionary<string, string>? fileNameMap = null)
         {
             if (files == null || files.Count == 0)
                 return;
 
+            fileNameMap ??= [];
             var summary = new System.Text.StringBuilder();
             summary.AppendLine();
             summary.AppendLine("----");
@@ -359,11 +363,12 @@ namespace ByteForge.Toolkit
         /// <param name="originalFiles">The list of original files.</param>
         /// <param name="zip">The zip attachment.</param>
         /// <param name="fileNameMap">Optional dictionary mapping file paths to desired names.</param>
-        private void AddCompressedAttachmentSummary(MailMessage email, List<FileInfo> originalFiles, Attachment zip, Dictionary<string, string> fileNameMap = null)
+        private void AddCompressedAttachmentSummary(MailMessage email, List<FileInfo> originalFiles, Attachment zip, Dictionary<string, string>? fileNameMap = null)
         {
             if (originalFiles == null || originalFiles.Count == 0)
                 return;
 
+            fileNameMap ??= [];
             var zipSizeStr = FormatFileSize(zip.ContentStream.Length);
 
             var summary = new System.Text.StringBuilder();

@@ -44,7 +44,7 @@ namespace ByteForge.Toolkit
         /// This method is suitable for running DDL (Data Definition Language) statements, complex transactions, or scripts that require capturing multiple result sets.
         /// It returns a <see cref="ScriptExecutionResult"/> object containing detailed information about the execution, including success status, result sets, and any exceptions encountered.
         /// </remarks>
-        public ScriptExecutionResult ExecuteScript(string script, object[] arguments = null, bool captureResults = false)
+        public ScriptExecutionResult ExecuteScript(string script, object[]? arguments = null, bool captureResults = false)
         {
             var result = new ScriptExecutionResult();
 
@@ -84,7 +84,7 @@ namespace ByteForge.Toolkit
                             } while (!reader.IsClosed && reader.NextResult());
 
                             if (result.ResultSets.Count > 0)
-                                result.BatchResults.Add(result.ResultSets[result.ResultSets.Count - 1].Rows[0][0]);
+                                result.BatchResults.Add((object?)result.ResultSets[result.ResultSets.Count - 1].Rows[0][0]);
                         }
                         else
                         {

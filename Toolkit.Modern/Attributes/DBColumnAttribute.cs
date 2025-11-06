@@ -12,7 +12,7 @@ namespace ByteForge.Toolkit
         /// <summary>
         /// Gets the name of the database column.
         /// </summary>
-        public string Name { get; }
+        public string? Name { get; }
 
         /// <summary>
         /// Gets the database type of the column.
@@ -61,12 +61,12 @@ namespace ByteForge.Toolkit
         /// The converter function is retrieved from the <see cref="ValueConverterRegistry"/> 
         /// using the <see cref="ConverterName"/>. If no converter is found, null is returned.
         /// </remarks>
-        public Func<object, object> Converter => ValueConverterRegistry.GetConverter(ConverterName);
+        public Func<object, object>? Converter => ValueConverterRegistry.GetConverter(ConverterName);
 
         /// <summary>
         /// Gets or sets the name of the registered converter function (see <see cref="ValueConverterRegistry"/>) to use for transforming the column value.
         /// </summary>
-        public string ConverterName { get; set; }
+        public string? ConverterName  { get; set; }
 
         /// <summary>
         /// Gets the maximum length for string/binary columns. If null, length will be determined dynamically or use defaults.
@@ -99,7 +99,7 @@ namespace ByteForge.Toolkit
         /// <param name="isPrimaryKey">Indicates whether the column is a primary key.</param>
         /// <param name="hasIndex">Indicates whether the column should have an index.</param>
         /// <param name="isUnique">Indicates whether the column should have a unique constraint.</param>
-        public DBColumnAttribute(string name = null,
+        public DBColumnAttribute(string? name = null,
                                  bool isPrimaryKey = false,
                                  bool hasIndex = false,
                                  bool isUnique = false)

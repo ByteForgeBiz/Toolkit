@@ -12,32 +12,32 @@ namespace ByteForge.Toolkit
         /// <summary>
         /// Occurs when the process starts.
         /// </summary>
-        public event MessageEventHandler Started;
+        public event MessageEventHandler? Started;
 
         /// <summary>
         /// Occurs to report the progress of the process.
         /// </summary>
-        public event ProgressEventHandler Progress;
+        public event ProgressEventHandler? Progress;
 
         /// <summary>
         /// Occurs when a progress message is available.
         /// </summary>
-        public event MessageEventHandler Message;
+        public event MessageEventHandler? Message;
 
         /// <summary>
         /// Occurs when a warning is raised during the operation of the process.
         /// </summary>
-        public event MessageEventHandler Warning;
+        public event MessageEventHandler? Warning;
 
         /// <summary>
         /// Occurs when an error happens during the process.
         /// </summary>
-        public event ErrorEventHandler Error;
+        public event ErrorEventHandler? Error;
 
         /// <summary>
         /// Occurs when the process ends.
         /// </summary>
-        public event EndProcessEventHandler Finished;
+        public event EndProcessEventHandler? Finished;
 
         /// <summary>
         /// Raises the <see cref="Started"/> event.
@@ -60,8 +60,9 @@ namespace ByteForge.Toolkit
         /// </summary>
         /// <param name="progress">Progress percentage (0-100). Values are clamped to this range.</param>
         /// <param name="message">A message describing the progress.</param>
-        protected virtual void OnProgress(double progress, string message)
+        protected virtual void OnProgress(double progress, string? message)
         {
+            message ??= string.Empty;
             progress = double.IsNaN(progress) ? 0 :
                        progress < 0 ? 0 :
                        progress > 100 ? 100 : progress;
@@ -119,7 +120,7 @@ namespace ByteForge.Toolkit
         /// </summary>
         /// <param name="aborted">Indicates whether the process was aborted.</param>
         /// <param name="message">Optional completion message (defaults to "Process finished.").</param>
-        protected virtual void OnFinished(bool aborted = false, string message = null)
+        protected virtual void OnFinished(bool aborted = false, string message  = "")
         {
             if (aborted)
                 Log.Warning(string.IsNullOrWhiteSpace(message) ? "Process aborted." : message);
@@ -297,7 +298,7 @@ namespace ByteForge.Toolkit
         /// <summary>
         /// Gets or sets the message describing the progress.
         /// </summary>
-        public string Message { get; private set; }
+        public string Message { get; private set; } = "";
     }
 
     /// <summary>
@@ -316,7 +317,7 @@ namespace ByteForge.Toolkit
         /// </summary>
         /// <param name="message">The error message.</param>
         /// <param name="ex">The exception that caused the error.</param>
-        internal ErrorEventArgs(string message, Exception ex) : this(message) => Exception = ex;
+        internal ErrorEventArgs(string message, Exception? ex) : this(message) => Exception = ex;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ErrorEventArgs"/> class with the specified exception.
@@ -328,6 +329,6 @@ namespace ByteForge.Toolkit
         /// <summary>
         /// Gets the exception that caused the error.
         /// </summary>
-        public Exception Exception { get; }
+        public Exception? Exception { get; }
     }
 }

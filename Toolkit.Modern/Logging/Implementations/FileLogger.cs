@@ -26,9 +26,9 @@ namespace ByteForge.Toolkit.Logging
         private static readonly object _lock = new object();
         private DateTime _currentFileDate;
         private int _currentFileIndex;
-        private readonly CancellationTokenSource _cancellationTokenSource;
-        private readonly BlockingCollection<LogEntry> _messageQueue;
-        private readonly Task _processQueueTask;
+        private readonly CancellationTokenSource? _cancellationTokenSource;
+        private readonly BlockingCollection<LogEntry>? _messageQueue;
+        private readonly Task? _processQueueTask;
         private bool _disposed;
 
         /// <summary>
@@ -40,17 +40,17 @@ namespace ByteForge.Toolkit.Logging
             {
                 if (string.IsNullOrEmpty(currentFilePath))
                     UpdateCurrentFilePath();
-                return currentFilePath;
+                return currentFilePath ?? string.Empty;
             }
             protected set => currentFilePath = value ?? throw new ArgumentNullException(nameof(value));
         }
-        private string currentFilePath;
+        private string? currentFilePath;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="FileLogger"/> class.
         /// </summary>
         /// <param name="filePath">The path of the file to log messages to.</param>
-        public FileLogger(string filePath) : this(filePath, null) { }
+        public FileLogger(string? filePath) : this(filePath, null) { }
 
         /// <summary>
         /// Gets the configuration settings for the file logger.
@@ -63,12 +63,12 @@ namespace ByteForge.Toolkit.Logging
         /// <param name="filePath">The base path of the file to log messages to.</param>
         /// <param name="options">Configuration options for the logger.</param>
         /// <param name="delayInitialization">If true, delays file initialization (useful for derived classes).</param>
-        protected FileLogger(string filePath, FileLoggerOptions options, bool delayInitialization = false) : base(Path.GetFileNameWithoutExtension(filePath))
+        protected FileLogger(string? filePath, FileLoggerOptions? options, bool delayInitialization = false) : base(Path.GetFileNameWithoutExtension(filePath ?? ""))
         {
             if (string.IsNullOrEmpty(filePath))
             {
                 var asm = Assembly.GetEntryAssembly() ?? Assembly.GetCallingAssembly() ?? Assembly.GetExecutingAssembly();
-                filePath = Path.Combine(Path.GetDirectoryName(asm.Location), $"{asm.GetName().Name}.log");
+                filePath = Path.Combine(Path.GetDirectoryName(asm.Location)!, $"{asm.GetName().Name}.log");
             }
             else
                 filePath = Environment.ExpandEnvironmentVariables(filePath);
@@ -288,7 +288,7 @@ namespace ByteForge.Toolkit.Logging
         /// </summary>
         private void ProcessMessageQueue()
         {
-            foreach (var entry in _messageQueue.GetConsumingEnumerable(_cancellationTokenSource.Token))
+            foreach (var entry in _messageQueue!.GetConsumingEnumerable(_cancellationTokenSource!.Token))
                 WriteLogEntry(entry);
         }
 
@@ -299,7 +299,7 @@ namespace ByteForge.Toolkit.Logging
         {
             var ts = $"{(entry.CorrelationId ?? "")} - {entry.Timestamp:yyyy.MM.dd HH:mm:ss.fff} [{entry.Level,-9}] - ";
             var indent = Environment.NewLine + new string(' ', ts.Length);
-            var sb = new StringBuilder($"{ts}{string.Join(indent, entry.Message.Split(Utils.arrCRLF, StringSplitOptions.RemoveEmptyEntries))}");
+            var sb = new StringBuilder($"{ts}{string.Join(indent, entry.Message?.Split(Utils.arrCRLF, StringSplitOptions.RemoveEmptyEntries) ?? [])}");
             var ex = entry.Exception;
 
             while (ex != null)
@@ -360,7 +360,7 @@ namespace ByteForge.Toolkit.Logging
 
             if (Settings.UseAsyncLogging)
             {
-                if (!_messageQueue.TryAdd(entry))
+                if (!_messageQueue!.TryAdd(entry))
                 {
                     // Handle queue full scenario
                     // Could implement fallback logging here
@@ -395,11 +395,11 @@ namespace ByteForge.Toolkit.Logging
             {
                 if (Settings.UseAsyncLogging)
                 {
-                    _cancellationTokenSource.Cancel();
-                    _messageQueue.CompleteAdding();
+                    _cancellationTokenSource!.Cancel();
+                    _messageQueue!.CompleteAdding();
                     try
                     {
-                        _processQueueTask.Wait(TimeSpan.FromSeconds(5));
+                        _processQueueTask!.Wait(TimeSpan.FromSeconds(5));
                     }
                     catch (Exception)
                     {

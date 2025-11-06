@@ -112,7 +112,7 @@ namespace ByteForge.Toolkit
         /// This dictionary maps PropertyInfo objects to their corresponding database column names.
         /// It is initialized by <see cref="InitializePropertyMapping"/> based on DBColumnAttribute settings.
         /// </remarks>
-        protected Dictionary<PropertyInfo, string> ColumnMap { get; private set; }
+        protected Dictionary<PropertyInfo, string> ColumnMap { get; private set; } = [];
 
         /// <summary>
         /// Gets the name of the destination table for bulk insert operations.
@@ -123,7 +123,7 @@ namespace ByteForge.Toolkit
         /// <remarks>
         /// This is the table where records will be inserted, updated, or deleted from during bulk operations.
         /// </remarks>
-        public string DestinationTableName { get; }
+        public string DestinationTableName { get; private set; } = "";
 
         /// <summary>
         /// Gets the names of the index columns.
@@ -135,7 +135,7 @@ namespace ByteForge.Toolkit
         /// These are determined from properties with <see cref="DBColumnAttribute.HasIndex"/> set to <see langword="true"/>,
         /// excluding those that are already part of primary keys or unique indexes.
         /// </remarks>
-        public string[] Indexes { get; private set; }
+        public string[] Indexes { get; private set; } = [];
 
         /// <summary>
         /// Gets the cached properties for the current mapping.
@@ -146,7 +146,7 @@ namespace ByteForge.Toolkit
         /// <remarks>
         /// These properties are used to map between entity properties and database columns.
         /// </remarks>
-        protected PropertyInfo[] Properties { get; private set; }
+        protected PropertyInfo[] Properties { get; private set; } = [];
 
         /// <summary>
         /// Gets the names of the primary key columns.
@@ -157,7 +157,7 @@ namespace ByteForge.Toolkit
         /// <remarks>
         /// These are determined from properties with <see cref="DBColumnAttribute.IsPrimaryKey"/> set to <see langword="true"/>.
         /// </remarks>
-        public string[] PrimaryKeys { get; private set; }
+        public string[] PrimaryKeys { get; private set; } = [];
 
         /// <summary>
         /// Gets the names of the unique index columns.
@@ -169,7 +169,7 @@ namespace ByteForge.Toolkit
         /// These are determined from properties with <see cref="DBColumnAttribute.IsUnique"/> set to <see langword="true"/>
         /// that are not also primary keys.
         /// </remarks>
-        public string[] UniqueIndexes { get; private set; }
+        public string[] UniqueIndexes { get; private set; } = [];
 
         /// <summary>
         /// Gets the most recent exception encountered during the operation of the application.
@@ -178,6 +178,6 @@ namespace ByteForge.Toolkit
         /// This property is updated whenever an exception is caught and logged by the application.  
         /// It can be used to inspect the details of the most recent error for debugging or logging purposes.
         /// </remarks>
-        public Exception LastException { get; private set; }
+        public Exception? LastException { get; private set; }
     }
 }

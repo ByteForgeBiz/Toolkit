@@ -7,7 +7,7 @@ namespace ByteForge.Toolkit
     /*
      *  ___  ___   _                     ___                       _   _        
      * |   \| _ ) /_\  __ __ ___ ______ | _ \_ _ ___ _ __  ___ _ _| |_(_)___ ___
-     * | |) | _ \/ _ \/ _/ _/ -_)_-<_-<_|  _/ '_/ _ \ '_ \/ -_) '_|  _| / -_)_-<
+     * | |) | _ \/ _ \/ _/ _/ -_)_-<_-<_|  _/ '_/ _ \ '_ \/ -_) '_|  _| / -/)_-<
      * |___/|___/_/ \_\__\__\___/__/__(_)_| |_| \___/ .__/\___|_|  \__|_\___/__/
      *                                              |_|                         
      */
@@ -129,28 +129,28 @@ namespace ByteForge.Toolkit
         public class ExtendedProperty
         {
             /// <summary>Gets or sets the name of the extended property.</summary>
-            public string Name { get; set; }
+            public string? Name { get; set; }
 
             /// <summary>Gets or sets the value of the extended property.</summary>
-            public string Value { get; set; }
+            public string? Value { get; set; }
 
             /// <summary>Gets or sets the Level 0 object type.</summary>
-            public string Level0Type { get; set; }
+            public string? Level0Type { get; set; }
 
             /// <summary>Gets or sets the Level 0 object name.</summary>
-            public string Level0Name { get; set; }
+            public string? Level0Name { get; set; }
 
             /// <summary>Gets or sets the Level 1 object type.</summary>
-            public string Level1Type { get; set; }
+            public string? Level1Type { get; set; }
 
             /// <summary>Gets or sets the Level 1 object name.</summary>
-            public string Level1Name { get; set; }
+            public string? Level1Name { get; set; }
 
             /// <summary>Gets or sets the Level 2 object type.</summary>
-            public string Level2Type { get; set; }
+            public string? Level2Type { get; set; }
 
             /// <summary>Gets or sets the Level 2 object name.</summary>
-            public string Level2Name { get; set; }
+            public string? Level2Name { get; set; }
 
             /// <summary>
             /// Returns a string representation of the extended property.
@@ -176,7 +176,7 @@ namespace ByteForge.Toolkit
         /// Adds an extended property to a database object with all hierarchy levels specified.
         /// </summary>
         /// <param name="propertyName">The name of the extended property.</param>
-        /// <param name="Property">The value of the extended property.</param>
+        /// <param name="propertyValue">The value of the extended property.</param>
         /// <param name="level0Type">The Level 0 object type.</param>
         /// <param name="level0Name">The Level 0 object name.</param>
         /// <param name="level1Type">The Level 1 object type.</param>
@@ -184,27 +184,22 @@ namespace ByteForge.Toolkit
         /// <param name="level2Type">The Level 2 object type.</param>
         /// <param name="level2Name">The Level 2 object name.</param>
         /// <returns><see langword="true"/> if the extended property was added successfully; otherwise, <see langword="false"/>.</returns>
-        /// <exception cref="ArgumentNullException">Thrown when <paramref name="propertyName"/> is <see langword="null"/> or empty, or when <paramref name="Property"/> is <see langword="null"/>.</exception>
+        /// <exception cref="ArgumentNullException">Thrown when <paramref name="propertyName"/> is <see langword="null"/> or empty, or when <paramref name="propertyValue"/> is <see langword="null"/>.</exception>
         public bool AddExtendedProperty(string propertyName, 
-                                        string Property,
-                                        ExtendedPropertyLevel0Type level0Type, string level0Name,
-                                        ExtendedPropertyLevel1Type level1Type, string level1Name,
-                                        ExtendedPropertyLevel2Type level2Type, string level2Name)
+                                        string propertyValue,
+                                        ExtendedPropertyLevel0Type level0Type, string? level0Name,
+                                        ExtendedPropertyLevel1Type level1Type, string? level1Name,
+                                        ExtendedPropertyLevel2Type level2Type, string? level2Name)
         {
             if (DbType != DataBaseType.SQLServer)
                 throw new NotSupportedException("Extended properties are only supported for SQL Server databases.");
 
             if (string.IsNullOrWhiteSpace(propertyName))
                 throw new ArgumentNullException(nameof(propertyName));
-            if (Property == null)
-                throw new ArgumentNullException(nameof(Property));
+            if (propertyValue == null)
+                throw new ArgumentNullException(nameof(propertyValue));
 
-            var lvl0TypeStr = GetEnumSqlValue(level0Type);
-            var lvl1TypeStr = GetEnumSqlValue(level1Type);
-            var lvl2TypeStr = GetEnumSqlValue(level2Type);
-            level0Name = lvl0TypeStr == null ? null : string.IsNullOrWhiteSpace(level0Name) ? null : level0Name;
-            level1Name = lvl1TypeStr == null ? null : string.IsNullOrWhiteSpace(level1Name) ? null : level1Name;
-            level2Name = lvl2TypeStr == null ? null : string.IsNullOrWhiteSpace(level2Name) ? null : level2Name;
+            var (lvl0TypeStr, lvl0Name, lvl1TypeStr, lvl1Name, lvl2TypeStr, lvl2Name) = PrepareLevels(level0Type, level0Name, level1Type, level1Name, level2Type, level2Name);
 
             var sql = "EXEC sp_addextendedproperty " +
                           "@name       = @PropertyName, @value      = @Property, " +
@@ -213,10 +208,10 @@ namespace ByteForge.Toolkit
                           "@level2type = @Level2Type,   @level2name = @Level2Name";
 
             return ExecuteQuery(sql, 
-                                propertyName, Property,
-                                lvl0TypeStr, level0Name,
-                                lvl1TypeStr, level1Name,
-                                lvl2TypeStr, level2Name);
+                                propertyName, propertyValue,
+                                lvl0TypeStr, lvl0Name,
+                                lvl1TypeStr, lvl1Name,
+                                lvl2TypeStr, lvl2Name);
         }
 
         /// <summary>
@@ -345,7 +340,7 @@ namespace ByteForge.Toolkit
         /// If the property already exists, it will be updated; otherwise, it will be added.
         /// </summary>
         /// <param name="propertyName">The name of the extended property.</param>
-        /// <param name="Property">The value of the extended property.</param>
+        /// <param name="propertyValue">The value of the extended property.</param>
         /// <param name="level0Type">The Level 0 object type.</param>
         /// <param name="level0Name">The Level 0 object name.</param>
         /// <param name="level1Type">The Level 1 object type.</param>
@@ -353,29 +348,29 @@ namespace ByteForge.Toolkit
         /// <param name="level2Type">The Level 2 object type.</param>
         /// <param name="level2Name">The Level 2 object name.</param>
         /// <returns><see langword="true"/> if the extended property was set successfully; otherwise, <see langword="false"/>.</returns>
-        /// <exception cref="ArgumentNullException">Thrown when <paramref name="propertyName"/> is <see langword="null"/> or empty, or when <paramref name="Property"/> is <see langword="null"/>.</exception>
+        /// <exception cref="ArgumentNullException">Thrown when <paramref name="propertyName"/> is <see langword="null"/> or empty, or when <paramref name="propertyValue"/> is <see langword="null"/>.</exception>
         public bool SetExtendedProperty(string propertyName,
-                                             string Property,
-                                             ExtendedPropertyLevel0Type level0Type, string level0Name,
-                                             ExtendedPropertyLevel1Type level1Type, string level1Name,
-                                             ExtendedPropertyLevel2Type level2Type, string level2Name)
+                                             string propertyValue,
+                                             ExtendedPropertyLevel0Type level0Type, string? level0Name,
+                                             ExtendedPropertyLevel1Type level1Type, string? level1Name,
+                                             ExtendedPropertyLevel2Type level2Type, string? level2Name)
         {
             if (DbType != DataBaseType.SQLServer)
                 throw new NotSupportedException("Extended properties are only supported for SQL Server databases.");
 
             if (string.IsNullOrWhiteSpace(propertyName))
                 throw new ArgumentNullException(nameof(propertyName));
-            if (Property == null)
-                throw new ArgumentNullException(nameof(Property));
+            if (propertyValue == null)
+                throw new ArgumentNullException(nameof(propertyValue));
 
             // Check if the property already exists
             var existingValue = GetExtendedProperty(propertyName, level0Type, level0Name, level1Type, level1Name, level2Type, level2Name);
 
             // If property exists, update it; otherwise, add it
             if (existingValue != null)
-                return UpdateExtendedProperty(propertyName, Property, level0Type, level0Name, level1Type, level1Name, level2Type, level2Name);
+                return UpdateExtendedProperty(propertyName, propertyValue, level0Type, level0Name, level1Type, level1Name, level2Type, level2Name);
             else
-                return AddExtendedProperty(propertyName, Property, level0Type, level0Name, level1Type, level1Name, level2Type, level2Name);
+                return AddExtendedProperty(propertyName, propertyValue, level0Type, level0Name, level1Type, level1Name, level2Type, level2Name);
         }
 
         /// <summary>
@@ -503,7 +498,7 @@ namespace ByteForge.Toolkit
                                             ExtendedPropertyLevel1Type.Table, tableName,
                                             ExtendedPropertyLevel2Type.Column, columnName);
         }
-        
+
         /// <summary>
                  /// Deletes an extended property from a database object with all hierarchy levels specified.
                  /// </summary>
@@ -517,9 +512,9 @@ namespace ByteForge.Toolkit
                  /// <returns><see langword="true"/> if the extended property was deleted successfully; otherwise, <see langword="false"/>.</returns>
                  /// <exception cref="ArgumentNullException">Thrown when <paramref name="propertyName"/> is <see langword="null"/> or empty.</exception>
         public bool DeleteExtendedProperty(string propertyName,
-                                           ExtendedPropertyLevel0Type level0Type, string level0Name,
-                                           ExtendedPropertyLevel1Type level1Type, string level1Name,
-                                           ExtendedPropertyLevel2Type level2Type, string level2Name)
+                                           ExtendedPropertyLevel0Type level0Type, string? level0Name,
+                                           ExtendedPropertyLevel1Type level1Type, string? level1Name,
+                                           ExtendedPropertyLevel2Type level2Type, string? level2Name)
         {
             if (DbType != DataBaseType.SQLServer)
                 throw new NotSupportedException("Extended properties are only supported for SQL Server databases.");
@@ -527,12 +522,7 @@ namespace ByteForge.Toolkit
             if (string.IsNullOrWhiteSpace(propertyName))
                 throw new ArgumentNullException(nameof(propertyName));
 
-            var lvl0TypeStr = GetEnumSqlValue(level0Type);
-            var lvl1TypeStr = GetEnumSqlValue(level1Type);
-            var lvl2TypeStr = GetEnumSqlValue(level2Type);
-            level0Name = lvl0TypeStr == null ? null : string.IsNullOrWhiteSpace(level0Name) ? null : level0Name;
-            level1Name = lvl1TypeStr == null ? null : string.IsNullOrWhiteSpace(level1Name) ? null : level1Name;
-            level2Name = lvl2TypeStr == null ? null : string.IsNullOrWhiteSpace(level2Name) ? null : level2Name;
+            var (lvl0TypeStr, lvl0Name, lvl1TypeStr, lvl1Name, lvl2TypeStr, lvl2Name) = PrepareLevels(level0Type, level0Name, level1Type, level1Name, level2Type, level2Name);
 
             var sql = "EXEC sp_dropextendedproperty " +
                           "@name       = @PropertyName, " +
@@ -542,9 +532,9 @@ namespace ByteForge.Toolkit
 
             return ExecuteQuery(sql,
                                 propertyName, 
-                                lvl0TypeStr, level0Name,
-                                lvl1TypeStr, level1Name,
-                                lvl2TypeStr, level2Name);
+                                lvl0TypeStr, lvl0Name,
+                                lvl1TypeStr, lvl1Name,
+                                lvl2TypeStr, lvl2Name);
         }
 
         /// <summary>
@@ -673,10 +663,10 @@ namespace ByteForge.Toolkit
         /// <param name="level2Name">The Level 2 object name.</param>
         /// <returns>The value of the extended property, or <see langword="null"/> if the property is not found.</returns>
         /// <exception cref="ArgumentNullException">Thrown when <paramref name="propertyName"/> is <see langword="null"/> or empty.</exception>
-        public string GetExtendedProperty(string propertyName,
-                                               ExtendedPropertyLevel0Type level0Type, string level0Name,
-                                               ExtendedPropertyLevel1Type level1Type, string level1Name,
-                                               ExtendedPropertyLevel2Type level2Type, string level2Name)
+        public string? GetExtendedProperty(string propertyName,
+                                               ExtendedPropertyLevel0Type level0Type, string? level0Name,
+                                               ExtendedPropertyLevel1Type level1Type, string? level1Name,
+                                               ExtendedPropertyLevel2Type level2Type, string? level2Name)
         {
             if (DbType != DataBaseType.SQLServer)
                 throw new NotSupportedException("Extended properties are only supported for SQL Server databases.");
@@ -684,12 +674,7 @@ namespace ByteForge.Toolkit
             if (string.IsNullOrWhiteSpace(propertyName))
                 throw new ArgumentNullException(nameof(propertyName));
 
-            var lvl0TypeStr = GetEnumSqlValue(level0Type);
-            var lvl1TypeStr = GetEnumSqlValue(level1Type);
-            var lvl2TypeStr = GetEnumSqlValue(level2Type);
-            level0Name = lvl0TypeStr == null ? null : string.IsNullOrWhiteSpace(level0Name) ? null : level0Name;
-            level1Name = lvl1TypeStr == null ? null : string.IsNullOrWhiteSpace(level1Name) ? null : level1Name;
-            level2Name = lvl2TypeStr == null ? null : string.IsNullOrWhiteSpace(level2Name) ? null : level2Name;
+            var (lvl0TypeStr, lvl0Name, lvl1TypeStr, lvl1Name, lvl2TypeStr, lvl2Name) = PrepareLevels(level0Type, level0Name, level1Type, level1Name, level2Type, level2Name);
 
             var sql = "SELECT value FROM ::fn_listextendedproperty(" +
                           "@PropertyName, " +
@@ -699,9 +684,9 @@ namespace ByteForge.Toolkit
 
             var results = GetRecord(sql,
                                     propertyName,
-                                    lvl0TypeStr, level0Name,
-                                    lvl1TypeStr, level1Name,
-                                    lvl2TypeStr, level2Name);
+                                    lvl0TypeStr, lvl0Name,
+                                    lvl1TypeStr, lvl1Name,
+                                    lvl2TypeStr, lvl2Name);
             if (results == null)
                 return null;
             return results["value"]?.ToString();
@@ -719,7 +704,7 @@ namespace ByteForge.Toolkit
         /// string description = dbAccess.GetExtendedProperty("DatabaseDescription");
         /// </code>
         /// </example>
-        public string GetExtendedProperty(string propertyName)
+        public string? GetExtendedProperty(string propertyName)
         {
             return GetExtendedProperty(propertyName,
                                             ExtendedPropertyLevel0Type.Null, null,
@@ -742,7 +727,7 @@ namespace ByteForge.Toolkit
         ///                                                       ExtendedPropertyLevel0Type.Schema, "dbo");
         /// </code>
         /// </example>
-        public string GetExtendedProperty(string propertyName,
+        public string? GetExtendedProperty(string propertyName,
                                                ExtendedPropertyLevel0Type level0Type, string level0Name)
         {
             return GetExtendedProperty(propertyName,
@@ -760,7 +745,7 @@ namespace ByteForge.Toolkit
         /// <param name="level1Type">The Level 1 object type.</param>
         /// <param name="level1Name">The Level 1 object name.</param>
         /// <returns>The value of the extended property, or <see langword="null"/> if the property is not found.</returns>
-        /// <exception cref="ArgumentNullException">Thrown when <paramref name="propertyName"/> is <see langword="null"/> or empty.</exception>
+        /// <exception cref="ArgumentNullException">Thrown when <paramref name="propertyName"/> is <see langword="null"/> or empty, or when <paramref name="Property"/> is <see langword="null"/>.</exception>
         /// <example>
         /// <code>
         /// var dbAccess = new DBAccess();
@@ -769,7 +754,7 @@ namespace ByteForge.Toolkit
         ///                                                       ExtendedPropertyLevel1Type.Table, "Customers");
         /// </code>
         /// </example>
-        public string GetExtendedProperty(string propertyName,
+        public string? GetExtendedProperty(string propertyName,
                                                ExtendedPropertyLevel0Type level0Type, string level0Name,
                                                ExtendedPropertyLevel1Type level1Type, string level1Name)
         {
@@ -792,7 +777,7 @@ namespace ByteForge.Toolkit
         /// string description = dbAccess.GetExtendedPropertyFromTable("Description", "Customers");
         /// </code>
         /// </example>
-        public string GetExtendedPropertyFromTable(string propertyName, string tableName)
+        public string? GetExtendedPropertyFromTable(string propertyName, string tableName)
         {
             return GetExtendedProperty(propertyName,
                                             ExtendedPropertyLevel0Type.Schema, "dbo",
@@ -813,7 +798,7 @@ namespace ByteForge.Toolkit
         /// string description = dbAccess.GetExtendedPropertyFromColumn("Description", "Customers", "CustomerID");
         /// </code>
         /// </example>
-        public string GetExtendedPropertyFromColumn(string propertyName, string tableName, string columnName)
+        public string? GetExtendedPropertyFromColumn(string propertyName, string tableName, string columnName)
         {
             return GetExtendedProperty(propertyName,
                                             ExtendedPropertyLevel0Type.Schema, "dbo",
@@ -836,9 +821,9 @@ namespace ByteForge.Toolkit
         /// <exception cref="ArgumentNullException">Thrown when <paramref name="propertyName"/> is <see langword="null"/> or empty, or when <paramref name="newProperty"/> is <see langword="null"/>.</exception>
         public bool UpdateExtendedProperty(string propertyName, 
                                            string newProperty,
-                                           ExtendedPropertyLevel0Type level0Type, string level0Name,
-                                           ExtendedPropertyLevel1Type level1Type, string level1Name,
-                                           ExtendedPropertyLevel2Type level2Type, string level2Name)
+                                           ExtendedPropertyLevel0Type level0Type, string? level0Name,
+                                           ExtendedPropertyLevel1Type level1Type, string? level1Name,
+                                           ExtendedPropertyLevel2Type level2Type, string? level2Name)
         {
             if (DbType != DataBaseType.SQLServer)
                 throw new NotSupportedException("Extended properties are only supported for SQL Server databases.");
@@ -848,12 +833,7 @@ namespace ByteForge.Toolkit
             if (newProperty == null)
                 throw new ArgumentNullException(nameof(newProperty));
 
-            var lvl0TypeStr = GetEnumSqlValue(level0Type);
-            var lvl1TypeStr = GetEnumSqlValue(level1Type);
-            var lvl2TypeStr = GetEnumSqlValue(level2Type);
-            level0Name = lvl0TypeStr == null ? null : string.IsNullOrWhiteSpace(level0Name) ? null : level0Name;
-            level1Name = lvl1TypeStr == null ? null : string.IsNullOrWhiteSpace(level1Name) ? null : level1Name;
-            level2Name = lvl2TypeStr == null ? null : string.IsNullOrWhiteSpace(level2Name) ? null : level2Name;
+            var (lvl0TypeStr, lvl0Name, lvl1TypeStr, lvl1Name, lvl2TypeStr, lvl2Name) = PrepareLevels(level0Type, level0Name, level1Type, level1Name, level2Type, level2Name);
 
             var sql = "EXEC sp_updateextendedproperty " +
                           "@name       = @PropertyName, @value      = @Property, " +
@@ -863,9 +843,9 @@ namespace ByteForge.Toolkit
 
             return ExecuteQuery(sql, 
                                 propertyName, newProperty,
-                                lvl0TypeStr, level0Name,
-                                lvl1TypeStr, level1Name,
-                                lvl2TypeStr, level2Name);
+                                lvl0TypeStr, lvl0Name,
+                                lvl1TypeStr, lvl1Name,
+                                lvl2TypeStr, lvl2Name);
         }
 
         /// <summary>
@@ -1052,21 +1032,16 @@ namespace ByteForge.Toolkit
         /// Console.WriteLine($"Found {properties.Count} extended properties for the CustomerID column.");
         /// </code>
         /// </example>
-        public IList<ExtendedProperty> GetExtendedProperties(ExtendedPropertyLevel0Type level0Type, string level0Name,
-                                                             ExtendedPropertyLevel1Type level1Type, string level1Name,
-                                                             ExtendedPropertyLevel2Type level2Type, string level2Name)
+        public IList<ExtendedProperty> GetExtendedProperties(ExtendedPropertyLevel0Type level0Type, string? level0Name,
+                                                             ExtendedPropertyLevel1Type level1Type, string? level1Name,
+                                                             ExtendedPropertyLevel2Type level2Type, string? level2Name)
         {
             if (DbType != DataBaseType.SQLServer)
                 throw new NotSupportedException("Extended properties are only supported for SQL Server databases.");
 
             try
             {
-                var lvl0TypeStr = GetEnumSqlValue(level0Type);
-                var lvl1TypeStr = GetEnumSqlValue(level1Type);
-                var lvl2TypeStr = GetEnumSqlValue(level2Type);
-                level0Name = lvl0TypeStr == null ? null : string.IsNullOrWhiteSpace(level0Name) ? null : level0Name;
-                level1Name = lvl1TypeStr == null ? null : string.IsNullOrWhiteSpace(level1Name) ? null : level1Name;
-                level2Name = lvl2TypeStr == null ? null : string.IsNullOrWhiteSpace(level2Name) ? null : level2Name;
+                var (lvl0TypeStr, lvl0Name, lvl1TypeStr, lvl1Name, lvl2TypeStr, lvl2Name) = PrepareLevels(level0Type, level0Name, level1Type, level1Name, level2Type, level2Name);
 
                 var sql = "SELECT objtype, objname, name, value FROM ::fn_listextendedproperty(" +
                               "NULL, " +
@@ -1075,11 +1050,11 @@ namespace ByteForge.Toolkit
                               "@Level2Type, @Level2Name)";
 
                 var results = GetRecords(sql,
-                                        lvl0TypeStr, level0Name,
-                                        lvl1TypeStr, level1Name,
-                                        lvl2TypeStr, level2Name);
+                                        lvl0TypeStr, lvl0Name,
+                                        lvl1TypeStr, lvl1Name,
+                                        lvl2TypeStr, lvl2Name);
                 if (results == null)
-                    return null;
+                    return [];
 
                 var properties = new List<ExtendedProperty>();
                 foreach (DataRow row in results)
@@ -1105,7 +1080,7 @@ namespace ByteForge.Toolkit
             catch (Exception ex)
             {
                 LastException = ex;
-                return null;
+                return [];
             }
         }
 
@@ -1184,11 +1159,35 @@ namespace ByteForge.Toolkit
         #region Helper Methods
 
         /// <summary>
+        /// Prepares the SQL string values for the extended property levels.
+        /// </summary>
+        /// <param name="level0Type">The Level 0 object type.</param>
+        /// <param name="level0Name">The Level 0 object name.</param>
+        /// <param name="level1Type">The Level 1 object type.</param>
+        /// <param name="level1Name">The Level 1 object name.</param>
+        /// <param name="level2Type">The Level 2 object type.</param>
+        /// <param name="level2Name">The Level 2 object name.</param>
+        /// <returns>A tuple containing the prepared SQL values.</returns>
+        private (string? lvl0TypeStr, string? lvl0Name, string? lvl1TypeStr, string? lvl1Name, string? lvl2TypeStr, string? lvl2Name) 
+        PrepareLevels(ExtendedPropertyLevel0Type level0Type, string? level0Name,
+                      ExtendedPropertyLevel1Type level1Type, string? level1Name,
+                      ExtendedPropertyLevel2Type level2Type, string? level2Name)
+        {
+            var lvl0TypeStr = GetEnumSqlValue(level0Type);
+            var lvl1TypeStr = GetEnumSqlValue(level1Type);
+            var lvl2TypeStr = GetEnumSqlValue(level2Type);
+            level0Name = lvl0TypeStr == null ? null : string.IsNullOrWhiteSpace(level0Name) ? null : level0Name;
+            level1Name = lvl1TypeStr == null ? null : string.IsNullOrWhiteSpace(level1Name) ? null : level1Name;
+            level2Name = lvl2TypeStr == null ? null : string.IsNullOrWhiteSpace(level2Name) ? null : level2Name;
+            return (lvl0TypeStr, level0Name, lvl1TypeStr, level1Name, lvl2TypeStr, level2Name);
+        }
+
+        /// <summary>
         /// Converts an enum value to its corresponding SQL Server string representation.
         /// </summary>
         /// <param name="enumValue">The enum value to convert.</param>
         /// <returns>The SQL Server string representation of the enum value.</returns>
-        private string GetEnumSqlValue(Enum enumValue)
+        private string? GetEnumSqlValue(Enum enumValue)
         {
             var strValue = StringUtil.SplitPascalCase(enumValue.ToString()).ToUpperInvariant();
             if (strValue == "NULL")

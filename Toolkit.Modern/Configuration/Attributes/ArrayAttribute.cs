@@ -31,6 +31,6 @@ namespace ByteForge.Toolkit
         /// The name of the configuration section containing the array. 
         /// If <c>null</c>, the default section is used.
         /// </param>
-        public ArrayAttribute(string sectionName = null) => SectionName = sectionName;
+        public ArrayAttribute(string sectionName  = "") => SectionName = sectionName;
     }
 }

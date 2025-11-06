@@ -54,7 +54,7 @@ namespace ByteForge.Toolkit
         /// </summary>
         /// <param name="action">The action to be executed and timed.</param>
         /// <param name="message">An optional message to be logged with the elapsed time.</param>
-        public void Time(Action action, string message = null)
+        public void Time(Action action, string message  = "")
         {
             var start = DateTime.Now;
             action();
@@ -69,7 +69,7 @@ namespace ByteForge.Toolkit
         /// <param name="action">The function to be executed and timed.</param>
         /// <param name="message">An optional message to be logged with the elapsed time.</param>
         /// <returns>The result of the function execution.</returns>
-        public T Time<T>(Func<T> action, string message = null)
+        public T Time<T>(Func<T> action, string message  = "")
         {
             var start = DateTime.Now;
             var result = action();
@@ -84,7 +84,7 @@ namespace ByteForge.Toolkit
         /// <param name="action">The asynchronous action to be executed and timed.</param>
         /// <param name="message">An optional message to be logged with the elapsed time.</param>
         /// <returns>A task representing the asynchronous operation.</returns>
-        public async Task TimeAsync(Func<Task> action, string message = null)
+        public async Task TimeAsync(Func<Task> action, string message  = "")
         {
             var start = DateTime.Now;
             await action();

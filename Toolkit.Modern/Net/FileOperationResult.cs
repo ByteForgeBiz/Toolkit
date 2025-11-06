@@ -8,7 +8,7 @@
         /// <summary>
         /// Gets or sets the path to the file.
         /// </summary>
-        public string Path { get; set; }
+        public string? Path  { get; set; }
 
         /// <summary>
         /// Gets or sets whether the operation was successful.
@@ -18,6 +18,6 @@
         /// <summary>
         /// Gets or sets the error message if the operation failed.
         /// </summary>
-        public string ErrorMessage { get; set; }
+        public string? ErrorMessage  { get; set; }
     }
 }

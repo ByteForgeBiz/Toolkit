@@ -8,12 +8,12 @@
         /// <summary>
         /// Gets or sets the path to the local file.
         /// </summary>
-        public string LocalPath { get; set; }
+        public string? LocalPath { get; set; }
 
         /// <summary>
         /// Gets or sets the path to the remote file.
         /// </summary>
-        public string RemotePath { get; set; }
+        public string? RemotePath { get; set; }
 
         /// <summary>
         /// Gets or sets whether to overwrite existing files.

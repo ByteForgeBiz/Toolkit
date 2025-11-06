@@ -96,7 +96,7 @@ namespace ByteForge.Toolkit
         /// <param name="arraySections">Existing array sections to track.</param>
         /// <param name="dictionarySections">Existing dictionary sections to track.</param>
         /// <param name="configLock">The reader-writer lock for coordinating configuration access.</param>
-        public ConfigSection(string sectionName, IConfigurationRoot root, HashSet<string> arraySections, HashSet<string> dictionarySections, ReaderWriterLockSlim configLock = null) 
+        public ConfigSection(string sectionName, IConfigurationRoot root, HashSet<string>? arraySections, HashSet<string>? dictionarySections, ReaderWriterLockSlim? configLock  = null) 
         {
             _root = root;
             _sectionName = sectionName;
@@ -106,7 +106,7 @@ namespace ByteForge.Toolkit
                             .ToArray();
             _arraySections = arraySections ?? new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             _dictionarySections = dictionarySections ?? new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-            _configLock = configLock;
+            _configLock = configLock ?? new ReaderWriterLockSlim();
             Value = new T();
             ((IConfigSection)this).LoadFromConfiguration();
         }
@@ -315,12 +315,12 @@ namespace ByteForge.Toolkit
             value = string.IsNullOrWhiteSpace(value) ? null : value?.Trim();
 
             // Handle special property types
-            if (TryLoadArrayProperty(prop, name, value)) return;
-            if (TryLoadDictionaryProperty(prop, name, value)) return;
-            if (TryLoadDefaultValue(prop, value)) return;
+            if (TryLoadArrayProperty(prop, name, value!)) return;
+            if (TryLoadDictionaryProperty(prop, name, value!)) return;
+            if (TryLoadDefaultValue(prop, value!)) return;
             
             // Load standard property value
-            LoadStandardProperty(prop, propType, value);
+            LoadStandardProperty(prop, propType, value!);
         }
 
         /// <summary>
@@ -485,7 +485,7 @@ namespace ByteForge.Toolkit
 
                 try
                 {
-                    var element = Parser.Parse(elementType, elementValue);
+                    var element = Parser.Parse(elementType, elementValue!);
                     list.Add(element);
                 }
                 catch (Exception ex)
@@ -556,7 +556,7 @@ namespace ByteForge.Toolkit
             var children = dictSection?.GetChildren()?.ToArray() ?? Array.Empty<IConfigurationSection>();
             foreach (var child in children)
                 if (!string.IsNullOrWhiteSpace(child.Key) && !string.IsNullOrWhiteSpace(child.Value))
-                    dictionary[child.Key] = child.Value;
+                    dictionary[child.Key] = child.Value!;
 
             SetDictionaryValue(prop, dictionary);
             return true;

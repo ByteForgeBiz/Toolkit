@@ -81,9 +81,9 @@ namespace ByteForge.Toolkit
         /// </summary>
         /// <param name="value">The string to check.</param>
         /// <returns><c>null</c> if the string is null, empty, or whitespace; otherwise, the string itself.</returns>
-        public static string NullIfEmpty(string value)
+        public static string? NullIfEmpty(string value)
         {
-            return string.IsNullOrEmpty(value) || string.IsNullOrWhiteSpace(value) ? null : value;
+            return string.IsNullOrWhiteSpace(value) ? null : value;
         }
 
         /// <summary>

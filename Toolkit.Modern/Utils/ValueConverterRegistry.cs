@@ -44,12 +44,12 @@ namespace ByteForge.Toolkit
         /// </summary>
         /// <param name="name">The name of the converter.</param>
         /// <returns>The converter function, or null if no converter with the specified name exists.</returns>
-        public static Func<object, object> GetConverter(string name)
+        public static Func<object, object>? GetConverter(string? name)
         {
             if (string.IsNullOrWhiteSpace(name))
                 return null;
 
-            return _converters.TryGetValue(name, out var converter) ? converter : null;
+            return _converters.TryGetValue(name!, out var converter) ? converter : null;
         }
 
         /// <summary>

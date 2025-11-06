@@ -46,7 +46,7 @@ namespace ByteForge.Toolkit
         /// <exception cref="InvalidOperationException">
         /// Thrown if the method cannot be found, is not static, or has parameters.
         /// </exception>
-        public object GetDefaultValue()
+        public object? GetDefaultValue()
         {
             var method = ProviderType.GetMethod(MethodName, System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static)
                             ?? throw new InvalidOperationException($"Method '{MethodName}' not found in type '{ProviderType.FullName}'.");

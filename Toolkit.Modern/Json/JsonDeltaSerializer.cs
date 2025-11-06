@@ -18,6 +18,9 @@ namespace ByteForge.Toolkit.Json
         /// <returns>A JSON string containing only the properties that differ from the default object.</returns>
         public static string SerializeDelta<T>(T currentObject, T defaultObject)
         {
+            if (defaultObject == null)
+                return JsonConvert.SerializeObject(currentObject);
+
             var settings = new JsonSerializerSettings
             {
                 ContractResolver = new DeltaContractResolver(defaultObject),

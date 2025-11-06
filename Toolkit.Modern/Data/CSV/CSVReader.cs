@@ -26,7 +26,7 @@ namespace ByteForge.Toolkit
         /// <summary>
         /// Occurs to report the progress of the CSV reading process.
         /// </summary>
-        public event EventHandler<ProgressEventArgs> Progress;
+        public event EventHandler<ProgressEventArgs>? Progress;
 
         /// <summary>
         /// Represents the status of a CSV row during processing.
@@ -57,6 +57,7 @@ namespace ByteForge.Toolkit
         /// <param name="rawLine">The raw CSV line.</param>
         /// <returns>True to continue processing, false to stop.</returns>
         public delegate bool CSVRowProcessorDelegate(IDictionary<string, string> row, CSVRowStatus status, string rawLine);
+
         /// <summary>
         /// Gets or sets the delegate to handle CSV rows with status information.
         /// </summary>
@@ -65,12 +66,12 @@ namespace ByteForge.Toolkit
         /// along with a status indicating if the row is OK, Malformed, or EOF, and the raw CSV line.<br/>
         /// It should return <see langword="true"/> to continue processing further rows, or <see langword="false"/> to stop.
         /// </remarks>
-        public CSVRowProcessorDelegate RowHandler { get; set; }
+        public CSVRowProcessorDelegate? RowHandler { get; set; }
 
         /// <summary>
         /// Gets or sets the format to use for parsing. If not set, format will be auto-detected.
         /// </summary>
-        public CSVFormat Format { get; set; }
+        public CSVFormat? Format { get; set; }
 
         /// <summary>
         /// Reads the CSV file and processes the data using the new RowHandler.
@@ -153,7 +154,7 @@ namespace ByteForge.Toolkit
             var totalBytes = stream.Length;
             long prevPct = 0;
 
-            string line;
+            string? line;
             while ((line = bufferedReader.ReadLine()) != null)
             {
                 // Report progress
@@ -200,7 +201,7 @@ namespace ByteForge.Toolkit
                 try
                 {
                     var row = BuildRowDictionary(columns, values);
-                    if (!RowHandler(row, CSVRowStatus.OK, line))
+                    if (RowHandler!= null && !RowHandler(row, CSVRowStatus.OK, line))
                         break; // Stop processing if handler returns false
                 }
                 catch (Exception ex)

@@ -19,7 +19,7 @@ namespace ByteForge.Toolkit
 
         private static readonly object _globalConsoleLock = new object();
         private readonly string _spinChars;
-        private readonly Thread _spinThread;
+        private readonly Thread? _spinThread;
         private volatile bool _isSpinning;
         private readonly object _lockObject = new object();
         private ConsoleColor? _color;
@@ -86,7 +86,7 @@ namespace ByteForge.Toolkit
         /// <summary>
         /// Determines whether Unicode spinner styles can be rendered in the current console.
         /// </summary>
-        private static bool IsUnicodeSupported => Environment.OSVersion.Platform == PlatformID.Unix || Environment.OSVersion.Platform == PlatformID.MacOSX || Console.OutputEncoding.BodyName == "utf-8";
+        private static bool IsUnicodeSupported => Environment.OSVersion.Platform == PlatformID.Unix || Environment.OSVersion.Platform == PlatformID.MacOSX || Console.OutputEncoding.WebName == "utf-8";
 
         #endregion
 
@@ -347,14 +347,14 @@ namespace ByteForge.Toolkit
         /// <param name="color">Optional spinner color.</param>
         /// <param name="spinChars">Character sequence for animation. If null, defaults based on <see cref="SpinnerStyle.Braille"/> or ASCII fallback.</param>
         /// <param name="delayMs">Delay between frames (ms). Defaults to 100 if null.</param>
-        public ConsoleSpinner(int positionX, int positionY, string message, ConsoleColor? color, string spinChars, int? delayMs)
+        public ConsoleSpinner(int positionX, int positionY, string? message, ConsoleColor? color, string? spinChars, int? delayMs)
         {
             PositionX = positionX;
             PositionY = positionY;
             Delay = delayMs ?? 100;
             Color = color ?? Console.ForegroundColor;
-            _spinChars = !string.IsNullOrEmpty(spinChars) ? spinChars : GetSpinnerChars(SpinnerStyle.Braille);
-            _message = message;
+            _spinChars = spinChars ?? GetSpinnerChars(SpinnerStyle.Braille);
+            _message = message ?? string.Empty;
 
             if (!ConsoleUtil.IsConsoleAvailable) return;
 

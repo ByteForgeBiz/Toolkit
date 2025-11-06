@@ -87,12 +87,12 @@ namespace ByteForge.Toolkit
         /// <summary>
         /// Gets the session file logger instance if session logging is enabled.
         /// </summary>
-        public static SessionFileLogger SessionLogger => Instance?.fileLogger as SessionFileLogger;
+        public static SessionFileLogger? SessionLogger => Instance?.fileLogger as SessionFileLogger;
 
         /// <summary>
         /// Gets the current session's log file path if using session logging.
         /// </summary>
-        public static string CurrentLogFile => SessionLogger?.CurrentFilePath ?? ((FileLogger)Instance.fileLogger)?.CurrentFilePath;
+        public static string CurrentLogFile => SessionLogger?.CurrentFilePath ?? ((FileLogger)Instance.fileLogger)?.CurrentFilePath ?? "";
 
         /// <summary>
         /// Ends the current logging session if using session logging.
@@ -120,13 +120,13 @@ namespace ByteForge.Toolkit
                                     Name = "Alternate",
                                     MinLogLevel = LogLevel.All,
                                 };
-        private ILogger _alternateLogger;
+        private ILogger? _alternateLogger;
 
         /// <summary>
         /// Gets the singleton instance of the Log class.
         /// </summary>
         public static Log Instance => _instance ??= new Log();
-        private static Log _instance;
+        private static Log? _instance;
         private bool _disposed;
 
         /// <summary>
@@ -287,7 +287,7 @@ namespace ByteForge.Toolkit
         /// <param name="ex"></param>
         /// 
         /// 
-        private static void WriteToLog(LogLevel level, string message, Exception ex)
+        private static void WriteToLog(LogLevel level, string message, Exception? ex)
         {
             if (string.IsNullOrEmpty(message))
                 return;
@@ -302,7 +302,7 @@ namespace ByteForge.Toolkit
         /// <param name="ex"></param>
         /// 
         /// 
-        private void WriteToLog(LogLevel level, string[] text, Exception ex)
+        private void WriteToLog(LogLevel level, string[] text, Exception? ex)
         {
             if (text == null ||
                 text.Length == 0 ||

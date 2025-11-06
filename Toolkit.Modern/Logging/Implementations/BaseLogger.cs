@@ -49,7 +49,7 @@ namespace ByteForge.Toolkit.Logging
         /// <param name="level">The log level.</param>
         /// <param name="message">The message to log.</param>
         /// <param name="ex">An optional exception to log.</param>
-        public void Log(LogLevel level, string message, Exception ex = null)
+        public void Log(LogLevel level, string message, Exception? ex = null)
         {
             if (level < MinLogLevel) return;
 
@@ -111,21 +111,21 @@ namespace ByteForge.Toolkit.Logging
         /// </summary>
         /// <param name="message">The message to log.</param>
         /// <param name="ex">An optional exception to log.</param>
-        public void LogError(string message, Exception ex = null) => Log(LogLevel.Error, message, ex);
+        public void LogError(string message, Exception? ex = null) => Log(LogLevel.Error, message, ex);
 
         /// <summary>
         /// Logs a critical message.
         /// </summary>
         /// <param name="message">The message to log.</param>
         /// <param name="ex">An optional exception to log.</param>
-        public void LogCritical(string message, Exception ex = null) => Log(LogLevel.Critical, message, ex);
+        public void LogCritical(string message, Exception? ex  = null) => Log(LogLevel.Critical, message, ex);
 
         /// <summary>
         /// Logs a fatal message.
         /// </summary>
         /// <param name="message">The message to log.</param>
         /// <param name="ex">An optional exception to log.</param>
-        public void LogFatal(string message, Exception ex = null) => Log(LogLevel.Fatal, message, ex);
+        public void LogFatal(string message, Exception? ex = null) => Log(LogLevel.Fatal, message, ex);
 
         // Helper Methods
 

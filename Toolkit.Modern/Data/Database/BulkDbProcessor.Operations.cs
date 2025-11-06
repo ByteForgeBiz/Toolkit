@@ -29,8 +29,9 @@ namespace ByteForge.Toolkit
         /// </summary>
         public async Task<bool> BulkInsertAsync(DBAccess db, IEnumerable<T> records, CancellationToken cancellationToken)
         {
+            records ??= [];
             OnStarted($"Bulk insert started for {typeof(T).Name} into {DestinationTableName}.");
-            OnDebug($"Starting bulk insert of {typeof(T).Name} records into {DestinationTableName}. Number of records: {records?.Count() ?? 0}");
+            OnDebug($"Starting bulk insert of {typeof(T).Name} records into {DestinationTableName}. Number of records: {records.Count()}");
             if (db.DbType != DataBaseType.SQLServer)
             {
                 OnWarning("Bulk insert aborted: operation only supported for SQL Server databases.");
@@ -115,8 +116,9 @@ namespace ByteForge.Toolkit
         /// </summary>
         public async Task<bool> BulkUpsertAsync(DBAccess db, IEnumerable<T> records, CancellationToken cancellationToken)
         {
+            records ??= Array.Empty<T>();
             OnStarted($"Bulk upsert started for {typeof(T).Name} into {DestinationTableName}.");
-            OnDebug($"Starting bulk upsert of {typeof(T).Name} records into {DestinationTableName}. Number of records: {records?.Count() ?? 0}");
+            OnDebug($"Starting bulk upsert of {typeof(T).Name} records into {DestinationTableName}. Number of records: {records.Count()}");
             if (db.DbType != DataBaseType.SQLServer)
             {
                 OnWarning("Bulk upsert aborted: operation only supported for SQL Server databases.");
@@ -139,7 +141,7 @@ namespace ByteForge.Toolkit
                 throw;
             }
 
-            string tempTableName = null;
+            var tempTableName = "";
             try
             {
                 var dt = CreateDataTable();
@@ -238,8 +240,9 @@ namespace ByteForge.Toolkit
         /// </summary>
         public async Task<bool> BulkDeleteAsync(DBAccess db, IEnumerable<T> records, CancellationToken cancellationToken)
         {
+            records ??= [];
             OnStarted($"Bulk delete started for {typeof(T).Name} from {DestinationTableName}.");
-            OnDebug($"Starting bulk delete of {typeof(T).Name} records from {DestinationTableName}. Number of records: {records?.Count() ?? 0}");
+            OnDebug($"Starting bulk delete of {typeof(T).Name} records from {DestinationTableName}. Number of records: {records.Count()}");
             if (db.DbType != DataBaseType.SQLServer)
             {
                 OnWarning("Bulk delete aborted: operation only supported for SQL Server databases.");
@@ -262,7 +265,7 @@ namespace ByteForge.Toolkit
                 throw;
             }
 
-            string tempTableName = null;
+            var tempTableName = "";
             try
             {
                 var matchKeys = PrimaryKeys.Length > 0 ? PrimaryKeys : UniqueIndexes;

@@ -27,7 +27,7 @@ namespace ByteForge.Toolkit.CommandLine
         /// <summary>
         /// Gets the name of the option.
         /// </summary>
-        public string Name { get; set; }
+        public string? Name  { get; set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="OptionAttribute"/> class with the specified description.

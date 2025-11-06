@@ -64,7 +64,7 @@ namespace ByteForge.Toolkit
         /// <param name="query">The SQL query to execute.</param>
         /// <param name="arguments">An optional array of arguments to parameterize the query. Can be <see langword="null"/> if no arguments are required.</param>
         /// <returns><see langword="true"/> if the value was retrieved successfully; otherwise, <see langword="false"/>.</returns>
-        public bool TryGetValue<T>(out T value, string query, params object[] arguments)
+        public bool TryGetValue<T>(out T? value, string query, params object?[]? arguments)
         {
             value = default;
 
@@ -87,10 +87,10 @@ namespace ByteForge.Toolkit
         /// <param name="query">The SQL query to execute.</param>
         /// <param name="arguments">An optional array of arguments to parameterize the query. Can be <see langword="null"/> if no arguments are required.</param>
         /// <returns>The value of type <typeparamref name="T"/> retrieved from the database.</returns>
-        public T GetValue<T>(string query, params object[] arguments)
+        public T? GetValue<T>(string query, params object?[]? arguments)
         {
             var rst = GetValue(query, arguments);
-            return TypeConverter.ConvertTo<T>(rst);
+            return TypeConverter.ConvertTo<T?>(rst);
         }
 
         /// <summary>
@@ -102,7 +102,7 @@ namespace ByteForge.Toolkit
         /// <returns>
         /// A <see cref="Task{T}"/> representing the asynchronous operation, with the result being a tuple containing a boolean indicating success and the retrieved value.
         /// </returns>
-        public async Task<(bool Success, T Value)> TryGetValueAsync<T>(string query, params object[] arguments)
+        public async Task<(bool Success, T Value)> TryGetValueAsync<T>(string query, params object?[]? arguments)
         {
             return await Task.Run(() =>
             {
@@ -120,7 +120,7 @@ namespace ByteForge.Toolkit
         /// <returns>
         /// A <see cref="Task{T}"/> representing the asynchronous operation, with the result being the value of type <typeparamref name="T"/> retrieved from the database.
         /// </returns>
-        public async Task<T> GetValueAsync<T>(string query, params object[] arguments)
+        public async Task<T?> GetValueAsync<T>(string query, params object?[]? arguments)
         {
             return await Task.Run(() => GetValue<T>(query, arguments));
         }
@@ -132,7 +132,7 @@ namespace ByteForge.Toolkit
         /// <param name="query">The SQL query to execute.</param>
         /// <param name="arguments">An optional array of arguments to parameterize the query. Can be <see langword="null"/> if no arguments are required.</param>
         /// <returns><see langword="true"/> if the value was retrieved successfully; otherwise, <see langword="false"/>.</returns>
-        public bool TryGetValue(out object value, string query, params object[] arguments)
+        public bool TryGetValue(out object? value, string query, params object?[]? arguments)
         {
             value = GetValue(query, arguments);
             return LastException == null;
@@ -144,7 +144,7 @@ namespace ByteForge.Toolkit
         /// <param name="query">The SQL query to execute.</param>
         /// <param name="arguments">An optional array of arguments to parameterize the query. Can be <see langword="null"/> if no arguments are required.</param>
         /// <returns>The value retrieved from the database, or <see langword="null"/> if no value is found.</returns>
-        public object GetValue(string query, params object[] arguments)
+        public object? GetValue(string query, params object?[]? arguments)
         {
             var result = ExecuteCommand<object>(query, cmd => cmd.ExecuteScalar(), arguments);
             return (result == null || result == DBNull.Value) ? null : result;
@@ -158,7 +158,7 @@ namespace ByteForge.Toolkit
         /// <returns>
         /// A <see cref="Task{T}"/> representing the asynchronous operation, with the result being a tuple containing a boolean indicating success and the retrieved value.
         /// </returns>
-        public async Task<(bool Success, object Value)> TryGetValueAsync(string query, params object[] arguments)
+        public async Task<(bool Success, object Value)> TryGetValueAsync(string query, params object?[]? arguments)
         {
             return await Task.Run(() =>
             {
@@ -175,7 +175,7 @@ namespace ByteForge.Toolkit
         /// <returns>
         /// A <see cref="Task{Object}"/> representing the asynchronous operation, with the result being the value retrieved from the database.
         /// </returns>
-        public async Task<object> GetValueAsync(string query, params object[] arguments)
+        public async Task<object?> GetValueAsync(string query, params object?[]? arguments)
         {
             return await Task.Run(() => GetValue(query, arguments));
         }
@@ -189,7 +189,7 @@ namespace ByteForge.Toolkit
         /// <returns>A <see cref="DataRow"/> representing the first record that matches the query, or <see langword="null"/> if
         /// no records are found.</returns>
         /// <remarks>This method is a convenience wrapper for retrieving a single record. If multiple records match the query, only the first one is returned.</remarks>
-        public DataRow GetRecord(string query, params object[] arguments)
+        public DataRow? GetRecord(string query, params object?[]? arguments)
         {
             var rows = GetRecords(query, arguments);
             return rows?.Count > 0 ? rows[0] : null;
@@ -207,7 +207,7 @@ namespace ByteForge.Toolkit
         /// The record is then converted to the specified type <typeparamref name="T"/> using a type conversion
         /// utility.
         /// </remarks>
-        public T GetRecord<T>(string query, params object[] arguments) where T : class, new()
+        public T GetRecord<T>(string query, params object?[]? arguments) where T : class, new()
         {
             var row = GetRecord(query, arguments);
             return TypeConverter.ConvertDataRowTo<T>(row, Options.AllowNullStrings);
@@ -219,7 +219,7 @@ namespace ByteForge.Toolkit
         /// <param name="query">The SQL query to execute.</param>
         /// <param name="arguments">An optional array of arguments to parameterize the query. Can be <see langword="null"/> if no arguments are required.</param>
         /// <returns>A <see cref="Task{DataRow}"/> representing the asynchronous operation, with the result being the retrieved <see cref="DataRow"/> or <see langword="null"/> if no record is found.</returns>
-        public async Task<DataRow> GetRecordAsync(string query, params object[] arguments)
+        public async Task<DataRow?> GetRecordAsync(string query, params object?[]? arguments)
         {
             return await Task.Run(() => GetRecord(query, arguments));
         }
@@ -239,7 +239,7 @@ namespace ByteForge.Toolkit
         /// an object of type <typeparamref name="T"/>. Ensure that the column names in the query result match the
         /// property names of <typeparamref name="T"/> for successful mapping, or use <see cref="DBColumnAttribute"/> to define custom mappings.
         /// </remarks>
-        public T[] GetRecords<T>(string query, params object[] arguments) where T : class, new()
+        public T[] GetRecords<T>(string query, params object?[]? arguments) where T : class, new()
         {
             var rows = GetRecords(query, arguments);
             return rows?.Count > 0 ? rows.Cast<DataRow>().Select(r => TypeConverter.ConvertDataRowTo<T>(r, Options.AllowNullStrings)).ToArray() : Array.Empty<T>();
@@ -254,7 +254,7 @@ namespace ByteForge.Toolkit
         /// <returns>
         /// A <see cref="Task{T}"/> representing the asynchronous operation, with the result being an array of objects of type <typeparamref name="T"/> created from the query results.
         /// </returns>
-        public async Task<T[]> GetRecordsAsync<T>(string query, params object[] arguments) where T : class, new()
+        public async Task<T[]> GetRecordsAsync<T>(string query, params object?[]? arguments) where T : class, new()
         {
             return await Task.Run(() => GetRecords<T>(query, arguments));
         }
@@ -265,7 +265,7 @@ namespace ByteForge.Toolkit
         /// <param name="query">The SQL query to execute.</param>
         /// <param name="arguments">An optional array of arguments to parameterize the query. Can be <see langword="null"/> if no arguments are required.</param>
         /// <returns>A <see cref="Task{DataRowCollection}"/> representing the asynchronous operation, with the result being the retrieved <see cref="DataRowCollection"/>.</returns>
-        public async Task<DataRowCollection> GetRecordsAsync(string query, params object[] arguments)
+        public async Task<DataRowCollection?> GetRecordsAsync(string query, params object?[]? arguments)
         {
             return await Task.Run(() => GetRecords(query, arguments));
         }
@@ -276,7 +276,7 @@ namespace ByteForge.Toolkit
         /// <param name="query">The SQL query to execute.</param>
         /// <param name="arguments">An optional array of arguments to parameterize the query. Can be <see langword="null"/> if no arguments are required.</param>
         /// <returns>The <see cref="DataRowCollection"/> containing the retrieved records, or <see langword="null"/> if no records are found.</returns>
-        public DataRowCollection GetRecords(string query, params object[] arguments)
+        public DataRowCollection? GetRecords(string query, params object?[]? arguments)
         {
             var data = ExecuteCommand<DataSet>(query, cmd => {
                 var ds = new DataSet();
@@ -293,7 +293,7 @@ namespace ByteForge.Toolkit
         /// <param name="query">The SQL query to execute.</param>
         /// <param name="arguments">An optional array of arguments to parameterize the query. Can be <see langword="null"/> if no arguments are required.</param>
         /// <returns>A <see cref="Task{Boolean}"/> representing the asynchronous operation, with the result indicating whether the query was executed successfully.</returns>
-        public async Task<bool> ExecuteQueryAsync(string query, params object[] arguments)
+        public async Task<bool> ExecuteQueryAsync(string query, params object?[]? arguments)
         {
             return await Task.Run(() => ExecuteQuery(query, arguments));
         }
@@ -308,7 +308,7 @@ namespace ByteForge.Toolkit
         /// Use <see cref="ExecuteQuery"/> when you need to execute a single SQL command that does not require capturing multiple result sets.
         /// This method is ideal for executing DML (Data Manipulation Language) statements such as INSERT, UPDATE, DELETE, or procedures that do not return data.
         /// </remarks>
-        public bool ExecuteQuery(string query, params object[] arguments)
+        public bool ExecuteQuery(string query, params object?[]? arguments)
         {
             RecordsAffected = ExecuteCommand<int>(query, cmd => cmd.ExecuteNonQuery(), arguments);
             return LastException == null;
@@ -322,7 +322,7 @@ namespace ByteForge.Toolkit
         /// <param name="execute">A delegate that defines how to execute the command and obtain the result.</param>
         /// <param name="arguments">An optional array of arguments to parameterize the query. Can be <see langword="null"/> if no arguments are required.</param>
         /// <returns>The result of type <typeparamref name="T"/> returned by the execution delegate, or the default value of <typeparamref name="T"/> if an exception occurs.</returns>
-        private T ExecuteCommand<T>(string query, Func<IDbCommand, T> execute, params object[] arguments)
+        private T? ExecuteCommand<T>(string query, Func<IDbCommand, T?> execute, params object?[]? arguments)
         {
             try
             {
@@ -350,7 +350,7 @@ namespace ByteForge.Toolkit
         /// <typeparam name="T">The type of the result returned by the function.</typeparam>
         /// <param name="func">The function to be executed and timed.</param>
         /// <returns>The result of the function execution.</returns>
-        private T TimeFunc<T>(Func<T> func)
+        private T? TimeFunc<T>(Func<T?> func)
         {
             var watch = new System.Diagnostics.Stopwatch();
             var hasError = false;

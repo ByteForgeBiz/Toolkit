@@ -34,7 +34,7 @@ namespace ByteForge.Toolkit
         /// The <see cref="IParser"/> implementation to delegate parsing operations to.
         /// If <c>null</c>, <see cref="Parser.Default"/> is used.
         /// </param>
-        public ParsingHelper(IParser parser = null)
+        public ParsingHelper(IParser? parser = null)
         {
             this.parser = parser ?? Parser.Default;
         }
@@ -100,14 +100,14 @@ namespace ByteForge.Toolkit
         /// <remarks>
         /// Only properties that are both readable and writable are considered. Properties with parsed values of <c>null</c> are skipped.
         /// </remarks>
-        void IParsingHelper.ParseAndPopulateObject(Type type, object target, string value)
+        void IParsingHelper.ParseAndPopulateObject(Type? type, object? target, string? value)
         {
             type = TypeHelper.ResolveType(type) ?? throw new ArgumentException("Type cannot be resolved.", nameof(type));
             target = target ?? throw new ArgumentNullException(nameof(target));
             if (string.IsNullOrWhiteSpace(value))
                 return;
 
-            var parsedObject = parser.Parse(type, value);
+            var parsedObject = parser.Parse(type, value!);
             var subProperties = type.GetProperties(BindingFlags.Public | BindingFlags.Instance)
                                         .Where(p => p.CanRead && p.CanWrite);
 

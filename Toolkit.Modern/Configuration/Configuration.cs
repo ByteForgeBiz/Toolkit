@@ -32,7 +32,7 @@ namespace ByteForge.Toolkit
         /// <summary>
         /// Default instance for static access.
         /// </summary>
-        private static IConfigurationManager _defaultInstance;
+        private static IConfigurationManager? _defaultInstance;
 
         /// <summary>
         /// Gets the default configuration instance for static access.
@@ -63,7 +63,7 @@ namespace ByteForge.Toolkit
         /// <typeparam name="T">The type of the section to add.</typeparam>
         /// <param name="sectionName">The name of the section. If null, uses the type name.</param>
         /// <returns>The added section instance.</returns>
-        public static T AddSection<T>(string sectionName = null) where T : class, new() 
+        public static T AddSection<T>(string sectionName  = "") where T : class, new() 
         => DefaultInstance.AddSection<T>(sectionName);
 
         /// <summary>
@@ -72,7 +72,7 @@ namespace ByteForge.Toolkit
         /// <typeparam name="T">The type of the section to get.</typeparam>
         /// <param name="sectionName">The name of the section. If null, uses the type name.</param>
         /// <returns>The section instance.</returns>
-        public static T GetSection<T>(string sectionName = null) where T : class, new() 
+        public static T GetSection<T>(string sectionName  = "") where T : class, new() 
         => DefaultInstance.GetSection<T>(sectionName);
 
         /// <summary>
@@ -127,17 +127,17 @@ namespace ByteForge.Toolkit
         /// <summary>
         /// The directory where the configuration file is located.
         /// </summary>
-        private string _configDirectory = null;
+        private string _configDirectory = "";
 
         /// <summary>
         /// The configuration file name.
         /// </summary>
-        private string _configFile = string.Empty;
+        private string _configFile = "";
 
         /// <summary>
         /// The root configuration object.
         /// </summary>
-        private volatile IConfigurationRoot _root;
+        private volatile IConfigurationRoot? _root;
 
         /// <summary>
         /// Indicates whether this instance has been initialized.
@@ -152,7 +152,7 @@ namespace ByteForge.Toolkit
         /// <summary>
         /// Represents globalization settings and information used throughout the application.
         /// </summary>
-        private GlobalizationInfo _globalizationInfo;
+        private GlobalizationInfo? _globalizationInfo;
 
         /// <summary>
         /// Lock object for thread safety on this instance.
@@ -218,7 +218,7 @@ namespace ByteForge.Toolkit
                             ((IConfigurationManager)this).Initialize();
                     }
                 }
-                return _root;
+                return _root!;
             }
         }
 
@@ -290,7 +290,7 @@ namespace ByteForge.Toolkit
             if (string.IsNullOrEmpty(path))
                 throw new ArgumentNullException(nameof(path));
 
-            var directory = Path.GetDirectoryName(path);
+            var directory = Path.GetDirectoryName(path) ?? Directory.GetCurrentDirectory();
             var fileName = Path.GetFileName(path);
             ((IConfigurationManager)this).Initialize(directory, fileName);
         }
@@ -546,7 +546,7 @@ namespace ByteForge.Toolkit
 
             // Process all sections in the configuration root
             // Create defensive copy to avoid "Collection was modified during enumeration" in concurrent scenarios
-            var configSections = _root.GetChildren()?.ToArray() ?? Array.Empty<IConfigurationSection>();
+            var configSections = _root!.GetChildren()?.ToArray() ?? Array.Empty<IConfigurationSection>();
             foreach (var configSection in configSections)
             {
                 // Add new sections that don't exist in the file yet

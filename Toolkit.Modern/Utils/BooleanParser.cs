@@ -137,7 +137,7 @@ namespace ByteForge.Toolkit
         /// </remarks>
         public bool ParseValue(string input)
         {
-            input = input?.Trim();
+            input = input?.Trim() ?? string.Empty;
 
             if (string.IsNullOrWhiteSpace(input))
                 return false;

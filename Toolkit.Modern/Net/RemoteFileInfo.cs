@@ -10,12 +10,12 @@ namespace ByteForge.Toolkit.Net
         /// <summary>
         /// Gets or sets the name of the file or directory.
         /// </summary>
-        public string Name { get; set; }
+        public string? Name { get; set; }
 
         /// <summary>
         /// Gets or sets the full path of the file or directory on the server.
         /// </summary>
-        public string FullPath { get; set; }
+        public string? FullPath { get; set; }
 
         /// <summary>
         /// Gets or sets the size of the file in bytes.
@@ -35,6 +35,6 @@ namespace ByteForge.Toolkit.Net
         /// <summary>
         /// Gets or sets the file permissions as a string.
         /// </summary>
-        public string Permissions { get; set; }
+        public string? Permissions { get; set; }
     }
 }

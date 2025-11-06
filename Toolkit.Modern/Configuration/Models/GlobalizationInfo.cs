@@ -242,7 +242,7 @@ namespace ByteForge.Toolkit
         /// <param name="value">The nullable value to format.</param>
         /// <param name="nullValue">The value to return if <paramref name="value"/> is <c>null</c>. Defaults to <c>null</c>.</param>
         /// <returns>A string representation of the value formatted as a date, or <paramref name="nullValue"/> if <paramref name="value"/> is <c>null</c>.</returns>
-        public string FormatDate(DateTime? value, string nullValue = null) => value?.ToString(DateFormat, CultureInfo) ?? nullValue;
+        public string FormatDate(DateTime? value, string nullValue  = "") => value?.ToString(DateFormat, CultureInfo) ?? nullValue;
 
         /// <summary>
         /// Formats the specified nullable value as a date and time using the <see cref="DateTimeFormat"/> and <see cref="CultureInfo"/>.
@@ -250,7 +250,7 @@ namespace ByteForge.Toolkit
         /// <param name="value">The nullable value to format.</param>
         /// <param name="nullValue">The value to return if <paramref name="value"/> is <c>null</c>. Defaults to <c>null</c>.</param>
         /// <returns>A string representation of the value formatted as a date and time, or <paramref name="nullValue"/> if <paramref name="value"/> is <c>null</c>.</returns>
-        public string FormatDateTime(DateTime? value, string nullValue = null) => value?.ToString(DateTimeFormat, CultureInfo) ?? nullValue;
+        public string FormatDateTime(DateTime? value, string nullValue  = "") => value?.ToString(DateTimeFormat, CultureInfo) ?? nullValue;
 
         /// <summary>
         /// Formats the specified nullable value as a long date using the <see cref="LongDateFormat"/> and <see cref="CultureInfo"/>.
@@ -258,7 +258,7 @@ namespace ByteForge.Toolkit
         /// <param name="value">The nullable value to format.</param>
         /// <param name="nullValue">The value to return if <paramref name="value"/> is <c>null</c>. Defaults to <c>null</c>.</param>
         /// <returns>A string representation of the value formatted as a long date, or <paramref name="nullValue"/> if <paramref name="value"/> is <c>null</c>.</returns>
-        public string FormatLongDate(DateTime? value, string nullValue = null) => value?.ToString(LongDateFormat, CultureInfo) ?? nullValue;
+        public string FormatLongDate(DateTime? value, string nullValue  = "") => value?.ToString(LongDateFormat, CultureInfo) ?? nullValue;
 
         /// <summary>
         /// Formats the specified nullable value as a long time using the <see cref="LongTimeFormat"/> and <see cref="CultureInfo"/>.
@@ -266,7 +266,7 @@ namespace ByteForge.Toolkit
         /// <param name="value">The nullable value to format.</param>
         /// <param name="nullValue">The value to return if <paramref name="value"/> is <c>null</c>. Defaults to <c>null</c>.</param>
         /// <returns>A string representation of the value formatted as a long time, or <paramref name="nullValue"/> if <paramref name="value"/> is <c>null</c>.</returns>
-        public string FormatLongTime(DateTime? value, string nullValue = null) => value?.ToString(LongTimeFormat, CultureInfo) ?? nullValue;
+        public string FormatLongTime(DateTime? value, string nullValue  = "") => value?.ToString(LongTimeFormat, CultureInfo) ?? nullValue;
 
         /// <summary>
         /// Formats the specified nullable value as a short time using the <see cref="ShortTimeFormat"/> and <see cref="CultureInfo"/>.
@@ -274,7 +274,7 @@ namespace ByteForge.Toolkit
         /// <param name="value">The nullable value to format.</param>
         /// <param name="nullValue">The value to return if <paramref name="value"/> is <c>null</c>. Defaults to <c>null</c>.</param>
         /// <returns>A string representation of the value formatted as a short time, or <paramref name="nullValue"/> if <paramref name="value"/> is <c>null</c>.</returns>
-        public string FormatShortTime(DateTime? value, string nullValue = null) => value?.ToString(ShortTimeFormat, CultureInfo) ?? nullValue;
+        public string FormatShortTime(DateTime? value, string nullValue  = "") => value?.ToString(ShortTimeFormat, CultureInfo) ?? nullValue;
 
         /// <summary>
         /// Formats the specified nullable value as a time using the <see cref="TimeFormat"/> and <see cref="CultureInfo"/>.
@@ -282,7 +282,7 @@ namespace ByteForge.Toolkit
         /// <param name="value">The nullable value to format.</param>
         /// <param name="nullValue">The value to return if <paramref name="value"/> is <c>null</c>. Defaults to <c>null</c>.</param>
         /// <returns>A string representation of the value formatted as a time, or <paramref name="nullValue"/> if <paramref name="value"/> is <c>null</c>.</returns>
-        public string FormatTime(DateTime? value, string nullValue = null) => value?.ToString(TimeFormat, CultureInfo) ?? nullValue;
+        public string FormatTime(DateTime? value, string nullValue  = "") => value?.ToString(TimeFormat, CultureInfo) ?? nullValue;
 
         /// <summary>
         /// Formats the specified nullable value as a long 12-hour time using the <see cref="LongTime12Format"/> and <see cref="CultureInfo"/>.
@@ -290,7 +290,7 @@ namespace ByteForge.Toolkit
         /// <param name="value">The nullable value to format.</param>
         /// <param name="nullValue">The value to return if <paramref name="value"/> is <c>null</c>. Defaults to <c>null</c>.</param>
         /// <returns>A string representation of the value formatted as a long 12-hour time, or <paramref name="nullValue"/> if <paramref name="value"/> is <c>null</c>.</returns>
-        public string FormatLongTime12(DateTime? value, string nullValue = null) => value?.ToString(LongTime12Format, CultureInfo) ?? nullValue;
+        public string FormatLongTime12(DateTime? value, string nullValue  = "") => value?.ToString(LongTime12Format, CultureInfo) ?? nullValue;
 
         /// <summary>
         /// Formats the specified nullable value as a short 12-hour time using the <see cref="ShortTime12Format"/> and <see cref="CultureInfo"/>.
@@ -298,7 +298,7 @@ namespace ByteForge.Toolkit
         /// <param name="value">The nullable value to format.</param>
         /// <param name="nullValue">The value to return if <paramref name="value"/> is <c>null</c>. Defaults to <c>null</c>.</param>
         /// <returns>A string representation of the value formatted as a short 12-hour time, or <paramref name="nullValue"/> if <paramref name="value"/> is <c>null</c>.</returns>
-        public string FormatShortTime12(DateTime? value, string nullValue = null) => value?.ToString(ShortTime12Format, CultureInfo) ?? nullValue;
+        public string FormatShortTime12(DateTime? value, string nullValue  = "") => value?.ToString(ShortTime12Format, CultureInfo) ?? nullValue;
 
         /// <summary>
         /// Formats the specified nullable value as a 12-hour time using the <see cref="Time12Format"/> and <see cref="CultureInfo"/>.
@@ -306,7 +306,7 @@ namespace ByteForge.Toolkit
         /// <param name="value">The nullable value to format.</param>
         /// <param name="nullValue">The value to return if <paramref name="value"/> is <c>null</c>. Defaults to <c>null</c>.</param>
         /// <returns>A string representation of the value formatted as a 12-hour time, or <paramref name="nullValue"/> if <paramref name="value"/> is <c>null</c>.</returns>
-        public string FormatTime12(DateTime? value, string nullValue = null) => value?.ToString(Time12Format, CultureInfo) ?? nullValue;
+        public string FormatTime12(DateTime? value, string nullValue  = "") => value?.ToString(Time12Format, CultureInfo) ?? nullValue;
 
         /// <summary>
         /// Formats the specified nullable value as a short date and time using the <see cref="ShortDateTimeFormat"/> and <see cref="CultureInfo"/>.
@@ -314,7 +314,7 @@ namespace ByteForge.Toolkit
         /// <param name="value">The nullable value to format.</param>
         /// <param name="nullValue">The value to return if <paramref name="value"/> is <c>null</c>. Defaults to <c>null</c>.</param>
         /// <returns>A string representation of the value formatted as a short date and time, or <paramref name="nullValue"/> if <paramref name="value"/> is <c>null</c>.</returns>
-        public string FormatShortDateTime(DateTime? value, string nullValue = null) => value?.ToString(ShortDateTimeFormat, CultureInfo) ?? nullValue;
+        public string FormatShortDateTime(DateTime? value, string nullValue  = "") => value?.ToString(ShortDateTimeFormat, CultureInfo) ?? nullValue;
 
         /// <summary>
         /// Formats the specified nullable value as a long date and time using the <see cref="LongDateTimeFormat"/> and <see cref="CultureInfo"/>.
@@ -322,7 +322,7 @@ namespace ByteForge.Toolkit
         /// <param name="value">The nullable value to format.</param>
         /// <param name="nullValue">The value to return if <paramref name="value"/> is <c>null</c>. Defaults to <c>null</c>.</param>
         /// <returns>A string representation of the value formatted as a long date and time, or <paramref name="nullValue"/> if <paramref name="value"/> is <c>null</c>.</returns>
-        public string FormatLongDateTime(DateTime? value, string nullValue = null) => value?.ToString(LongDateTimeFormat, CultureInfo) ?? nullValue;
+        public string FormatLongDateTime(DateTime? value, string nullValue  = "") => value?.ToString(LongDateTimeFormat, CultureInfo) ?? nullValue;
 
         /// <summary>
         /// Formats the specified nullable value as a short date and 12-hour time using the <see cref="ShortDateTime12Format"/> and <see cref="CultureInfo"/>.
@@ -330,7 +330,7 @@ namespace ByteForge.Toolkit
         /// <param name="value">The nullable value to format.</param>
         /// <param name="nullValue">The value to return if <paramref name="value"/> is <c>null</c>. Defaults to <c>null</c>.</param>
         /// <returns>A string representation of the value formatted as a short date and 12-hour time, or <paramref name="nullValue"/> if <paramref name="value"/> is <c>null</c>.</returns>
-        public string FormatShortDateTime12(DateTime? value, string nullValue = null) => value?.ToString(ShortDateTime12Format, CultureInfo) ?? nullValue;
+        public string FormatShortDateTime12(DateTime? value, string nullValue  = "") => value?.ToString(ShortDateTime12Format, CultureInfo) ?? nullValue;
 
         /// <summary>
         /// Formats the specified nullable value as a long date and 12-hour time using the <see cref="LongDateTime12Format"/> and <see cref="CultureInfo"/>.
@@ -338,7 +338,7 @@ namespace ByteForge.Toolkit
         /// <param name="value">The nullable value to format.</param>
         /// <param name="nullValue">The value to return if <paramref name="value"/> is <c>null</c>. Defaults to <c>null</c>.</param>
         /// <returns>A string representation of the value formatted as a long date and 12-hour time, or <paramref name="nullValue"/> if <paramref name="value"/> is <c>null</c>.</returns>
-        public string FormatLongDateTime12(DateTime? value, string nullValue = null) => value?.ToString(LongDateTime12Format, CultureInfo) ?? nullValue;
+        public string FormatLongDateTime12(DateTime? value, string nullValue  = "") => value?.ToString(LongDateTime12Format, CultureInfo) ?? nullValue;
 
         /// <summary>
         /// Formats the specified nullable 32-bit signed integer value as an integer using the <see cref="IntegerFormat"/> and <see cref="CultureInfo"/>.
@@ -346,7 +346,7 @@ namespace ByteForge.Toolkit
         /// <param name="value">The nullable 32-bit signed integer value to format.</param>
         /// <param name="nullValue">The value to return if <paramref name="value"/> is <c>null</c>. Defaults to <c>null</c>.</param>
         /// <returns>A string representation of the value formatted as an integer, or <paramref name="nullValue"/> if <paramref name="value"/> is <c>null</c>.</returns>
-        public string FormatInteger(int? value, string nullValue = null) => value?.ToString(IntegerFormat, CultureInfo) ?? nullValue;
+        public string FormatInteger(int? value, string nullValue  = "") => value?.ToString(IntegerFormat, CultureInfo) ?? nullValue;
 
         /// <summary>
         /// Formats the specified nullable 64-bit signed integer value as an integer using the <see cref="IntegerFormat"/> and <see cref="CultureInfo"/>.
@@ -354,7 +354,7 @@ namespace ByteForge.Toolkit
         /// <param name="value">The nullable 64-bit signed integer value to format.</param>
         /// <param name="nullValue">The value to return if <paramref name="value"/> is <c>null</c>. Defaults to <c>null</c>.</param>
         /// <returns>A string representation of the value formatted as an integer, or <paramref name="nullValue"/> if <paramref name="value"/> is <c>null</c>.</returns>
-        public string FormatInteger(long? value, string nullValue = null) => value?.ToString(IntegerFormat, CultureInfo) ?? nullValue;
+        public string FormatInteger(long? value, string nullValue  = "") => value?.ToString(IntegerFormat, CultureInfo) ?? nullValue;
 
         /// <summary>
         /// Formats the specified nullable 16-bit signed integer value as an integer using the <see cref="IntegerFormat"/> and <see cref="CultureInfo"/>.
@@ -362,7 +362,7 @@ namespace ByteForge.Toolkit
         /// <param name="value">The nullable 16-bit signed integer value to format.</param>
         /// <param name="nullValue">The value to return if <paramref name="value"/> is <c>null</c>. Defaults to <c>null</c>.</param>
         /// <returns>A string representation of the value formatted as an integer, or <paramref name="nullValue"/> if <paramref name="value"/> is <c>null</c>.</returns>
-        public string FormatInteger(short? value, string nullValue = null) => value?.ToString(IntegerFormat, CultureInfo) ?? nullValue;
+        public string FormatInteger(short? value, string nullValue  = "") => value?.ToString(IntegerFormat, CultureInfo) ?? nullValue;
 
         /// <summary>
         /// Formats the specified nullable 8-bit unsigned integer value as an integer using the <see cref="IntegerFormat"/> and <see cref="CultureInfo"/>.
@@ -370,7 +370,7 @@ namespace ByteForge.Toolkit
         /// <param name="value">The nullable 8-bit unsigned integer value to format.</param>
         /// <param name="nullValue">The value to return if <paramref name="value"/> is <c>null</c>. Defaults to <c>null</c>.</param>
         /// <returns>A string representation of the value formatted as an integer, or <paramref name="nullValue"/> if <paramref name="value"/> is <c>null</c>.</returns>
-        public string FormatInteger(byte? value, string nullValue = null) => value?.ToString(IntegerFormat, CultureInfo) ?? nullValue;
+        public string FormatInteger(byte? value, string nullValue  = "") => value?.ToString(IntegerFormat, CultureInfo) ?? nullValue;
 
         /// <summary>
         /// Formats the specified nullable 32-bit unsigned integer value as an integer using the <see cref="IntegerFormat"/> and <see cref="CultureInfo"/>.
@@ -378,7 +378,7 @@ namespace ByteForge.Toolkit
         /// <param name="value">The nullable 32-bit unsigned integer value to format.</param>
         /// <param name="nullValue">The value to return if <paramref name="value"/> is <c>null</c>. Defaults to <c>null</c>.</param>
         /// <returns>A string representation of the value formatted as an integer, or <paramref name="nullValue"/> if <paramref name="value"/> is <c>null</c>.</returns>
-        public string FormatInteger(uint? value, string nullValue = null) => value?.ToString(IntegerFormat, CultureInfo) ?? nullValue;
+        public string FormatInteger(uint? value, string nullValue  = "") => value?.ToString(IntegerFormat, CultureInfo) ?? nullValue;
 
         /// <summary>
         /// Formats the specified nullable 64-bit unsigned integer value as an integer using the <see cref="IntegerFormat"/> and <see cref="CultureInfo"/>.
@@ -386,7 +386,7 @@ namespace ByteForge.Toolkit
         /// <param name="value">The nullable 64-bit unsigned integer value to format.</param>
         /// <param name="nullValue">The value to return if <paramref name="value"/> is <c>null</c>. Defaults to <c>null</c>.</param>
         /// <returns>A string representation of the value formatted as an integer, or <paramref name="nullValue"/> if <paramref name="value"/> is <c>null</c>.</returns>
-        public string FormatInteger(ulong? value, string nullValue = null) => value?.ToString(IntegerFormat, CultureInfo) ?? nullValue;
+        public string FormatInteger(ulong? value, string nullValue  = "") => value?.ToString(IntegerFormat, CultureInfo) ?? nullValue;
 
         /// <summary>
         /// Formats the specified nullable 16-bit unsigned integer value as an integer using the <see cref="IntegerFormat"/> and <see cref="CultureInfo"/>.
@@ -394,7 +394,7 @@ namespace ByteForge.Toolkit
         /// <param name="value">The nullable 16-bit unsigned integer value to format.</param>
         /// <param name="nullValue">The value to return if <paramref name="value"/> is <c>null</c>. Defaults to <c>null</c>.</param>
         /// <returns>A string representation of the value formatted as an integer, or <paramref name="nullValue"/> if <paramref name="value"/> is <c>null</c>.</returns>
-        public string FormatInteger(ushort? value, string nullValue = null) => value?.ToString(IntegerFormat, CultureInfo) ?? nullValue;
+        public string FormatInteger(ushort? value, string nullValue  = "") => value?.ToString(IntegerFormat, CultureInfo) ?? nullValue;
 
         /// <summary>
         /// Formats the specified nullable 8-bit signed integer value as an integer using the <see cref="IntegerFormat"/> and <see cref="CultureInfo"/>.
@@ -402,7 +402,7 @@ namespace ByteForge.Toolkit
         /// <param name="value">The nullable 8-bit signed integer value to format.</param>
         /// <param name="nullValue">The value to return if <paramref name="value"/> is <c>null</c>. Defaults to <c>null</c>.</param>
         /// <returns>A string representation of the value formatted as an integer, or <paramref name="nullValue"/> if <paramref name="value"/> is <c>null</c>.</returns>
-        public string FormatInteger(sbyte? value, string nullValue = null) => value?.ToString(IntegerFormat, CultureInfo) ?? nullValue;
+        public string FormatInteger(sbyte? value, string nullValue  = "") => value?.ToString(IntegerFormat, CultureInfo) ?? nullValue;
 
         /// <summary>
         /// Formats the specified nullable double-precision floating-point value as a number using the <see cref="NumberFormat"/> and <see cref="CultureInfo"/>.
@@ -410,7 +410,7 @@ namespace ByteForge.Toolkit
         /// <param name="value">The nullable double-precision floating-point value to format.</param>
         /// <param name="nullValue">The value to return if <paramref name="value"/> is <c>null</c>. Defaults to <c>null</c>.</param>
         /// <returns>A string representation of the value formatted as a number, or <paramref name="nullValue"/> if <paramref name="value"/> is <c>null</c>.</returns>
-        public string FormatNumber(double? value, string nullValue = null) => value?.ToString(NumberFormat, CultureInfo) ?? nullValue;
+        public string FormatNumber(double? value, string nullValue  = "") => value?.ToString(NumberFormat, CultureInfo) ?? nullValue;
 
         /// <summary>
         /// Formats the specified nullable single-precision floating-point value as a number using the <see cref="NumberFormat"/> and <see cref="CultureInfo"/>.
@@ -418,7 +418,7 @@ namespace ByteForge.Toolkit
         /// <param name="value">The nullable single-precision floating-point value to format.</param>
         /// <param name="nullValue">The value to return if <paramref name="value"/> is <c>null</c>. Defaults to <c>null</c>.</param>
         /// <returns>A string representation of the value formatted as a number, or <paramref name="nullValue"/> if <paramref name="value"/> is <c>null</c>.</returns>
-        public string FormatNumber(float? value, string nullValue = null) => value?.ToString(NumberFormat, CultureInfo) ?? nullValue;
+        public string FormatNumber(float? value, string nullValue  = "") => value?.ToString(NumberFormat, CultureInfo) ?? nullValue;
 
         /// <summary>
         /// Formats the specified nullable decimal value as a number using the <see cref="NumberFormat"/> and <see cref="CultureInfo"/>.
@@ -426,7 +426,7 @@ namespace ByteForge.Toolkit
         /// <param name="value">The nullable decimal value to format.</param>
         /// <param name="nullValue">The value to return if <paramref name="value"/> is <c>null</c>. Defaults to <c>null</c>.</param>
         /// <returns>A string representation of the value formatted as a number, or <paramref name="nullValue"/> if <paramref name="value"/> is <c>null</c>.</returns>
-        public string FormatNumber(decimal? value, string nullValue = null) => value?.ToString(NumberFormat, CultureInfo) ?? nullValue;
+        public string FormatNumber(decimal? value, string nullValue  = "") => value?.ToString(NumberFormat, CultureInfo) ?? nullValue;
 
         /// <summary>
         /// Formats the specified nullable double-precision floating-point value as a currency using the <see cref="CurrencyFormat"/> and <see cref="CultureInfo"/>.
@@ -434,7 +434,7 @@ namespace ByteForge.Toolkit
         /// <param name="value">The nullable double-precision floating-point value to format.</param>
         /// <param name="nullValue">The value to return if <paramref name="value"/> is <c>null</c>. Defaults to <c>null</c>.</param>
         /// <returns>A string representation of the value formatted as a currency, or <paramref name="nullValue"/> if <paramref name="value"/> is <c>null</c>.</returns>
-        public string FormatCurrency(double? value, string nullValue = null) => value?.ToString(CurrencyFormat, CultureInfo) ?? nullValue;
+        public string FormatCurrency(double? value, string nullValue  = "") => value?.ToString(CurrencyFormat, CultureInfo) ?? nullValue;
 
         /// <summary>
         /// Formats the specified nullable single-precision floating-point value as a currency using the <see cref="CurrencyFormat"/> and <see cref="CultureInfo"/>.
@@ -442,7 +442,7 @@ namespace ByteForge.Toolkit
         /// <param name="value">The nullable single-precision floating-point value to format.</param>
         /// <param name="nullValue">The value to return if <paramref name="value"/> is <c>null</c>. Defaults to <c>null</c>.</param>
         /// <returns>A string representation of the value formatted as a currency, or <paramref name="nullValue"/> if <paramref name="value"/> is <c>null</c>.</returns>
-        public string FormatCurrency(float? value, string nullValue = null) => value?.ToString(CurrencyFormat, CultureInfo) ?? nullValue;
+        public string FormatCurrency(float? value, string nullValue  = "") => value?.ToString(CurrencyFormat, CultureInfo) ?? nullValue;
 
         /// <summary>
         /// Formats the specified nullable decimal value as a currency using the <see cref="CurrencyFormat"/> and <see cref="CultureInfo"/>.
@@ -450,7 +450,7 @@ namespace ByteForge.Toolkit
         /// <param name="value">The nullable decimal value to format.</param>
         /// <param name="nullValue">The value to return if <paramref name="value"/> is <c>null</c>. Defaults to <c>null</c>.</param>
         /// <returns>A string representation of the value formatted as a currency, or <paramref name="nullValue"/> if <paramref name="value"/> is <c>null</c>.</returns>
-        public string FormatCurrency(decimal? value, string nullValue = null) => value?.ToString(CurrencyFormat, CultureInfo) ?? nullValue;
+        public string FormatCurrency(decimal? value, string nullValue  = "") => value?.ToString(CurrencyFormat, CultureInfo) ?? nullValue;
 
         private static CultureInfo GetDefaultCultureInfo() => CultureInfo.InvariantCulture;
     }

@@ -24,9 +24,9 @@ namespace ByteForge.Toolkit
         /// <param name="query">The SQL batch containing the parameters.</param>
         /// <param name="arguments">The arguments to be added as parameters.</param>
         /// <exception cref="ParamArgumentsMismatchException">Thrown when the number of parameters does not match the number of arguments.</exception>
-        private void AddParametersToCommand(IDbCommand cmd, string query, object[] arguments)
+        private void AddParametersToCommand(IDbCommand cmd, string query, object?[]? arguments)
         {
-            arguments ??= Array.Empty<object>();
+            arguments ??= [];
             var matches = ParseParameters(query);
             var distinctParams = matches.Distinct().ToList();
 
@@ -78,7 +78,7 @@ namespace ByteForge.Toolkit
         /// parameter.<br/>
         /// The method also determines and sets the appropriate database type for the parameter based on its value.
         /// </remarks>
-        private IDataParameter CreateParameter(IDbCommand cmd, string name, object value)
+        private IDataParameter CreateParameter(IDbCommand cmd, string name, object? value)
         {
             var prm = cmd.CreateParameter();
             prm.ParameterName = name;

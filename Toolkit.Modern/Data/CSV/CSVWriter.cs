@@ -22,12 +22,12 @@ namespace ByteForge.Toolkit
         private readonly TextWriter _writer;
         private readonly bool _ownsWriter;
         private bool _headerWritten;
-        private string[] _columns;
+        private string[]? _columns;
 
         /// <summary>
         /// Occurs to report the progress of the CSV writing process.
         /// </summary>
-        public event EventHandler<ProgressEventArgs> Progress;
+        public event EventHandler<ProgressEventArgs>? Progress;
 
         /// <summary>
         /// Gets or sets the format to use for writing. If not set, uses default format.
@@ -40,7 +40,7 @@ namespace ByteForge.Toolkit
         /// <param name="filePath">The path to the CSV file to write.</param>
         /// <param name="format">The CSV format to use. If null, uses default format.</param>
         /// <exception cref="ArgumentNullException">Thrown when the file path is null or empty.</exception>
-        public CSVWriter(string filePath, CSVFormat format = null)
+        public CSVWriter(string filePath, CSVFormat? format = null)
         {
             if (string.IsNullOrEmpty(filePath))
                 throw new ArgumentNullException(nameof(filePath));
@@ -57,7 +57,7 @@ namespace ByteForge.Toolkit
         /// <param name="stream">The stream to write to.</param>
         /// <param name="format">The CSV format to use. If null, uses default format.</param>
         /// <exception cref="ArgumentNullException">Thrown when the stream is null.</exception>
-        public CSVWriter(Stream stream, CSVFormat format = null)
+        public CSVWriter(Stream stream, CSVFormat? format = null)
         {
             if (stream == null)
                 throw new ArgumentNullException(nameof(stream));
@@ -74,7 +74,7 @@ namespace ByteForge.Toolkit
         /// <param name="writer">The TextWriter to write to.</param>
         /// <param name="format">The CSV format to use. If null, uses default format.</param>
         /// <exception cref="ArgumentNullException">Thrown when the writer is null.</exception>
-        public CSVWriter(TextWriter writer, CSVFormat format = null)
+        public CSVWriter(TextWriter writer, CSVFormat? format = null)
         {
             _writer = writer ?? throw new ArgumentNullException(nameof(writer));
             Format = format ?? CSVFormat.Default;
@@ -200,7 +200,7 @@ namespace ByteForge.Toolkit
             // Write data rows
             foreach (var obj in objectList)
             {
-                var values = properties.Select(p => GetPropertyValue(p, obj)?.ToString() ?? string.Empty).ToArray();
+                var values = properties.Select(p => GetPropertyValue(p, obj!)?.ToString() ?? string.Empty).ToArray();
                 WriteRow(values);
             }
         }

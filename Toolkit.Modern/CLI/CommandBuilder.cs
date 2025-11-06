@@ -79,7 +79,7 @@ namespace ByteForge.Toolkit.CommandLine
         /// <param name="groupAttr">The command attribute for the group.</param>
         /// <param name="globalNameTracker">The global name tracker to prevent conflicts across all commands.</param>
         /// <returns>The built command group.</returns>
-        private static Command BuildCommandGroup(Type type, CommandAttribute groupAttr, NameTracker globalNameTracker)
+        private static Command? BuildCommandGroup(Type type, CommandAttribute groupAttr, NameTracker globalNameTracker)
         {
             var groupCommand = new Command(groupAttr.Name, groupAttr.Description);
             var groupTracker = new NameTracker(); // Track names across all commands in group
@@ -367,7 +367,7 @@ namespace ByteForge.Toolkit.CommandLine
         /// </summary>
         /// <param name="aliases">The aliases to normalize.</param>
         /// <returns>A collection of normalized aliases.</returns>
-        private static IEnumerable<string> NormalizeAlias(string[] aliases)
+        private static IEnumerable<string> NormalizeAlias(string[]? aliases)
         {
             if (aliases == null || aliases.Length == 0) return Array.Empty<string>();
             return aliases.Select(a => a.TrimStart('-', '/')).SelectMany(a => GenerateAliases(a)).Distinct();

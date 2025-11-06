@@ -16,7 +16,7 @@ namespace ByteForge.Toolkit
         /// <summary>
         /// Gets the name of the CSV column.
         /// </summary>
-        public string Name { get; }
+        public string? Name { get; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="CSVColumnAttribute"/> class with default values.
@@ -35,7 +35,7 @@ namespace ByteForge.Toolkit
         /// </summary>
         /// <param name="index">The zero-based index of the column in the CSV file. Must be a non-negative integer.</param>
         /// <param name="name">The optional name of the column. If not provided, the column will be identified by its index.</param>
-        public CSVColumnAttribute(int index, string name = null)
+        public CSVColumnAttribute(int index, string? name = null)
         {
             Name = name;
             Index = index;

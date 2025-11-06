@@ -19,8 +19,8 @@ namespace ByteForge.Toolkit
         /// </remarks>
         protected virtual void AddRecordToDataTable(T record, DataTable dt)
         {
-            object colValue;
-            var values = new List<object>();
+            object? colValue;
+            var values = new List<object?>();
 
             foreach (var prop in Properties)
             {
@@ -29,7 +29,7 @@ namespace ByteForge.Toolkit
                 if (!dt.Columns.Contains(col))
                     continue;
 
-                var propType = TypeHelper.ResolveType(prop);
+                var propType = TypeHelper.ResolveType(prop) ?? typeof(object);
                 var propValue = prop.GetValue(record);
 
                 if (propValue == null)
@@ -45,19 +45,19 @@ namespace ByteForge.Toolkit
                  * Apply any custom converter function if specified in the attribute.
                  * Also, enforce non-nullability by setting default values for non-nullable columns.
                  */
-                if (columnAttr?.Converter != null)
+                if (columnAttr is not null && columnAttr.Converter != null)
                     colValue = columnAttr.Converter(colValue);
 
                 // Handle dynamic string length adjustment only if MaxLength is not explicitly set
                 if (propType == typeof(string))
                 {
-                    if (columnAttr?.MaxLength <= 0)
+                    if (columnAttr is null || columnAttr.MaxLength <= 0)
                     {
-                        var column = dt.Columns[col];
+                        var column = dt.Columns[col]!;
                         var newMaxLength = Math.Max(column.MaxLength, (propValue?.ToString() ?? "").Length);
                         column.MaxLength = newMaxLength;
                     }
-                    else if (colValue is string strValue && strValue.Length > columnAttr.MaxLength)
+                    else if (columnAttr is not null && colValue is string strValue && strValue.Length > columnAttr.MaxLength)
                     {
                         // Truncate strings that exceed the defined MaxLength
                         colValue = strValue.Substring(0, columnAttr.MaxLength);
@@ -74,19 +74,19 @@ namespace ByteForge.Toolkit
                  * If the column is marked as non-nullable and the value is DBNull, 
                  * set it to the default value for the property type.
                  */
-                if (columnAttr?.IsNullable == false && colValue == DBNull.Value)
+                if (columnAttr is not null && columnAttr.IsNullable == false && colValue == DBNull.Value)
                     colValue = TypeHelper.GetDefault(propType);
 
                 /*
                  * Identity columns should be set to DBNull so that the database can auto-generate the value.  
                  */
-                if (columnAttr?.IsIdentity == true)
+                if (columnAttr is not null && columnAttr.IsIdentity == true)
                     colValue = null;
 
                 values.Add(colValue);
             }
 
-            dt.Rows.Add(values.ToArray());
+            dt.Rows.Add([.. values.Cast<object>()]);
         }
 
         /// <summary>
@@ -102,9 +102,7 @@ namespace ByteForge.Toolkit
         /// </remarks>
         protected void InitializePropertyMapping()
         {
-            Properties = typeof(T).GetProperties(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.FlattenHierarchy)
-                .Where(p => p.CanRead && p.GetCustomAttributes(typeof(DBColumnAttribute), true).Any())
-                .ToArray();
+            Properties = [.. typeof(T).GetProperties(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.FlattenHierarchy).Where(p => p.CanRead && p.GetCustomAttributes(typeof(DBColumnAttribute), true).Length != 0)];
 
             if (Properties.Length == 0)
                 throw new InvalidOperationException($"No properties with DBColumnAttribute found in type {typeof(T).Name}");
@@ -117,23 +115,11 @@ namespace ByteForge.Toolkit
             if (ColumnMap.Values.Distinct().Count() != ColumnMap.Values.Count)
                 throw new InvalidOperationException("Duplicate column names found in property mappings. Ensure each DBColumnAttribute has a unique Name.");
 
-            PrimaryKeys = Properties
-                .Where(p => p.GetCustomAttribute<DBColumnAttribute>()?.IsPrimaryKey == true)
-                .Select(p => ColumnMap[p])
-                .ToArray();
+            PrimaryKeys = [.. Properties.Where(p => p.GetCustomAttribute<DBColumnAttribute>()?.IsPrimaryKey == true).Select(p => ColumnMap[p])];
 
-            UniqueIndexes = Properties
-                .Where(p => p.GetCustomAttribute<DBColumnAttribute>()?.IsUnique == true)
-                .Select(p => ColumnMap[p])
-                .Except(PrimaryKeys)
-                .ToArray();
+            UniqueIndexes = [.. Properties.Where(p => p.GetCustomAttribute<DBColumnAttribute>()?.IsUnique == true).Select(p => ColumnMap[p]).Except(PrimaryKeys)];
 
-            Indexes = Properties
-                .Where(p => p.GetCustomAttribute<DBColumnAttribute>()?.HasIndex == true)
-                .Select(p => ColumnMap[p])
-                .Except(PrimaryKeys)
-                .Except(UniqueIndexes)
-                .ToArray();
+            Indexes = [.. Properties.Where(p => p.GetCustomAttribute<DBColumnAttribute>()?.HasIndex == true).Select(p => ColumnMap[p]).Except(PrimaryKeys).Except(UniqueIndexes)];
         }
 
         /// <summary>
@@ -206,7 +192,7 @@ namespace ByteForge.Toolkit
             {
                 var result = db.ExecuteScript(sqlScript);
                 if (!result.Success)
-                    throw LastException = result.LastException;
+                    throw LastException = result.LastException!;
             }
             catch (Exception ex)
             {
@@ -240,7 +226,7 @@ namespace ByteForge.Toolkit
                     continue;
                 }
 
-                var propType = TypeHelper.ResolveType(prop);
+                var propType = TypeHelper.ResolveType(prop) ?? typeof(object);
                 var value = prop.GetValue(record);
 
                 if (value == null)
@@ -258,7 +244,7 @@ namespace ByteForge.Toolkit
                     var columnAttr = prop.GetCustomAttribute<DBColumnAttribute>();
                     if (columnAttr?.MaxLength == null)
                     {
-                        var column = dt.Columns[keyColumn];
+                        var column = dt.Columns[keyColumn]!;
                         column.MaxLength = Math.Max(column.MaxLength, (value?.ToString() ?? "").Length);
                     }
                 }
@@ -310,58 +296,30 @@ namespace ByteForge.Toolkit
         /// </remarks>
         private Type GetClrTypeFromDbType(DbType dbType)
         {
-            switch (dbType)
+            return dbType switch
             {
-                case DbType.AnsiString:
-                case DbType.AnsiStringFixedLength:
-                case DbType.String:
-                case DbType.StringFixedLength:
-                    return typeof(string);
-                case DbType.Binary:
-                    return typeof(byte[]);
-                case DbType.Boolean:
-                    return typeof(bool);
-                case DbType.Byte:
-                    return typeof(byte);
-                case DbType.Currency:
-                case DbType.Decimal:
-                case DbType.VarNumeric:
-                    return typeof(decimal);
-                case DbType.Date:
-                case DbType.DateTime:
-                case DbType.DateTime2:
-                    return typeof(DateTime);
-                case DbType.DateTimeOffset:
-                    return typeof(DateTimeOffset);
-                case DbType.Double:
-                    return typeof(double);
-                case DbType.Guid:
-                    return typeof(Guid);
-                case DbType.Int16:
-                    return typeof(short);
-                case DbType.Int32:
-                    return typeof(int);
-                case DbType.Int64:
-                    return typeof(long);
-                case DbType.Object:
-                    return typeof(object);
-                case DbType.SByte:
-                    return typeof(sbyte);
-                case DbType.Single:
-                    return typeof(float);
-                case DbType.Time:
-                    return typeof(TimeSpan);
-                case DbType.UInt16:
-                    return typeof(ushort);
-                case DbType.UInt32:
-                    return typeof(uint);
-                case DbType.UInt64:
-                    return typeof(ulong);
-                case DbType.Xml:
-                    return typeof(string);
-                default:
-                    return typeof(string);
-            }
+                DbType.AnsiString or DbType.AnsiStringFixedLength or DbType.String or DbType.StringFixedLength => typeof(string),
+                DbType.Binary => typeof(byte[]),
+                DbType.Boolean => typeof(bool),
+                DbType.Byte => typeof(byte),
+                DbType.Currency or DbType.Decimal or DbType.VarNumeric => typeof(decimal),
+                DbType.Date or DbType.DateTime or DbType.DateTime2 => typeof(DateTime),
+                DbType.DateTimeOffset => typeof(DateTimeOffset),
+                DbType.Double => typeof(double),
+                DbType.Guid => typeof(Guid),
+                DbType.Int16 => typeof(short),
+                DbType.Int32 => typeof(int),
+                DbType.Int64 => typeof(long),
+                DbType.Object => typeof(object),
+                DbType.SByte => typeof(sbyte),
+                DbType.Single => typeof(float),
+                DbType.Time => typeof(TimeSpan),
+                DbType.UInt16 => typeof(ushort),
+                DbType.UInt32 => typeof(uint),
+                DbType.UInt64 => typeof(ulong),
+                DbType.Xml => typeof(string),
+                _ => typeof(string),
+            };
         }
 
         /// <summary>
@@ -376,7 +334,7 @@ namespace ByteForge.Toolkit
         private Type GetColumnType(Type propertyType)
         {
             // Handle nullable types
-            var underlyingType = TypeHelper.ResolveType(propertyType);
+            var underlyingType = TypeHelper.ResolveType(propertyType) ?? typeof(object);
 
             // Map common .NET types to their SQL Server equivalents
             if (underlyingType.IsEnum)
@@ -415,7 +373,7 @@ namespace ByteForge.Toolkit
         /// This method determines the column type based on the DBColumnAttribute's DbType if specified,
         /// otherwise falls back to inferring the type from the property's type.
         /// </remarks>
-        private Type GetDataTableColumnType(PropertyInfo prop, DBColumnAttribute columnAttr)
+        private Type GetDataTableColumnType(PropertyInfo prop, DBColumnAttribute? columnAttr)
         {
             if (columnAttr?.DbType != null)
                 return GetClrTypeFromDbType(columnAttr.DbType.Value);

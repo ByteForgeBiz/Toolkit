@@ -1,7 +1,4 @@
-﻿using System;
-using System.Linq;
-
-namespace ByteForge.Toolkit
+﻿namespace ByteForge.Toolkit
 {
     /*
      *  ___  ___   _                     _                   _           
@@ -18,7 +15,7 @@ namespace ByteForge.Toolkit
         /// <param name="ex">The exception that occurred.</param>
         /// <param name="query">The SQL query that was executed.</param>
         /// <param name="arguments">The arguments for the SQL query.</param>
-        private void LogQueryError(Exception ex, string query, object[] arguments)
+        private void LogQueryError(Exception ex, string query, object?[]? arguments)
         {
             var prms = ParseParameters(query);
             var msg = $"Error executing query";

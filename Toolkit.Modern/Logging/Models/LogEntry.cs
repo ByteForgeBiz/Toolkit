@@ -23,12 +23,12 @@ namespace ByteForge.Toolkit.Logging
         /// <summary>
         /// Gets or sets the correlation ID associated with the log entry.
         /// </summary>
-        public string CorrelationId { get; set; }
+        public string? CorrelationId  { get; set; }
 
         /// <summary>
         /// Gets or sets the source of the log entry. 
         /// </summary>
-        public string Source { get; set; }
+        public string? Source { get; set; }
 
         /// <summary>
         /// Gets or sets the log level of the log entry.
@@ -38,16 +38,16 @@ namespace ByteForge.Toolkit.Logging
         /// <summary>
         /// Gets or sets the log message.
         /// </summary>
-        public string Message { get; set; }
+        public string? Message  { get; set; }
 
         /// <summary>
         /// Gets or sets additional properties associated with the log entry.
         /// </summary>
-        public IDictionary<string, object> Properties { get; set; }
+        public IDictionary<string, object> Properties { get; set; } = new Dictionary<string, object>();
 
         /// <summary>
         /// Gets or sets the exception associated with the log entry, if any.
         /// </summary>
-        public Exception Exception { get; set; }
+        public Exception? Exception { get; set; }
     }
 }

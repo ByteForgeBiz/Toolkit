@@ -1,4 +1,6 @@
-﻿using System;
+﻿#nullable disable
+
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -747,9 +749,9 @@ namespace ByteForge.Toolkit.Net
         {
             var sessionOptions = new SessionOptions
             {
-                HostName = _config.HostName,
-                UserName = _config.UserName,
-                Password = _config.Password,
+                HostName = _config.HostName!,
+                UserName = _config.UserName!,
+                Password = _config.Password!,
                 PortNumber = _config.Port,
                 Timeout = TimeSpan.FromSeconds(_config.TimeoutSeconds)
             };
@@ -777,7 +779,7 @@ namespace ByteForge.Toolkit.Net
                     sessionOptions.SshHostKeyPolicy = _config.AcceptAnyHostKey ? SshHostKeyPolicy.GiveUpSecurityAndAcceptAny : SshHostKeyPolicy.AcceptNew;
                     if (!string.IsNullOrEmpty(_config.SshPrivateKeyPath))
                     {
-                        sessionOptions.SshPrivateKeyPath = _config.SshPrivateKeyPath;
+                        sessionOptions.SshPrivateKeyPath = _config.SshPrivateKeyPath!;
                         sessionOptions.Password = null;
                     }
                     break;
@@ -847,28 +849,39 @@ namespace ByteForge.Toolkit.Net
         /// <exception cref="FileNotFoundException">Thrown when the local file does not exist</exception>
         private void ValidateLocalFile(string localFilePath)
         {
+            if (string.IsNullOrWhiteSpace(localFilePath))
+                throw new ArgumentException("Local file path cannot be null or empty");
+
             if (!File.Exists(localFilePath))
                 throw new FileNotFoundException($"Local file not found: {localFilePath}");
         }
 
         /// <summary>
-        /// Releases all resources used by the file transfer client.
+        /// Disposes the file transfer client and releases all resources.
         /// </summary>
         public void Dispose()
         {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        /// <summary>
+        /// Core dispose method, disposing managed and unmanaged resources.
+        /// </summary>
+        /// <param name="disposing">True if called from Dispose()</param>
+        protected virtual void Dispose(bool disposing)
+        {
             if (!_disposed)
             {
-                try
+                if (disposing)
                 {
+                    // Dispose managed resources
                     Disconnect();
-                }
-                catch
-                {
-                    // Ignore errors during disposal
+                    _sessionLock.Dispose();
                 }
 
-                _session?.Dispose();
-                _sessionLock?.Dispose();
+                // Dispose unmanaged resources if any
+
                 _disposed = true;
             }
         }

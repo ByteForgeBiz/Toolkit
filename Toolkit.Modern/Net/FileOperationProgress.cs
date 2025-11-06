@@ -23,6 +23,6 @@
         /// <summary>
         /// Gets or sets the current path being processed.
         /// </summary>
-        public string CurrentPath { get; set; }
+        public string? CurrentPath { get; set; }
     }
 }

@@ -114,7 +114,7 @@ namespace ByteForge.Toolkit
                 { typeof(short), value => short.Parse(value, culture) },
                 { typeof(string), value => value },
                 { typeof(TimeSpan), value => TimeSpan.Parse(value, culture) },
-                { typeof(Type), value => Type.GetType(value) },
+                { typeof(Type), value => Type.GetType(value) ?? throw new TypeLoadException($"Type '{value}' could not be loaded.") },
                 { typeof(uint), value => uint.Parse(value, culture) },
                 { typeof(UIntPtr), value => new UIntPtr(ulong.Parse(value, culture)) },
                 { typeof(ulong), value => ulong.Parse(value, culture) },
@@ -126,10 +126,10 @@ namespace ByteForge.Toolkit
 
             _typeStringifiers = new Dictionary<Type, Func<object, string>>
             {
-                { typeof(bool), value => value.ToString().ToLowerInvariant() },
+                { typeof(bool), value => value.ToString()!.ToLowerInvariant() },
                 { typeof(byte), value => ((byte)value).ToString(culture) },
                 { typeof(byte[]), value => Convert.ToBase64String((byte[])value) },
-                { typeof(char), value => value.ToString() },
+                { typeof(char), value => value.ToString()! },
                 { typeof(char[]), value => new string((char[])value) },
                 { typeof(CultureInfo), value => ((CultureInfo)value).Name },
                 { typeof(DateTime), value => ((DateTime)value).ToString("o", culture) },
@@ -145,7 +145,7 @@ namespace ByteForge.Toolkit
                 { typeof(short), value => ((short)value).ToString(culture) },
                 { typeof(string), value => (string)value },
                 { typeof(TimeSpan), value => ((TimeSpan)value).ToString("c", culture) },
-                { typeof(Type), value => ((Type)value).AssemblyQualifiedName },
+                { typeof(Type), value => ((Type)value).AssemblyQualifiedName! },
                 { typeof(uint), value => ((uint)value).ToString(culture) },
                 { typeof(UIntPtr), value => ((UIntPtr)value).ToUInt64().ToString(culture) },
                 { typeof(ulong), value => ((ulong)value).ToString(culture) },
@@ -188,7 +188,7 @@ namespace ByteForge.Toolkit
         /// <item><description>Otherwise: falls back to <see cref="JsonConvert.DeserializeObject(string, Type)"/>.</description></item>
         /// </list>
         /// </remarks>
-        object IParser.Parse(Type type, string value)
+        object? IParser.Parse(Type? type, string value)
         {
             if (type == null)
                 return null;
@@ -202,9 +202,9 @@ namespace ByteForge.Toolkit
 
         /// <inheritdoc />
         /// <exception cref="ArgumentNullException">Thrown when <paramref name="type"/>, <paramref name="parser"/>, or <paramref name="stringfier"/> is <see langword="null"/>.</exception>
-        void IParser.RegisterType(Type type, Func<string, object> parser, Func<object, string> stringfier)
+        void IParser.RegisterType(Type? type, Func<string, object> parser, Func<object, string> stringfier)
         {
-            if (type == null) throw new ArgumentNullException(nameof(type));
+            type = type ?? throw new ArgumentNullException(nameof(type));
             _typeParsers[type] = parser ?? throw new ArgumentNullException(nameof(parser));
             _typeStringifiers[type] = stringfier ?? throw new ArgumentNullException(nameof(stringfier));
         }
@@ -214,12 +214,12 @@ namespace ByteForge.Toolkit
         /// If <paramref name="type"/> is an enum, the raw <see cref="object.ToString"/> value is returned.
         /// For unknown types, JSON serialization is used.
         /// </remarks>
-        string IParser.Stringify(Type type, object value)
+        string IParser.Stringify(Type? type, object? value)
         {
             if (value == null || type == null)
                 return string.Empty;
             if (type.IsEnum)
-                return value.ToString();
+                return value.ToString() ?? "";
             if (_typeStringifiers.TryGetValue(type, out var stringifier))
                 return stringifier(value);
 
@@ -227,7 +227,7 @@ namespace ByteForge.Toolkit
         }
 
         /// <inheritdoc />
-        bool IParser.TryParse(Type type, string value, out object result)
+        bool IParser.TryParse(Type? type, string value, out object? result)
         {
             result = null;
             if (string.IsNullOrWhiteSpace(value))
@@ -250,7 +250,7 @@ namespace ByteForge.Toolkit
         /// <typeparam name="T">Target type.</typeparam>
         /// <param name="value">String representation.</param>
         /// <returns>Parsed instance of <typeparamref name="T"/>.</returns>
-        object IParser.Parse<T>(string value) => ((IParser)this).Parse(typeof(T), value);
+        T? IParser.Parse<T>(string value) where T : default => (T?)((IParser)this).Parse(typeof(T), value);
 
         /// <summary>
         /// Attempts to parse a string into a value of type <typeparamref name="T"/>.
@@ -262,7 +262,7 @@ namespace ByteForge.Toolkit
         /// <remarks>
         /// Returns <see langword="false" /> if <paramref name="value"/> is null or empty, or an exception occurs.
         /// </remarks>
-        bool IParser.TryParse<T>(string value, out T result)
+        bool IParser.TryParse<T>(string value, out T? result) where T : default
         {
             result = default;
             if (string.IsNullOrEmpty(value))
@@ -270,7 +270,7 @@ namespace ByteForge.Toolkit
 
             try
             {
-                result = (T)((IParser)this).Parse(typeof(T), value);
+                result = (T?)((IParser)this).Parse(typeof(T), value);
                 return true;
             }
             catch (Exception)
@@ -285,7 +285,7 @@ namespace ByteForge.Toolkit
         /// <typeparam name="T">Type to stringify as.</typeparam>
         /// <param name="value">Value to convert.</param>
         /// <returns>String form of <paramref name="value"/>.</returns>
-        string IParser.Stringify<T>(object value) => ((IParser)this).Stringify(typeof(T), value);
+        string IParser.Stringify<T>(object? value) => ((IParser)this).Stringify(typeof(T), value);
 
         #endregion
 
@@ -304,7 +304,19 @@ namespace ByteForge.Toolkit
         /// <param name="type">The type to parse the string value into.</param>
         /// <param name="value">The string value to parse.</param>
         /// <returns>An object of the specified type.</returns>
-        public static object Parse(Type type, string value) => Default.Parse(type, value);
+        public static object? Parse(Type type, string value) => Default.Parse(type, value);
+
+        /// <summary>
+        /// Converts the specified string representation of a value to its equivalent strongly-typed object of the specified type.
+        /// </summary>
+        /// <param name="value">The string representation of the value to convert.</param>
+        /// <typeparam name="T">The type to which the string value should be converted.</typeparam>
+        /// <returns>An object of type <typeparamref name="T"/> if the conversion is successful; otherwise, <see langword="null"/>.</returns>
+        /// <remarks>
+        /// This method attempts to parse the string value into the specified type <typeparamref name="T"/>. 
+        /// If the conversion fails, the method returns <see langword="null"/> instead of throwing an exception.
+        /// </remarks>
+        public static T? Parse<T>(string value) => Parse(typeof(T), value) is T result ? result : default;
 
         /// <summary>
         /// Parses the specified string value into an object of the specified generic type.
@@ -312,7 +324,7 @@ namespace ByteForge.Toolkit
         /// <typeparam name="T">The type to parse the string value into.</typeparam>
         /// <param name="value">The string value to parse.</param>
         /// <returns>An object of the specified generic type.</returns>
-        public static T Parse<T>(string value) => (T)Default.Parse(typeof(T), value);
+        // public static T Parse<T>(string value) => (T)Default.Parse(typeof(T), value);
 
         /// <summary>
         /// Registers a custom parser for the specified type.
@@ -330,7 +342,7 @@ namespace ByteForge.Toolkit
         /// <param name="value">The object to convert to a string.</param>
         /// <param name="type">The type of the object. If null, the type is inferred from <paramref name="value"/>.</param>
         /// <returns>The string representation of the object.</returns>
-        public static string Stringify(object value, Type type = null) => Default.Stringify(type ?? value?.GetType(), value);
+        public static string Stringify(object value, Type? type = null) => Default.Stringify(type ?? value?.GetType(), value);
 
         /// <summary>
         /// Converts an object of the specified generic type to its string representation.
@@ -347,7 +359,7 @@ namespace ByteForge.Toolkit
         /// <param name="value">The string value to parse.</param>
         /// <param name="result">When this method returns, contains the parsed value, if the parsing succeeded, or null if the parsing failed.</param>
         /// <returns><see langword="true" /> if the parsing succeeded; otherwise, <see langword="false" />.</returns>
-        public static bool TryParse(Type type, string value, out object result) => Default.TryParse(type, value, out result);
+        public static bool TryParse(Type? type, string value, out object? result) => Default.TryParse(type, value, out result);
 
         /// <summary>
         /// Tries to parse the specified string value into an object of the specified generic type.
@@ -356,12 +368,12 @@ namespace ByteForge.Toolkit
         /// <param name="value">The string value to parse.</param>
         /// <param name="result">When this method returns, contains the parsed value, if the parsing succeeded, or the default value of the type if the parsing failed.</param>
         /// <returns><see langword="true" /> if the parsing succeeded; otherwise, <see langword="false" />.</returns>
-        public static bool TryParse<T>(string value, out T result)
+        public static bool TryParse<T>(string value, out T? result)
         {
             result = default;
             if (Default.TryParse(typeof(T), value, out var result2))
             {
-                result = (T)result2;
+                result = (T?)result2;
                 return true;
             }
             return false;

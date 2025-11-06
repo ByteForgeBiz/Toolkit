@@ -30,7 +30,7 @@ namespace ByteForge.Toolkit
         /// <returns>The parsed object.</returns>
         /// <exception cref="ArgumentException">Thrown when the parser cannot handle the specified type.</exception>
         /// <exception cref="FormatException">Thrown when the string value is not in a correct format for the target type.</exception>
-        object Parse(Type type, string value);
+        object? Parse(Type? type, string value);
 
         /// <summary>
         /// Attempts to parse a string value into an object of the specified type.
@@ -39,7 +39,7 @@ namespace ByteForge.Toolkit
         /// <param name="value">The string value to parse.</param>
         /// <param name="result">When this method returns, contains the parsed object if parsing succeeded, or the default value if parsing failed.</param>
         /// <returns><see langword="true"/> if the value was successfully parsed; otherwise, <see langword="false"/>.</returns>
-        bool TryParse(Type type, string value, out object result);
+        bool TryParse(Type? type, string value, out object? result);
 
         /// <summary>
         /// Parses a string value into an object of type <typeparamref name="T"/>.
@@ -49,7 +49,7 @@ namespace ByteForge.Toolkit
         /// <returns>The parsed object of type <typeparamref name="T"/>.</returns>
         /// <exception cref="ArgumentException">Thrown when the parser cannot handle the specified type.</exception>
         /// <exception cref="FormatException">Thrown when the string value is not in a correct format for the target type.</exception>
-        object Parse<T>(string value);
+        T? Parse<T>(string value);
 
         /// <summary>
         /// Attempts to parse a string value into an object of type <typeparamref name="T"/>.
@@ -58,7 +58,7 @@ namespace ByteForge.Toolkit
         /// <param name="value">The string value to parse.</param>
         /// <param name="result">When this method returns, contains the parsed object if parsing succeeded, or the default value if parsing failed.</param>
         /// <returns><see langword="true"/> if the value was successfully parsed; otherwise, <see langword="false"/>.</returns>
-        bool TryParse<T>(string value, out T result);
+        bool TryParse<T>(string value, out T? result);
 
         /// <summary>
         /// Converts an object to its string representation based on the specified type.
@@ -66,7 +66,7 @@ namespace ByteForge.Toolkit
         /// <param name="type">The type of the object.</param>
         /// <param name="value">The object to convert to a string.</param>
         /// <returns>The string representation of the object.</returns>
-        string Stringify(Type type, object value);
+        string Stringify(Type? type, object? value);
 
         /// <summary>
         /// Converts an object of type <typeparamref name="T"/> to its string representation.
@@ -74,6 +74,6 @@ namespace ByteForge.Toolkit
         /// <typeparam name="T">The type of the object.</typeparam>
         /// <param name="value">The object to convert to a string.</param>
         /// <returns>The string representation of the object.</returns>
-        string Stringify<T>(object value);
+        string Stringify<T>(object? value);
     }
 }

@@ -264,25 +264,25 @@ namespace ByteForge.Toolkit
         /// Gets or sets the encrypted username used for SMTP authentication.
         /// </summary>
         [ConfigName("esUser")]
-        public string EncryptedUser { get; set; }
+        public string? EncryptedUser  { get; set; }
 
         /// <summary>
         /// Gets or sets the encrypted password used for SMTP authentication.
         /// </summary>
         [ConfigName("esPass")]
-        public string EncryptedPassword { get; set; }
+        public string? EncryptedPassword  { get; set; }
 
         /// <summary>
         /// Gets or sets the email address used as the "From" address in emails.
         /// </summary>
         [ConfigName("sSender")]
-        public string Sender { get; set; }
+        public string? Sender  { get; set; }
 
         /// <summary>
         /// Gets or sets the email address used as the default "To" address in emails.
         /// </summary>
         [ConfigName("sSendTo")]
-        public string SendTo { get; set; }
+        public string? SendTo  { get; set; }
 
         /// <summary>
         /// Gets the decrypted username for SMTP authentication.

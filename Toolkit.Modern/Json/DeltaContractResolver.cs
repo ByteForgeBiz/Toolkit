@@ -38,10 +38,10 @@ namespace ByteForge.Toolkit.Json
             {
                 try
                 {
-                    var currentValue = property.ValueProvider.GetValue(instance);
-                    var defaultValue = property.ValueProvider.GetValue(_defaultObject);
+                    var currentValue = property.ValueProvider?.GetValue(instance);
+                    var defaultValue = property.ValueProvider?.GetValue(_defaultObject);
 
-                    return !object.Equals(currentValue, defaultValue);
+                    return !Equals(currentValue, defaultValue);
                 }
                 catch
                 {

@@ -85,8 +85,8 @@ namespace ByteForge.Toolkit.Tests.Models
     public class GlobalizationConfig
     {
         [DefaultValue("en-US")]
-        public string Culture { get; set; }
-        
+        public string Culture { get; set; } = "en-US";
+
         [DefaultValue("MM/dd/yyyy")]
         public string DateFormat { get; set; }
         
@@ -211,25 +211,25 @@ namespace ByteForge.Toolkit.Tests.Models
     public class DictionaryTestConfig
     {
         [Dictionary]
-        public Dictionary<string, string> FileFormats { get; set; }
+        public Dictionary<string, string> FileFormats { get; set; } = [];
         
         [Dictionary("MyCustomSection")]
-        public Dictionary<string, string> CustomSettings { get; set; }
+        public Dictionary<string, string> CustomSettings { get; set; } = [];
+
+        [Dictionary]
+        public IDictionary<string, string> InterfaceDictionary { get; set; } = new Dictionary<string, string>();
+
+        [Dictionary]
+        public IReadOnlyDictionary<string, string> ReadOnlyDictionary { get; set; } = new Dictionary<string, string>();
+
+        [Dictionary]
+        public ICollection<KeyValuePair<string, string>> CollectionKeyValuePairs { get; set; } = [];
+
+        [Dictionary]
+        public IEnumerable<KeyValuePair<string, string>> EnumerableKeyValuePairs { get; set; } = [];
         
         [Dictionary]
-        public IDictionary<string, string> InterfaceDictionary { get; set; }
-        
-        [Dictionary]
-        public IReadOnlyDictionary<string, string> ReadOnlyDictionary { get; set; }
-        
-        [Dictionary]
-        public ICollection<KeyValuePair<string, string>> CollectionKeyValuePairs { get; set; }
-        
-        [Dictionary]
-        public IEnumerable<KeyValuePair<string, string>> EnumerableKeyValuePairs { get; set; }
-        
-        [Dictionary]
-        public IReadOnlyCollection<KeyValuePair<string, string>> ReadOnlyCollectionKeyValuePairs { get; set; }
+        public IReadOnlyCollection<KeyValuePair<string, string>> ReadOnlyCollectionKeyValuePairs { get; set; } = [];
     }
 
     /// <summary>
@@ -330,13 +330,13 @@ namespace ByteForge.Toolkit.Tests.Models
     public class InheritanceTestConfig : DatabaseConfig
     {
         [DefaultValue("Extended")]
-        public string ExtendedProperty { get; set; }
-        
+        public string ExtendedProperty { get; set; }= "Extended";
+
         [Array("ExtendedFeatures")]
-        public List<string> AdditionalFeatures { get; set; }
-        
+        public List<string> AdditionalFeatures { get; set; } = [];
+
         [Dictionary("ExtendedSettings")]
-        public Dictionary<string, string> ExtendedSettings { get; set; }
+        public Dictionary<string, string> ExtendedSettings { get; set; } = [];
     }
 
     /// <summary>
@@ -344,20 +344,20 @@ namespace ByteForge.Toolkit.Tests.Models
     /// </summary>
     public class MixedComplexTestConfig
     {
-        public string Name { get; set; }
-        
+        public string Name { get; set; } = "MixedConfig";
+
         [Array("PrimaryArray")]
-        public string[] PrimaryItems { get; set; }
-        
-        [Array("SecondaryArray")]  
-        public List<int> SecondaryItems { get; set; }
-        
+        public string[] PrimaryItems { get; set; } = [];
+
+        [Array("SecondaryArray")]
+        public List<int> SecondaryItems { get; set; } = [];
+
         [Dictionary("PrimaryDict")]
-        public Dictionary<string, string> PrimarySettings { get; set; }
-        
+        public Dictionary<string, string> PrimarySettings { get; set; } = [];
+
         [Dictionary("SecondaryDict")]
-        public IReadOnlyDictionary<string, string> SecondarySettings { get; set; }
-        
+        public IReadOnlyDictionary<string, string> SecondarySettings { get; set; } = new Dictionary<string, string>();
+
         [DefaultValue(true)]
         public bool IsActive { get; set; }
         

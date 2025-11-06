@@ -66,7 +66,7 @@ namespace ByteForge.Toolkit
         /// or IP address. For example: "localhost", "SQLSERVER01\INSTANCE1", or "192.168.1.100".
         /// </remarks>
         [ConfigName("sServer")]
-        public string Server { get; set; }
+        public string Server { get; set; } = "";
 
         /// <summary>
         /// Gets or sets the database server DSN (for ODBC connections).
@@ -77,7 +77,7 @@ namespace ByteForge.Toolkit
         /// configured in the ODBC Data Source Administrator.
         /// </remarks>
         [ConfigName("sServerDSN")]
-        public string ServerDSN { get; set; }
+        public string ServerDSN { get; set; } = "";
 
         /// <summary>
         /// Gets or sets the database name.
@@ -86,7 +86,7 @@ namespace ByteForge.Toolkit
         /// Specifies the name of the database to connect to on the server.
         /// </remarks>
         [ConfigName("sDatabaseName")]
-        public string DatabaseName { get; set; }
+        public string DatabaseName { get; set; } = "";
 
         /// <summary>
         /// Gets or sets the encrypted database user.
@@ -100,7 +100,7 @@ namespace ByteForge.Toolkit
         /// </para>
         /// </remarks>
         [ConfigName("esUser")]
-        public string EncryptedUser { get; set; }
+        public string EncryptedUser { get; set; } = "";
 
         /// <summary>
         /// Gets or sets the encrypted database password.
@@ -114,7 +114,7 @@ namespace ByteForge.Toolkit
         /// </para>
         /// </remarks>
         [ConfigName("esPass")]
-        public string EncryptedPassword { get; set; }
+        public string EncryptedPassword { get; set; } = "";
 
         /// <summary>
         /// Gets or sets the direct connection string (if provided).
@@ -129,7 +129,7 @@ namespace ByteForge.Toolkit
         /// </para>
         /// </remarks>
         [ConfigName("sConnectionString")]
-        public string ConnectionString { get; set; }
+        public string ConnectionString { get; set; } = "";
 
         /// <summary>
         /// Gets or sets whether the connection should be encrypted.
@@ -377,6 +377,6 @@ namespace ByteForge.Toolkit
         /// environment name like "Development", "Testing", or "Production".
         /// </remarks>
         [ConfigName("SelectedDB")]
-        public string SelectedDatabase { get; set; }
+        public string SelectedDatabase { get; set; } = "";
     }
 }

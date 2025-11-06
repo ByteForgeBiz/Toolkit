@@ -104,9 +104,9 @@ namespace ByteForge.Toolkit
         /// derived from the properties mapped in the <c>propertyColumnMapping</c> field. This method is useful for
         /// scenarios where an object needs to be serialized or inspected dynamically.</remarks>
         /// <returns>A dictionary containing property names as keys and their corresponding values as the dictionary values.</returns>
-        public IDictionary<string, object> ToDictionary()
+        public IDictionary<string, object?> ToDictionary()
         {
-            var dict = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
+            var dict = new Dictionary<string, object?>(StringComparer.OrdinalIgnoreCase);
             foreach (var kvp in propertyColumnMapping)
                 dict[kvp.Value] = kvp.Key.GetValue(this);
             return dict;

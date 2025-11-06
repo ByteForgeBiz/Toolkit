@@ -36,7 +36,7 @@ namespace ByteForge.Toolkit
         /// <summary>
         /// The thread responsible for running the spinner animation.
         /// </summary>
-        private readonly Thread _spinThread;
+        private readonly Thread? _spinThread;
 
         /// <summary>
         /// Indicates whether the spinner is currently running.
@@ -65,7 +65,7 @@ namespace ByteForge.Toolkit
         /// The spinner will automatically start displaying when this constructor is called.
         /// If no console is available, the spinner will not display but will not cause errors.
         /// </remarks>
-        public ProgressSpinner(string message = null)
+        public ProgressSpinner(string message  = "")
         {
             _message = message ?? "Working...";
             

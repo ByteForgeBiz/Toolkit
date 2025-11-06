@@ -58,7 +58,7 @@ namespace ByteForge.Toolkit
         /// <param name="sectionName">The name of the section. If null, uses the type name.</param>
         /// <returns>The added section instance.</returns>
         /// <exception cref="System.InvalidOperationException">Thrown if the section already exists.</exception>
-        T AddSection<T>(string sectionName = null) where T : class, new();
+        T AddSection<T>(string sectionName  = "") where T : class, new();
 
         /// <summary>
         /// Gets a section of the configuration.
@@ -66,7 +66,7 @@ namespace ByteForge.Toolkit
         /// <typeparam name="T">The type of the section to get.</typeparam>
         /// <param name="sectionName">The name of the section. If null, uses the type name.</param>
         /// <returns>The section instance.</returns>
-        T GetSection<T>(string sectionName = null) where T : class, new();
+        T GetSection<T>(string sectionName  = "") where T : class, new();
 
         /// <summary>
         /// Saves the current configuration settings to the INI file.

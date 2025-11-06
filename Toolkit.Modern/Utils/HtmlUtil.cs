@@ -15,7 +15,7 @@ namespace ByteForge.Toolkit
         public static string MinifyCSS(string css)
         {
             if (string.IsNullOrWhiteSpace(css))
-                return null;
+                return "";
 
             // Remove comments
             var minified = Regex.Replace(css, @"/\*[^*]*\*+([^/*][^*]*\*+)*/", string.Empty);

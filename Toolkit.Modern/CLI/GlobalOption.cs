@@ -33,7 +33,7 @@ namespace ByteForge.Toolkit.CommandLine
         /// <summary>
         /// Gets all aliases for this option (both auto-generated and custom).
         /// </summary>
-        public string[] AllAliases { get; private set; }
+        public string[] AllAliases { get; private set; } = [];
 
         /// <summary>
         /// Gets a value indicating whether this option expects a value.

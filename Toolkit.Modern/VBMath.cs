@@ -84,7 +84,9 @@ internal static class VBMath
         lValue = ((lValue & 0xFFFF) ^ (lValue >> 16)) << 8;
 
         //  replace the middle two bytes of the seed with lValue
+#pragma warning disable CS0675 
         seed = ((seed & 0xFF0000FFL) | lValue);
+#pragma warning restore CS0675
 
         //  copy back seed value to per-project structure
         VBMath.rndSeed = (int)seed;
@@ -118,7 +120,9 @@ internal static class VBMath
         //  replace the middle two bytes of the seed with lValue
         //Original C++ line
         // rndSeed = (rndSeed & 0xff0000ff) | lValue;
+#pragma warning disable CS0675
         seed = (seed & 0xFF0000FFL) | lValue;
+#pragma warning restore CS0675
 
         //  copy back seed value to per-project structure
         VBMath.rndSeed = (int)seed;

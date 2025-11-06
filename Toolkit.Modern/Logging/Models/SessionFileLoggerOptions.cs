@@ -63,7 +63,7 @@ namespace ByteForge.Toolkit.Logging
         /// Only used when <see cref="SessionIdFormat"/> is set to <see cref="SessionIdFormat.Custom"/>.
         /// The returned value is used to replace the {sessionid} placeholder in the FileNamingPattern.
         /// </summary>
-        public Func<string> CustomSessionIdProvider { get; set; }
+        public Func<string>? CustomSessionIdProvider { get; set; }
     }
 
     /// <summary>

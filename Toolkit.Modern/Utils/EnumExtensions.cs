@@ -27,7 +27,7 @@ namespace ByteForge.Toolkit
             if (field == null)
                 return value.ToString();
 
-            var attribute = (DescriptionAttribute)Attribute.GetCustomAttribute(field, typeof(DescriptionAttribute));
+            var attribute = (DescriptionAttribute?)Attribute.GetCustomAttribute(field, typeof(DescriptionAttribute));
 
             return attribute?.Description ?? value.ToString();
         }

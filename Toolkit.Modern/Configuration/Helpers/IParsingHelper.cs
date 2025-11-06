@@ -38,7 +38,7 @@ namespace ByteForge.Toolkit
         /// </param>
         /// <exception cref="ArgumentNullException">Thrown when <paramref name="target"/> is <c>null</c>.</exception>
         /// <exception cref="ArgumentException">Implementations may throw if <paramref name="type"/> is invalid or unsupported.</exception>
-        void ParseAndPopulateObject(Type type, object target, string value);
+        void ParseAndPopulateObject(Type? type, object? target, string? value);
 
         /// <summary>
         /// Parses the supplied textual <paramref name="value"/> and assigns (or populates) the specified

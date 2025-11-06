@@ -14,11 +14,11 @@
 
   <ItemGroup>
     <InternalsVisibleTo Include="ByteForge.Toolkit.Tests" />
+    <InternalsVisibleTo Include="ByteForge.Toolkit.Modern.Tests" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Costura.Fody" Version="6.0.0">
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
     <PackageReference Include="Fody" Version="6.9.3">
@@ -55,7 +55,7 @@
     <ProjectReference Include="..\WinSCP\WinSCPnet.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
+  <ItemGroup Condition="'$(TargetFramework)' == 'net48'">
     <Reference Include="System.IO.Compression" />
     <Reference Include="System.Transactions" />
   </ItemGroup>

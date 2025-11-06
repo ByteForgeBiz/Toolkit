@@ -23,7 +23,7 @@ namespace ByteForge.Toolkit.Logging
         /// Gets the unique session ID for this application run.
         /// </summary>
         public string SessionId => _sessionId = _sessionId ?? GenerateSessionId(Settings);
-        private string _sessionId = null;
+        private string _sessionId = "";
 
         /// <summary>
         /// Gets the timestamp when this logging session started.
@@ -35,7 +35,7 @@ namespace ByteForge.Toolkit.Logging
         /// </summary>
         /// <param name="baseFilePath">The base path for log files. Session-specific suffix will be added.</param>
         /// <param name="sessionOptions">Configuration options specific to session management.</param>
-        public SessionFileLogger(string baseFilePath, SessionFileLoggerOptions sessionOptions = null) : base(baseFilePath, sessionOptions, true)
+        public SessionFileLogger(string? baseFilePath, SessionFileLoggerOptions? sessionOptions  = null) : base(baseFilePath, sessionOptions, true)
         {
             SessionStartTime = DateTime.Now;
             Settings = sessionOptions ?? (Configuration.IsInitialized ? Configuration.GetSection<SessionFileLoggerOptions>("SessionFileLogger") : null) ?? new SessionFileLoggerOptions();
@@ -81,8 +81,9 @@ namespace ByteForge.Toolkit.Logging
                     return $"{now:yyyyMMdd-HHmmss}-P{System.Diagnostics.Process.GetCurrentProcess().Id}";
 
                 case SessionIdFormat.Custom:
-                    if (!string.IsNullOrEmpty(options.CustomSessionIdProvider?.Invoke()))
-                        return options.CustomSessionIdProvider();
+                    var sessionID = options.CustomSessionIdProvider?.Invoke() ?? string.Empty;
+                    if (!string.IsNullOrEmpty(sessionID))
+                        return sessionID;
                     goto default;
 
                 default:
@@ -139,7 +140,7 @@ namespace ByteForge.Toolkit.Logging
             try
             {
                 var currentFilePath = this.CurrentFilePath;
-                var directory = Path.GetDirectoryName(currentFilePath);
+                var directory = Path.GetDirectoryName(currentFilePath) ?? throw new InvalidOperationException("Log directory could not be determined.");
 
                 // Create a search pattern based on the naming pattern
                 var searchPattern = Settings.FileNamingPattern

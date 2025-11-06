@@ -18,7 +18,7 @@ namespace ByteForge.Toolkit
         /// <summary>
         /// The path to the temporary file associated with this attachment.
         /// </summary>
-        private readonly string tempFilePath;
+        private readonly string? tempFilePath;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="TempFileAttachment"/> class using the specified file name.

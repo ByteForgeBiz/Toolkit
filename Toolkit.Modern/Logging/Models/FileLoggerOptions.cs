@@ -78,6 +78,6 @@ namespace ByteForge.Toolkit.Logging
         /// When set, this function is called to generate the file name and overrides FileNamingPattern.
         /// The function receives the base file path and current FileLoggerOptions as parameters.
         /// </summary>
-        public Func<string, FileLoggerOptions, string> CustomFileNameProvider { get; set; }
+        public Func<string, FileLoggerOptions, string>? CustomFileNameProvider { get; set; }
     }
 }

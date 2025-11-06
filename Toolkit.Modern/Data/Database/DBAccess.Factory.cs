@@ -55,7 +55,7 @@ namespace ByteForge.Toolkit
         /// <param name="query">The SQL query to execute.</param>
         /// <param name="arguments">The arguments for the SQL query.</param>
         /// <returns>The created command.</returns>
-        private IDbCommand CreateCommand(IDbConnection connection, string query, object[] arguments)
+        private IDbCommand CreateCommand(IDbConnection connection, string query, object?[]? arguments)
         {
             var cmd = connection.CreateCommand();
             cmd.CommandTimeout = Options.CommandTimeout;
