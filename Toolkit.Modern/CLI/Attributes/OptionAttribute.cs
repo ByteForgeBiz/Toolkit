@@ -1,5 +1,3 @@
-using System;
-
 namespace ByteForge.Toolkit.CommandLine;
 /// <summary>
 /// Attribute to define an option for a command parameter with a description, name, and optional aliases.

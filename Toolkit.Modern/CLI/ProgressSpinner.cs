@@ -1,6 +1,3 @@
-using System;
-using System.Threading;
-
 namespace ByteForge.Toolkit;
 /// <summary>
 /// Provides a self-contained progress spinner that uses ConsoleUtil's DrawProgressBar functionality.

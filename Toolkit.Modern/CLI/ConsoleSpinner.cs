@@ -1,6 +1,3 @@
-using System;
-using System.Threading;
-
 namespace ByteForge.Toolkit;
 /// <summary>
 /// Provides a console-based spinner animation at a fixed or dynamic position.

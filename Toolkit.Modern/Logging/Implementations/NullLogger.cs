@@ -1,5 +1,3 @@
-using System;
-
 namespace ByteForge.Toolkit.Logging;
 /*
  *  _  _      _ _ _                           

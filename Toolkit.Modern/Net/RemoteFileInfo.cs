@@ -1,5 +1,3 @@
-using System;
-
 namespace ByteForge.Toolkit.Net;
 /// <summary>
 /// Information about a file or directory on the remote server.

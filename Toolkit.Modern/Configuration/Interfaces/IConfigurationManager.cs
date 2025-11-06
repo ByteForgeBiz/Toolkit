@@ -1,5 +1,3 @@
-using Microsoft.Extensions.Configuration;
-
 namespace ByteForge.Toolkit;
 /// <summary>
 /// Interface for configuration management providing access to INI-based configuration with strongly-typed sections.

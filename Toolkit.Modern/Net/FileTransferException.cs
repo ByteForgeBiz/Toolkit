@@ -1,5 +1,3 @@
-using System;
-
 namespace ByteForge.Toolkit.Net;
 /// <summary>
 /// Exception thrown when file transfer operations fail.

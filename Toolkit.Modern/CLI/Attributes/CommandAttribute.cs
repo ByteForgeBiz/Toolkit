@@ -1,5 +1,3 @@
-using System;
-
 namespace ByteForge.Toolkit.CommandLine;
 /// <summary>
 /// Attribute to define a command with a name, description, and optional aliases.

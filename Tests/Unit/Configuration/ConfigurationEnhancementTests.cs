@@ -1,7 +1,6 @@
 using AwesomeAssertions;
 using ByteForge.Toolkit.Tests.Helpers;
 using ByteForge.Toolkit.Tests.Models;
-using System.Collections.Generic;
 using System.Reflection;
 
 namespace ByteForge.Toolkit.Tests.Unit.Configuration
