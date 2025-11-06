@@ -1,28 +1,26 @@
-﻿namespace ByteForge.Toolkit.Net
+namespace ByteForge.Toolkit.Net;
+/// <summary>
+/// Supported file transfer protocols.
+/// </summary>
+public enum TransferProtocol
 {
     /// <summary>
-    /// Supported file transfer protocols.
+    /// Standard FTP protocol (no encryption).
     /// </summary>
-    public enum TransferProtocol
-    {
-        /// <summary>
-        /// Standard FTP protocol (no encryption).
-        /// </summary>
-        FTP,
+    FTP,
 
-        /// <summary>
-        /// FTP with explicit TLS/SSL encryption.
-        /// </summary>
-        FTPS_Explicit,
+    /// <summary>
+    /// FTP with explicit TLS/SSL encryption.
+    /// </summary>
+    FTPS_Explicit,
 
-        /// <summary>
-        /// FTP with implicit TLS/SSL encryption.
-        /// </summary>
-        FTPS_Implicit,
+    /// <summary>
+    /// FTP with implicit TLS/SSL encryption.
+    /// </summary>
+    FTPS_Implicit,
 
-        /// <summary>
-        /// SSH File Transfer Protocol.
-        /// </summary>
-        SFTP
-    }
+    /// <summary>
+    /// SSH File Transfer Protocol.
+    /// </summary>
+    SFTP
 }
