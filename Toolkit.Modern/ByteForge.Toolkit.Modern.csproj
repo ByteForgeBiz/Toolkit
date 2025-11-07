@@ -77,20 +77,22 @@
   <!--          |___/                                   |__/                                                     -->
   <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
   <PropertyGroup>
-    <CentralLocationExists>false</CentralLocationExists>
-    <CentralLocationPath Condition="'$(CentralLocationPath)' == ''">$(MSBuildThisFileDirectory)</CentralLocationPath>
-    <CentralLocationExists Condition="Exists('$(CentralLocationPath)\ByteForge.Tasks.targets')">true</CentralLocationExists>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <ImportByteForgeTasks>false</ImportByteForgeTasks>
+    <CentralLocationPath Condition="'$(CentralLocationPath)' == ''">$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)'))</CentralLocationPath>
+    <ImportByteForgeTasks Condition="Exists('$(CentralLocationPath)..\ByteForge.Tasks.targets')">true</ImportByteForgeTasks>
     <CleanupUnusedFilesAfterBuild>false</CleanupUnusedFilesAfterBuild>
   </PropertyGroup>
   <ItemGroup>
     <AsmInfo Include="Properties\AssemblyInfo.cs" Visible="False" />
   </ItemGroup>
   <Target Name="Messages" BeforeTargets="PrepareForBuild">
+    <Message Text="MSBuildThisFileDirectory: $(MSBuildThisFileDirectory)" Importance="high" />
     <Message Text="CentralLocationPath: '$(CentralLocationPath)'" Importance="high" />
-    <Message Text="Importing ByteForge.Tasks.targets..." Importance="high" Condition="$(CentralLocationExists)" />
-    <Message Text="NOT Importing ByteForge.Tasks.targets..." Importance="high" Condition="!$(CentralLocationExists)" />
+    <Message Text="Importing ByteForge.Tasks.targets..." Importance="high" Condition="$(ImportByteForgeTasks)" />
+    <Message Text="NOT Importing ByteForge.Tasks.targets..." Importance="high" Condition="!$(ImportByteForgeTasks)" />
   </Target>
 
-  <Import Project="$(CentralLocationPath)\ByteForge.Tasks.targets" Condition="$(CentralLocationExists)" />
+  <Import Project="$(CentralLocationPath)..\ByteForge.Tasks.targets" Condition="$(ImportByteForgeTasks)" />
 
 </Project>

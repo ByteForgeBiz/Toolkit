@@ -2495,6 +2495,15 @@
             (WinSCP.exe and WinSCPnet.dll) are extracted and available alongside the executing assembly.
             </remarks>
         </member>
+        <member name="M:ByteForge.Toolkit.Core.Core.EnsureWinSCP">
+            <summary>
+            Ensures that the WinSCP executable and its .NET wrapper library are present
+            on disk next to the entry assembly, extracting them from embedded resources if required.
+            </summary>
+            <remarks>
+            Extraction occurs only when a file is missing or its checksum differs from the embedded resource.
+            </remarks>
+        </member>
         <member name="T:ByteForge.Toolkit.Core.Core.WinScpResourceManager">
             <summary>
             Manages extraction, validation (via SHA-256 checksum) and cleanup of embedded WinSCP resources.
@@ -6933,6 +6942,14 @@
             Adapter that wraps the static Log class to implement ILogger interface.
             This allows dependency injection while maintaining backward compatibility.
             </summary>
+        </member>
+        <member name="M:ByteForge.Toolkit.Logging.StaticLoggerAdapter.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="T:ByteForge.Toolkit.Logging.StaticLoggerAdapter"/> class.
+            </summary>
+            <remarks>This constructor requires the static <see cref="T:ByteForge.Toolkit.Logging.Log"/> class to be initialized prior
+            to creating an instance of <see cref="T:ByteForge.Toolkit.Logging.StaticLoggerAdapter"/>.</remarks>
+            <exception cref="T:System.InvalidOperationException">Thrown if the static <see cref="T:ByteForge.Toolkit.Logging.Log"/> class is not initialized.</exception>
         </member>
         <member name="P:ByteForge.Toolkit.Logging.StaticLoggerAdapter.Name">
             <summary>

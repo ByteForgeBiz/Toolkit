@@ -8,7 +8,6 @@ namespace ByteForge.Toolkit.Core;
 /// </remarks>
 public static partial class Core
 {
-#if NETFRAMEWORK
     /// <summary>
     /// Ensures that the WinSCP executable and its .NET wrapper library are present
     /// on disk next to the entry assembly, extracting them from embedded resources if required.
@@ -21,5 +20,4 @@ public static partial class Core
         var mgr = new WinScpResourceManager();
         mgr.EnsureWinScpFilesAvailable();
     }
-#endif
 }

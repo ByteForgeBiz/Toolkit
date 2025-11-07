@@ -4,16 +4,16 @@
   <!-- ===== KEEP ALL YOUR EXISTING INFRASTRUCTURE ===== -->
   
   <PropertyGroup>
-    <ProjectDir Condition="'$(ProjectDir)' == ''">$(MSBuildProjectDirectory)\</ProjectDir>
+    <ProjectDir Condition="'$(ProjectDir)' == ''">$(MSBuildProjectDirectory)</ProjectDir>
   </PropertyGroup>
 
   <Target Name="DisplayProjectInfo" BeforeTargets="PrepareForBuild">
+    <Error Condition="'$(CentralLocationPath)' == ''" Text="CentralLocationPath is not set! Define it to point to the central shared location." />
     <Message Text="Project Dir: '$(ProjectDir)'" Importance="high" />
   </Target>
   
   <PropertyGroup>
     <ParentDir>$([System.IO.Path]::GetFullPath('$(ProjectDir)..'))</ParentDir>
-    <CentralLocationPath Condition="'$(CentralLocationPath)' == ''">$([System.IO.Path]::GetDirectoryName('$(MSBuildThisFile)'))</CentralLocationPath>
     <CopyFiles>$([System.String]::new($(ParentDir)).EndsWith('TelecomInc').Equals(False))</CopyFiles>
     <CentralVersionFile>$(CentralLocationPath)\version.txt</CentralVersionFile>
     <CleanupUnusedFilesAfterBuild Condition="'$(CleanupUnusedFilesAfterBuild)' == ''">true</CleanupUnusedFilesAfterBuild>
@@ -25,7 +25,7 @@
     <Message Importance="high" Text="CopyFiles                    = '$(CopyFiles)'" />
     <Message Importance="high" Text="CentralVersionFile           = '$(CentralVersionFile)'" />
     <Message Importance="high" Text="CleanupUnusedFilesAfterBuild = '$(CleanupUnusedFilesAfterBuild)'" />
-    <Message Importance="high" Text="                               Non-project files will be deleted."      Condition="'$(CleanupUnusedFilesAfterBuild)' == 'true' or '$(CleanupUnusedFilesAfterBuild)' == ''"/>
+    <Message Importance="high" Text="                               Non-project files will be deleted."      Condition="'$(CleanupUnusedFilesAfterBuild)' == 'true'"/>
     <Message Importance="high" Text="                               Non-project files will NOT be deleted."  Condition="'$(CleanupUnusedFilesAfterBuild)' != 'true'"/>
     <Message Importance="high" Text="*** --------------------------- ***" />
   </Target>
@@ -51,12 +51,13 @@
       <Using Namespace="System.IO" />
       <Using Namespace="System.Linq" />
       <Using Namespace="System.Collections.Generic" />
-      <Code Type="Fragment" Language="cs"><![CDATA[
+      <Code Type="Fragment" Language="cs">
+      <![CDATA[
 try
 {
   // Initialize counters
-  int copiedCount = 0;
-  int skippedCount = 0;
+  int copiedCount = FilesCopied = 0;
+  int skippedCount = FilesSkipped = 0;
   
   // Normalize paths
   var sourcePath = Path.GetFullPath(SourcePath.TrimEnd('\\', '/'));
@@ -69,11 +70,16 @@ try
   Log.LogMessage(MessageImportance.High, $"   Source: {sourcePath}");
   Log.LogMessage(MessageImportance.High, $"   Target: {targetPath}");
   
+  if (sourcePath.Equals(targetPath, StringComparison.OrdinalIgnoreCase))
+  {
+    Log.LogMessage("⚠️ Source and Target paths are the same! Nothing to do.");
+    Success = true;
+    return true;
+  }
+  
   if (!Directory.Exists(sourcePath))
   {
     Log.LogMessage(MessageImportance.High, $"⏩ Source directory does not exist, skipping sync");
-    FilesCopied = 0;
-    FilesSkipped = 0;
     Success = true;
     return true;
   }
@@ -253,7 +259,7 @@ try
   Log.LogMessage(MessageImportance.High, $"   📁 Files copied   : {copiedCount}");
   Log.LogMessage(MessageImportance.High, $"   ⏩ Files skipped  : {skippedCount}");
   Log.LogMessage(MessageImportance.High, $"   ✅ Total evaluated: {copiedCount + skippedCount}");
-  
+
   Success = true;
 }
 catch (Exception ex)
@@ -365,16 +371,10 @@ catch (Exception ex)
     <Task>
       <Using Namespace="System" />
       <Using Namespace="System.IO" />
-      <Code Type="Fragment" Language="cs"><![CDATA[
+      <Code Type="Fragment" Language="cs">
+  <![CDATA[
 try 
 {
-  // Only process if files were actually changed
-  if (ChangesMade == 0) 
-  {
-    Log.LogMessage(MessageImportance.High, "No files were changed, skipping version update");
-    return true;
-  }
-
   var versionFileExists = File.Exists(CentralVersionFile);
   Log.LogMessage(MessageImportance.High, "Checking version file: {0}", CentralVersionFile);
                       
@@ -393,38 +393,58 @@ try
                       
   Log.LogMessage(MessageImportance.High, "Current Library Version: {0}", oldVersion);
                       
-  // Check if new files were added
-  bool newFilesAdded = NewFilesCopied > 0;
+  /*
+   * If we detect changes made to the library, we need to update the version number.
+   *
+   * The rules are as follows:
+   *
+   * 1) New files were added to the library (NewFilesCopied > 0)
+   *    - Increment Minor version, reset Patch to 0
+   *
+   * 2) Only existing files were updated (NewFilesCopied == 0)
+   *    - Increment Patch version
+   *
+   * Additionally, we need to ensure that:
+   * - Patch does not exceed 99, if it does, increment Minor and reset Patch
+   * - Minor does not exceed 99, if it does, increment Major and reset Minor and Patch
+   */
+  if (ChangesMade != 0) 
+  {
+    // Check if new files were added
+    bool newFilesAdded = NewFilesCopied > 0;
                       
-  if (newFilesAdded) 
-  {
-    Log.LogMessage(MessageImportance.High, "New files added to the library. Incrementing Minor.");
-    intMinor += 1;
-    intPatch  = 0;
-  }
-  else 
-  {
-    Log.LogMessage(MessageImportance.High, "Some files were updated. Incrementing Patch");
-    intPatch += 1;
-  }
+    if (newFilesAdded) 
+    {
+      Log.LogMessage(MessageImportance.High, "New files added to the library. Incrementing Minor.");
+      intMinor += 1;
+      intPatch  = 0;
+    }
+    else 
+    {
+      Log.LogMessage(MessageImportance.High, "Some files were updated. Incrementing Patch");
+      intPatch += 1;
+    }
       
-  // Correcting version number
-  if (intPatch > 49) 
-  {
-    Log.LogMessage(MessageImportance.High, "Patch would be 50, incrementing Minor.");
-    intMinor += 1;
-    intPatch  = 0;
-  }
+    // Correcting version number
+    if (intPatch > 99) 
+    {
+      Log.LogMessage(MessageImportance.High, "Patch would be 100, incrementing Minor.");
+      intMinor += 1;
+      intPatch  = 0;
+    }
       
-  if (intMinor > 49) 
-  {
-    Log.LogMessage(MessageImportance.High, "Minor would be 50, incrementing Major.");
-    intMajor += 1;
-    intMinor = 0;
-    intPatch = 0;
+    if (intMinor > 99) 
+    {
+      Log.LogMessage(MessageImportance.High, "Minor would be 100, incrementing Major.");
+      intMajor += 1;
+      intMinor = 0;
+      intPatch = 0;
+    }
   }
-      
-  // Updating version file
+
+  /*
+   * Regardless of whether changes were made, we always update the build date
+   */
   var newVersion = string.Format("{0}.{1}.{2}.{3:MMdd}", intMajor, intMinor, intPatch, DateTime.Now);
                       
   // Save updated version

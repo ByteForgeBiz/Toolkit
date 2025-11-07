@@ -10,7 +10,7 @@ public class FileTransferClient : IDisposable
 {
     private readonly FileTransferConfig _config;
     private Session _session;
-    private readonly SemaphoreSlim _sessionLock = new SemaphoreSlim(1, 1);
+    private readonly SemaphoreSlim _sessionLock = new(1, 1);
     private bool _disposed;
 
     /// <summary>

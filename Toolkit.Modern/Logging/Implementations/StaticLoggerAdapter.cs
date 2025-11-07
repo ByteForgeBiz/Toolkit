@@ -12,6 +12,12 @@ namespace ByteForge.Toolkit.Logging;
 /// </summary>
 internal class StaticLoggerAdapter : ILogger
 {
+    /// <summary>
+    /// Initializes a new instance of the <see cref="StaticLoggerAdapter"/> class.
+    /// </summary>
+    /// <remarks>This constructor requires the static <see cref="Logging.Log"/> class to be initialized prior
+    /// to creating an instance of <see cref="StaticLoggerAdapter"/>.</remarks>
+    /// <exception cref="InvalidOperationException">Thrown if the static <see cref="Logging.Log"/> class is not initialized.</exception>
     public StaticLoggerAdapter()
     {
         if (!Logging.Log.IsInitialized)
@@ -26,10 +32,10 @@ internal class StaticLoggerAdapter : ILogger
     /// <summary>
     /// Gets or sets the minimum log level by delegating to the static Log class.
     /// </summary>
-    public LogLevel MinLogLevel 
-    { 
-        get => Logging.Log.LogLevel; 
-        set => Logging.Log.LogLevel = value; 
+    public LogLevel MinLogLevel
+    {
+        get => Logging.Log.LogLevel;
+        set => Logging.Log.LogLevel = value;
     }
 
     /// <summary>
@@ -38,7 +44,7 @@ internal class StaticLoggerAdapter : ILogger
     /// <param name="level">The log level.</param>
     /// <param name="message">The message to log.</param>
     /// <param name="ex">Optional exception associated with the log message.</param>
-            public void Log(LogLevel level, string message, Exception? ex = null)
+    public void Log(LogLevel level, string message, Exception? ex = null)
     {
         // Delegate to the appropriate static Log method based on level
         switch (level)
@@ -89,7 +95,7 @@ internal class StaticLoggerAdapter : ILogger
     /// Logs a trace message.
     /// </summary>
     /// <param name="message">The message to log.</param>
-            public void LogTrace(string message)
+    public void LogTrace(string message)
     {
         Logging.Log.Trace(message);
     }
@@ -98,7 +104,7 @@ internal class StaticLoggerAdapter : ILogger
     /// Logs a debug message.
     /// </summary>
     /// <param name="message">The message to log.</param>
-            public void LogDebug(string message)
+    public void LogDebug(string message)
     {
         Logging.Log.Debug(message);
     }
@@ -107,7 +113,7 @@ internal class StaticLoggerAdapter : ILogger
     /// Logs a verbose message.
     /// </summary>
     /// <param name="message">The message to log.</param>
-            public void LogVerbose(string message)
+    public void LogVerbose(string message)
     {
         Logging.Log.Verbose(message);
     }
@@ -116,7 +122,7 @@ internal class StaticLoggerAdapter : ILogger
     /// Logs an informational message.
     /// </summary>
     /// <param name="message">The message to log.</param>
-            public void LogInfo(string message)
+    public void LogInfo(string message)
     {
         Logging.Log.Info(message);
     }
@@ -125,7 +131,7 @@ internal class StaticLoggerAdapter : ILogger
     /// Logs a notice message.
     /// </summary>
     /// <param name="message">The message to log.</param>
-            public void LogNotice(string message)
+    public void LogNotice(string message)
     {
         Logging.Log.Notice(message);
     }
@@ -134,7 +140,7 @@ internal class StaticLoggerAdapter : ILogger
     /// Logs a warning message.
     /// </summary>
     /// <param name="message">The message to log.</param>
-            public void LogWarning(string message)
+    public void LogWarning(string message)
     {
         Logging.Log.Warning(message);
     }
@@ -144,7 +150,7 @@ internal class StaticLoggerAdapter : ILogger
     /// </summary>
     /// <param name="message">The message to log.</param>
     /// <param name="ex">Optional exception associated with the error.</param>
-            public void LogError(string message, Exception? ex = null)
+    public void LogError(string message, Exception? ex = null)
     {
         if (ex != null)
             Logging.Log.Error(message, ex);
@@ -157,7 +163,7 @@ internal class StaticLoggerAdapter : ILogger
     /// </summary>
     /// <param name="message">The message to log.</param>
     /// <param name="ex">Optional exception associated with the critical error.</param>
-            public void LogCritical(string message, Exception? ex = null)
+    public void LogCritical(string message, Exception? ex = null)
     {
         if (ex != null)
             Logging.Log.Critical(message, ex);
@@ -170,7 +176,7 @@ internal class StaticLoggerAdapter : ILogger
     /// </summary>
     /// <param name="message">The message to log.</param>
     /// <param name="ex">Optional exception associated with the fatal error.</param>
-            public void LogFatal(string message, Exception? ex = null)
+    public void LogFatal(string message, Exception? ex = null)
     {
         if (ex != null)
             Logging.Log.Fatal(message, ex);
