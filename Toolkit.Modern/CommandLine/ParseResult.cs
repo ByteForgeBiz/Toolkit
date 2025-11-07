@@ -1,7 +1,7 @@
 using System.CommandLine;
 using System.CommandLine.Parsing;
 
-namespace ByteForge.Toolkit.CLI;
+namespace ByteForge.Toolkit.CommandLine;
 /// <summary>
 /// Represents the result of parsing command line arguments.
 /// Wraps <see cref="System.CommandLine.Parsing.ParseResult"/> and exposes its functionality.

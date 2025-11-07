@@ -2,7 +2,7 @@ using System.CommandLine;
 using System.CommandLine.Parsing;
 using System.Text;
 
-namespace ByteForge.Toolkit.CLI;
+namespace ByteForge.Toolkit.CommandLine;
 /// <summary>
 /// Provides functionality for parsing command line arguments using <see cref="System.CommandLine"/>.
 /// Supports token replacement for argument preprocessing.

@@ -1,4 +1,4 @@
-namespace ByteForge.Toolkit.CLI;
+namespace ByteForge.Toolkit.CommandLine;
 /// <summary>
 /// Represents a global command-line option that is processed before main command parsing.
 /// Global options are available across all commands and are typically used for application-wide settings.

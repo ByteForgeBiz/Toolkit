@@ -1,6 +1,6 @@
 using ByteForge.Toolkit.Utilities;
 
-namespace ByteForge.Toolkit.CLI;
+namespace ByteForge.Toolkit.CommandLine;
 /// <summary>
 /// Provides a console-based spinner animation at a fixed or dynamic position.
 /// Useful for indicating progress in console applications.

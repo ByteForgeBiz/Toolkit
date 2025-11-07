@@ -812,7 +812,7 @@
             </summary>
             <remarks>
             Similar to <see cref="T:ByteForge.Toolkit.CLI.ConsoleSpinner"/>, this class manages its own background thread and animation
-            but leverages the existing <see cref="M:ByteForge.Toolkit.Utils.ConsoleUtil.DrawProgressBar(System.Double,System.String)"/> infrastructure with indefinite 
+            but leverages the existing <see cref="M:ByteForge.Toolkit.Utilities.ConsoleUtil.DrawProgressBar(System.Double,System.String)"/> infrastructure with indefinite 
             progress (-1 percentage) to provide consistent visual feedback with the existing progress bar system.
             The spinner automatically starts when the object is created and stops when disposed.
             </remarks>
@@ -905,7 +905,7 @@
             Background thread loop for continuous spinner animation.
             </summary>
             <remarks>
-            This method runs in a background thread and continuously calls <see cref="M:ByteForge.Toolkit.Utils.ConsoleUtil.DrawProgressBar(System.Double,System.String)"/>
+            This method runs in a background thread and continuously calls <see cref="M:ByteForge.Toolkit.Utilities.ConsoleUtil.DrawProgressBar(System.Double,System.String)"/>
             with a negative percentage to create the animated spinner effect. The loop continues
             until <see cref="F:ByteForge.Toolkit.CLI.ProgressSpinner._isSpinning"/> is set to false.
             </remarks>
@@ -1576,7 +1576,7 @@
         </member>
         <member name="T:ByteForge.Toolkit.Configuration.ParsingHelper">
             <summary>
-            Provides helper methods that leverage an <see cref="T:ByteForge.Toolkit.Utils.IParser"/> to parse textual configuration
+            Provides helper methods that leverage an <see cref="T:ByteForge.Toolkit.Utilities.IParser"/> to parse textual configuration
             values and populate object instances or property values using reflection.
             This helper focuses on:
             <list type="bullet">
@@ -1592,16 +1592,16 @@
         </member>
         <member name="P:ByteForge.Toolkit.Configuration.ParsingHelper.Default">
             <summary>
-            Gets a globally accessible default instance of <see cref="T:ByteForge.Toolkit.Configuration.ParsingHelper"/> that uses <see cref="P:ByteForge.Toolkit.Utils.Parser.Default"/>.
+            Gets a globally accessible default instance of <see cref="T:ByteForge.Toolkit.Configuration.ParsingHelper"/> that uses <see cref="P:ByteForge.Toolkit.Utilities.Parser.Default"/>.
             </summary>
         </member>
-        <member name="M:ByteForge.Toolkit.Configuration.ParsingHelper.#ctor(ByteForge.Toolkit.Utils.IParser)">
+        <member name="M:ByteForge.Toolkit.Configuration.ParsingHelper.#ctor(ByteForge.Toolkit.Utilities.IParser)">
             <summary>
             Initializes a new instance of the <see cref="T:ByteForge.Toolkit.Configuration.ParsingHelper"/> class.
             </summary>
             <param name="parser">
-            The <see cref="T:ByteForge.Toolkit.Utils.IParser"/> implementation to delegate parsing operations to.
-            If <c>null</c>, <see cref="P:ByteForge.Toolkit.Utils.Parser.Default"/> is used.
+            The <see cref="T:ByteForge.Toolkit.Utilities.IParser"/> implementation to delegate parsing operations to.
+            If <c>null</c>, <see cref="P:ByteForge.Toolkit.Utilities.Parser.Default"/> is used.
             </param>
         </member>
         <member name="M:ByteForge.Toolkit.Configuration.ParsingHelper.ParseAndPopulateProperty(System.Reflection.PropertyInfo,System.Object,System.String)">
@@ -2979,13 +2979,13 @@
             Gets the converter function to transform the column value.
             </summary>
             <remarks>
-            The converter function is retrieved from the <see cref="T:ByteForge.Toolkit.Utils.ValueConverterRegistry"/> 
+            The converter function is retrieved from the <see cref="T:ByteForge.Toolkit.Utilities.ValueConverterRegistry"/> 
             using the <see cref="P:ByteForge.Toolkit.Data.DBColumnAttribute.ConverterName"/>. If no converter is found, null is returned.
             </remarks>
         </member>
         <member name="P:ByteForge.Toolkit.Data.DBColumnAttribute.ConverterName">
             <summary>
-            Gets or sets the name of the registered converter function (see <see cref="T:ByteForge.Toolkit.Utils.ValueConverterRegistry"/>) to use for transforming the column value.
+            Gets or sets the name of the registered converter function (see <see cref="T:ByteForge.Toolkit.Utilities.ValueConverterRegistry"/>) to use for transforming the column value.
             </summary>
         </member>
         <member name="P:ByteForge.Toolkit.Data.DBColumnAttribute.MaxLength">
@@ -9156,13 +9156,13 @@
             </summary>
             <param name="Number">The double value used to generate the seed.</param>
         </member>
-        <member name="T:ByteForge.Toolkit.Utils.BooleanParser">
+        <member name="T:ByteForge.Toolkit.Utilities.BooleanParser">
             <summary>
             Provides enhanced methods to parse string representations into <see cref="T:System.Boolean"/> values,
             with support for various common boolean representations beyond the standard "true" and "false".
             </summary>
             <remarks>
-            This class extends the functionality of the standard <see cref="M:System.Boolean.Parse(System.ReadOnlySpan{System.Char})"/> method
+            This class extends the functionality of the standard <see cref="M:System.Boolean.Parse(System.String)"/> method
             by recognizing a wider range of string representations for boolean values.
             <para>
             By default, the following string values are recognized:
@@ -9209,17 +9209,17 @@
             </code>
             </example>
         </member>
-        <member name="P:ByteForge.Toolkit.Utils.BooleanParser.Default">
+        <member name="P:ByteForge.Toolkit.Utilities.BooleanParser.Default">
             <summary>
-            Gets the default instance of the <see cref="T:ByteForge.Toolkit.Utils.BooleanParser"/> class.
+            Gets the default instance of the <see cref="T:ByteForge.Toolkit.Utilities.BooleanParser"/> class.
             </summary>
         </member>
-        <member name="M:ByteForge.Toolkit.Utils.BooleanParser.#ctor">
+        <member name="M:ByteForge.Toolkit.Utilities.BooleanParser.#ctor">
             <summary>
-            Initializes a new instance of the <see cref="T:ByteForge.Toolkit.Utils.BooleanParser"/> class with default true and false values.
+            Initializes a new instance of the <see cref="T:ByteForge.Toolkit.Utilities.BooleanParser"/> class with default true and false values.
             </summary>
         </member>
-        <member name="M:ByteForge.Toolkit.Utils.BooleanParser.ParseValue(System.String)">
+        <member name="M:ByteForge.Toolkit.Utilities.BooleanParser.ParseValue(System.String)">
             <summary>
             Parses the specified string into a <see cref="T:System.Boolean"/> value.
             </summary>
@@ -9252,7 +9252,7 @@
             </para>
             </remarks>
         </member>
-        <member name="M:ByteForge.Toolkit.Utils.BooleanParser.TryParseValue(System.String,System.Boolean@)">
+        <member name="M:ByteForge.Toolkit.Utilities.BooleanParser.TryParseValue(System.String,System.Boolean@)">
             <summary>
             Tries to parse the specified string into a <see cref="T:System.Boolean"/> value.
             </summary>
@@ -9271,15 +9271,15 @@
             This method is similar to <see cref="M:System.Boolean.TryParse(System.String,System.Boolean@)"/> but recognizes
             a wider range of string representations for boolean values.
             <para>
-            Unlike <see cref="M:ByteForge.Toolkit.Utils.BooleanParser.ParseValue(System.String)"/>, this method does not throw an exception when the conversion fails.
+            Unlike <see cref="M:ByteForge.Toolkit.Utilities.BooleanParser.ParseValue(System.String)"/>, this method does not throw an exception when the conversion fails.
             Instead, it returns <see langword="false" /> and sets <paramref name="result"/> to <see langword="false" />.
             </para>
             <para>
-            This method internally calls <see cref="M:ByteForge.Toolkit.Utils.BooleanParser.ParseValue(System.String)"/> and catches any exceptions that might occur.
+            This method internally calls <see cref="M:ByteForge.Toolkit.Utilities.BooleanParser.ParseValue(System.String)"/> and catches any exceptions that might occur.
             </para>
             </remarks>
         </member>
-        <member name="M:ByteForge.Toolkit.Utils.BooleanParser.AddTrueValue(System.String)">
+        <member name="M:ByteForge.Toolkit.Utilities.BooleanParser.AddTrueValue(System.String)">
             <summary>
             Registers a new string value to be recognized as true.
             </summary>
@@ -9305,7 +9305,7 @@
             </para>
             </remarks>
         </member>
-        <member name="M:ByteForge.Toolkit.Utils.BooleanParser.AddFalseValue(System.String)">
+        <member name="M:ByteForge.Toolkit.Utilities.BooleanParser.AddFalseValue(System.String)">
             <summary>
             Registers a new string value to be recognized as false.
             </summary>
@@ -9331,7 +9331,7 @@
             </para>
             </remarks>
         </member>
-        <member name="M:ByteForge.Toolkit.Utils.BooleanParser.RemoveTrueValue(System.String)">
+        <member name="M:ByteForge.Toolkit.Utilities.BooleanParser.RemoveTrueValue(System.String)">
             <summary>
             Removes a string value from the set of recognized true values.
             </summary>
@@ -9339,7 +9339,7 @@
             <returns>True if the value was removed; false if it was not present.</returns>
             <exception cref="T:System.ArgumentNullException">Thrown when the value is null.</exception>
         </member>
-        <member name="M:ByteForge.Toolkit.Utils.BooleanParser.RemoveFalseValue(System.String)">
+        <member name="M:ByteForge.Toolkit.Utilities.BooleanParser.RemoveFalseValue(System.String)">
             <summary>
             Removes a string value from the set of recognized false values.
             </summary>
@@ -9347,7 +9347,7 @@
             <returns>True if the value was removed; false if it was not present.</returns>
             <exception cref="T:System.ArgumentNullException">Thrown when the value is null.</exception>
         </member>
-        <member name="M:ByteForge.Toolkit.Utils.BooleanParser.Parse(System.String)">
+        <member name="M:ByteForge.Toolkit.Utilities.BooleanParser.Parse(System.String)">
             <summary>
             Parses the specified string into a <see cref="T:System.Boolean"/> value.
             </summary>
@@ -9362,7 +9362,7 @@
             This static method uses the default BooleanParser instance.
             </remarks>
         </member>
-        <member name="M:ByteForge.Toolkit.Utils.BooleanParser.TryParse(System.String,System.Boolean@)">
+        <member name="M:ByteForge.Toolkit.Utilities.BooleanParser.TryParse(System.String,System.Boolean@)">
             <summary>
             Tries to parse the specified string into a <see cref="T:System.Boolean"/> value.
             </summary>
@@ -9373,7 +9373,7 @@
             This static method uses the default BooleanParser instance.
             </remarks>
         </member>
-        <member name="M:ByteForge.Toolkit.Utils.BooleanParser.RegisterTrueValue(System.String)">
+        <member name="M:ByteForge.Toolkit.Utilities.BooleanParser.RegisterTrueValue(System.String)">
             <summary>
             Registers a new string value to be recognized as true.
             </summary>
@@ -9384,7 +9384,7 @@
             This static method uses the default BooleanParser instance.
             </remarks>
         </member>
-        <member name="M:ByteForge.Toolkit.Utils.BooleanParser.RegisterFalseValue(System.String)">
+        <member name="M:ByteForge.Toolkit.Utilities.BooleanParser.RegisterFalseValue(System.String)">
             <summary>
             Registers a new string value to be recognized as false.
             </summary>
@@ -9395,7 +9395,7 @@
             This static method uses the default BooleanParser instance.
             </remarks>
         </member>
-        <member name="M:ByteForge.Toolkit.Utils.BooleanParser.UnegisterTrueValue(System.String)">
+        <member name="M:ByteForge.Toolkit.Utilities.BooleanParser.UnegisterTrueValue(System.String)">
             <summary>
             Removes a string value from the set of recognized true values (static).
             </summary>
@@ -9403,7 +9403,7 @@
             <returns>True if the value was removed; false if it was not present.</returns>
             <exception cref="T:System.ArgumentNullException">Thrown when the value is null.</exception>
         </member>
-        <member name="M:ByteForge.Toolkit.Utils.BooleanParser.UnegisterFalseValue(System.String)">
+        <member name="M:ByteForge.Toolkit.Utilities.BooleanParser.UnegisterFalseValue(System.String)">
             <summary>
             Removes a string value from the set of recognized false values (static).
             </summary>
@@ -9411,18 +9411,18 @@
             <returns>True if the value was removed; false if it was not present.</returns>
             <exception cref="T:System.ArgumentNullException">Thrown when the value is null.</exception>
         </member>
-        <member name="T:ByteForge.Toolkit.Utils.ConsoleUtil">
+        <member name="T:ByteForge.Toolkit.Utilities.ConsoleUtil">
             <summary>
             Utility class for console-related functionalities.
             Provides methods for formatted console output, progress visualization, and console availability detection.
             </summary>
         </member>
-        <member name="F:ByteForge.Toolkit.Utils.ConsoleUtil._animationFrame">
+        <member name="F:ByteForge.Toolkit.Utilities.ConsoleUtil._animationFrame">
             <summary>
             Tracks the current animation frame for indeterminate progress bars.
             </summary>
         </member>
-        <member name="M:ByteForge.Toolkit.Utils.ConsoleUtil.DrawLine(System.Char,System.Int32)">
+        <member name="M:ByteForge.Toolkit.Utilities.ConsoleUtil.DrawLine(System.Char,System.Int32)">
             <summary>
             Draws a horizontal line in the console using the specified character.
             </summary>
@@ -9432,7 +9432,7 @@
             This method does nothing if the console is not available.
             </remarks>
         </member>
-        <member name="M:ByteForge.Toolkit.Utils.ConsoleUtil.CenterText(System.String)">
+        <member name="M:ByteForge.Toolkit.Utilities.ConsoleUtil.CenterText(System.String)">
             <summary>
             Centers text in the console window.
             </summary>
@@ -9442,7 +9442,7 @@
             This method does nothing if the console is not available.
             </remarks>
         </member>
-        <member name="M:ByteForge.Toolkit.Utils.ConsoleUtil.RightAlignText(System.String)">
+        <member name="M:ByteForge.Toolkit.Utilities.ConsoleUtil.RightAlignText(System.String)">
             <summary>
             Right-aligns text in the console window.
             </summary>
@@ -9452,7 +9452,7 @@
             This method does nothing if the console is not available.
             </remarks>
         </member>
-        <member name="M:ByteForge.Toolkit.Utils.ConsoleUtil.DrawProgressBar(System.Double,System.String)">
+        <member name="M:ByteForge.Toolkit.Utilities.ConsoleUtil.DrawProgressBar(System.Double,System.String)">
             <summary>
             Draws a progress bar on the console.
             </summary>
@@ -9470,7 +9470,7 @@
             It would require capturing and validating console output, which is not practical in a unit test environment.
             </testing>
         </member>
-        <member name="M:ByteForge.Toolkit.Utils.ConsoleUtil.BuildProgressBar(System.Double@,System.String,System.Int32)">
+        <member name="M:ByteForge.Toolkit.Utilities.ConsoleUtil.BuildProgressBar(System.Double@,System.String,System.Int32)">
             <summary>
             Builds a determinate progress bar string based on the given percentage.
             </summary>
@@ -9479,7 +9479,7 @@
             <param name="wdt">Width of the progress bar in characters.</param>
             <returns>A formatted string representing the progress bar.</returns>
         </member>
-        <member name="M:ByteForge.Toolkit.Utils.ConsoleUtil.BuildIndeterminateProgressBar(System.String,System.Int32)">
+        <member name="M:ByteForge.Toolkit.Utilities.ConsoleUtil.BuildIndeterminateProgressBar(System.String,System.Int32)">
             <summary>
             Builds an indeterminate progress bar string with an animated block.
             </summary>
@@ -9487,7 +9487,7 @@
             <param name="wdt">Width of the progress bar in characters.</param>
             <returns>A formatted string representing the animated progress bar.</returns>
         </member>
-        <member name="P:ByteForge.Toolkit.Utils.ConsoleUtil.IsConsoleAvailable">
+        <member name="P:ByteForge.Toolkit.Utilities.ConsoleUtil.IsConsoleAvailable">
             <summary>
             Gets a value indicating whether the console is available for input and output operations.
             </summary>
@@ -9500,7 +9500,7 @@
             context  (e.g., a GUI application) or when output streams are redirected.
             </remarks>
         </member>
-        <member name="M:ByteForge.Toolkit.Utils.ConsoleUtil.GetConsoleWindow">
+        <member name="M:ByteForge.Toolkit.Utilities.ConsoleUtil.GetConsoleWindow">
             <summary>
             Retrieves the handle to the console window associated with the calling process.
             </summary>
@@ -9510,7 +9510,7 @@
             It is only supported on Windows operating systems.
             </remarks>
         </member>
-        <member name="T:ByteForge.Toolkit.Utils.DateTimeParser">
+        <member name="T:ByteForge.Toolkit.Utilities.DateTimeParser">
             <summary>
             Provides methods to parse date and time strings into <see cref="T:System.DateTime"/> objects.
             </summary>
@@ -9524,17 +9524,17 @@
             </para>
             </remarks>
         </member>
-        <member name="P:ByteForge.Toolkit.Utils.DateTimeParser.Default">
+        <member name="P:ByteForge.Toolkit.Utilities.DateTimeParser.Default">
             <summary>
-            Gets the default instance of the <see cref="T:ByteForge.Toolkit.Utils.DateTimeParser"/> class.
+            Gets the default instance of the <see cref="T:ByteForge.Toolkit.Utilities.DateTimeParser"/> class.
             </summary>
         </member>
-        <member name="M:ByteForge.Toolkit.Utils.DateTimeParser.#ctor">
+        <member name="M:ByteForge.Toolkit.Utilities.DateTimeParser.#ctor">
             <summary>
-            Initializes a new instance of the <see cref="T:ByteForge.Toolkit.Utils.DateTimeParser"/> class.
+            Initializes a new instance of the <see cref="T:ByteForge.Toolkit.Utilities.DateTimeParser"/> class.
             </summary>
         </member>
-        <member name="M:ByteForge.Toolkit.Utils.DateTimeParser.ParseValue(System.String)">
+        <member name="M:ByteForge.Toolkit.Utilities.DateTimeParser.ParseValue(System.String)">
             <summary>
             Parses the specified date and time string into a <see cref="T:System.DateTime"/> object.
             </summary>
@@ -9543,7 +9543,7 @@
             <exception cref="T:System.ArgumentNullException">Thrown when the input string is null or empty.</exception>
             <exception cref="T:System.FormatException">Thrown when the input string cannot be parsed into a valid <see cref="T:System.DateTime"/>.</exception>
         </member>
-        <member name="M:ByteForge.Toolkit.Utils.DateTimeParser.ParseValue(System.String,System.IFormatProvider)">
+        <member name="M:ByteForge.Toolkit.Utilities.DateTimeParser.ParseValue(System.String,System.IFormatProvider)">
             <summary>
             Parses the specified date and time string into a <see cref="T:System.DateTime"/> object.
             </summary>
@@ -9553,7 +9553,7 @@
             <exception cref="T:System.ArgumentNullException">Thrown when the input string is null or empty.</exception>
             <exception cref="T:System.FormatException">Thrown when the input string cannot be parsed into a valid <see cref="T:System.DateTime"/>.</exception>
         </member>
-        <member name="M:ByteForge.Toolkit.Utils.DateTimeParser.TryParseValue(System.String,System.DateTime@)">
+        <member name="M:ByteForge.Toolkit.Utilities.DateTimeParser.TryParseValue(System.String,System.DateTime@)">
             <summary>
             Tries to parse the specified date and time string into a <see cref="T:System.DateTime"/> object.
             </summary>
@@ -9561,7 +9561,7 @@
             <param name="result">When this method returns, contains the <see cref="T:System.DateTime"/> value equivalent to the date and time contained in <paramref name="input"/>, if the conversion succeeded, or <see cref="F:System.DateTime.MinValue"/> if the conversion failed. The conversion fails if the <paramref name="input"/> parameter is null or an empty string, or does not contain a valid string representation of a date and time. This parameter is passed uninitialized.</param>
             <returns><see langword="true" /> if the <paramref name="input"/> parameter was converted successfully; otherwise, <see langword="false" />.</returns>
         </member>
-        <member name="M:ByteForge.Toolkit.Utils.DateTimeParser.TryParseValue(System.String,System.IFormatProvider,System.DateTime@)">
+        <member name="M:ByteForge.Toolkit.Utilities.DateTimeParser.TryParseValue(System.String,System.IFormatProvider,System.DateTime@)">
             <summary>
             Tries to parse the specified date and time string into a <see cref="T:System.DateTime"/> object.
             </summary>
@@ -9570,12 +9570,12 @@
             <param name="result">When this method returns, contains the <see cref="T:System.DateTime"/> value equivalent to the date and time contained in <paramref name="input"/>, if the conversion succeeded, or <see cref="F:System.DateTime.MinValue"/> if the conversion failed. The conversion fails if the <paramref name="input"/> parameter is null or an empty string, or does not contain a valid string representation of a date and time. This parameter is passed uninitialized.</param>
             <returns><see langword="true" /> if the <paramref name="input"/> parameter was converted successfully; otherwise, <see langword="false" />.</returns>
         </member>
-        <member name="M:ByteForge.Toolkit.Utils.DateTimeParser.ClearFormatCache">
+        <member name="M:ByteForge.Toolkit.Utilities.DateTimeParser.ClearFormatCache">
             <summary>
             Clears the cache of successful formats.
             </summary>
         </member>
-        <member name="M:ByteForge.Toolkit.Utils.DateTimeParser.TryParseWithCulture(System.String,System.String,System.IFormatProvider,System.DateTime@)">
+        <member name="M:ByteForge.Toolkit.Utilities.DateTimeParser.TryParseWithCulture(System.String,System.String,System.IFormatProvider,System.DateTime@)">
             <summary>
             Tries to parse the specified date and time string using the given format and culture information.
             </summary>
@@ -9585,28 +9585,28 @@
             <param name="result">When this method returns, contains the <see cref="T:System.DateTime"/> value equivalent to the date and time contained in <paramref name="input"/>, if the conversion succeeded, or <see cref="F:System.DateTime.MinValue"/> if the conversion failed. This parameter is passed uninitialized.</param>
             <returns><see langword="true" /> if the <paramref name="input"/> parameter was converted successfully; otherwise, <see langword="false" />.</returns>
         </member>
-        <member name="M:ByteForge.Toolkit.Utils.DateTimeParser.CleanInput(System.String)">
+        <member name="M:ByteForge.Toolkit.Utilities.DateTimeParser.CleanInput(System.String)">
             <summary>
             Cleans the input string by removing timezone abbreviations and extra spaces.
             </summary>
             <param name="input">The input string to clean.</param>
             <returns>The cleaned input string.</returns>
         </member>
-        <member name="M:ByteForge.Toolkit.Utils.DateTimeParser.GetPatternKey(System.String)">
+        <member name="M:ByteForge.Toolkit.Utilities.DateTimeParser.GetPatternKey(System.String)">
             <summary>
             Generates a pattern key based on the input format.
             </summary>
             <param name="input">The input string to generate the pattern key for.</param>
             <returns>The generated pattern key.</returns>
         </member>
-        <member name="M:ByteForge.Toolkit.Utils.DateTimeParser.GenerateFormatCombinations(System.String)">
+        <member name="M:ByteForge.Toolkit.Utilities.DateTimeParser.GenerateFormatCombinations(System.String)">
             <summary>
             Generates all possible format combinations based on the input string.
             </summary>
             <param name="input">The input string to generate format combinations for.</param>
             <returns>An enumerable of format combinations.</returns>
         </member>
-        <member name="M:ByteForge.Toolkit.Utils.DateTimeParser.Parse(System.String)">
+        <member name="M:ByteForge.Toolkit.Utilities.DateTimeParser.Parse(System.String)">
             <summary>
             Parses the specified date and time string into a <see cref="T:System.DateTime"/> object.
             </summary>
@@ -9615,7 +9615,7 @@
             <exception cref="T:System.ArgumentNullException">Thrown when the input string is null or empty.</exception>
             <exception cref="T:System.FormatException">Thrown when the input string cannot be parsed into a valid <see cref="T:System.DateTime"/>.</exception>
         </member>
-        <member name="M:ByteForge.Toolkit.Utils.DateTimeParser.Parse(System.String,System.IFormatProvider)">
+        <member name="M:ByteForge.Toolkit.Utilities.DateTimeParser.Parse(System.String,System.IFormatProvider)">
             <summary>
             Parses the specified date and time string into a <see cref="T:System.DateTime"/> object.
             </summary>
@@ -9625,7 +9625,7 @@
             <exception cref="T:System.ArgumentNullException">Thrown when the input string is null or empty.</exception>
             <exception cref="T:System.FormatException">Thrown when the input string cannot be parsed into a valid <see cref="T:System.DateTime"/>.</exception>
         </member>
-        <member name="M:ByteForge.Toolkit.Utils.DateTimeParser.TryParse(System.String,System.DateTime@)">
+        <member name="M:ByteForge.Toolkit.Utilities.DateTimeParser.TryParse(System.String,System.DateTime@)">
             <summary>
             Tries to parse the specified date and time string into a <see cref="T:System.DateTime"/> object.
             </summary>
@@ -9633,7 +9633,7 @@
             <param name="result">When this method returns, contains the <see cref="T:System.DateTime"/> value equivalent to the date and time contained in <paramref name="input"/>, if the conversion succeeded, or <see cref="F:System.DateTime.MinValue"/> if the conversion failed. The conversion fails if the <paramref name="input"/> parameter is null or an empty string, or does not contain a valid string representation of a date and time. This parameter is passed uninitialized.</param>
             <returns><see langword="true" /> if the <paramref name="input"/> parameter was converted successfully; otherwise, <see langword="false" />.</returns>
         </member>
-        <member name="M:ByteForge.Toolkit.Utils.DateTimeParser.TryParse(System.String,System.IFormatProvider,System.DateTime@)">
+        <member name="M:ByteForge.Toolkit.Utilities.DateTimeParser.TryParse(System.String,System.IFormatProvider,System.DateTime@)">
             <summary>
             Tries to parse the specified date and time string into a <see cref="T:System.DateTime"/> object.
             </summary>
@@ -9642,22 +9642,22 @@
             <param name="result">When this method returns, contains the <see cref="T:System.DateTime"/> value equivalent to the date and time contained in <paramref name="input"/>, if the conversion succeeded, or <see cref="F:System.DateTime.MinValue"/> if the conversion failed. The conversion fails if the <paramref name="input"/> parameter is null or an empty string, or does not contain a valid string representation of a date and time. This parameter is passed uninitialized.</param>
             <returns><see langword="true" /> if the <paramref name="input"/> parameter was converted successfully; otherwise, <see langword="false" />.</returns>
         </member>
-        <member name="M:ByteForge.Toolkit.Utils.DateTimeParser.ClearCache">
+        <member name="M:ByteForge.Toolkit.Utilities.DateTimeParser.ClearCache">
             <summary>
             Clears the cache of successful formats in the default instance.
             </summary>
         </member>
-        <member name="T:ByteForge.Toolkit.Utils.DateTimeUtil">
+        <member name="T:ByteForge.Toolkit.Utilities.DateTimeUtil">
             <summary>
             Provides utility methods for working with <see cref="T:System.DateTime"/> and time zone conversions.
             </summary>
         </member>
-        <member name="F:ByteForge.Toolkit.Utils.DateTimeUtil.UnixEpoch">
+        <member name="F:ByteForge.Toolkit.Utilities.DateTimeUtil.UnixEpoch">
             <summary>
             The Unix epoch (January 1, 1970, UTC).
             </summary>
         </member>
-        <member name="M:ByteForge.Toolkit.Utils.DateTimeUtil.FromUnixTime(System.Double)">
+        <member name="M:ByteForge.Toolkit.Utilities.DateTimeUtil.FromUnixTime(System.Double)">
             <summary>
             Converts a Unix timestamp (seconds since Unix epoch) to a <see cref="T:System.DateTime"/> in UTC.
             </summary>
@@ -9666,7 +9666,7 @@
             A <see cref="T:System.DateTime"/> representing the specified Unix time in UTC.
             </returns>
         </member>
-        <member name="M:ByteForge.Toolkit.Utils.DateTimeUtil.FromUnixTimeMilliseconds(System.Double)">
+        <member name="M:ByteForge.Toolkit.Utilities.DateTimeUtil.FromUnixTimeMilliseconds(System.Double)">
             <summary>
             Converts a Unix timestamp in milliseconds since the Unix epoch to a <see cref="T:System.DateTime"/> in UTC.
             </summary>
@@ -9675,28 +9675,28 @@
             A <see cref="T:System.DateTime"/> representing the specified Unix time in UTC.
             </returns>
         </member>
-        <member name="M:ByteForge.Toolkit.Utils.DateTimeUtil.ToUnixTime(System.DateTime)">
+        <member name="M:ByteForge.Toolkit.Utilities.DateTimeUtil.ToUnixTime(System.DateTime)">
             <summary>
             Converts a <see cref="T:System.DateTime"/> to a Unix timestamp (seconds since Unix epoch).
             </summary>
             <param name="dateTime">The <see cref="T:System.DateTime"/> to convert. If not UTC, it will be treated as UTC.</param>
             <returns>The Unix timestamp in seconds.</returns>
         </member>
-        <member name="M:ByteForge.Toolkit.Utils.DateTimeUtil.ToUnixTimeMilliseconds(System.DateTime)">
+        <member name="M:ByteForge.Toolkit.Utilities.DateTimeUtil.ToUnixTimeMilliseconds(System.DateTime)">
             <summary>
             Converts a <see cref="T:System.DateTime"/> to a Unix timestamp in milliseconds since the Unix epoch.
             </summary>
             <param name="dateTime">The <see cref="T:System.DateTime"/> to convert. If not UTC, it will be treated as UTC.</param>
             <returns>The Unix timestamp in milliseconds.</returns>
         </member>
-        <member name="M:ByteForge.Toolkit.Utils.DateTimeUtil.AssureUtc(System.DateTime)">
+        <member name="M:ByteForge.Toolkit.Utilities.DateTimeUtil.AssureUtc(System.DateTime)">
             <summary>
             Assures the provided <see cref="T:System.DateTime"/> is in UTC. If not, converts it to UTC.
             </summary>
             <param name="dateTime">The <see cref="T:System.DateTime"/> to check and convert if necessary.</param>
             <returns>The <see cref="T:System.DateTime"/> in UTC.</returns>
         </member>
-        <member name="M:ByteForge.Toolkit.Utils.DateTimeUtil.HasTimeComponent(System.DateTime)">
+        <member name="M:ByteForge.Toolkit.Utilities.DateTimeUtil.HasTimeComponent(System.DateTime)">
             <summary>
             Determines whether the specified <see cref="T:System.DateTime"/> instance includes a time component other than midnight.
             </summary>
@@ -9705,17 +9705,17 @@
             <see langword="true"/> if the <paramref name="dateTime"/> has a time component other than midnight; otherwise, <see langword="false"/>.
             </returns>
         </member>
-        <member name="F:ByteForge.Toolkit.Utils.DateTimeUtil.TimeZoneAbbreviations">
+        <member name="F:ByteForge.Toolkit.Utilities.DateTimeUtil.TimeZoneAbbreviations">
             <summary>
             Maps time zone abbreviations and offsets to Windows TimeZone IDs.
             </summary>
         </member>
-        <member name="F:ByteForge.Toolkit.Utils.DateTimeUtil.IanaToWindowsTimeZone">
+        <member name="F:ByteForge.Toolkit.Utilities.DateTimeUtil.IanaToWindowsTimeZone">
             <summary>
             Maps IANA timezone codes to Windows TimeZone IDs.
             </summary>
         </member>
-        <member name="M:ByteForge.Toolkit.Utils.DateTimeUtil.ToTimeZone(System.DateTime,System.TimeZoneInfo)">
+        <member name="M:ByteForge.Toolkit.Utilities.DateTimeUtil.ToTimeZone(System.DateTime,System.TimeZoneInfo)">
             <summary>
             Converts the <see cref="T:System.DateTime"/> to the specified time zone.
             </summary>
@@ -9727,7 +9727,7 @@
             <exception cref="T:System.ArgumentNullException">Thrown if <paramref name="destinationTimeZone"/> is <c>null</c>.</exception>
             <exception cref="T:System.ArgumentException">Thrown if <paramref name="dateTime"/> has an invalid <see cref="T:System.DateTimeKind"/>.</exception>
         </member>
-        <member name="M:ByteForge.Toolkit.Utils.DateTimeUtil.ToTimeZone(System.DateTime,System.String)">
+        <member name="M:ByteForge.Toolkit.Utilities.DateTimeUtil.ToTimeZone(System.DateTime,System.String)">
             <summary>
             Converts the <see cref="T:System.DateTime"/> to the specified time zone using a time zone ID or common abbreviation.
             </summary>
@@ -9741,36 +9741,36 @@
             <exception cref="T:System.ArgumentException">Thrown if <paramref name="destinationTimeZoneId"/> is null or empty.</exception>
             <exception cref="T:System.TimeZoneNotFoundException">Thrown if the time zone ID is not found.</exception>
         </member>
-        <member name="T:ByteForge.Toolkit.Utils.EnumExtensions">
+        <member name="T:ByteForge.Toolkit.Utilities.EnumExtensions">
             <summary>
             Provides extension methods for enumerations.
             </summary>
         </member>
-        <member name="M:ByteForge.Toolkit.Utils.EnumExtensions.GetDescription(System.Enum)">
+        <member name="M:ByteForge.Toolkit.Utilities.EnumExtensions.GetDescription(System.Enum)">
             <summary>
             Gets the description attribute of an enum value.
             </summary>
             <param name="value">The enum value.</param>
             <returns>The description of the enum value, or the enum value as a string if no description is found.</returns>
         </member>
-        <member name="T:ByteForge.Toolkit.Utils.HtmlUtil">
+        <member name="T:ByteForge.Toolkit.Utilities.HtmlUtil">
             <summary>
             Utility methods for HTML and CSS processing.
             </summary>
         </member>
-        <member name="M:ByteForge.Toolkit.Utils.HtmlUtil.MinifyCSS(System.String)">
+        <member name="M:ByteForge.Toolkit.Utilities.HtmlUtil.MinifyCSS(System.String)">
             <summary>
             Minifies a CSS string by removing comments, whitespace, and line breaks.
             </summary>
             <param name="css">The CSS string to minify.</param>
             <returns>The minified CSS string, or <see langword="null"/> if input is <see langword="null"/>.</returns>
         </member>
-        <member name="T:ByteForge.Toolkit.Utils.IOUtils">
+        <member name="T:ByteForge.Toolkit.Utilities.IOUtils">
             <summary>
             Provides utility methods for IO operations.
             </summary>
         </member>
-        <member name="M:ByteForge.Toolkit.Utils.IOUtils.GetFiles(System.String,System.String,System.IO.SearchOption)">
+        <member name="M:ByteForge.Toolkit.Utilities.IOUtils.GetFiles(System.String,System.String,System.IO.SearchOption)">
             <summary>
             Gets the files from the specified path that match the search pattern.
             </summary>
@@ -9779,7 +9779,7 @@
             <param name="searchOption">Specifies whether to search the current directory, or the current directory and all subdirectories. The default is <see cref="F:System.IO.SearchOption.TopDirectoryOnly"/>.</param>
             <returns>An array of the full names (including paths) for the files in the specified directory that match the search pattern.</returns>
         </member>
-        <member name="M:ByteForge.Toolkit.Utils.IOUtils.GetFileInfos(System.String,System.String,System.IO.SearchOption)">
+        <member name="M:ByteForge.Toolkit.Utilities.IOUtils.GetFileInfos(System.String,System.String,System.IO.SearchOption)">
             <summary>
             Retrieves an array of <see cref="T:System.IO.FileInfo"/> objects that match the specified search pattern in the given directory.
             </summary>
@@ -9799,7 +9799,7 @@
             extension.
             </remarks>
         </member>
-        <member name="M:ByteForge.Toolkit.Utils.IOUtils.GetUniversalPath(System.String)">
+        <member name="M:ByteForge.Toolkit.Utilities.IOUtils.GetUniversalPath(System.String)">
             <summary>
             Gets the universal path for the specified path.
             </summary>
@@ -9807,7 +9807,7 @@
             <returns>The universal path.</returns>
             <exception cref="T:System.Exception">Thrown when there is an error resolving the path.</exception>
         </member>
-        <member name="M:ByteForge.Toolkit.Utils.IOUtils.WNetGetConnection(System.String,System.Text.StringBuilder,System.Int32@)">
+        <member name="M:ByteForge.Toolkit.Utilities.IOUtils.WNetGetConnection(System.String,System.Text.StringBuilder,System.Int32@)">
             <summary>
             Retrieves the UNC (Universal Naming Convention) path for a mapped network drive.
             </summary>
@@ -9816,19 +9816,19 @@
             <param name="length">The length of the remoteName buffer.</param>
             <returns>0 if the function succeeds, otherwise an error code.</returns>
         </member>
-        <member name="T:ByteForge.Toolkit.Utils.IParser">
+        <member name="T:ByteForge.Toolkit.Utilities.IParser">
             <summary>
             Defines methods for parsing string values into various data types.
             </summary>
         </member>
-        <member name="M:ByteForge.Toolkit.Utils.IParser.IsKnownType(System.Type)">
+        <member name="M:ByteForge.Toolkit.Utilities.IParser.IsKnownType(System.Type)">
             <summary>
             Determines whether the parser can handle the specified type.
             </summary>
             <param name="type">The type to check.</param>
             <returns><see langword="true"/> if the parser can handle the specified type; otherwise, <see langword="false"/>.</returns>
         </member>
-        <member name="M:ByteForge.Toolkit.Utils.IParser.RegisterType(System.Type,System.Func{System.String,System.Object},System.Func{System.Object,System.String})">
+        <member name="M:ByteForge.Toolkit.Utilities.IParser.RegisterType(System.Type,System.Func{System.String,System.Object},System.Func{System.Object,System.String})">
             <summary>
             Registers a custom type with its corresponding parser and stringifier functions.
             </summary>
@@ -9836,7 +9836,7 @@
             <param name="parser">A function that converts a string to the specified type.</param>
             <param name="stringfier">A function that converts an object of the specified type to a string.</param>
         </member>
-        <member name="M:ByteForge.Toolkit.Utils.IParser.Parse(System.Type,System.String)">
+        <member name="M:ByteForge.Toolkit.Utilities.IParser.Parse(System.Type,System.String)">
             <summary>
             Parses a string value into an object of the specified type.
             </summary>
@@ -9846,7 +9846,7 @@
             <exception cref="T:System.ArgumentException">Thrown when the parser cannot handle the specified type.</exception>
             <exception cref="T:System.FormatException">Thrown when the string value is not in a correct format for the target type.</exception>
         </member>
-        <member name="M:ByteForge.Toolkit.Utils.IParser.TryParse(System.Type,System.String,System.Object@)">
+        <member name="M:ByteForge.Toolkit.Utilities.IParser.TryParse(System.Type,System.String,System.Object@)">
             <summary>
             Attempts to parse a string value into an object of the specified type.
             </summary>
@@ -9855,7 +9855,7 @@
             <param name="result">When this method returns, contains the parsed object if parsing succeeded, or the default value if parsing failed.</param>
             <returns><see langword="true"/> if the value was successfully parsed; otherwise, <see langword="false"/>.</returns>
         </member>
-        <member name="M:ByteForge.Toolkit.Utils.IParser.Parse``1(System.String)">
+        <member name="M:ByteForge.Toolkit.Utilities.IParser.Parse``1(System.String)">
             <summary>
             Parses a string value into an object of type <typeparamref name="T"/>.
             </summary>
@@ -9865,7 +9865,7 @@
             <exception cref="T:System.ArgumentException">Thrown when the parser cannot handle the specified type.</exception>
             <exception cref="T:System.FormatException">Thrown when the string value is not in a correct format for the target type.</exception>
         </member>
-        <member name="M:ByteForge.Toolkit.Utils.IParser.TryParse``1(System.String,``0@)">
+        <member name="M:ByteForge.Toolkit.Utilities.IParser.TryParse``1(System.String,``0@)">
             <summary>
             Attempts to parse a string value into an object of type <typeparamref name="T"/>.
             </summary>
@@ -9874,7 +9874,7 @@
             <param name="result">When this method returns, contains the parsed object if parsing succeeded, or the default value if parsing failed.</param>
             <returns><see langword="true"/> if the value was successfully parsed; otherwise, <see langword="false"/>.</returns>
         </member>
-        <member name="M:ByteForge.Toolkit.Utils.IParser.Stringify(System.Type,System.Object)">
+        <member name="M:ByteForge.Toolkit.Utilities.IParser.Stringify(System.Type,System.Object)">
             <summary>
             Converts an object to its string representation based on the specified type.
             </summary>
@@ -9882,7 +9882,7 @@
             <param name="value">The object to convert to a string.</param>
             <returns>The string representation of the object.</returns>
         </member>
-        <member name="M:ByteForge.Toolkit.Utils.IParser.Stringify``1(System.Object)">
+        <member name="M:ByteForge.Toolkit.Utilities.IParser.Stringify``1(System.Object)">
             <summary>
             Converts an object of type <typeparamref name="T"/> to its string representation.
             </summary>
@@ -9890,7 +9890,7 @@
             <param name="value">The object to convert to a string.</param>
             <returns>The string representation of the object.</returns>
         </member>
-        <member name="T:ByteForge.Toolkit.Utils.NameUtil">
+        <member name="T:ByteForge.Toolkit.Utilities.NameUtil">
             <summary>
             Provides helper methods for normalizing and capitalizing personal names while
             respecting linguistic particles (e.g. "de", "van"), cultural prefixes (e.g. "Mc", "Mac", "O'"),
@@ -9898,8 +9898,8 @@
             </summary>
             <remarks>
             Rules implemented:<br/>
-            - Particles in <see cref="F:ByteForge.Toolkit.Utils.NameUtil.LowercaseParticles"/> remain lowercase unless they are the first token.<br/>
-            - Special prefixes in <see cref="F:ByteForge.Toolkit.Utils.NameUtil.SpecialPrefixes"/> are normalized to their canonical casing.<br/>
+            - Particles in <see cref="F:ByteForge.Toolkit.Utilities.NameUtil.LowercaseParticles"/> remain lowercase unless they are the first token.<br/>
+            - Special prefixes in <see cref="F:ByteForge.Toolkit.Utilities.NameUtil.SpecialPrefixes"/> are normalized to their canonical casing.<br/>
             - Prefixes "Mc"/"Mac" attempt intelligent second-letter capitalization with exception handling.<br/>
             - Hyphenated components are capitalized individually.<br/>
             - Handles apostrophe-based prefixes like "O'" and "D'".<br/>
@@ -9915,7 +9915,7 @@
             </code>
             </example>
         </member>
-        <member name="F:ByteForge.Toolkit.Utils.NameUtil.LowercaseParticles">
+        <member name="F:ByteForge.Toolkit.Utilities.NameUtil.LowercaseParticles">
             <summary>
             Particles that should remain lowercase unless they are the first component in the name.
             </summary>
@@ -9924,7 +9924,7 @@
             Case-insensitive lookup.
             </remarks>
         </member>
-        <member name="F:ByteForge.Toolkit.Utils.NameUtil.SpecialPrefixes">
+        <member name="F:ByteForge.Toolkit.Utilities.NameUtil.SpecialPrefixes">
             <summary>
             Known special-case prefixes and their canonical capitalization.
             </summary>
@@ -9933,7 +9933,7 @@
             logic iterates all entries. Case-insensitive keys.
             </remarks>
         </member>
-        <member name="M:ByteForge.Toolkit.Utils.NameUtil.CapitalizeName(System.String)">
+        <member name="M:ByteForge.Toolkit.Utilities.NameUtil.CapitalizeName(System.String)">
             <summary>
             Capitalizes a single or multi-part name string with culturally-aware rules.
             </summary>
@@ -9943,10 +9943,10 @@
             This method:
             - Trims leading/trailing whitespace.
             - Collapses multiple internal spaces.
-            - Processes each token with <see cref="M:ByteForge.Toolkit.Utils.NameUtil.CapitalizeNamePart(System.String,System.Boolean)"/>
+            - Processes each token with <see cref="M:ByteForge.Toolkit.Utilities.NameUtil.CapitalizeNamePart(System.String,System.Boolean)"/>
             </remarks>
         </member>
-        <member name="M:ByteForge.Toolkit.Utils.NameUtil.CapitalizeNamePart(System.String,System.Boolean)">
+        <member name="M:ByteForge.Toolkit.Utilities.NameUtil.CapitalizeNamePart(System.String,System.Boolean)">
             <summary>
             Capitalizes an individual name component applying particle, prefix, and hyphen rules.
             </summary>
@@ -9954,14 +9954,14 @@
             <param name="isFirstPart">True if this part is the first token in the full name.</param>
             <returns>Capitalized component according to rules.</returns>
         </member>
-        <member name="M:ByteForge.Toolkit.Utils.NameUtil.CapitalizeSimplePart(System.String)">
+        <member name="M:ByteForge.Toolkit.Utilities.NameUtil.CapitalizeSimplePart(System.String)">
             <summary>
             Capitalizes a simple, non-hyphenated token (first letter uppercase, remainder lowercase).
             </summary>
             <param name="part">The token to transform.</param>
             <returns>Capitalized token, or original if null/empty.</returns>
         </member>
-        <member name="M:ByteForge.Toolkit.Utils.NameUtil.IsCommonMcMacException(System.String)">
+        <member name="M:ByteForge.Toolkit.Utilities.NameUtil.IsCommonMcMacException(System.String)">
             <summary>
             Determines whether the remainder after a "Mc"/"Mac" prefix matches a known lowercase exception pattern.
             </summary>
@@ -9971,35 +9971,35 @@
             not capitalize the first letter after the prefix; otherwise false.
             </returns>
         </member>
-        <member name="M:ByteForge.Toolkit.Utils.NameUtil.CapitalizeFullName(System.String)">
+        <member name="M:ByteForge.Toolkit.Utilities.NameUtil.CapitalizeFullName(System.String)">
             <summary>
             Capitalizes a full name which may include comma-delimited segments (e.g. "Last, First Middle").
             </summary>
             <param name="fullName">Raw full name string.</param>
             <returns>Fully capitalized name or original if null/whitespace.</returns>
             <remarks>
-            If a comma is present, each comma-separated segment is individually processed with <see cref="M:ByteForge.Toolkit.Utils.NameUtil.CapitalizeName(System.String)"/>.
+            If a comma is present, each comma-separated segment is individually processed with <see cref="M:ByteForge.Toolkit.Utilities.NameUtil.CapitalizeName(System.String)"/>.
             This allows correct handling of formats like: "Smith, john de la".
             </remarks>
         </member>
-        <member name="M:ByteForge.Toolkit.Utils.NameUtil.NormalizeUserName(System.String)">
+        <member name="M:ByteForge.Toolkit.Utilities.NameUtil.NormalizeUserName(System.String)">
             <summary>
             Normalizes a user name by trimming whitespace, converting to lowercase, and removing domain information.
             </summary>
             <param name="name">The user name to normalize. This can include domain information (e.g., "DOMAIN\username" or "username@domain.com").</param>
             <returns>The normalized user name, which is the input string converted to lowercase, with leading and trailing whitespace removed, and any domain information stripped. If <paramref name="name"/> is <see langword="null"/> or empty, the method returns the input as is.</returns>
         </member>
-        <member name="T:ByteForge.Toolkit.Utils.Parser">
+        <member name="T:ByteForge.Toolkit.Utilities.Parser">
             <summary>
             Provides methods for parsing strings into various types and converting objects back to string representations.
             </summary>
             <remarks>
-            The <see cref="T:ByteForge.Toolkit.Utils.Parser"/> offers:
+            The <see cref="T:ByteForge.Toolkit.Utilities.Parser"/> offers:
             <list type="bullet">
             <item><description>Built-in support for primitive types, common framework types (e.g., <see cref="T:System.DateTime"/>, <see cref="T:System.Guid"/>, <see cref="T:System.Uri"/>), and arrays of primitive characters and bytes.</description></item>
             <item><description>Enum support via <see cref="M:System.Enum.Parse(System.Type,System.String)"/>.</description></item>
             <item><description>Fallback to JSON (de)serialization (Newtonsoft.Json) for unknown types.</description></item>
-            <item><description>Custom extensibility using <see cref="M:ByteForge.Toolkit.Utils.Parser.RegisterType(System.Type,System.Func{System.String,System.Object},System.Func{System.Object,System.String})"/>.</description></item>
+            <item><description>Custom extensibility using <see cref="M:ByteForge.Toolkit.Utilities.Parser.RegisterType(System.Type,System.Func{System.String,System.Object},System.Func{System.Object,System.String})"/>.</description></item>
             </list>
             <para>
             Thread Safety: The instance is not thread-safe regarding type registration. If registration and parsing
@@ -10008,12 +10008,12 @@
             </para>
             </remarks>
         </member>
-        <member name="F:ByteForge.Toolkit.Utils.Parser._default">
+        <member name="F:ByteForge.Toolkit.Utilities.Parser._default">
             <summary>
-            Stores the lazily created default singleton instance of the <see cref="T:ByteForge.Toolkit.Utils.Parser"/> class.
+            Stores the lazily created default singleton instance of the <see cref="T:ByteForge.Toolkit.Utilities.Parser"/> class.
             </summary>
         </member>
-        <member name="F:ByteForge.Toolkit.Utils.Parser._typeParsers">
+        <member name="F:ByteForge.Toolkit.Utilities.Parser._typeParsers">
             <summary>
             Maps concrete <see cref="T:System.Type"/> instances to parsing delegates that convert a <see cref="T:System.String"/> into an object instance.
             </summary>
@@ -10022,7 +10022,7 @@
             When a type is not found here (and is not an enum), JSON deserialization is attempted.
             </remarks>
         </member>
-        <member name="F:ByteForge.Toolkit.Utils.Parser._typeStringifiers">
+        <member name="F:ByteForge.Toolkit.Utilities.Parser._typeStringifiers">
             <summary>
             Maps concrete <see cref="T:System.Type"/> instances to delegates that convert an object instance into its canonical string representation.
             </summary>
@@ -10030,26 +10030,26 @@
             For unknown types (and non-enum types) not present in this dictionary, JSON serialization is used as a fallback.
             </remarks>
         </member>
-        <member name="P:ByteForge.Toolkit.Utils.Parser.Default">
+        <member name="P:ByteForge.Toolkit.Utilities.Parser.Default">
             <summary>
-            Gets the default singleton <see cref="T:ByteForge.Toolkit.Utils.IParser"/> instance.
+            Gets the default singleton <see cref="T:ByteForge.Toolkit.Utilities.IParser"/> instance.
             </summary>
         </member>
-        <member name="M:ByteForge.Toolkit.Utils.Parser.#ctor">
+        <member name="M:ByteForge.Toolkit.Utilities.Parser.#ctor">
             <summary>
-            Initializes a new instance of the <see cref="T:ByteForge.Toolkit.Utils.Parser"/> class with built-in type parsers and stringifiers.
+            Initializes a new instance of the <see cref="T:ByteForge.Toolkit.Utilities.Parser"/> class with built-in type parsers and stringifiers.
             </summary>
         </member>
-        <member name="M:ByteForge.Toolkit.Utils.Parser.#ctor(System.Globalization.CultureInfo)">
+        <member name="M:ByteForge.Toolkit.Utilities.Parser.#ctor(System.Globalization.CultureInfo)">
             <summary>
-            Initializes a new instance of the <see cref="T:ByteForge.Toolkit.Utils.Parser"/> class with built-in type parsers, stringifiers, and the specified culture settings.
+            Initializes a new instance of the <see cref="T:ByteForge.Toolkit.Utilities.Parser"/> class with built-in type parsers, stringifiers, and the specified culture settings.
             </summary>
             <param name="culture">
             The <see cref="T:System.Globalization.CultureInfo"/> used to parse and format values.<br/>
             This culture determines how numbers, dates, and other culture-sensitive data are interpreted and converted.
             </param>
             <remarks>
-            The <see cref="T:ByteForge.Toolkit.Utils.Parser"/> class provides functionality to parse strings into strongly-typed objects 
+            The <see cref="T:ByteForge.Toolkit.Utilities.Parser"/> class provides functionality to parse strings into strongly-typed objects 
             and to convert objects back into their string representations. The parsing and formatting behavior 
             is influenced by the specified <paramref name="culture"/>.  Supported types include
             primitive types (e.g., <see cref="T:System.Int32"/>, <see cref="T:System.Double"/>),  common .NET types (e.g., <see
@@ -10057,7 +10057,7 @@
             cref="T:System.Version"/>. For unsupported types, a JSON fallback will be used.
             </remarks>
         </member>
-        <member name="P:ByteForge.Toolkit.Utils.Parser.Culture">
+        <member name="P:ByteForge.Toolkit.Utilities.Parser.Culture">
             <summary>
             Gets the culture information used for formatting and parsing operations.
             </summary>
@@ -10065,10 +10065,10 @@
             This property determines the culture-specific formatting rules, such as date, time, number, and currency formats.
             </remarks>
         </member>
-        <member name="M:ByteForge.Toolkit.Utils.Parser.ByteForge#Toolkit#Utils#IParser#IsKnownType(System.Type)">
+        <member name="M:ByteForge.Toolkit.Utilities.Parser.ByteForge#Toolkit#Utilities#IParser#IsKnownType(System.Type)">
             <inheritdoc />
         </member>
-        <member name="M:ByteForge.Toolkit.Utils.Parser.ByteForge#Toolkit#Utils#IParser#Parse(System.Type,System.String)">
+        <member name="M:ByteForge.Toolkit.Utilities.Parser.ByteForge#Toolkit#Utilities#IParser#Parse(System.Type,System.String)">
             <inheritdoc />
             <remarks>
             If <paramref name="type"/> is:
@@ -10080,29 +10080,29 @@
             </list>
             </remarks>
         </member>
-        <member name="M:ByteForge.Toolkit.Utils.Parser.ByteForge#Toolkit#Utils#IParser#RegisterType(System.Type,System.Func{System.String,System.Object},System.Func{System.Object,System.String})">
+        <member name="M:ByteForge.Toolkit.Utilities.Parser.ByteForge#Toolkit#Utilities#IParser#RegisterType(System.Type,System.Func{System.String,System.Object},System.Func{System.Object,System.String})">
             <inheritdoc />
             <exception cref="T:System.ArgumentNullException">Thrown when <paramref name="type"/>, <paramref name="parser"/>, or <paramref name="stringfier"/> is <see langword="null"/>.</exception>
         </member>
-        <member name="M:ByteForge.Toolkit.Utils.Parser.ByteForge#Toolkit#Utils#IParser#Stringify(System.Type,System.Object)">
+        <member name="M:ByteForge.Toolkit.Utilities.Parser.ByteForge#Toolkit#Utilities#IParser#Stringify(System.Type,System.Object)">
             <inheritdoc />
             <remarks>
             If <paramref name="type"/> is an enum, the raw <see cref="M:System.Object.ToString"/> value is returned.
             For unknown types, JSON serialization is used.
             </remarks>
         </member>
-        <member name="M:ByteForge.Toolkit.Utils.Parser.ByteForge#Toolkit#Utils#IParser#TryParse(System.Type,System.String,System.Object@)">
+        <member name="M:ByteForge.Toolkit.Utilities.Parser.ByteForge#Toolkit#Utilities#IParser#TryParse(System.Type,System.String,System.Object@)">
             <inheritdoc />
         </member>
-        <member name="M:ByteForge.Toolkit.Utils.Parser.ByteForge#Toolkit#Utils#IParser#Parse``1(System.String)">
+        <member name="M:ByteForge.Toolkit.Utilities.Parser.ByteForge#Toolkit#Utilities#IParser#Parse``1(System.String)">
             <summary>
-            Generic version of <see cref="M:ByteForge.Toolkit.Utils.IParser.Parse(System.Type,System.String)"/>.
+            Generic version of <see cref="M:ByteForge.Toolkit.Utilities.IParser.Parse(System.Type,System.String)"/>.
             </summary>
             <typeparam name="T">Target type.</typeparam>
             <param name="value">String representation.</param>
             <returns>Parsed instance of <typeparamref name="T"/>.</returns>
         </member>
-        <member name="M:ByteForge.Toolkit.Utils.Parser.ByteForge#Toolkit#Utils#IParser#TryParse``1(System.String,``0@)">
+        <member name="M:ByteForge.Toolkit.Utilities.Parser.ByteForge#Toolkit#Utilities#IParser#TryParse``1(System.String,``0@)">
             <summary>
             Attempts to parse a string into a value of type <typeparamref name="T"/>.
             </summary>
@@ -10114,22 +10114,22 @@
             Returns <see langword="false" /> if <paramref name="value"/> is null or empty, or an exception occurs.
             </remarks>
         </member>
-        <member name="M:ByteForge.Toolkit.Utils.Parser.ByteForge#Toolkit#Utils#IParser#Stringify``1(System.Object)">
+        <member name="M:ByteForge.Toolkit.Utilities.Parser.ByteForge#Toolkit#Utilities#IParser#Stringify``1(System.Object)">
             <summary>
-            Generic version of <see cref="M:ByteForge.Toolkit.Utils.IParser.Stringify(System.Type,System.Object)"/>.
+            Generic version of <see cref="M:ByteForge.Toolkit.Utilities.IParser.Stringify(System.Type,System.Object)"/>.
             </summary>
             <typeparam name="T">Type to stringify as.</typeparam>
             <param name="value">Value to convert.</param>
             <returns>String form of <paramref name="value"/>.</returns>
         </member>
-        <member name="M:ByteForge.Toolkit.Utils.Parser.IsKnownType(System.Type)">
+        <member name="M:ByteForge.Toolkit.Utilities.Parser.IsKnownType(System.Type)">
             <summary>
             Determines whether the specified type is a known type that can be parsed and/or stringified.
             </summary>
             <param name="type">The type to check.</param>
             <returns><see langword="true" /> if the type is a known type; otherwise, <see langword="false" />.</returns>
         </member>
-        <member name="M:ByteForge.Toolkit.Utils.Parser.Parse(System.Type,System.String)">
+        <member name="M:ByteForge.Toolkit.Utilities.Parser.Parse(System.Type,System.String)">
             <summary>
             Parses the specified string value into an object of the specified type.
             </summary>
@@ -10137,7 +10137,7 @@
             <param name="value">The string value to parse.</param>
             <returns>An object of the specified type.</returns>
         </member>
-        <member name="M:ByteForge.Toolkit.Utils.Parser.Parse``1(System.String)">
+        <member name="M:ByteForge.Toolkit.Utilities.Parser.Parse``1(System.String)">
             <summary>
             Converts the specified string representation of a value to its equivalent strongly-typed object of the specified type.
             </summary>
@@ -10149,7 +10149,7 @@
             If the conversion fails, the method returns <see langword="null"/> instead of throwing an exception.
             </remarks>
         </member>
-        <member name="M:ByteForge.Toolkit.Utils.Parser.RegisterType(System.Type,System.Func{System.String,System.Object},System.Func{System.Object,System.String})">
+        <member name="M:ByteForge.Toolkit.Utilities.Parser.RegisterType(System.Type,System.Func{System.String,System.Object},System.Func{System.Object,System.String})">
             <summary>
             Registers a custom parser for the specified type.
             </summary>
@@ -10157,7 +10157,7 @@
             <param name="parser">A function that parses a string value into an object of the specified type.</param>
             <param name="stringifier">A function that converts an object of the specified type into its string representation.</param>
         </member>
-        <member name="M:ByteForge.Toolkit.Utils.Parser.Stringify(System.Object,System.Type)">
+        <member name="M:ByteForge.Toolkit.Utilities.Parser.Stringify(System.Object,System.Type)">
             <summary>
             Converts an object to its string representation.
             </summary>
@@ -10165,7 +10165,7 @@
             <param name="type">The type of the object. If null, the type is inferred from <paramref name="value"/>.</param>
             <returns>The string representation of the object.</returns>
         </member>
-        <member name="M:ByteForge.Toolkit.Utils.Parser.Stringify``1(``0)">
+        <member name="M:ByteForge.Toolkit.Utilities.Parser.Stringify``1(``0)">
             <summary>
             Converts an object of the specified generic type to its string representation.
             </summary>
@@ -10173,7 +10173,7 @@
             <param name="value">The object to convert to a string.</param>
             <returns>The string representation of the object.</returns>
         </member>
-        <member name="M:ByteForge.Toolkit.Utils.Parser.TryParse(System.Type,System.String,System.Object@)">
+        <member name="M:ByteForge.Toolkit.Utilities.Parser.TryParse(System.Type,System.String,System.Object@)">
             <summary>
             Tries to parse the specified string value into an object of the specified type.
             </summary>
@@ -10182,7 +10182,7 @@
             <param name="result">When this method returns, contains the parsed value, if the parsing succeeded, or null if the parsing failed.</param>
             <returns><see langword="true" /> if the parsing succeeded; otherwise, <see langword="false" />.</returns>
         </member>
-        <member name="M:ByteForge.Toolkit.Utils.Parser.TryParse``1(System.String,``0@)">
+        <member name="M:ByteForge.Toolkit.Utilities.Parser.TryParse``1(System.String,``0@)">
             <summary>
             Tries to parse the specified string value into an object of the specified generic type.
             </summary>
@@ -10191,19 +10191,19 @@
             <param name="result">When this method returns, contains the parsed value, if the parsing succeeded, or the default value of the type if the parsing failed.</param>
             <returns><see langword="true" /> if the parsing succeeded; otherwise, <see langword="false" />.</returns>
         </member>
-        <member name="T:ByteForge.Toolkit.Utils.StringUtil">
+        <member name="T:ByteForge.Toolkit.Utilities.StringUtil">
             <summary>
             Provides utility methods for working with strings.
             </summary>
         </member>
-        <member name="M:ByteForge.Toolkit.Utils.StringUtil.EscapeForJavaScript(System.String)">
+        <member name="M:ByteForge.Toolkit.Utilities.StringUtil.EscapeForJavaScript(System.String)">
             <summary>
             Escapes a string for safe use in JavaScript.
             </summary>
             <param name="text">The text to escape.</param>
             <returns>The escaped text.</returns>
         </member>
-        <member name="M:ByteForge.Toolkit.Utils.StringUtil.WrapList``1(System.Collections.Generic.IEnumerable{``0},System.String,System.Int32)">
+        <member name="M:ByteForge.Toolkit.Utilities.StringUtil.WrapList``1(System.Collections.Generic.IEnumerable{``0},System.String,System.Int32)">
             <summary>
             Wraps a comma-separated list of items to a specified maximum line length,
             ensuring no individual items are split across lines.
@@ -10213,7 +10213,7 @@
             <param name="maxLineLength">The maximum length of each line (default is 200).</param>
             <returns>A string with the items joined and wrapped at appropriate points.</returns>
         </member>
-        <member name="M:ByteForge.Toolkit.Utils.StringUtil.SplitPascalCase(System.String)">
+        <member name="M:ByteForge.Toolkit.Utilities.StringUtil.SplitPascalCase(System.String)">
             <summary>
             Splits a PascalCase string into separate words.
             </summary>
@@ -10226,12 +10226,12 @@
             </code>
             </example>
         </member>
-        <member name="T:ByteForge.Toolkit.Utils.TemplateProcessor">
+        <member name="T:ByteForge.Toolkit.Utilities.TemplateProcessor">
             <summary>
             Processes a dictionary of key-value pairs and replaces placeholders in text with corresponding values.
             </summary>
         </member>
-        <member name="P:ByteForge.Toolkit.Utils.TemplateProcessor.UseEscapeSequences">
+        <member name="P:ByteForge.Toolkit.Utilities.TemplateProcessor.UseEscapeSequences">
             <summary>
             Gets or sets a value indicating whether escape sequences should be used in the output.
             </summary>
@@ -10239,7 +10239,7 @@
             If set to true, the output will replace escape sequences with their corresponding characters.
             </remarks>
         </member>
-        <member name="M:ByteForge.Toolkit.Utils.TemplateProcessor.Add(System.String,System.String)">
+        <member name="M:ByteForge.Toolkit.Utilities.TemplateProcessor.Add(System.String,System.String)">
             <summary>
             Adds a key-value pair to the dictionary.
             </summary>
@@ -10248,61 +10248,61 @@
             <exception cref="T:System.ArgumentNullException">Thrown when the key is null or empty.</exception>
             <exception cref="T:System.ArgumentException">Thrown when the key contains invalid characters.</exception>
         </member>
-        <member name="M:ByteForge.Toolkit.Utils.TemplateProcessor.Remove(System.String)">
+        <member name="M:ByteForge.Toolkit.Utilities.TemplateProcessor.Remove(System.String)">
             <summary>
             Removes a key-value pair from the dictionary.
             </summary>
             <param name="key">The key to remove.</param>
             <exception cref="T:System.ArgumentNullException">Thrown when the key is null or empty.</exception>
         </member>
-        <member name="P:ByteForge.Toolkit.Utils.TemplateProcessor.Count">
+        <member name="P:ByteForge.Toolkit.Utilities.TemplateProcessor.Count">
             <summary>
             Gets the number of key-value pairs in the dictionary.
             </summary>
         </member>
-        <member name="M:ByteForge.Toolkit.Utils.TemplateProcessor.Clear">
+        <member name="M:ByteForge.Toolkit.Utilities.TemplateProcessor.Clear">
             <summary>
             Clears all key-value pairs from the dictionary.
             </summary>
         </member>
-        <member name="M:ByteForge.Toolkit.Utils.TemplateProcessor.Process(System.String)">
+        <member name="M:ByteForge.Toolkit.Utilities.TemplateProcessor.Process(System.String)">
             <summary>
             Processes the input text by replacing placeholders with corresponding values from the dictionary.
             </summary>
             <param name="text">The input text containing placeholders.</param>
             <returns>The processed text with placeholders replaced by dictionary values.</returns>
         </member>
-        <member name="T:ByteForge.Toolkit.Utils.TimingUtil">
+        <member name="T:ByteForge.Toolkit.Utilities.TimingUtil">
             <summary>
             Utility class for measuring and logging the time taken to execute actions and functions.
             </summary>
         </member>
-        <member name="M:ByteForge.Toolkit.Utils.TimingUtil.#ctor">
+        <member name="M:ByteForge.Toolkit.Utilities.TimingUtil.#ctor">
             <summary>
-            Initializes a new instance of the <see cref="T:ByteForge.Toolkit.Utils.TimingUtil"/> class.
+            Initializes a new instance of the <see cref="T:ByteForge.Toolkit.Utilities.TimingUtil"/> class.
             Sets the log level to Debug and initializes the logger to log to a file in the same directory as the executing assembly.
             </summary>
         </member>
-        <member name="M:ByteForge.Toolkit.Utils.TimingUtil.#ctor(ByteForge.Toolkit.Logging.ILogger)">
+        <member name="M:ByteForge.Toolkit.Utilities.TimingUtil.#ctor(ByteForge.Toolkit.Logging.ILogger)">
             <summary>
-            Initializes a new instance of the <see cref="T:ByteForge.Toolkit.Utils.TimingUtil"/> class with the specified logger.
+            Initializes a new instance of the <see cref="T:ByteForge.Toolkit.Utilities.TimingUtil"/> class with the specified logger.
             </summary>
             <param name="logger">The logger to be used for logging.</param>
         </member>
-        <member name="M:ByteForge.Toolkit.Utils.TimingUtil.#ctor(System.String)">
+        <member name="M:ByteForge.Toolkit.Utilities.TimingUtil.#ctor(System.String)">
             <summary>
-            Initializes a new instance of the <see cref="T:ByteForge.Toolkit.Utils.TimingUtil"/> class with the specified log file.
+            Initializes a new instance of the <see cref="T:ByteForge.Toolkit.Utilities.TimingUtil"/> class with the specified log file.
             </summary>
             <param name="logFile">The path to the log file.</param>
         </member>
-        <member name="M:ByteForge.Toolkit.Utils.TimingUtil.Time(System.Action,System.String)">
+        <member name="M:ByteForge.Toolkit.Utilities.TimingUtil.Time(System.Action,System.String)">
             <summary>
             Measures the time taken to execute the specified action and logs the elapsed time.
             </summary>
             <param name="action">The action to be executed and timed.</param>
             <param name="message">An optional message to be logged with the elapsed time.</param>
         </member>
-        <member name="M:ByteForge.Toolkit.Utils.TimingUtil.Time``1(System.Func{``0},System.String)">
+        <member name="M:ByteForge.Toolkit.Utilities.TimingUtil.Time``1(System.Func{``0},System.String)">
             <summary>
             Measures the time taken to execute the specified function and logs the elapsed time.
             </summary>
@@ -10311,7 +10311,7 @@
             <param name="message">An optional message to be logged with the elapsed time.</param>
             <returns>The result of the function execution.</returns>
         </member>
-        <member name="M:ByteForge.Toolkit.Utils.TimingUtil.TimeAsync(System.Func{System.Threading.Tasks.Task},System.String)">
+        <member name="M:ByteForge.Toolkit.Utilities.TimingUtil.TimeAsync(System.Func{System.Threading.Tasks.Task},System.String)">
             <summary>
             Asynchronously measures the time taken to execute the specified asynchronous action and logs the elapsed time.
             </summary>
@@ -10319,7 +10319,7 @@
             <param name="message">An optional message to be logged with the elapsed time.</param>
             <returns>A task representing the asynchronous operation.</returns>
         </member>
-        <member name="T:ByteForge.Toolkit.Utils.TypeHelper">
+        <member name="T:ByteForge.Toolkit.Utilities.TypeHelper">
             <summary>
             Provides utility methods for resolving the effective (non-nullable) type of a given property or type.
             </summary>
@@ -10329,46 +10329,46 @@
             encountered.
             </remarks>
         </member>
-        <member name="M:ByteForge.Toolkit.Utils.TypeHelper.ResolveType(System.Reflection.PropertyInfo)">
+        <member name="M:ByteForge.Toolkit.Utilities.TypeHelper.ResolveType(System.Reflection.PropertyInfo)">
             <summary>
             Resolves the effective (non-nullable) type represented by the provided property.
             </summary>
             <param name="prop">The property whose type is to be resolved.</param>
             <returns>The resolved non-nullable <see cref="T:System.Type"/>.</returns>
         </member>
-        <member name="M:ByteForge.Toolkit.Utils.TypeHelper.ResolveType(System.Reflection.ParameterInfo)">
+        <member name="M:ByteForge.Toolkit.Utilities.TypeHelper.ResolveType(System.Reflection.ParameterInfo)">
             <summary>
             Resolves the effective (non-nullable) type represented by the provided method parameter.
             </summary>
             <param name="param">The parameter whose type is to be resolved.</param>
             <returns>The resolved non-nullable <see cref="T:System.Type"/>.</returns>
-            <seealso cref="M:ByteForge.Toolkit.Utils.TypeHelper.ResolveType(System.Type)"/>
+            <seealso cref="M:ByteForge.Toolkit.Utilities.TypeHelper.ResolveType(System.Type)"/>
         </member>
-        <member name="M:ByteForge.Toolkit.Utils.TypeHelper.ResolveType(System.Reflection.FieldInfo)">
+        <member name="M:ByteForge.Toolkit.Utilities.TypeHelper.ResolveType(System.Reflection.FieldInfo)">
             <summary>
             Resolves the effective (non-nullable) type represented by the provided field.
             </summary>
             <param name="field">The field whose type is to be resolved.</param>
             <returns>The resolved non-nullable <see cref="T:System.Type"/>.</returns>
-            <seealso cref="M:ByteForge.Toolkit.Utils.TypeHelper.ResolveType(System.Type)"/>
+            <seealso cref="M:ByteForge.Toolkit.Utilities.TypeHelper.ResolveType(System.Type)"/>
         </member>
-        <member name="M:ByteForge.Toolkit.Utils.TypeHelper.ResolveType(System.Reflection.EventInfo)">
+        <member name="M:ByteForge.Toolkit.Utilities.TypeHelper.ResolveType(System.Reflection.EventInfo)">
             <summary>
             Resolves the effective (non-nullable) delegate type associated with the provided event.
             </summary>
             <param name="evt">The event whose handler (delegate) type is to be resolved.</param>
             <returns>The resolved non-nullable <see cref="T:System.Type"/> of the event handler.</returns>
-            <seealso cref="M:ByteForge.Toolkit.Utils.TypeHelper.ResolveType(System.Type)"/>
+            <seealso cref="M:ByteForge.Toolkit.Utilities.TypeHelper.ResolveType(System.Type)"/>
         </member>
-        <member name="M:ByteForge.Toolkit.Utils.TypeHelper.ResolveType(System.Reflection.MethodInfo)">
+        <member name="M:ByteForge.Toolkit.Utilities.TypeHelper.ResolveType(System.Reflection.MethodInfo)">
             <summary>
             Resolves the effective (non-nullable) return type for the supplied method.
             </summary>
             <param name="method">The method whose return type is to be resolved.</param>
             <returns>The resolved non-nullable <see cref="T:System.Type"/> representing the method's return type.</returns>
-            <seealso cref="M:ByteForge.Toolkit.Utils.TypeHelper.ResolveType(System.Type)"/>
+            <seealso cref="M:ByteForge.Toolkit.Utilities.TypeHelper.ResolveType(System.Type)"/>
         </member>
-        <member name="M:ByteForge.Toolkit.Utils.TypeHelper.ResolveType(System.Type)">
+        <member name="M:ByteForge.Toolkit.Utilities.TypeHelper.ResolveType(System.Type)">
             <summary>
             Resolves the effective (non-nullable) type for the supplied <paramref name="type"/>.
             If the type is a nullable generic (e.g., <c>Nullable&lt;T&gt;</c>) its underlying type is returned.
@@ -10379,24 +10379,24 @@
             <c>null</c> if input was <c>null</c>.
             </returns>
         </member>
-        <member name="M:ByteForge.Toolkit.Utils.TypeHelper.GetDefault(System.Type)">
+        <member name="M:ByteForge.Toolkit.Utilities.TypeHelper.GetDefault(System.Type)">
             <summary>
             Returns the default value for the specified type.
             </summary>
             <param name="type">The <see cref="T:System.Type"/> for which to retrieve the default value. Must not be <see langword="null"/>.</param>
             <returns>An instance of the specified type initialized to its default value if it is a value type;  otherwise, <see langword="null"/> for reference types.</returns>
         </member>
-        <member name="T:ByteForge.Toolkit.Utils.Utils">
+        <member name="T:ByteForge.Toolkit.Utilities.Utils">
             <summary>
             Contains utility methods for string manipulation, date/time conversion, and task execution.
             </summary>
         </member>
-        <member name="F:ByteForge.Toolkit.Utils.Utils.arrCRLF">
+        <member name="F:ByteForge.Toolkit.Utilities.Utils.arrCRLF">
             <summary>
             Represents the carriage return and line feed character array.
             </summary>
         </member>
-        <member name="M:ByteForge.Toolkit.Utils.Utils.FormatUSPhoneNumber(System.String)">
+        <member name="M:ByteForge.Toolkit.Utilities.Utils.FormatUSPhoneNumber(System.String)">
             <summary>
             Formats a US phone number to the format (XXX) XXX-XXXX.
             Converts letters to their corresponding phone keypad numbers (A/B/C=2, D/E/F=3, etc.).
@@ -10404,7 +10404,7 @@
             <param name="phoneNumber">The phone number to format.</param>
             <returns>The formatted phone number, or the original input if it cannot be formatted.</returns>
         </member>
-        <member name="M:ByteForge.Toolkit.Utils.Utils.ConvertPhoneLettersToNumbers(System.String)">
+        <member name="M:ByteForge.Toolkit.Utilities.Utils.ConvertPhoneLettersToNumbers(System.String)">
             <summary>
             Converts letters in a phone number to their corresponding numbers based on the phone keypad.
             A/B/C=2, D/E/F=3, G/H/I=4, J/K/L=5, M/N/O=6, P/Q/R/S=7, T/U/V=8, W/X/Y/Z=9.
@@ -10412,14 +10412,14 @@
             <param name="phoneNumber">The phone number that may contain letters.</param>
             <returns>The phone number with letters converted to numbers.</returns>
         </member>
-        <member name="M:ByteForge.Toolkit.Utils.Utils.NullIfEmpty(System.String)">
+        <member name="M:ByteForge.Toolkit.Utilities.Utils.NullIfEmpty(System.String)">
             <summary>
             Returns <c>null</c> if the provided string is null, empty, or whitespace; otherwise, returns the string itself.
             </summary>
             <param name="value">The string to check.</param>
             <returns><c>null</c> if the string is null, empty, or whitespace; otherwise, the string itself.</returns>
         </member>
-        <member name="M:ByteForge.Toolkit.Utils.Utils.RunSync``1(System.Func{System.Threading.CancellationToken,System.Threading.Tasks.Task{``0}})">
+        <member name="M:ByteForge.Toolkit.Utilities.Utils.RunSync``1(System.Func{System.Threading.CancellationToken,System.Threading.Tasks.Task{``0}})">
             <summary>
             Runs an asynchronous function synchronously and returns its result.
             </summary>
@@ -10427,12 +10427,12 @@
             <param name="asyncFunc">The asynchronous function to run.</param>
             <returns>The result of the asynchronous function.</returns>
         </member>
-        <member name="T:ByteForge.Toolkit.Utils.ValueConverterRegistry">
+        <member name="T:ByteForge.Toolkit.Utilities.ValueConverterRegistry">
             <summary>
             Provides a registry for value converters used with <see cref="!:DBColumnAttribute"/>.
             </summary>
         </member>
-        <member name="M:ByteForge.Toolkit.Utils.ValueConverterRegistry.RegisterConverter(System.String,System.Func{System.Object,System.Object})">
+        <member name="M:ByteForge.Toolkit.Utilities.ValueConverterRegistry.RegisterConverter(System.String,System.Func{System.Object,System.Object})">
             <summary>
             Registers a converter with the specified name.
             </summary>
@@ -10441,28 +10441,28 @@
             <exception cref="T:System.ArgumentNullException">Thrown when name or converter is null.</exception>
             <exception cref="T:System.ArgumentException">Thrown when a converter with the same name already exists.</exception>
         </member>
-        <member name="M:ByteForge.Toolkit.Utils.ValueConverterRegistry.GetConverter(System.String)">
+        <member name="M:ByteForge.Toolkit.Utilities.ValueConverterRegistry.GetConverter(System.String)">
             <summary>
             Gets a converter with the specified name.
             </summary>
             <param name="name">The name of the converter.</param>
             <returns>The converter function, or null if no converter with the specified name exists.</returns>
         </member>
-        <member name="M:ByteForge.Toolkit.Utils.ValueConverterRegistry.HasConverter(System.String)">
+        <member name="M:ByteForge.Toolkit.Utilities.ValueConverterRegistry.HasConverter(System.String)">
             <summary>
             Determines whether a converter with the specified name exists.
             </summary>
             <param name="name">The name of the converter.</param>
             <returns>true if a converter with the specified name exists; otherwise, false.</returns>
         </member>
-        <member name="M:ByteForge.Toolkit.Utils.ValueConverterRegistry.RemoveConverter(System.String)">
+        <member name="M:ByteForge.Toolkit.Utilities.ValueConverterRegistry.RemoveConverter(System.String)">
             <summary>
             Removes a converter with the specified name.
             </summary>
             <param name="name">The name of the converter.</param>
             <returns>true if the converter was removed; otherwise, false.</returns>
         </member>
-        <member name="M:ByteForge.Toolkit.Utils.ValueConverterRegistry.ClearConverters">
+        <member name="M:ByteForge.Toolkit.Utilities.ValueConverterRegistry.ClearConverters">
             <summary>
             Clears all registered converters.
             </summary>

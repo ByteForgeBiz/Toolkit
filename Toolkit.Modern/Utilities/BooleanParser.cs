@@ -11,7 +11,7 @@ namespace ByteForge.Toolkit.Utilities;
 /// with support for various common boolean representations beyond the standard "true" and "false".
 /// </summary>
 /// <remarks>
-/// This class extends the functionality of the standard <see cref="bool.Parse"/> method
+/// This class extends the functionality of the standard <see cref="bool.Parse(string)"/> method
 /// by recognizing a wider range of string representations for boolean values.
 /// <para>
 /// By default, the following string values are recognized:
@@ -67,7 +67,7 @@ public class BooleanParser
     /// </summary>
     public static BooleanParser Default => _defaultInstance.Value;
 
-    private static readonly Lazy<BooleanParser> _defaultInstance = new Lazy<BooleanParser>();
+    private static readonly Lazy<BooleanParser> _defaultInstance = new();
 
     /// <summary>
     /// Initializes a new instance of the <see cref="BooleanParser"/> class with default true and false values.

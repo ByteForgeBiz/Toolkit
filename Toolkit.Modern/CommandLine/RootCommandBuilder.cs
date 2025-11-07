@@ -1,11 +1,11 @@
-using ByteForge.Toolkit.CLI;
+using ByteForge.Toolkit.CommandLine;
 using ByteForge.Toolkit.Logging;
 using System.Collections.ObjectModel;
 using System.CommandLine;
 using System.CommandLine.Builder;
 using System.Reflection;
 
-namespace ByteForge.Toolkit.CLI;
+namespace ByteForge.Toolkit.CommandLine;
 /// <summary>
 /// Fluent builder for creating command line parsers.
 /// </summary>

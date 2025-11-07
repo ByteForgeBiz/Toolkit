@@ -1,6 +1,6 @@
 using ByteForge.Toolkit.Utilities;
 
-namespace ByteForge.Toolkit.CLI;
+namespace ByteForge.Toolkit.CommandLine;
 /// <summary>
 /// Provides a self-contained progress spinner that uses ConsoleUtil's DrawProgressBar functionality.
 /// This class allows for easy use with 'using' statements to automatically start and stop

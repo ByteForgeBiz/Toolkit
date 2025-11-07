@@ -1,4 +1,4 @@
-using ByteForge.Toolkit.CLI;
+using ByteForge.Toolkit.CommandLine;
 using ByteForge.Toolkit.Logging;
 using ByteForge.Toolkit.Utilities;
 using System.Collections;
@@ -7,7 +7,7 @@ using System.CommandLine;
 using System.CommandLine.NamingConventionBinder;
 using System.Reflection;
 
-namespace ByteForge.Toolkit.CLI;
+namespace ByteForge.Toolkit.CommandLine;
 /// <summary>
 /// Class to build commands from an assembly.
 /// </summary>
