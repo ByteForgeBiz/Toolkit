@@ -1,6 +1,6 @@
 using ByteForge.Toolkit.Logging;
 
-namespace ByteForge.Toolkit.Utils;
+namespace ByteForge.Toolkit.Utilities;
 /*
  *  _____ _       _           _   _ _   _ _ 
  * |_   _(_)_ __ (_)_ _  __ _| | | | |_(_) |

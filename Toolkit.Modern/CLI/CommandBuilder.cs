@@ -1,6 +1,6 @@
 using ByteForge.Toolkit.CLI;
 using ByteForge.Toolkit.Logging;
-using ByteForge.Toolkit.Utils;
+using ByteForge.Toolkit.Utilities;
 using System.Collections;
 using System.Collections.ObjectModel;
 using System.CommandLine;

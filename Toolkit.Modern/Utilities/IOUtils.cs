@@ -2,7 +2,7 @@ using ByteForge.Toolkit.Logging;
 using System.Runtime.InteropServices;
 using System.Text;
 
-namespace ByteForge.Toolkit.Utils;
+namespace ByteForge.Toolkit.Utilities;
 /*
  *  ___ ___  _   _ _   _ _    
  * |_ _/ _ \| | | | |_(_) |___

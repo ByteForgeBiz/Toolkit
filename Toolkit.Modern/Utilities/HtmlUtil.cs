@@ -1,6 +1,6 @@
 using System.Text.RegularExpressions;
 
-namespace ByteForge.Toolkit.Utils;
+namespace ByteForge.Toolkit.Utilities;
 /// <summary>
 /// Utility methods for HTML and CSS processing.
 /// </summary>

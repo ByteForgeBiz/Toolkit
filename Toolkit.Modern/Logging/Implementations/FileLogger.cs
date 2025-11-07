@@ -293,14 +293,14 @@ public class FileLogger : BaseLogger, IDisposable
     {
         var ts = $"{(entry.CorrelationId ?? "")} - {entry.Timestamp:yyyy.MM.dd HH:mm:ss.fff} [{entry.Level,-9}] - ";
         var indent = Environment.NewLine + new string(' ', ts.Length);
-        var sb = new StringBuilder($"{ts}{string.Join(indent, entry.Message?.Split(Utils.Utils.arrCRLF, StringSplitOptions.RemoveEmptyEntries) ?? [])}");
+        var sb = new StringBuilder($"{ts}{string.Join(indent, entry.Message?.Split(Utilities.Utils.arrCRLF, StringSplitOptions.RemoveEmptyEntries) ?? [])}");
         var ex = entry.Exception;
 
         while (ex != null)
         {
             sb.Append(indent + $"Exception: {{{ex.GetType()}}} {ex.Message}");
             if (!string.IsNullOrEmpty(ex.StackTrace))
-                sb.Append(indent + $"Stack Trace: {string.Join(indent + "             ", ex.StackTrace.Split(Utils.Utils.arrCRLF, StringSplitOptions.RemoveEmptyEntries))}");
+                sb.Append(indent + $"Stack Trace: {string.Join(indent + "             ", ex.StackTrace.Split(Utilities.Utils.arrCRLF, StringSplitOptions.RemoveEmptyEntries))}");
 
             if (ex.Data?.Count > 0)
             {

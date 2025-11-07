@@ -1,4 +1,4 @@
-namespace ByteForge.Toolkit.Utils;
+namespace ByteForge.Toolkit.Utilities;
 /// <summary>
 /// Defines methods for parsing string values into various data types.
 /// </summary>

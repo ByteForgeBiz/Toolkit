@@ -1,6 +1,6 @@
 using System.Text;
 
-namespace ByteForge.Toolkit.Utils;
+namespace ByteForge.Toolkit.Utilities;
 /// <summary>
 /// Provides utility methods for working with strings.
 /// </summary>

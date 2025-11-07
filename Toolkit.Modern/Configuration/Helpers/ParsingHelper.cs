@@ -1,4 +1,4 @@
-using ByteForge.Toolkit.Utils;
+using ByteForge.Toolkit.Utilities;
 using System.Reflection;
 
 namespace ByteForge.Toolkit.Configuration;

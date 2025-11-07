@@ -1,6 +1,6 @@
 using AwesomeAssertions;
 using ByteForge.Toolkit.Tests.Helpers;
-using ByteForge.Toolkit.Utils;
+using ByteForge.Toolkit.Utilities;
 
 namespace ByteForge.Toolkit.Tests.Unit.Utils
 {

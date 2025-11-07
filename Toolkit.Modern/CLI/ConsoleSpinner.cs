@@ -1,4 +1,4 @@
-using ByteForge.Toolkit.Utils;
+using ByteForge.Toolkit.Utilities;
 
 namespace ByteForge.Toolkit.CLI;
 /// <summary>

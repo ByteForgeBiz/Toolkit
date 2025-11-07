@@ -287,7 +287,7 @@ public class Log : CompositeLogger
     {
         if (string.IsNullOrEmpty(message))
             return;
-        Instance.WriteToLog(level, message.Split(Utils.Utils.arrCRLF, StringSplitOptions.RemoveEmptyEntries), ex);
+        Instance.WriteToLog(level, message.Split(Utilities.Utils.arrCRLF, StringSplitOptions.RemoveEmptyEntries), ex);
     }
 
     /// <summary>

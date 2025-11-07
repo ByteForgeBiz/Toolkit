@@ -1,6 +1,6 @@
 using System.Text.RegularExpressions;
 
-namespace ByteForge.Toolkit.Utils;
+namespace ByteForge.Toolkit.Utilities;
 /// <summary>
 /// Provides helper methods for normalizing and capitalizing personal names while
 /// respecting linguistic particles (e.g. "de", "van"), cultural prefixes (e.g. "Mc", "Mac", "O'"),

@@ -2,7 +2,7 @@ using AwesomeAssertions;
 using ByteForge.Toolkit.Configuration;
 using ByteForge.Toolkit.Tests.Helpers;
 using ByteForge.Toolkit.Tests.Models;
-using ByteForge.Toolkit.Utils;
+using ByteForge.Toolkit.Utilities;
 using System.Reflection;
 
 namespace ByteForge.Toolkit.Tests.Unit.Configuration

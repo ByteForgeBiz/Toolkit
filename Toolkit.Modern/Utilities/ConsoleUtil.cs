@@ -1,6 +1,6 @@
 using System.Runtime.InteropServices;
 
-namespace ByteForge.Toolkit.Utils;
+namespace ByteForge.Toolkit.Utilities;
 /*
  *   ___                  _     _   _ _   _ _ 
  *  / __|___ _ _  ___ ___| |___| | | | |_(_) |

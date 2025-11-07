@@ -1,6 +1,6 @@
 using System.ComponentModel;
 
-namespace ByteForge.Toolkit.Utils;
+namespace ByteForge.Toolkit.Utilities;
 /*
  *  ___                ___     _               _             
  * | __|_ _ _  _ _ __ | __|_ _| |_ ___ _ _  __(_)___ _ _  ___
