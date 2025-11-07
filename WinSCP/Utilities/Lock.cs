@@ -3,12 +3,19 @@ using System.Threading;
 
 namespace ByteForge.WinSCP;
 
+/// <summary>
+/// Provides a synchronization lock that prevents recursive locking.
+/// </summary>
 public class Lock
 {
 	private readonly object _lock = new object();
 
 	private bool _locked;
 
+	/// <summary>
+	/// Enters the lock. Throws an exception if a recursive lock is attempted.
+	/// </summary>
+	/// <exception cref="InvalidOperationException">Thrown when a recursive lock is attempted.</exception>
 	public void Enter()
 	{
 		Monitor.Enter(_lock);
@@ -20,6 +27,10 @@ public class Lock
 		_locked = true;
 	}
 
+	/// <summary>
+	/// Exits the lock.
+	/// </summary>
+	/// <exception cref="InvalidOperationException">Thrown when exiting without holding the lock.</exception>
 	public void Exit()
 	{
 		if (!_locked)

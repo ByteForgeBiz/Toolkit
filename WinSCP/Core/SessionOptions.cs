@@ -7,6 +7,9 @@ using System.Text.RegularExpressions;
 
 namespace ByteForge.WinSCP;
 
+/// <summary>
+/// Specifies options for establishing a WinSCP session.
+/// </summary>
 [Guid("2D4EF368-EE80-4C15-AE77-D12AEAF4B00A")]
 [ClassInterface(ClassInterfaceType.AutoDispatch)]
 [ComVisible(true)]
@@ -42,6 +45,9 @@ public sealed class SessionOptions
 
 	private static readonly Regex _tlsCertificateRegex = new Regex(string.Format(CultureInfo.InvariantCulture, "{0}(;{0})*", new object[1] { "((([0-9a-fA-F]{2}[:\\-]){31})|(([0-9a-fA-F]{2}[:\\-]){19}))[0-9a-fA-F]{2}" }));
 
+	/// <summary>
+	/// Gets or sets the name of the session.
+	/// </summary>
 	public string Name
 	{
 		get
@@ -54,6 +60,9 @@ public sealed class SessionOptions
 		}
 	}
 
+	/// <summary>
+	/// Gets or sets the protocol to use for the session.
+	/// </summary>
 	public Protocol Protocol
 	{
 		get
@@ -66,8 +75,14 @@ public sealed class SessionOptions
 		}
 	}
 
+	/// <summary>
+	/// Gets or sets the hostname or IP address of the remote server.
+	/// </summary>
 	public string HostName { get; set; }
 
+	/// <summary>
+	/// Gets or sets the port number to connect to.
+	/// </summary>
 	public int PortNumber
 	{
 		get
@@ -80,8 +95,14 @@ public sealed class SessionOptions
 		}
 	}
 
+	/// <summary>
+	/// Gets or sets the username for authentication.
+	/// </summary>
 	public string UserName { get; set; }
 
+	/// <summary>
+	/// Gets or sets the password for authentication.
+	/// </summary>
 	public string Password
 	{
 		get
@@ -94,6 +115,9 @@ public sealed class SessionOptions
 		}
 	}
 
+	/// <summary>
+	/// Gets or sets the password for authentication as a secure string.
+	/// </summary>
 	public SecureString SecurePassword
 	{
 		get
@@ -106,6 +130,9 @@ public sealed class SessionOptions
 		}
 	}
 
+	/// <summary>
+	/// Gets or sets the new password for password change operations.
+	/// </summary>
 	public string NewPassword
 	{
 		get
@@ -118,6 +145,9 @@ public sealed class SessionOptions
 		}
 	}
 
+	/// <summary>
+	/// Gets or sets the new password for password change operations as a secure string.
+	/// </summary>
 	public SecureString SecureNewPassword
 	{
 		get
@@ -130,6 +160,9 @@ public sealed class SessionOptions
 		}
 	}
 
+	/// <summary>
+	/// Gets or sets the timeout duration for operations.
+	/// </summary>
 	public TimeSpan Timeout
 	{
 		get
@@ -142,6 +175,9 @@ public sealed class SessionOptions
 		}
 	}
 
+	/// <summary>
+	/// Gets or sets the timeout in milliseconds.
+	/// </summary>
 	public int TimeoutInMilliseconds
 	{
 		get
@@ -154,6 +190,9 @@ public sealed class SessionOptions
 		}
 	}
 
+	/// <summary>
+	/// Gets or sets the passphrase for the SSH private key.
+	/// </summary>
 	public string PrivateKeyPassphrase
 	{
 		get
@@ -166,6 +205,9 @@ public sealed class SessionOptions
 		}
 	}
 
+	/// <summary>
+	/// Gets or sets the passphrase for the SSH private key as a secure string.
+	/// </summary>
 	public SecureString SecurePrivateKeyPassphrase
 	{
 		get
@@ -178,6 +220,9 @@ public sealed class SessionOptions
 		}
 	}
 
+	/// <summary>
+	/// Gets or sets the root path for WebDAV and S3 protocols.
+	/// </summary>
 	public string RootPath
 	{
 		get
@@ -190,8 +235,14 @@ public sealed class SessionOptions
 		}
 	}
 
+	/// <summary>
+	/// Gets or sets a value indicating whether to use a secure connection (HTTPS/FTPS/DAVS/S3).
+	/// </summary>
 	public bool Secure { get; set; }
 
+	/// <summary>
+	/// Gets or sets the SSH host key fingerprint for verification.
+	/// </summary>
 	public string SshHostKeyFingerprint
 	{
 		get
@@ -204,8 +255,14 @@ public sealed class SessionOptions
 		}
 	}
 
+	/// <summary>
+	/// Gets or sets the SSH host key policy.
+	/// </summary>
 	public SshHostKeyPolicy SshHostKeyPolicy { get; set; }
 
+	/// <summary>
+	/// Gets or sets a value indicating whether to give up security and accept any SSH host key. (Obsolete - use SshHostKeyPolicy)
+	/// </summary>
 	[Obsolete("Use SshHostKeyPolicy")]
 	public bool GiveUpSecurityAndAcceptAnySshHostKey
 	{
@@ -219,10 +276,19 @@ public sealed class SessionOptions
 		}
 	}
 
+	/// <summary>
+	/// Gets or sets the path to the SSH private key file.
+	/// </summary>
 	public string SshPrivateKeyPath { get; set; }
 
+	/// <summary>
+	/// Gets or sets the SSH private key as a string.
+	/// </summary>
 	public string SshPrivateKey { get; set; }
 
+	/// <summary>
+	/// Gets or sets the SSH private key passphrase. (Obsolete - use PrivateKeyPassphrase)
+	/// </summary>
 	[Obsolete("Use PrivateKeyPassphrase")]
 	public string SshPrivateKeyPassphrase
 	{
@@ -236,10 +302,19 @@ public sealed class SessionOptions
 		}
 	}
 
+	/// <summary>
+	/// Gets or sets the FTP mode (passive or active).
+	/// </summary>
 	public FtpMode FtpMode { get; set; }
 
+	/// <summary>
+	/// Gets or sets the FTP security mode (implicit or explicit TLS/SSL).
+	/// </summary>
 	public FtpSecure FtpSecure { get; set; }
 
+	/// <summary>
+	/// Gets or sets a value indicating whether to use a secure WebDAV connection. (Obsolete - use Secure)
+	/// </summary>
 	[Obsolete("Use Secure")]
 	public bool WebdavSecure
 	{
@@ -253,6 +328,9 @@ public sealed class SessionOptions
 		}
 	}
 
+	/// <summary>
+	/// Gets or sets the root path for WebDAV. (Obsolete - use RootPath)
+	/// </summary>
 	[Obsolete("Use RootPath")]
 	public string WebdavRoot
 	{
@@ -266,6 +344,9 @@ public sealed class SessionOptions
 		}
 	}
 
+	/// <summary>
+	/// Gets or sets the TLS host certificate fingerprint for verification.
+	/// </summary>
 	public string TlsHostCertificateFingerprint
 	{
 		get
@@ -278,12 +359,24 @@ public sealed class SessionOptions
 		}
 	}
 
+	/// <summary>
+	/// Gets or sets a value indicating whether to give up security and accept any TLS host certificate.
+	/// </summary>
 	public bool GiveUpSecurityAndAcceptAnyTlsHostCertificate { get; set; }
 
+	/// <summary>
+	/// Gets or sets the path to the TLS client certificate file.
+	/// </summary>
 	public string TlsClientCertificatePath { get; set; }
 
+	/// <summary>
+	/// Gets the dictionary of raw settings for advanced configuration.
+	/// </summary>
 	internal Dictionary<string, string> RawSettings { get; private set; }
 
+	/// <summary>
+	/// Gets a value indicating whether the protocol is SSH-based (SFTP or SCP).
+	/// </summary>
 	internal bool IsSsh
 	{
 		get
@@ -296,19 +389,36 @@ public sealed class SessionOptions
 		}
 	}
 
+	/// <summary>
+	/// Gets a value indicating whether the connection uses TLS/SSL encryption.
+	/// </summary>
 	internal bool IsTls => GetIsTls();
 
+	/// <summary>
+	/// Initializes a new instance of the <see cref="SessionOptions"/> class with default settings.
+	/// </summary>
 	public SessionOptions()
 	{
 		Timeout = new TimeSpan(0, 0, 15);
 		RawSettings = new Dictionary<string, string>();
 	}
 
+	/// <summary>
+	/// Adds a raw setting for advanced configuration.
+	/// </summary>
+	/// <param name="setting">The setting name.</param>
+	/// <param name="value">The setting value.</param>
 	public void AddRawSettings(string setting, string value)
 	{
 		RawSettings.Add(setting, value);
 	}
 
+	/// <summary>
+	/// Parses a URL and configures the session options accordingly.
+	/// </summary>
+	/// <param name="url">The URL to parse in format: protocol://[username[:password]@]hostname[:port][/path][;fingerprint=...][;x-parameterName=...]</param>
+	/// <exception cref="ArgumentNullException">Thrown when url is null.</exception>
+	/// <exception cref="ArgumentException">Thrown when the URL format is invalid.</exception>
 	public void ParseUrl(string url)
 	{
 		if (url == null)
@@ -660,6 +770,10 @@ public sealed class SessionOptions
 		return "session";
 	}
 
+	/// <summary>
+	/// Returns the session name.
+	/// </summary>
+	/// <returns>The session name.</returns>
 	public override string ToString()
 	{
 		return Name;

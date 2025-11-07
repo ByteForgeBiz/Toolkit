@@ -4,6 +4,9 @@ using System.Runtime.InteropServices;
 
 namespace ByteForge.WinSCP;
 
+/// <summary>
+/// Represents Unix-style file permissions.
+/// </summary>
 [Guid("90A290B2-C8CE-4900-8C42-7736F9E435C6")]
 [ClassInterface(ClassInterfaceType.AutoDispatch)]
 [ComVisible(true)]
@@ -21,6 +24,11 @@ public sealed class FilePermissions
 
 	private bool _readOnly;
 
+	/// <summary>
+	/// Gets or sets the numeric representation of the permissions.
+	/// </summary>
+	/// <exception cref="ArgumentOutOfRangeException">Thrown when value is not between 0 and 4095.</exception>
+	/// <exception cref="InvalidOperationException">Thrown when trying to modify read-only permissions.</exception>
 	public int Numeric
 	{
 		get
@@ -41,6 +49,9 @@ public sealed class FilePermissions
 		}
 	}
 
+	/// <summary>
+	/// Gets or sets the text representation of the permissions (e.g., "rwxrwxrwx").
+	/// </summary>
 	public string Text
 	{
 		get
@@ -53,6 +64,10 @@ public sealed class FilePermissions
 		}
 	}
 
+	/// <summary>
+	/// Gets or sets the octal representation of the permissions (e.g., "755").
+	/// </summary>
+	/// <exception cref="ArgumentException">Thrown when value is not a valid 3 or 4-digit octal number.</exception>
 	public string Octal
 	{
 		get
@@ -70,6 +85,9 @@ public sealed class FilePermissions
 		}
 	}
 
+	/// <summary>
+	/// Gets or sets a value indicating whether others have execute permission.
+	/// </summary>
 	public bool OtherExecute
 	{
 		get
@@ -82,6 +100,9 @@ public sealed class FilePermissions
 		}
 	}
 
+	/// <summary>
+	/// Gets or sets a value indicating whether others have write permission.
+	/// </summary>
 	public bool OtherWrite
 	{
 		get
@@ -94,6 +115,9 @@ public sealed class FilePermissions
 		}
 	}
 
+	/// <summary>
+	/// Gets or sets a value indicating whether others have read permission.
+	/// </summary>
 	public bool OtherRead
 	{
 		get
@@ -106,6 +130,9 @@ public sealed class FilePermissions
 		}
 	}
 
+	/// <summary>
+	/// Gets or sets a value indicating whether the group has execute permission.
+	/// </summary>
 	public bool GroupExecute
 	{
 		get
@@ -118,6 +145,9 @@ public sealed class FilePermissions
 		}
 	}
 
+	/// <summary>
+	/// Gets or sets a value indicating whether the group has write permission.
+	/// </summary>
 	public bool GroupWrite
 	{
 		get
@@ -130,6 +160,9 @@ public sealed class FilePermissions
 		}
 	}
 
+	/// <summary>
+	/// Gets or sets a value indicating whether the group has read permission.
+	/// </summary>
 	public bool GroupRead
 	{
 		get
@@ -142,6 +175,9 @@ public sealed class FilePermissions
 		}
 	}
 
+	/// <summary>
+	/// Gets or sets a value indicating whether the user (owner) has execute permission.
+	/// </summary>
 	public bool UserExecute
 	{
 		get
@@ -154,6 +190,9 @@ public sealed class FilePermissions
 		}
 	}
 
+	/// <summary>
+	/// Gets or sets a value indicating whether the user (owner) has write permission.
+	/// </summary>
 	public bool UserWrite
 	{
 		get
@@ -166,6 +205,9 @@ public sealed class FilePermissions
 		}
 	}
 
+	/// <summary>
+	/// Gets or sets a value indicating whether the user (owner) has read permission.
+	/// </summary>
 	public bool UserRead
 	{
 		get
@@ -178,6 +220,9 @@ public sealed class FilePermissions
 		}
 	}
 
+	/// <summary>
+	/// Gets or sets a value indicating whether the sticky bit is set.
+	/// </summary>
 	public bool Sticky
 	{
 		get
@@ -190,6 +235,9 @@ public sealed class FilePermissions
 		}
 	}
 
+	/// <summary>
+	/// Gets or sets a value indicating whether the set-group-ID bit is set.
+	/// </summary>
 	public bool SetGid
 	{
 		get
@@ -202,6 +250,9 @@ public sealed class FilePermissions
 		}
 	}
 
+	/// <summary>
+	/// Gets or sets a value indicating whether the set-user-ID bit is set.
+	/// </summary>
 	public bool SetUid
 	{
 		get
@@ -214,21 +265,37 @@ public sealed class FilePermissions
 		}
 	}
 
+	/// <summary>
+	/// Initializes a new instance of the <see cref="FilePermissions"/> class with default (zero) permissions.
+	/// </summary>
 	public FilePermissions()
 		: this(0)
 	{
 	}
 
+	/// <summary>
+	/// Initializes a new instance of the <see cref="FilePermissions"/> class with the specified numeric permissions.
+	/// </summary>
+	/// <param name="numeric">The numeric representation of the permissions.</param>
 	public FilePermissions(int numeric)
 	{
 		Numeric = numeric;
 	}
 
+	/// <summary>
+	/// Returns the text representation of the permissions.
+	/// </summary>
+	/// <returns>The permissions as a text string (e.g., "rwxrwxrwx").</returns>
 	public override string ToString()
 	{
 		return Text;
 	}
 
+	/// <summary>
+	/// Creates a read-only permissions object from a text representation.
+	/// </summary>
+	/// <param name="text">The text representation of the permissions.</param>
+	/// <returns>A read-only <see cref="FilePermissions"/> object.</returns>
 	internal static FilePermissions CreateReadOnlyFromText(string text)
 	{
 		return new FilePermissions
@@ -238,6 +305,12 @@ public sealed class FilePermissions
 		};
 	}
 
+	/// <summary>
+	/// Converts a text representation of permissions to numeric form.
+	/// </summary>
+	/// <param name="text">The text representation (e.g., "rwxrwxrwx").</param>
+	/// <returns>The numeric representation of the permissions.</returns>
+	/// <exception cref="ArgumentException">Thrown when text is not a valid permissions string.</exception>
 	internal static int TextToNumeric(string text)
 	{
 		if (text.Length != "rwxrwxrwx".Length)

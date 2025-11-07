@@ -10,18 +10,18 @@ namespace ByteForge.Toolkit.CommandLine;
 /// </summary>
 public static class CommandBuilder
 {
-    private static readonly HashSet<Type> _supportedParameterTypes = new HashSet<Type>()
-    {
+    private static readonly HashSet<Type> _supportedParameterTypes =
+    [
         typeof(string),     typeof(int),        typeof(long),       typeof(float),
         typeof(double),     typeof(decimal),    typeof(bool),       typeof(DateTime),
         typeof(Guid)
-    };
+    ];
 
     /// <summary>
     /// Gets a collection of tokens and their corresponding values.
     /// </summary>
-    public static ReadOnlyDictionary<string, string> TokenList => new ReadOnlyDictionary<string, string>(_tokenList);
-    private static readonly Dictionary<string, string> _tokenList = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+    public static ReadOnlyDictionary<string, string> TokenList => new(_tokenList);
+    private static readonly Dictionary<string, string> _tokenList = new(StringComparer.OrdinalIgnoreCase);
 
     /// <summary>
     /// Builds commands from the specified assembly path.
@@ -364,7 +364,7 @@ public static class CommandBuilder
     /// <returns>A collection of normalized aliases.</returns>
     private static IEnumerable<string> NormalizeAlias(string[]? aliases)
     {
-        if (aliases == null || aliases.Length == 0) return Array.Empty<string>();
+        if (aliases == null || aliases.Length == 0) return [];
         return aliases.Select(a => a.TrimStart('-', '/')).SelectMany(a => GenerateAliases(a)).Distinct();
     }
 
@@ -417,7 +417,7 @@ public static class CommandBuilder
     /// </summary>
     private class NameTracker : IEnumerable<string>
     {
-        private readonly HashSet<string> _usedNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        private readonly HashSet<string> _usedNames = new(StringComparer.OrdinalIgnoreCase);
 
         /// <summary>
         /// Tries to add a name to the tracker.

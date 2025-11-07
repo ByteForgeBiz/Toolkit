@@ -363,6 +363,4 @@ MigrationBackup/
 FodyWeavers.xsd
 
 # Ignore the auto-generated file
-.robocopy_status
-CopyFiles.bat
-/version.txt
+SHFB/Help/

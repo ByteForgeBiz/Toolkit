@@ -5,21 +5,39 @@ using System.Xml;
 
 namespace ByteForge.WinSCP;
 
+/// <summary>
+/// Represents an exception that occurred on the remote server.
+/// </summary>
 [Guid("0E8BBC73-AF4D-4E7E-995C-EB89D0BFDE9A")]
 [ClassInterface(ClassInterfaceType.AutoDispatch)]
 [ComVisible(true)]
 public sealed class SessionRemoteException : SessionException
 {
+	/// <summary>
+	/// Initializes a new instance of the <see cref="SessionRemoteException"/> class.
+	/// </summary>
+	/// <param name="session">The session associated with this exception.</param>
+	/// <param name="message">The error message.</param>
 	internal SessionRemoteException(Session session, string message)
 		: base(session, message)
 	{
 	}
 
+	/// <summary>
+	/// Determines whether the specified reader contains a result element.
+	/// </summary>
+	/// <param name="reader">The log reader.</param>
+	/// <returns>True if the reader is positioned at a result element; otherwise, false.</returns>
 	internal static bool IsResult(CustomLogReader reader)
 	{
 		return reader.IsNonEmptyElement("result");
 	}
 
+	/// <summary>
+	/// Reads a result element from the log reader and returns an exception if the result indicates failure.
+	/// </summary>
+	/// <param name="areader">The log reader.</param>
+	/// <returns>A new <see cref="SessionRemoteException"/> if the operation failed; otherwise, null.</returns>
 	internal static SessionRemoteException ReadResult(CustomLogReader areader)
 	{
 		SessionRemoteException result = null;
@@ -30,6 +48,11 @@ public sealed class SessionRemoteException : SessionException
 		return result;
 	}
 
+	/// <summary>
+	/// Reads a failure element from the log reader and returns an exception.
+	/// </summary>
+	/// <param name="reader">The log reader.</param>
+	/// <returns>A new <see cref="SessionRemoteException"/> containing the failure message.</returns>
 	internal static SessionRemoteException ReadFailure(CustomLogReader reader)
 	{
 		return ReadMessages(reader);

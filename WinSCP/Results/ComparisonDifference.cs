@@ -4,6 +4,9 @@ using System.Runtime.InteropServices;
 
 namespace ByteForge.WinSCP;
 
+/// <summary>
+/// Represents a difference between local and remote files found during synchronization comparison.
+/// </summary>
 [Guid("97F5222E-9379-4C24-9E50-E93C7334BBD5")]
 [ClassInterface(ClassInterfaceType.AutoDispatch)]
 [ComVisible(true)]
@@ -13,20 +16,41 @@ public sealed class ComparisonDifference
 
 	private readonly string _remotePath;
 
+	/// <summary>
+	/// Gets or sets the action to be taken on this difference.
+	/// </summary>
 	public SynchronizationAction Action { get; internal set; }
 
+	/// <summary>
+	/// Gets or sets a value indicating whether the difference is for a directory.
+	/// </summary>
 	public bool IsDirectory { get; internal set; }
 
+	/// <summary>
+	/// Gets or sets the local file information for this difference.
+	/// </summary>
 	public ComparisonFileInfo Local { get; internal set; }
 
+	/// <summary>
+	/// Gets or sets the remote file information for this difference.
+	/// </summary>
 	public ComparisonFileInfo Remote { get; internal set; }
 
+	/// <summary>
+	/// Initializes a new instance of the <see cref="ComparisonDifference"/> class.
+	/// </summary>
+	/// <param name="localPath">The local root path.</param>
+	/// <param name="remotePath">The remote root path.</param>
 	internal ComparisonDifference(string localPath, string remotePath)
 	{
 		_localPath = localPath;
 		_remotePath = remotePath;
 	}
 
+	/// <summary>
+	/// Returns a string representation of the difference.
+	/// </summary>
+	/// <returns>A string describing the synchronization action.</returns>
 	public override string ToString()
 	{
 		switch (Action)
@@ -74,6 +98,13 @@ public sealed class ComparisonDifference
 		return Local.FileName + (IsDirectory ? "\\" : string.Empty);
 	}
 
+	/// <summary>
+	/// Resolves the difference by performing the appropriate file operation.
+	/// </summary>
+	/// <param name="session">The WinSCP session to use for operations.</param>
+	/// <param name="options">Optional transfer options.</param>
+	/// <returns>A <see cref="FileOperationEventArgs"/> containing the result, or null for directory operations.</returns>
+	/// <exception cref="ArgumentNullException">Thrown when session is null.</exception>
 	public FileOperationEventArgs Resolve(Session session, TransferOptions options = null)
 	{
 		if (session == null)
@@ -126,6 +157,9 @@ public sealed class ComparisonDifference
 		}
 	}
 
+	/// <summary>
+	/// Reverses the action for this difference.
+	/// </summary>
 	public void Reverse()
 	{
 		switch (Action)

@@ -1,0 +1,2054 @@
+/* CSS Custom Properties for theming */
+:root {
+    /* Light theme colors */
+    --primary-bg: #ffffff;
+    --secondary-bg: #f8f9fa;
+    --tertiary-bg: #e9ecef;
+    --text-primary: #212529;
+    --text-secondary: #495057;
+    --text-muted: #6c757d;
+    --border-color: #dee2e6;
+    --link-color: #0066cc;
+    --link-hover: #0056b3;
+    --header-bg: #2c3e50;
+    --header-text: #ecf0f1;
+    --code-bg: #f8f9fa;
+    --code-border: #e9ecef;
+    --sidebar-bg: #f8f9fa;
+    --highlight-bg: #fff3cd;
+    --warning-bg: #f8d7da;
+    --info-bg: #d1ecf1;
+    --success-bg: #d4edda;
+    /* Shadows */
+    --shadow-light: 0 2px 4px rgba(0, 0, 0, 0.1);
+    --shadow-medium: 0 4px 12px rgba(0, 0, 0, 0.15);
+    --shadow-heavy: 0 8px 24px rgba(0, 0, 0, 0.2);
+    /* Spacing */
+    --spacing-xs: 0.25rem;
+    --spacing-sm: 0.5rem;
+    --spacing-md: 1rem;
+    --spacing-lg: 1.5rem;
+    --spacing-xl: 2rem;
+    --spacing-xxl: 3rem;
+    /* Border radius */
+    --border-radius-sm: 4px;
+    --border-radius-md: 8px;
+    --border-radius-lg: 12px;
+    /* Typography */
+    --font-family-base: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    --font-family-mono: "SFMono-Regular", Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    --font-size-xs: 0.75rem;
+    --font-size-sm: 0.875rem;
+    --font-size-base: 1rem;
+    --font-size-lg: 1.125rem;
+    --font-size-xl: 1.25rem;
+    --font-size-xxl: 1.5rem;
+    --line-height-tight: 1.25;
+    --line-height-normal: 1.5;
+    --line-height-relaxed: 1.75;
+    /* Light theme text colors - for use on white/light backgrounds */
+    --text-01: #0a0a0a; /* Primary - Highest importance, body text */
+    --text-02: #1a1a1a; /* Secondary - Headings, key content */
+    --text-03: #404040; /* Tertiary - Supporting text */
+    --text-04: #666666; /* Quaternary - Less important details */
+    --text-05: #8c8c8c; /* Quinary - Hints, metadata, placeholders */
+    --text-06: #b3b3b3; /* Senary - Disabled, very subtle text */
+    --text-01-i: #ffffff; /* Primary - Highest importance, body text */
+    --text-02-i: #f0f0f0; /* Secondary - Headings, key content */
+    --text-03-i: #d4d4d4; /* Tertiary - Supporting text */
+    --text-04-i: #a3a3a3; /* Quaternary - Less important details */
+    --text-05-i: #737373; /* Quinary - Hints, metadata, placeholders */
+    --text-06-i: #525252; /* Senary - Disabled, very subtle text */
+    /* code colors */
+    --code-bg: #f4f4f4;
+    --code-text: #000066;
+    --keyword-color: #0000ff;
+    --literal-color: #cc0000;
+}
+
+/* Dark theme colors - IMPROVED CONTRAST */
+[data-theme="dark"] {
+    --primary-bg: #1a1d21;
+    --secondary-bg: #22262b;
+    --tertiary-bg: #2d3238;
+    --text-primary: #f0f2f5; /* Much brighter white for main text */
+    --text-secondary: #c9d1d9; /* Brighter secondary text */
+    --text-muted: #8b949e; /* Still muted but more readable */
+    --border-color: #3d444d;
+    --link-color: #58a6ff; /* Brighter blue for better contrast */
+    --link-hover: #79b8ff;
+    --header-bg: #0d1117;
+    --header-text: #f0f2f5;
+    --code-bg: #161b22;
+    --code-border: #30363d;
+    --sidebar-bg: #161b22;
+    --highlight-bg: #3b4b1f;
+    --warning-bg: #4d1f24;
+    --info-bg: #1f3a4d;
+    --success-bg: #1f4d2f;
+    /* Dark theme text colors - for use on dark backgrounds */
+    --text-01: #ffffff; /* Primary - Highest importance, body text */
+    --text-02: #f0f0f0; /* Secondary - Headings, key content */
+    --text-03: #d4d4d4; /* Tertiary - Supporting text */
+    --text-04: #a3a3a3; /* Quaternary - Less important details */
+    --text-05: #737373; /* Quinary - Hints, metadata, placeholders */
+    --text-06: #525252; /* Senary - Disabled, very subtle text */
+    --text-01-i: #0a0a0a; /* Primary - Highest importance, body text */
+    --text-02-i: #1a1a1a; /* Secondary - Headings, key content */
+    --text-03-i: #404040; /* Tertiary - Supporting text */
+    --text-04-i: #666666; /* Quaternary - Less important details */
+    --text-05-i: #8c8c8c; /* Quinary - Hints, metadata, placeholders */
+    --text-06-i: #b3b3b3; /* Senary - Disabled, very subtle text */
+    /* code colors */
+    --code-bg: #2d2d2d;
+    --code-text: #7bb3ff;
+    --keyword-color: #569cd6;
+    --literal-color: #ff8080;
+}
+
+/* Automatic dark theme based on system preference */
+@media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+        --primary-bg: #1a1d21;
+        --secondary-bg: #22262b;
+        --tertiary-bg: #2d3238;
+        --text-primary: #f0f2f5;
+        --text-secondary: #c9d1d9;
+        --text-muted: #8b949e;
+        --border-color: #3d444d;
+        --link-color: #58a6ff;
+        --link-hover: #79b8ff;
+        --header-bg: #0d1117;
+        --header-text: #f0f2f5;
+        --code-bg: #161b22;
+        --code-border: #30363d;
+        --sidebar-bg: #161b22;
+        --highlight-bg: #3b4b1f;
+        --warning-bg: #4d1f24;
+        --info-bg: #1f3a4d;
+        --success-bg: #1f4d2f;
+        /* Dark theme text colors - for use on dark backgrounds */
+        --text-01: #ffffff; /* Primary - Highest importance, body text */
+        --text-02: #f0f0f0; /* Secondary - Headings, key content */
+        --text-03: #d4d4d4; /* Tertiary - Supporting text */
+        --text-04: #a3a3a3; /* Quaternary - Less important details */
+        --text-05: #737373; /* Quinary - Hints, metadata, placeholders */
+        --text-06: #525252; /* Senary - Disabled, very subtle text */
+        --text-01-i: #0a0a0a; /* Primary - Highest importance, body text */
+        --text-02-i: #1a1a1a; /* Secondary - Headings, key content */
+        --text-03-i: #404040; /* Tertiary - Supporting text */
+        --text-04-i: #666666; /* Quaternary - Less important details */
+        --text-05-i: #8c8c8c; /* Quinary - Hints, metadata, placeholders */
+        --text-06-i: #b3b3b3; /* Senary - Disabled, very subtle text */
+        /* code colors */
+        --code-bg: #2d2d2d;
+        --code-text: #7bb3ff;
+        --keyword-color: #569cd6;
+        --literal-color: #ff8080;
+    }
+}
+
+/* Hide the TOC and In This Article columns when printed */
+@media print {
+    #ShowHideTOCColumn, #TOCColumn, #InThisArticleColumn {
+        display: none;
+    }
+
+    #TopicContent {
+        flex: none;
+        width: 100%;
+    }
+}
+
+/* Additional styles for SHFB documentation websites */
+.sticky {
+    position: sticky;
+    top: 10px;
+}
+
+.border-top {
+    border-block-start: 1px solid #e6e6e6;
+}
+
+.border-bottom {
+    border-block-end: 1px solid #e6e6e6;
+    padding-bottom: 10px;
+}
+
+.pageHeader {
+    background-color: #333333;
+    color: #d0d0d0;
+}
+
+.is-active-quickLink {
+    border-left: 5px solid #dbdbdb;
+}
+
+/* Shrink the margin on the header just below the notes div */
+.content div#Notes + h2:not(:first-child) {
+    margin-top: 5px;
+}
+
+/* Add a top margin when there is no title in a section */
+.noTitle {
+    margin-top: 1em;
+}
+
+/* Allow centering of basic div elements */
+div.is-centered {
+    display: flex;
+    justify-content: center;
+}
+
+/* Fix spacing on non-clickable breadcrumb items without a link */
+.breadcrumb p {
+    align-items: center;
+    display: flex;
+    justify-content: center;
+    padding: 0 0.75em;
+}
+
+/* Underline content, footer, and breadcrumb anchors when hovered */
+.content a:hover, .footer a:hover, .breadcrumb a:hover {
+    text-decoration: underline;
+}
+
+/* Add an outer border to tables */
+.content table {
+    border: 1px solid #dbdbdb;
+}
+
+/* MAML and XML comments element styles */
+.content h4 {
+    margin-top: 0.8em;
+    margin-bottom: .5em;
+}
+
+.content #seeAlsoSection h4 {
+    margin-bottom: 0;
+}
+
+.content hr {
+    background-color: lightgrey;
+}
+
+.content div.caption {
+    font-style: italic;
+    padding-top: 0.75em;
+    padding-bottom: 0.75em;
+}
+
+.content dt {
+    font-weight: 600;
+}
+
+.content dd {
+    margin-bottom: 1em;
+}
+
+.content q {
+    font-style: italic;
+}
+
+.content .mediaInline {
+    padding-left: .25em;
+    padding-right: .25em;
+    vertical-align: top;
+}
+
+.content .mediaNear {
+    text-align: left;
+    margin-top: 1em;
+    margin-bottom: 1em;
+}
+
+.content .mediaCenter {
+    text-align: center;
+    margin-top: 1em;
+    margin-bottom: 1em;
+}
+
+.content .mediaFar {
+    text-align: right;
+    margin-top: 1em;
+    margin-bottom: 1em;
+}
+
+/* Corrected selectors with theming */
+.content span.code,
+.content span.command,
+.content span.parameter {
+    font-family: Consolas, Courier, monospace;
+    color: var(--code-text);
+    background-color: var(--code-bg);
+}
+
+.content span.selflink {
+    font-family: Consolas, Courier, monospace;
+    color: var(--code-text);
+}
+
+.content span.keyword {
+    font-family: Consolas, Courier, monospace;
+    color: var(--keyword-color);
+}
+
+.content span.literal {
+    color: var(--literal-color);
+}
+
+.content ul.noBullet {
+    list-style-type: none;
+    margin-left: 1em;
+}
+
+.content ul ul.noBullet {
+    list-style-type: none;
+    margin-left: 1em;
+}
+
+.content ul ul ul.noBullet {
+    list-style-type: none;
+    margin-left: 1em;
+}
+
+.content li ul {
+    margin-bottom: 1em;
+}
+
+.content thead th {
+    background-color: #ededed;
+    text-align: left;
+}
+
+.missing {
+    color: #dc143c;
+    font-weight: bold;
+}
+
+/* Inheritance hierarchy styles */
+.inheritanceHierarchy, .implementsList {
+    display: flex;
+    margin-bottom: 1em;
+}
+
+    .inheritanceHierarchy dd, .implementsList dd {
+        margin-left: 1em;
+        margin-bottom: 0;
+    }
+
+/* Code block styles */
+.codeHeader {
+    background-color: #e6e6e6;
+    box-sizing: content-box;
+    color: #171717;
+    display: flex;
+    flex-direction: row;
+    margin-top: 1em;
+    padding-top: 0.2em;
+    padding-bottom: 0.2em;
+    padding-right: 0.2em;
+}
+
+    .codeHeader a:hover {
+        text-decoration: none;
+    }
+
+    .codeHeader .button {
+        padding-top: 0.1em;
+        padding-bottom: 0.1em;
+    }
+
+.codeHeaderTitle {
+    font-weight: 600;
+    margin: .3em;
+    margin-left: 1em;
+    flex-grow: 2;
+}
+
+.codePanel {
+    padding: 1em;
+    margin-bottom: 1em;
+    flex: 1;
+}
+
+    .codePanel pre {
+        padding: 0em;
+        line-height: 1.37;
+    }
+
+.codeWithNumbers {
+    display: flex;
+}
+
+    .codeWithNumbers .lineNumbers {
+        border: 1px solid lightgrey;
+        flex-shrink: 1;
+        text-align: right;
+        margin-bottom: 1em;
+    }
+
+        .codeWithNumbers .lineNumbers pre {
+            background: transparent;
+            padding-left: 0.50em;
+            padding-right: 0.50em;
+            line-height: 1.37
+        }
+
+    .codeWithNumbers .numbered {
+        flex: 1;
+        overflow-x: auto;
+    }
+
+/* Glossary styles */
+div.glossaryDiv {
+}
+
+div.glossaryLetterBar {
+}
+
+hr.glossaryRule {
+}
+
+h3.glossaryGroupHeading {
+    color: #808080;
+}
+
+div.glossaryGroup {
+}
+
+dl.glossaryGroupList {
+    margin: 0;
+    color: Black;
+}
+
+dt.glossaryEntry {
+    margin-left: 2em;
+}
+
+dd.glossaryEntry {
+    margin-left: 2em;
+    margin-bottom: 2em;
+}
+
+div.relatedEntry {
+    margin-bottom: 4px;
+}
+
+/* Bibliography styles */
+span.bibliographyAuthor {
+    font-weight: bold;
+}
+
+span.bibliographyTitle {
+    font-style: italic;
+}
+
+span.bibliographyPublisher {
+}
+
+sup.citation a:link a:visited a:active {
+    text-decoration: none;
+}
+
+/* Expand/collapse toggles */
+.toggle {
+    transition: transform .35s ease;
+    transform-origin: center;
+    cursor: pointer;
+}
+
+.toggleSection {
+    transition: transform .35s ease;
+    transform-origin: center;
+    margin-right: 0.25em;
+    cursor: pointer;
+}
+
+.toggleExpanded {
+    transform: rotate(90deg)
+}
+
+.toggleCollapsed {
+    transform: rotate(-90deg)
+}
+
+/* Table of contents styles */
+.toc {
+    font-size: 1rem;
+}
+
+.toc-menu {
+    line-height: 2em;
+}
+
+    .toc-menu a {
+        border-radius: 2px;
+        color: #4a4a4a;
+        display: block;
+        padding-left: 0.75em;
+    }
+
+        .toc-menu a:hover {
+            background-color: whitesmoke;
+            color: #363636;
+        }
+
+        .toc-menu a.is-active {
+            font-weight: bold;
+        }
+
+    .toc-menu li ul {
+        padding-left: 1em;
+    }
+
+    .toc-menu li a.has-submenu {
+        margin-left: 0em;
+    }
+
+/* Resizable TOC styles */
+.toc-resizable {
+    flex-basis: initial;
+    flex-grow: 0.25;
+}
+
+.toc-resizer {
+    cursor: ew-resize;
+    width: 5px;
+    background: #e6e6e6;
+    margin-top: 8px;
+    margin-bottom: 12px;
+}
+
+.toc-resizable-content {
+    flex-grow: 1;
+}
+
+/* =========================================================================
+   Modern Responsive Light/Dark Theme for SHFB Documentation
+   Fixed contrast issues and sticky header/footer
+   ========================================================================= */
+
+/* Base styles */
+* {
+    box-sizing: border-box;
+}
+
+html {
+    scroll-behavior: smooth;
+    font-size: 16px;
+    height: 100%;
+}
+
+body {
+    font-family: var(--font-family-base);
+    font-size: var(--font-size-base);
+    line-height: var(--line-height-normal);
+    color: var(--text-primary);
+    background-color: var(--primary-bg);
+    margin: 0;
+    padding: 0;
+    min-height: 100vh;
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* SHFB Fixed Layout Container */
+.fixedLayout {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    position: relative;
+}
+
+/* Fixed Header Styles */
+.fixedHeader,
+#Header,
+.pageHeader {
+    background: var(--header-bg);
+    color: var(--header-text);
+    position: fixed !important;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+    box-shadow: var(--shadow-medium);
+}
+
+.pageHeader {
+    padding: var(--spacing-sm) var(--spacing-lg);
+    background: var(--header-bg) !important;
+}
+
+    .pageHeader .level {
+        margin-bottom: 0 !important;
+    }
+
+    .pageHeader .level-item {
+        color: var(--header-text);
+    }
+
+#DocumentationTitle {
+    color: var(--header-text) !important;
+    font-weight: 600;
+    font-size: var(--font-size-lg);
+}
+
+/* Fixed Content Area */
+.fixedContent {
+    flex: 1;
+    padding-top: 60px; /* Offset for fixed header */
+    padding-bottom: 80px; /* Offset for fixed footer */
+    overflow-y: auto;
+    background: var(--primary-bg);
+}
+
+/* Fixed Footer Styles */
+.fixedFooter,
+#PageFooter,
+.footer {
+    background: var(--secondary-bg);
+    color: var(--text-primary);
+    border-top: 1px solid var(--border-color);
+    position: fixed !important;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 999;
+    box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.1);
+}
+
+#PageFooter {
+    padding: var(--spacing-sm) var(--spacing-md) !important;
+    background: var(--secondary-bg) !important;
+}
+
+#FooterContent {
+    color: var(--text-secondary);
+    font-size: var(--font-size-sm);
+}
+
+    #FooterContent a {
+        color: var(--link-color);
+    }
+
+/* Theme toggle button */
+.theme-toggle {
+    position: fixed;
+    bottom: 100px;
+    right: var(--spacing-md);
+    z-index: 1001;
+    background: var(--secondary-bg);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-md);
+    padding: var(--spacing-sm) var(--spacing-md);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: var(--shadow-light);
+    font-size: var(--font-size-sm);
+    color: var(--text-primary);
+}
+
+    .theme-toggle:hover {
+        background: var(--tertiary-bg);
+        box-shadow: var(--shadow-medium);
+        transform: translateY(-2px);
+    }
+
+/* Navigation and Search */
+.dropdown-content {
+    background: var(--secondary-bg);
+    box-shadow: var(--shadow-medium);
+}
+
+.dropdown-item {
+    color: var(--text-primary) !important;
+}
+
+    .dropdown-item:hover {
+        background: var(--tertiary-bg);
+        color: var(--text-01-i) !important;
+    }
+
+#SearchTerms {
+    background: var(--secondary-bg);
+    border-color: var(--border-color);
+    color: var(--text-primary);
+}
+
+    #SearchTerms:focus {
+        border-color: var(--link-color);
+        box-shadow: 0 0 0 2px rgba(88, 166, 255, 0.2);
+    }
+
+.input::placeholder {
+    color: var(--text-muted);
+}
+
+/* Content columns */
+#ContentContainer {
+    margin-top: var(--spacing-md);
+    min-height: calc(100vh - 140px);
+}
+
+/* TOC/Sidebar */
+#TOCColumn {
+    background: var(--sidebar-bg);
+    border-radius: var(--border-radius-md);
+    padding: var(--spacing-md);
+    position: sticky;
+    top: 0;
+    max-height: 100vh;
+    overflow-y: auto;
+}
+
+#TableOfContents {
+    list-style: none;
+    padding-left: 0;
+}
+
+    #TableOfContents li {
+        margin: var(--spacing-xs) 0;
+    }
+
+    #TableOfContents a {
+        display: block;
+        padding: var(--spacing-xs) var(--spacing-sm);
+        color: var(--text-secondary);
+        border-radius: var(--border-radius-sm);
+        transition: all 0.2s ease;
+    }
+
+        #TableOfContents a:hover {
+            background: var(--secondary-bg);
+            color: var(--text-primary);
+            text-decoration: none;
+        }
+
+        #TableOfContents a.is-active,
+        #TableOfContents a.is-active-quickLink {
+            background: var(--tertiary-bg);
+            color: var(--link-color);
+            border-left: 3px solid var(--link-color);
+            font-weight: 600;
+        }
+
+/* Main content area */
+#TopicContent {
+    background: var(--primary-bg);
+    padding: var(--spacing-xl);
+    padding-top: 0;
+    color: var(--text-primary);
+    position: sticky;
+    top: 0.5em;
+    height: 100vh;
+    overflow-y: auto;
+}
+
+/* Typography improvements */
+h1, h2, h3, h4, h5, h6 {
+    margin: var(--spacing-xl) 0 var(--spacing-lg) 0;
+    font-weight: 600;
+    line-height: var(--line-height-tight);
+    color: var(--text-primary);
+}
+
+h1 {
+    font-size: var(--font-size-xxl);
+    border-bottom: 2px solid var(--border-color);
+    padding-bottom: var(--spacing-md);
+    color: var(--text-primary);
+}
+
+h2.quickLinkHeader {
+    font-size: var(--font-size-xl);
+    color: var(--text-primary);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+}
+
+    h2.quickLinkHeader:hover {
+        color: var(--link-color);
+    }
+
+.quickLinkHeader .icon {
+    color: var(--text-secondary);
+    transition: transform 0.3s ease;
+}
+
+h3 {
+    font-size: var(--font-size-lg);
+    color: var(--text-primary);
+}
+
+p {
+    margin: var(--spacing-md) 0;
+    line-height: var(--line-height-relaxed);
+    color: var(--text-primary);
+}
+
+/* Links */
+a {
+    color: var(--link-color);
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+    a:hover {
+        color: var(--link-hover);
+        text-decoration: underline;
+    }
+
+/* Lists */
+ul, ol {
+    padding-left: var(--spacing-xl);
+    margin: var(--spacing-md) 0;
+    color: var(--text-primary);
+}
+
+li {
+    margin: var(--spacing-sm) 0;
+    line-height: var(--line-height-relaxed);
+    color: var(--text-primary);
+}
+
+    li strong {
+        color: var(--text-primary);
+        font-weight: 600;
+    }
+
+/* Code styles */
+code {
+    background: var(--code-bg);
+    border: 1px solid var(--code-border);
+    border-radius: var(--border-radius-sm);
+    padding: 2px 6px;
+    font-family: var(--font-family-mono);
+    font-size: 0.875em;
+    color: var(--text-primary);
+}
+
+pre {
+    background: var(--code-bg);
+    border: 1px solid var(--code-border);
+    border-radius: var(--border-radius-md);
+    padding: var(--spacing-lg);
+    overflow-x: auto;
+    font-family: var(--font-family-mono);
+    font-size: var(--font-size-sm);
+    line-height: var(--line-height-normal);
+    box-shadow: var(--shadow-light);
+    color: var(--text-primary);
+}
+
+    pre code {
+        background: none;
+        border: none;
+        padding: 0;
+        color: inherit;
+    }
+
+/* Tables */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: var(--spacing-lg) 0;
+    background: var(--primary-bg);
+    border-radius: var(--border-radius-md);
+    overflow: hidden;
+    box-shadow: var(--shadow-light);
+}
+
+th, td {
+    padding: var(--spacing-md);
+    text-align: left;
+    border-bottom: 1px solid var(--border-color);
+    color: var(--text-primary);
+}
+
+th {
+    background: var(--secondary-bg);
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+tr:hover {
+    background: var(--secondary-bg);
+}
+
+/* Alert boxes */
+.note, .alert, .alert-info {
+    background: var(--info-bg);
+    border-left: 4px solid var(--link-color);
+    color: var(--text-primary);
+}
+
+.alert-warning {
+    background: var(--warning-bg);
+    border-left: 4px solid #ffc107;
+    color: var(--text-primary);
+}
+
+.alert-danger {
+    background: var(--warning-bg);
+    border-left: 4px solid #dc3545;
+    color: var(--text-primary);
+}
+
+.alert-success {
+    background: var(--success-bg);
+    border-left: 4px solid #28a745;
+    color: var(--text-primary);
+}
+
+.note, .alert, .alert-info, .alert-warning, .alert-danger, .alert-success {
+    padding: var(--spacing-lg);
+    margin: var(--spacing-lg) 0;
+    border-radius: var(--border-radius-md);
+    box-shadow: var(--shadow-light);
+}
+
+/* Breadcrumb navigation */
+.breadcrumb {
+    background: var(--secondary-bg);
+    padding: var(--spacing-sm) var(--spacing-md);
+    border-radius: var(--border-radius-sm);
+    margin: var(--spacing-md) 0;
+}
+
+    .breadcrumb a {
+        color: var(--text-secondary);
+    }
+
+        .breadcrumb a:hover {
+            color: var(--link-color);
+        }
+
+/* In This Article menu */
+#InThisArticleColumn {
+    background: var(--sidebar-bg);
+    border-radius: var(--border-radius-md);
+    padding: var(--spacing-md);
+    position: sticky;
+    top: 0px;
+    height: 100vh;
+    overflow-y: auto;
+}
+
+    #InThisArticleColumn nav.menu {
+        top: 5px;
+    }
+
+#InThisArticleMenu {
+    list-style: none;
+    padding-left: 0;
+}
+
+    #InThisArticleMenu li {
+        margin: var(--spacing-xs) 0;
+    }
+
+    #InThisArticleMenu a {
+        display: block;
+        padding: var(--spacing-xs) var(--spacing-sm);
+        color: var(--text-secondary);
+        border-radius: var(--border-radius-sm);
+        transition: all 0.2s ease;
+        font-size: var(--font-size-sm);
+    }
+
+        #InThisArticleMenu a:hover {
+            background: var(--secondary-bg);
+            color: var(--text-primary);
+            text-decoration: none;
+        }
+
+.menu-label {
+    color: var(--text-primary);
+    font-weight: 600;
+    margin-bottom: var(--spacing-sm);
+}
+
+/* Responsive design */
+@media (max-width: 1024px) {
+    .fixedContent {
+        padding-top: 50px;
+        padding-bottom: 70px;
+    }
+
+    #TOCColumn.is-hidden-mobile {
+        transform: translateX(-100%);
+        visibility: hidden;
+    }
+
+    #TOCColumn {
+        position: fixed;
+        top: 0;
+        left: 0;
+        height: calc(100vh - 120px);
+        width: 280px;
+        z-index: 998;
+        transition: transform 0.3s ease;
+        overflow-y: auto;
+        box-shadow: var(--shadow-heavy);
+        background: var(--sidebar-bg);
+    }
+
+    #InThisArticleColumn.is-hidden-mobile {
+        display: none;
+    }
+}
+
+@media (max-width: 768px) {
+    html {
+        font-size: 14px;
+    }
+
+    .fixedContent {
+        padding-top: 45px;
+        padding-bottom: 60px;
+    }
+
+    #TopicContent {
+        padding: var(--spacing-md);
+    }
+
+    .pageHeader {
+        padding: var(--spacing-xs) var(--spacing-md);
+    }
+
+    #DocumentationTitle {
+        font-size: var(--font-size-base);
+    }
+
+    #PageFooter {
+        padding: var(--spacing-sm) var(--spacing-md) !important;
+    }
+
+    .theme-toggle {
+        bottom: 80px;
+        right: var(--spacing-sm);
+        padding: var(--spacing-xs) var(--spacing-sm);
+        font-size: var(--font-size-xs);
+    }
+}
+
+@media (max-width: 480px) {
+    #TopicContent {
+        padding: var(--spacing-sm);
+    }
+
+    h1 {
+        font-size: var(--font-size-xl);
+    }
+
+    h2 {
+        font-size: var(--font-size-lg);
+    }
+
+    h3 {
+        font-size: var(--font-size-base);
+    }
+}
+
+/* Print styles */
+@media print {
+    .theme-toggle,
+    .fixedHeader,
+    .fixedFooter,
+    #Header,
+    #PageFooter,
+    #TOCColumn,
+    #InThisArticleColumn,
+    #ShowHideTOCColumn {
+        display: none !important;
+    }
+
+    .fixedContent {
+        padding: 0;
+    }
+
+    body {
+        background: white;
+        color: black;
+    }
+
+    a {
+        color: black;
+        text-decoration: underline;
+    }
+}
+
+/* Utility classes */
+.text-center {
+    text-align: center;
+}
+
+.text-right {
+    text-align: right;
+}
+
+.text-left {
+    text-align: left;
+}
+
+.mb-0 {
+    margin-bottom: 0 !important;
+}
+
+.mb-1 {
+    margin-bottom: var(--spacing-sm) !important;
+}
+
+.mb-2 {
+    margin-bottom: var(--spacing-md) !important;
+}
+
+.mb-3 {
+    margin-bottom: var(--spacing-lg) !important;
+}
+
+.mt-0 {
+    margin-top: 0 !important;
+}
+
+.mt-1 {
+    margin-top: var(--spacing-sm) !important;
+}
+
+.mt-2 {
+    margin-top: var(--spacing-md) !important;
+}
+
+.mt-3 {
+    margin-top: var(--spacing-lg) !important;
+}
+
+.py-2 {
+    padding-top: var(--spacing-md) !important;
+    padding-bottom: var(--spacing-md) !important;
+}
+
+.py-3 {
+    padding-top: var(--spacing-lg) !important;
+    padding-bottom: var(--spacing-lg) !important;
+}
+
+.px-2 {
+    padding-left: var(--spacing-md) !important;
+    padding-right: var(--spacing-md) !important;
+}
+
+.px-4 {
+    padding-left: var(--spacing-xl) !important;
+    padding-right: var(--spacing-xl) !important;
+}
+
+.pl-5 {
+    padding-left: calc(var(--spacing-xl) * 1.5) !important;
+}
+
+.pr-5 {
+    padding-right: calc(var(--spacing-xl) * 1.5) !important;
+}
+
+/* Accessibility improvements */
+a:focus,
+button:focus,
+input:focus,
+select:focus,
+textarea:focus,
+.theme-toggle:focus-visible {
+    outline: 2px solid var(--link-color);
+    outline-offset: 2px;
+}
+
+/* Skip link for accessibility */
+.skip-link {
+    position: absolute;
+    top: -40px;
+    left: 0;
+    background: var(--header-bg);
+    color: var(--header-text);
+    padding: var(--spacing-sm) var(--spacing-md);
+    text-decoration: none;
+    z-index: 1001;
+}
+
+    .skip-link:focus {
+        top: 0;
+    }
+
+/* SHFB-specific classes */
+.sticky {
+    position: sticky;
+    top: 80px;
+}
+
+.border-top {
+    border-top: 1px solid var(--border-color);
+}
+
+.border-bottom {
+    border-bottom: 1px solid var(--border-color);
+}
+
+.quickLink {
+    color: var(--text-secondary);
+}
+
+    .quickLink:hover {
+        color: var(--link-color);
+    }
+
+/* Toggle section icons */
+.toggleSection {
+    cursor: pointer;
+    user-select: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    transition: transform 0.3s ease;
+}
+
+    .toggleSection.collapsed {
+        transform: rotate(-90deg);
+    }
+
+/* Copy code button */
+.copyCode {
+    background: var(--secondary-bg);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-sm);
+    padding: var(--spacing-xs) var(--spacing-sm);
+    font-size: var(--font-size-xs);
+    cursor: pointer;
+    position: absolute;
+    top: var(--spacing-sm);
+    right: var(--spacing-sm);
+    transition: all 0.3s ease;
+    color: var(--text-primary);
+}
+
+    .copyCode:hover {
+        background: var(--tertiary-bg);
+        color: var(--text-03) !important;
+        transform: translateY(-1px);
+        box-shadow: var(--shadow-light);
+    }
+
+/* Code snippet container */
+.codeSnippetContainer {
+    position: relative;
+    margin: var(--spacing-lg) 0;
+}
+
+/* Improved scrollbar styling */
+::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--secondary-bg);
+    border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--border-color);
+    border-radius: 5px;
+}
+
+    ::-webkit-scrollbar-thumb:hover {
+        background: var(--text-muted);
+    }
+
+/* Smooth transitions */
+* {
+    transition-property: background-color, color, border-color;
+    transition-duration: 0.3s;
+    transition-timing-function: ease;
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+    :root {
+        --text-primary: #000000;
+        --text-secondary: #333333;
+        --border-color: #000000;
+    }
+
+    [data-theme="dark"] {
+        --text-primary: #ffffff;
+        --text-secondary: #e0e0e0;
+        --border-color: #ffffff;
+    }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+    * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+
+    html {
+        scroll-behavior: auto;
+    }
+}
+
+/* Additional visibility classes */
+.is-hidden {
+    display: none !important;
+}
+
+.is-hidden-mobile {
+    display: block;
+}
+
+.is-hidden-tablet {
+    display: block;
+}
+
+@media (max-width: 768px) {
+    .is-hidden-mobile {
+        display: none !important;
+    }
+}
+
+@media (max-width: 1024px) {
+    .is-hidden-tablet {
+        display: none !important;
+    }
+}
+
+/* Ensure proper column widths */
+.column {
+    padding: var(--spacing-md);
+    flex: 1;
+}
+
+    .column.is-7 {
+        flex: none;
+        width: 58.33333%;
+    }
+
+@media (max-width: 1024px) {
+    .column.is-7 {
+        width: 100%;
+    }
+}
+
+/* Form controls in header */
+.field {
+    margin: 0;
+}
+
+.control {
+    position: relative;
+}
+
+    .control.has-icons-left .input {
+        padding-left: 2.5em;
+    }
+
+    .control .icon {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 2.5em;
+        height: 2.5em;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--text-muted);
+        pointer-events: none;
+    }
+
+        .control .icon.is-left {
+            left: 0;
+        }
+
+/* Button styles */
+.button {
+    background: var(--secondary-bg);
+    border: 1px solid var(--border-color);
+    color: var(--text-primary);
+    padding: var(--spacing-xs) var(--spacing-md);
+    border-radius: var(--border-radius-sm);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+}
+
+    .button:hover {
+        background: var(--tertiary-bg);
+        border-color: var(--link-color);
+    }
+
+/* Dropdown improvements */
+.dropdown {
+    position: relative;
+}
+
+.dropdown-trigger {
+    cursor: pointer;
+}
+
+.dropdown-menu {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    z-index: 1050;
+    min-width: 200px;
+    margin-top: 0px;
+}
+/*
+.dropdown.is-hoverable:hover .dropdown-menu,
+.dropdown.is-active .dropdown-menu {
+    display: block;
+}
+*/
+
+/* Feedback link styling */
+.feedbackLink {
+    margin-top: var(--spacing-md);
+    padding-top: var(--spacing-md);
+    border-top: 1px solid var(--border-color);
+    font-size: var(--font-size-sm);
+    color: var(--text-secondary);
+}
+
+    .feedbackLink a {
+        color: var(--link-color);
+    }
+
+/* =========================================================================
+   ADDITIONAL FIXES FOR IMPROVED DESIGN
+   ========================================================================= */
+
+/* Fix 1: Update headings to use hierarchical text colors */
+h1 {
+    color: var(--text-01) !important;
+    font-weight: 700 !important;
+}
+
+h2 {
+    color: var(--text-02) !important;
+}
+
+    h2.quickLinkHeader {
+        color: var(--text-02) !important;
+    }
+
+h3 {
+    color: var(--text-03) !important;
+}
+
+h4 {
+    color: var(--text-04) !important;
+}
+
+h5 {
+    color: var(--text-05) !important;
+}
+
+h6 {
+    color: var(--text-06) !important;
+}
+
+/* Enhanced h1 contrast for dark mode */
+[data-theme="dark"] h1 {
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+@media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) h1 {
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+    }
+}
+
+/* Fix 2: Code snippet header styling */
+.codeSnippet {
+    position: relative;
+    margin: var(--spacing-lg) 0;
+    border-radius: var(--border-radius-md);
+    overflow: hidden;
+    border: 1px solid var(--code-border);
+}
+
+.codeHeader {
+    background: var(--secondary-bg);
+    border-bottom: 1px solid var(--code-border);
+    padding: var(--spacing-sm) var(--spacing-md);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.codeHeaderTitle {
+    font-family: var(--font-family-mono);
+    font-size: var(--font-size-sm);
+    font-weight: 600;
+    color: var(--text-02);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.codeHeader .buttons {
+    display: flex;
+    gap: var(--spacing-xs);
+}
+
+.codeHeader .copyCode,
+.codeHeader .copyCodeButton,
+.codeHeader button.copyCode {
+    background: var(--tertiary-bg);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-sm);
+    padding: var(--spacing-xs) var(--spacing-sm);
+    font-size: var(--font-size-xs);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    color: var(--text-primary);
+    position: static; /* Override any absolute positioning */
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+    .codeHeader .copyCode:hover,
+    .codeHeader .copyCodeButton:hover,
+    .codeHeader button.copyCode:hover {
+        background: var(--code-bg);
+        border-color: var(--link-color);
+        transform: none; /* Override any transform */
+    }
+
+.codePanel {
+    background: var(--code-bg);
+}
+
+    .codePanel pre {
+        margin: 0;
+        border: none;
+        border-radius: 0;
+    }
+
+/* Fix 3: Improve heading contrast for compound titles with strong tags */
+h1 strong,
+h2 strong,
+h3 strong,
+h4 strong,
+h5 strong,
+h6 strong {
+    color: inherit;
+    font-weight: 700;
+}
+
+/* Fix 4: Override Bulma table styles to respect theme colors */
+.table {
+    background-color: var(--primary-bg) !important;
+    color: var(--text-primary) !important;
+}
+
+    .table td,
+    .table th {
+        background-color: transparent !important;
+        color: var(--text-primary) !important;
+        border-color: var(--border-color) !important;
+    }
+
+    .table th {
+        background-color: var(--secondary-bg) !important;
+        color: var(--text-primary) !important;
+    }
+
+    .table tbody tr:hover {
+        background-color: var(--secondary-bg) !important;
+    }
+
+    .table.is-hoverable tbody tr:not(.is-selected):hover {
+        background-color: var(--secondary-bg) !important;
+    }
+
+/* Ensure table cells have proper background in dark mode */
+[data-theme="dark"] .table,
+[data-theme="dark"] .table td,
+[data-theme="dark"] .table th {
+    background-color: transparent !important;
+}
+
+[data-theme="dark"] .table {
+    background-color: var(--primary-bg) !important;
+}
+
+    [data-theme="dark"] .table th {
+        background-color: var(--secondary-bg) !important;
+    }
+
+@media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) .table {
+        background-color: var(--primary-bg) !important;
+        color: var(--text-primary) !important;
+    }
+
+        :root:not([data-theme="light"]) .table td,
+        :root:not([data-theme="light"]) .table th {
+            background-color: transparent !important;
+            color: var(--text-primary) !important;
+            border-color: var(--border-color) !important;
+        }
+
+        :root:not([data-theme="light"]) .table th {
+            background-color: var(--secondary-bg) !important;
+        }
+}
+
+/* =========================================================================
+   AGGRESSIVE BULMA OVERRIDES
+   These rules fight against Bulma's hardcoded colors for dark theme support
+   ========================================================================= */
+
+/* Override Bulma's hardcoded white table background */
+.table,
+table.table {
+    background-color: var(--primary-bg) !important;
+    color: var(--text-primary) !important;
+}
+
+    .table td,
+    .table th,
+    table.table td,
+    table.table th {
+        background-color: transparent !important;
+        color: var(--text-primary) !important;
+        border-color: var(--border-color) !important;
+    }
+
+    .table th,
+    table.table th {
+        background-color: var(--secondary-bg) !important;
+        color: var(--text-primary) !important;
+    }
+
+    .table thead td,
+    .table thead th,
+    table.table thead td,
+    table.table thead th {
+        background-color: var(--secondary-bg) !important;
+        color: var(--text-primary) !important;
+    }
+
+    .table tbody tr:hover,
+    table.table tbody tr:hover {
+        background-color: var(--secondary-bg) !important;
+    }
+
+    .table.is-hoverable tbody tr:not(.is-selected):hover,
+    table.table.is-hoverable tbody tr:not(.is-selected):hover {
+        background-color: var(--secondary-bg) !important;
+    }
+
+    .table.is-hoverable.is-striped tbody tr:not(.is-selected):hover {
+        background-color: var(--secondary-bg) !important;
+    }
+
+        .table.is-hoverable.is-striped tbody tr:not(.is-selected):hover:nth-child(even) {
+            background-color: var(--tertiary-bg) !important;
+        }
+
+/* Override Bulma's hardcoded code/pre backgrounds */
+code {
+    background-color: var(--code-bg) !important;
+    color: var(--text-primary) !important;
+}
+
+pre {
+    background-color: var(--code-bg) !important;
+    color: var(--text-primary) !important;
+}
+
+    pre code {
+        background-color: transparent !important;
+        color: currentColor !important;
+    }
+
+/* Override Bulma's hardcoded strong color */
+strong {
+    color: var(--text-primary) !important;
+}
+
+/* Ensure headers within elements respect theme */
+.table strong,
+table.table strong,
+h1 strong,
+h2 strong,
+h3 strong,
+h4 strong,
+h5 strong,
+h6 strong {
+    color: inherit !important;
+}
+
+/* Fix any remaining white/light gray backgrounds in dark mode */
+[data-theme="dark"] .table,
+[data-theme="dark"] table.table,
+[data-theme="dark"] .table td,
+[data-theme="dark"] .table th {
+    background-color: transparent !important;
+}
+
+[data-theme="dark"] .table {
+    background-color: var(--primary-bg) !important;
+}
+
+    [data-theme="dark"] .table th,
+    [data-theme="dark"] .table thead th,
+    [data-theme="dark"] .table thead td {
+        background-color: var(--secondary-bg) !important;
+    }
+
+[data-theme="dark"] code,
+[data-theme="dark"] pre {
+    background-color: var(--code-bg) !important;
+    color: var(--text-primary) !important;
+}
+
+[data-theme="dark"] strong {
+    color: var(--text-primary) !important;
+}
+
+@media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) .table,
+    :root:not([data-theme="light"]) table.table,
+    :root:not([data-theme="light"]) .table td,
+    :root:not([data-theme="light"]) .table th {
+        background-color: transparent !important;
+    }
+
+    :root:not([data-theme="light"]) .table {
+        background-color: var(--primary-bg) !important;
+    }
+
+        :root:not([data-theme="light"]) .table th,
+        :root:not([data-theme="light"]) .table thead th,
+        :root:not([data-theme="light"]) .table thead td {
+            background-color: var(--secondary-bg) !important;
+        }
+
+    :root:not([data-theme="light"]) code,
+    :root:not([data-theme="light"]) pre {
+        background-color: var(--code-bg) !important;
+        color: var(--text-primary) !important;
+    }
+
+    :root:not([data-theme="light"]) strong {
+        color: var(--text-primary) !important;
+    }
+}
+
+/* =========================================================================
+   CORRECTED BREADCRUMB FIXES - Using position: fixed
+   This version accounts for the breadcrumb being inside .fixedContent
+   ========================================================================= */
+
+/* Force FIXED positioning for breadcrumb navigation */
+nav.breadcrumb[role="navigation"],
+.breadcrumb.my-1.px-2.border-bottom,
+nav.breadcrumb {
+    position: fixed !important; /* FIXED, not sticky! */
+    top: 72px !important; /* Below the header */
+    left: 0 !important;
+    right: 0 !important;
+    z-index: 998 !important;
+    background: var(--secondary-bg, #22262b) !important;
+    margin: 0 !important;
+    padding: 0.25rem 1rem !important;
+    border-radius: 0 !important;
+    border-bottom: 1px solid var(--border-color, #3d444d) !important;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
+    width: 100% !important;
+    display: block !important;
+}
+
+/* Override Bulma's my-1 and px-2 classes */
+.breadcrumb.my-1 {
+    margin-top: 0 !important;
+    margin-bottom: 0 !important;
+}
+
+.breadcrumb.px-2 {
+    padding-left: 1rem !important;
+    padding-right: 1rem !important;
+}
+
+/* Adjust content container to account for fixed breadcrumb */
+/* Add padding-top to prevent content from going under the breadcrumb */
+#ContentContainer,
+.fixedContent {
+    padding-top: 0 !important; /* breadcrumb height + spacing */
+}
+
+    /* If breadcrumb is first child of fixedContent, add spacing after it */
+    .fixedContent > nav.breadcrumb:first-child ~ * {
+        margin-top: 50px; /* Make room for fixed breadcrumb */
+    }
+
+/* Alternative: Add padding to fixedContent itself */
+.fixedContent {
+    padding-top: calc(60px + 40px) !important; /* header + breadcrumb */
+}
+
+/* Style the breadcrumb list */
+#TopicBreadcrumbs,
+.breadcrumb ul,
+nav.breadcrumb ul {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    align-items: center !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    list-style: none !important;
+    list-style-type: none !important;
+}
+
+    /* Style breadcrumb list items */
+    #TopicBreadcrumbs li,
+    .breadcrumb li,
+    nav.breadcrumb li {
+        display: inline-flex !important;
+        align-items: center !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        color: var(--text-secondary, #c9d1d9) !important;
+        font-size: 0.875rem !important;
+    }
+
+        /* Remove padding from breadcrumb paragraphs and links */
+        #TopicBreadcrumbs li p,
+        #TopicBreadcrumbs li a,
+        .breadcrumb li p,
+        .breadcrumb li a {
+            padding: 0.25rem 0 !important;
+            margin: 0 !important;
+            display: inline !important;
+        }
+
+        /* Breadcrumb separators */
+        #TopicBreadcrumbs li + li::before,
+        .breadcrumb li + li::before {
+            content: '/' !important;
+            padding: 0 0.5rem !important;
+            color: var(--text-muted, #8b949e) !important;
+            font-weight: normal !important;
+        }
+
+    /* Breadcrumb links */
+    #TopicBreadcrumbs a,
+    .breadcrumb a {
+        color: var(--text-secondary, #c9d1d9) !important;
+        text-decoration: none !important;
+        transition: color 0.2s ease !important;
+        border-radius: 4px !important;
+        padding: 0.25rem 0.5rem !important;
+        margin: 0 -0.5rem !important;
+    }
+
+        #TopicBreadcrumbs a:hover,
+        .breadcrumb a:hover {
+            color: var(--link-color, #58a6ff) !important;
+            background: var(--tertiary-bg, #2d3238) !important;
+            text-decoration: none !important;
+        }
+
+    /* Current page in breadcrumb (last item) */
+    #TopicBreadcrumbs li:last-child,
+    #TopicBreadcrumbs li:last-child p,
+    .breadcrumb li:last-child,
+    .breadcrumb li:last-child p {
+        color: var(--text-primary, #f0f2f5) !important;
+        font-weight: 500 !important;
+    }
+
+/* Ensure header stays on top of breadcrumb */
+.fixedHeader,
+#Header,
+.pageHeader {
+    z-index: 1000 !important;
+}
+
+/* Mobile adjustments */
+@media (max-width: 768px) {
+    nav.breadcrumb[role="navigation"],
+    .breadcrumb {
+        top: 45px !important;
+        padding: 0.25rem 0.75rem !important;
+        font-size: 0.8125rem !important;
+    }
+
+        #TopicBreadcrumbs li,
+        .breadcrumb li {
+            font-size: 0.8125rem !important;
+        }
+
+            #TopicBreadcrumbs li + li::before,
+            .breadcrumb li + li::before {
+                padding: 0 0.375rem !important;
+            }
+
+    .fixedContent {
+        padding-top: calc(45px + 40px) !important;
+    }
+}
+
+/* Tablet adjustments */
+@media (max-width: 1024px) and (min-width: 769px) {
+    .fixedContent {
+        padding-top: calc(50px + 40px) !important;
+    }
+}
+
+/* Print styles */
+@media print {
+    nav.breadcrumb,
+    .breadcrumb {
+        position: static !important;
+        box-shadow: none !important;
+        border-bottom: 1px solid #ccc !important;
+        background: white !important;
+        color: black !important;
+    }
+
+        #TopicBreadcrumbs a,
+        .breadcrumb a {
+            color: black !important;
+        }
+
+    .fixedContent {
+        padding-top: 0 !important;
+    }
+}
+
+/* Light theme overrides */
+[data-theme="light"] nav.breadcrumb,
+[data-theme="light"] .breadcrumb {
+    background: #f8f9fa !important;
+    border-bottom-color: #dee2e6 !important;
+}
+
+    [data-theme="light"] #TopicBreadcrumbs li,
+    [data-theme="light"] .breadcrumb li {
+        color: #495057 !important;
+    }
+
+    [data-theme="light"] #TopicBreadcrumbs a,
+    [data-theme="light"] .breadcrumb a {
+        color: #495057 !important;
+    }
+
+        [data-theme="light"] #TopicBreadcrumbs a:hover,
+        [data-theme="light"] .breadcrumb a:hover {
+            color: #0066cc !important;
+            background: #e9ecef !important;
+        }
+
+    [data-theme="light"] #TopicBreadcrumbs li:last-child,
+    [data-theme="light"] #TopicBreadcrumbs li:last-child p,
+    [data-theme="light"] .breadcrumb li:last-child,
+    [data-theme="light"] .breadcrumb li:last-child p {
+        color: #212529 !important;
+    }
+
+/* System light mode */
+@media (prefers-color-scheme: light) {
+    :root:not([data-theme="dark"]) nav.breadcrumb,
+    :root:not([data-theme="dark"]) .breadcrumb {
+        background: #f8f9fa !important;
+        border-bottom-color: #dee2e6 !important;
+    }
+
+        :root:not([data-theme="dark"]) #TopicBreadcrumbs li,
+        :root:not([data-theme="dark"]) .breadcrumb li {
+            color: #495057 !important;
+        }
+
+        :root:not([data-theme="dark"]) #TopicBreadcrumbs a,
+        :root:not([data-theme="dark"]) .breadcrumb a {
+            color: #495057 !important;
+        }
+
+            :root:not([data-theme="dark"]) #TopicBreadcrumbs a:hover,
+            :root:not([data-theme="dark"]) .breadcrumb a:hover {
+                color: #0066cc !important;
+                background: #e9ecef !important;
+            }
+
+        :root:not([data-theme="dark"]) #TopicBreadcrumbs li:last-child,
+        :root:not([data-theme="dark"]) #TopicBreadcrumbs li:last-child p,
+        :root:not([data-theme="dark"]) .breadcrumb li:last-child,
+        :root:not([data-theme="dark"]) .breadcrumb li:last-child p {
+            color: #212529 !important;
+        }
+}
+
+/* Ensure breadcrumb is visible (override any display:none) */
+nav.breadcrumb,
+.breadcrumb {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+}
+
+/* Better visual separation */
+nav.breadcrumb,
+.breadcrumb {
+    border-top: 1px solid var(--border-color, #3d444d) !important;
+}
+
+[data-theme="light"] nav.breadcrumb,
+[data-theme="light"] .breadcrumb {
+    border-top-color: #dee2e6 !important;
+}
+
+@media (prefers-color-scheme: light) {
+    :root:not([data-theme="dark"]) nav.breadcrumb,
+    :root:not([data-theme="dark"]) .breadcrumb {
+        border-top-color: #dee2e6 !important;
+    }
+}
+
+/* Better contrast for breadcrumb in dark theme */
+[data-theme="dark"] nav.breadcrumb,
+[data-theme="dark"] .breadcrumb {
+    background: #22262b !important;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3) !important;
+}
+
+@media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) nav.breadcrumb,
+    :root:not([data-theme="light"]) .breadcrumb {
+        background: #22262b !important;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3) !important;
+    }
+}
+
+/* Ensure proper word wrapping for long breadcrumbs */
+#TopicBreadcrumbs,
+.breadcrumb ul {
+    overflow-wrap: break-word !important;
+    word-wrap: break-word !important;
+}
+
+/* Adjust scroll padding to account for fixed header + breadcrumb */
+html {
+    scroll-padding-top: calc(60px + 40px + 20px) !important; /* header + breadcrumb + buffer */
+    overflow-y: hidden;
+}

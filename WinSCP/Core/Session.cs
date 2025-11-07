@@ -15,6 +15,9 @@ using Microsoft.Win32;
 
 namespace ByteForge.WinSCP;
 
+/// <summary>
+/// Represents a WinSCP session for file transfer and remote operations.
+/// </summary>
 [Guid("56FFC5CE-3867-4EF0-A3B5-CFFBEB99EA35")]
 [ClassInterface(ClassInterfaceType.AutoDispatch)]
 [ComVisible(true)]
@@ -83,6 +86,9 @@ public sealed class Session : IDisposable, IReflect
 
 	private bool _throwStdOut;
 
+	/// <summary>
+	/// Gets or sets the path to the WinSCP executable.
+	/// </summary>
 	public string ExecutablePath
 	{
 		get
@@ -96,6 +102,9 @@ public sealed class Session : IDisposable, IReflect
 		}
 	}
 
+	/// <summary>
+	/// Gets or sets the user name for the process running WinSCP.
+	/// </summary>
 	public string ExecutableProcessUserName
 	{
 		get
@@ -109,6 +118,9 @@ public sealed class Session : IDisposable, IReflect
 		}
 	}
 
+	/// <summary>
+	/// Gets or sets the password for the process running WinSCP.
+	/// </summary>
 	public SecureString ExecutableProcessPassword
 	{
 		get
@@ -122,6 +134,9 @@ public sealed class Session : IDisposable, IReflect
 		}
 	}
 
+	/// <summary>
+	/// Gets or sets additional arguments for the WinSCP executable.
+	/// </summary>
 	public string AdditionalExecutableArguments
 	{
 		get
@@ -135,6 +150,9 @@ public sealed class Session : IDisposable, IReflect
 		}
 	}
 
+	/// <summary>
+	/// Gets or sets a value indicating whether to use the default configuration.
+	/// </summary>
 	[Obsolete("Use AddRawConfiguration")]
 	public bool DefaultConfiguration
 	{
@@ -149,6 +167,9 @@ public sealed class Session : IDisposable, IReflect
 		}
 	}
 
+	/// <summary>
+	/// Gets or sets a value indicating whether to disable version check.
+	/// </summary>
 	public bool DisableVersionCheck
 	{
 		get
@@ -162,6 +183,9 @@ public sealed class Session : IDisposable, IReflect
 		}
 	}
 
+	/// <summary>
+	/// Gets or sets the path to the INI file for configuration.
+	/// </summary>
 	[Obsolete("Use AddRawConfiguration")]
 	public string IniFilePath
 	{
@@ -176,6 +200,9 @@ public sealed class Session : IDisposable, IReflect
 		}
 	}
 
+	/// <summary>
+	/// Gets or sets the reconnect time interval.
+	/// </summary>
 	public TimeSpan ReconnectTime
 	{
 		get
@@ -189,6 +216,9 @@ public sealed class Session : IDisposable, IReflect
 		}
 	}
 
+	/// <summary>
+	/// Gets or sets the reconnect time in milliseconds.
+	/// </summary>
 	public int ReconnectTimeInMilliseconds
 	{
 		get
@@ -201,6 +231,9 @@ public sealed class Session : IDisposable, IReflect
 		}
 	}
 
+	/// <summary>
+	/// Gets or sets the path to the debug log file.
+	/// </summary>
 	public string DebugLogPath
 	{
 		get
@@ -215,6 +248,9 @@ public sealed class Session : IDisposable, IReflect
 		}
 	}
 
+	/// <summary>
+	/// Gets or sets the debug log level.
+	/// </summary>
 	public int DebugLogLevel
 	{
 		get
@@ -229,6 +265,9 @@ public sealed class Session : IDisposable, IReflect
 		}
 	}
 
+	/// <summary>
+	/// Gets or sets the path to the session log file.
+	/// </summary>
 	public string SessionLogPath
 	{
 		get
@@ -241,6 +280,9 @@ public sealed class Session : IDisposable, IReflect
 		}
 	}
 
+	/// <summary>
+	/// Gets or sets the path to the XML log file.
+	/// </summary>
 	public string XmlLogPath
 	{
 		get
@@ -254,8 +296,14 @@ public sealed class Session : IDisposable, IReflect
 		}
 	}
 
+	/// <summary>
+	/// Gets or sets a value indicating whether to preserve the XML log file.
+	/// </summary>
 	public bool XmlLogPreserve { get; set; }
 
+	/// <summary>
+	/// Gets the home path of the session after opening.
+	/// </summary>
 	public string HomePath
 	{
 		get
@@ -265,10 +313,19 @@ public sealed class Session : IDisposable, IReflect
 		}
 	}
 
+	/// <summary>
+	/// Gets or sets the session timeout interval.
+	/// </summary>
 	public TimeSpan Timeout { get; set; }
 
+	/// <summary>
+	/// Gets the output messages from the session.
+	/// </summary>
 	public StringCollection Output { get; private set; }
 
+	/// <summary>
+	/// Gets a value indicating whether the session is opened.
+	/// </summary>
 	public bool Opened
 	{
 		get
@@ -305,12 +362,24 @@ public sealed class Session : IDisposable, IReflect
 
 	internal string IniFilePathInternal => _iniFilePath;
 
+	/// <summary>
+	/// Occurs when a file is transferred.
+	/// </summary>
 	public event FileTransferredEventHandler FileTransferred;
 
+	/// <summary>
+	/// Occurs when a failure happens in the session.
+	/// </summary>
 	public event FailedEventHandler Failed;
 
+	/// <summary>
+	/// Occurs when output data is received.
+	/// </summary>
 	public event OutputDataReceivedEventHandler OutputDataReceived;
 
+	/// <summary>
+	/// Occurs when file transfer progress is reported.
+	/// </summary>
 	public event FileTransferProgressEventHandler FileTransferProgress
 	{
 		add
@@ -331,6 +400,9 @@ public sealed class Session : IDisposable, IReflect
 		}
 	}
 
+	/// <summary>
+	/// Occurs when a query is received.
+	/// </summary>
 	public event QueryReceivedEventHandler QueryReceived
 	{
 		add
@@ -384,6 +456,9 @@ public sealed class Session : IDisposable, IReflect
 		}
 	}
 
+	/// <summary>
+	/// Initializes a new instance of the <see cref="Session"/> class.
+	/// </summary>
 	public Session()
 	{
 		Logger = new Logger();
@@ -410,6 +485,9 @@ public sealed class Session : IDisposable, IReflect
 		_error = new StringCollection();
 	}
 
+	/// <summary>
+	/// Releases all resources used by the <see cref="Session"/>.
+	/// </summary>
 	public void Dispose()
 	{
 		using (CreateCallstackAndLock())
@@ -431,6 +509,9 @@ public sealed class Session : IDisposable, IReflect
 		}
 	}
 
+	/// <summary>
+	/// Aborts the session and terminates the process.
+	/// </summary>
 	public void Abort()
 	{
 		using (Logger.CreateCallstack())
@@ -441,6 +522,10 @@ public sealed class Session : IDisposable, IReflect
 		}
 	}
 
+	/// <summary>
+	/// Opens the session with the specified options.
+	/// </summary>
+	/// <param name="sessionOptions">The session options to use.</param>
 	public void Open(SessionOptions sessionOptions)
 	{
 		using (CreateCallstackAndLock())
@@ -550,6 +635,12 @@ public sealed class Session : IDisposable, IReflect
 		return string.Join(Environment.NewLine, array);
 	}
 
+	/// <summary>
+	/// Scans the fingerprint for the specified algorithm.
+	/// </summary>
+	/// <param name="sessionOptions">The session options to use.</param>
+	/// <param name="algorithm">The algorithm to scan.</param>
+	/// <returns>The fingerprint string.</returns>
 	public string ScanFingerprint(SessionOptions sessionOptions, string algorithm)
 	{
 		using (CreateCallstackAndLock())
@@ -617,6 +708,9 @@ public sealed class Session : IDisposable, IReflect
 		return algorithm.Replace("-", string.Empty);
 	}
 
+	/// <summary>
+	/// Closes the session and releases resources.
+	/// </summary>
 	public void Close()
 	{
 		using (CreateCallstackAndLock())
@@ -626,6 +720,11 @@ public sealed class Session : IDisposable, IReflect
 		}
 	}
 
+	/// <summary>
+	/// Lists the directory contents at the specified path.
+	/// </summary>
+	/// <param name="path">The remote path to list.</param>
+	/// <returns>A <see cref="RemoteDirectoryInfo"/> object containing the directory contents.</returns>
 	public RemoteDirectoryInfo ListDirectory(string path)
 	{
 		using (CreateCallstackAndLock())
@@ -729,6 +828,13 @@ public sealed class Session : IDisposable, IReflect
 		Logger.WriteLine("Ended enumeration of {0}", path);
 	}
 
+	/// <summary>
+	/// Enumerates remote files matching the specified mask and options.
+	/// </summary>
+	/// <param name="path">The remote path to enumerate.</param>
+	/// <param name="mask">The file mask to match.</param>
+	/// <param name="options">Enumeration options.</param>
+	/// <returns>An enumerable of <see cref="RemoteFileInfo"/> objects.</returns>
 	public IEnumerable<RemoteFileInfo> EnumerateRemoteFiles(string path, string mask, EnumerationOptions options)
 	{
 		using (CreateCallstackAndLock())
@@ -761,6 +867,14 @@ public sealed class Session : IDisposable, IReflect
 		return new Regex(text, RegexOptions.IgnoreCase);
 	}
 
+	/// <summary>
+	/// Uploads files to the remote path.
+	/// </summary>
+	/// <param name="localPath">The local path of the files.</param>
+	/// <param name="remotePath">The remote path to upload to.</param>
+	/// <param name="remove">Whether to remove files after upload.</param>
+	/// <param name="options">Transfer options.</param>
+	/// <returns>A <see cref="TransferOperationResult"/> representing the result.</returns>
 	public TransferOperationResult PutFiles(string localPath, string remotePath, bool remove = false, TransferOptions options = null)
 	{
 		using (CreateCallstackAndLock())
@@ -830,6 +944,15 @@ public sealed class Session : IDisposable, IReflect
 		}
 	}
 
+	/// <summary>
+	/// Uploads files to a remote directory.
+	/// </summary>
+	/// <param name="localDirectory">The local directory.</param>
+	/// <param name="remoteDirectory">The remote directory.</param>
+	/// <param name="filemask">The file mask to match.</param>
+	/// <param name="remove">Whether to remove files after upload.</param>
+	/// <param name="options">Transfer options.</param>
+	/// <returns>A <see cref="TransferOperationResult"/> representing the result.</returns>
 	public TransferOperationResult PutFilesToDirectory(string localDirectory, string remoteDirectory, string filemask = null, bool remove = false, TransferOptions options = null)
 	{
 		using (Logger.CreateCallstack())
@@ -852,6 +975,14 @@ public sealed class Session : IDisposable, IReflect
 		}
 	}
 
+	/// <summary>
+	/// Uploads a single file to a remote directory.
+	/// </summary>
+	/// <param name="localFilePath">The local file path.</param>
+	/// <param name="remoteDirectory">The remote directory.</param>
+	/// <param name="remove">Whether to remove the file after upload.</param>
+	/// <param name="options">Transfer options.</param>
+	/// <returns>A <see cref="TransferEventArgs"/> representing the result.</returns>
 	public TransferEventArgs PutFileToDirectory(string localFilePath, string remoteDirectory, bool remove = false, TransferOptions options = null)
 	{
 		using (Logger.CreateCallstack())
@@ -865,6 +996,12 @@ public sealed class Session : IDisposable, IReflect
 		}
 	}
 
+	/// <summary>
+	/// Uploads a file from a stream to the remote path.
+	/// </summary>
+	/// <param name="stream">The stream containing the file data.</param>
+	/// <param name="remoteFilePath">The remote file path.</param>
+	/// <param name="options">Transfer options.</param>
 	public void PutFile(Stream stream, string remoteFilePath, TransferOptions options = null)
 	{
 		using (CreateCallstackAndLock())
@@ -917,6 +1054,14 @@ public sealed class Session : IDisposable, IReflect
 		}
 	}
 
+	/// <summary>
+	/// Downloads files from the remote path.
+	/// </summary>
+	/// <param name="remotePath">The remote path.</param>
+	/// <param name="localPath">The local path to download to.</param>
+	/// <param name="remove">Whether to remove files after download.</param>
+	/// <param name="options">Transfer options.</param>
+	/// <returns>A <see cref="TransferOperationResult"/> representing the result.</returns>
 	public TransferOperationResult GetFiles(string remotePath, string localPath, bool remove = false, TransferOptions options = null)
 	{
 		using (CreateCallstackAndLock())
@@ -968,6 +1113,15 @@ public sealed class Session : IDisposable, IReflect
 		WriteCommand(string.Format(CultureInfo.InvariantCulture, "get {0} {1} {2} -- \"{3}\" \"{4}\"", BooleanSwitch(remove, "delete"), options.ToSwitches(), additionalParams, Tools.ArgumentEscape(remotePath), Tools.ArgumentEscape(localPath)));
 	}
 
+	/// <summary>
+	/// Downloads files from a remote directory to a local directory.
+	/// </summary>
+	/// <param name="remoteDirectory">The remote directory.</param>
+	/// <param name="localDirectory">The local directory.</param>
+	/// <param name="filemask">The file mask to match.</param>
+	/// <param name="remove">Whether to remove files after download.</param>
+	/// <param name="options">Transfer options.</param>
+	/// <returns>A <see cref="TransferOperationResult"/> representing the result.</returns>
 	public TransferOperationResult GetFilesToDirectory(string remoteDirectory, string localDirectory, string filemask = null, bool remove = false, TransferOptions options = null)
 	{
 		using (CreateCallstackAndLock())
@@ -1003,6 +1157,14 @@ public sealed class Session : IDisposable, IReflect
 		}
 	}
 
+	/// <summary>
+	/// Downloads a single file from a remote directory to a local directory.
+	/// </summary>
+	/// <param name="remoteFilePath">The remote file path.</param>
+	/// <param name="localDirectory">The local directory.</param>
+	/// <param name="remove">Whether to remove the file after download.</param>
+	/// <param name="options">Transfer options.</param>
+	/// <returns>A <see cref="TransferEventArgs"/> representing the result.</returns>
 	public TransferEventArgs GetFileToDirectory(string remoteFilePath, string localDirectory, bool remove = false, TransferOptions options = null)
 	{
 		using (CreateCallstackAndLock())
@@ -1046,6 +1208,12 @@ public sealed class Session : IDisposable, IReflect
 		return operations.First();
 	}
 
+	/// <summary>
+	/// Gets a file as a stream from the remote path.
+	/// </summary>
+	/// <param name="remoteFilePath">The remote file path.</param>
+	/// <param name="options">Transfer options.</param>
+	/// <returns>A <see cref="Stream"/> for the file data.</returns>
 	public Stream GetFile(string remoteFilePath, TransferOptions options = null)
 	{
 		TransferOperationResult result;
@@ -1145,6 +1313,11 @@ public sealed class Session : IDisposable, IReflect
 		}
 	}
 
+	/// <summary>
+	/// Removes files at the specified path.
+	/// </summary>
+	/// <param name="path">The path of the files to remove.</param>
+	/// <returns>A <see cref="RemovalOperationResult"/> representing the result.</returns>
 	public RemovalOperationResult RemoveFiles(string path)
 	{
 		using (CreateCallstackAndLock())
@@ -1181,6 +1354,11 @@ public sealed class Session : IDisposable, IReflect
 		}
 	}
 
+	/// <summary>
+	/// Removes a single file at the specified path.
+	/// </summary>
+	/// <param name="path">The path of the file to remove.</param>
+	/// <returns>A <see cref="RemovalEventArgs"/> representing the result.</returns>
 	public RemovalEventArgs RemoveFile(string path)
 	{
 		using (CreateCallstackAndLock())
@@ -1211,6 +1389,17 @@ public sealed class Session : IDisposable, IReflect
 		}
 	}
 
+	/// <summary>
+	/// Synchronizes directories between local and remote paths.
+	/// </summary>
+	/// <param name="mode">The synchronization mode.</param>
+	/// <param name="localPath">The local path.</param>
+	/// <param name="remotePath">The remote path.</param>
+	/// <param name="removeFiles">Whether to remove files during synchronization.</param>
+	/// <param name="mirror">Whether to mirror files.</param>
+	/// <param name="criteria">Synchronization criteria.</param>
+	/// <param name="options">Transfer options.</param>
+	/// <returns>A <see cref="SynchronizationResult"/> representing the result.</returns>
 	public SynchronizationResult SynchronizeDirectories(SynchronizationMode mode, string localPath, string remotePath, bool removeFiles, bool mirror = false, SynchronizationCriteria criteria = SynchronizationCriteria.Time, TransferOptions options = null)
 	{
 		using (CreateCallstackAndLock())
@@ -1354,6 +1543,17 @@ public sealed class Session : IDisposable, IReflect
 		}
 	}
 
+	/// <summary>
+	/// Compares directories between local and remote paths.
+	/// </summary>
+	/// <param name="mode">The synchronization mode.</param>
+	/// <param name="localPath">The local path.</param>
+	/// <param name="remotePath">The remote path.</param>
+	/// <param name="removeFiles">Whether to remove files during comparison.</param>
+	/// <param name="mirror">Whether to mirror files.</param>
+	/// <param name="criteria">Synchronization criteria.</param>
+	/// <param name="options">Transfer options.</param>
+	/// <returns>A <see cref="ComparisonDifferenceCollection"/> representing the result.</returns>
 	public ComparisonDifferenceCollection CompareDirectories(SynchronizationMode mode, string localPath, string remotePath, bool removeFiles, bool mirror = false, SynchronizationCriteria criteria = SynchronizationCriteria.Time, TransferOptions options = null)
 	{
 		using (CreateCallstackAndLock())
@@ -1476,6 +1676,11 @@ public sealed class Session : IDisposable, IReflect
 		}
 	}
 
+	/// <summary>
+	/// Executes a command in the session.
+	/// </summary>
+	/// <param name="command">The command to execute.</param>
+	/// <returns>A <see cref="CommandExecutionResult"/> representing the result.</returns>
 	public CommandExecutionResult ExecuteCommand(string command)
 	{
 		using (CreateCallstackAndLock())
@@ -1507,6 +1712,11 @@ public sealed class Session : IDisposable, IReflect
 		}
 	}
 
+	/// <summary>
+	/// Gets file information for the specified path.
+	/// </summary>
+	/// <param name="path">The path of the file.</param>
+	/// <returns>A <see cref="RemoteFileInfo"/> object containing file information.</returns>
 	public RemoteFileInfo GetFileInfo(string path)
 	{
 		using (CreateCallstackAndLock())
@@ -1516,6 +1726,12 @@ public sealed class Session : IDisposable, IReflect
 		}
 	}
 
+	/// <summary>
+	/// Tries to get file information for the specified path.
+	/// </summary>
+	/// <param name="path">The path of the file.</param>
+	/// <param name="fileInfo">The output file information.</param>
+	/// <returns>True if file information was retrieved; otherwise, false.</returns>
 	public bool TryGetFileInfo(string path, out RemoteFileInfo fileInfo)
 	{
 		using (CreateCallstackAndLock())
@@ -1542,12 +1758,23 @@ public sealed class Session : IDisposable, IReflect
 		}
 	}
 
+	/// <summary>
+	/// Determines whether a file exists at the specified path.
+	/// </summary>
+	/// <param name="path">The path of the file.</param>
+	/// <returns>True if the file exists; otherwise, false.</returns>
 	public bool FileExists(string path)
 	{
 		RemoteFileInfo fileInfo;
 		return TryGetFileInfo(path, out fileInfo);
 	}
 
+	/// <summary>
+	/// Calculates the checksum of a file using the specified algorithm.
+	/// </summary>
+	/// <param name="algorithm">The checksum algorithm.</param>
+	/// <param name="path">The path of the file.</param>
+	/// <returns>The checksum as a byte array.</returns>
 	public byte[] CalculateFileChecksum(string algorithm, string path)
 	{
 		using (CreateCallstackAndLock())
@@ -1586,6 +1813,10 @@ public sealed class Session : IDisposable, IReflect
 		}
 	}
 
+	/// <summary>
+	/// Creates a directory at the specified path.
+	/// </summary>
+	/// <param name="path">The path of the directory to create.</param>
 	public void CreateDirectory(string path)
 	{
 		using (CreateCallstackAndLock())
@@ -1599,6 +1830,11 @@ public sealed class Session : IDisposable, IReflect
 		}
 	}
 
+	/// <summary>
+	/// Moves a file from the source path to the target path.
+	/// </summary>
+	/// <param name="sourcePath">The source file path.</param>
+	/// <param name="targetPath">The target file path.</param>
 	public void MoveFile(string sourcePath, string targetPath)
 	{
 		using (CreateCallstackAndLock())
@@ -1620,6 +1856,11 @@ public sealed class Session : IDisposable, IReflect
 		}
 	}
 
+	/// <summary>
+	/// Duplicates a file from the source path to the target path.
+	/// </summary>
+	/// <param name="sourcePath">The source file path.</param>
+	/// <param name="targetPath">The target file path.</param>
 	public void DuplicateFile(string sourcePath, string targetPath)
 	{
 		using (CreateCallstackAndLock())
@@ -1640,30 +1881,60 @@ public sealed class Session : IDisposable, IReflect
 		}
 	}
 
+	/// <summary>
+	/// Escapes a file mask for remote operations. (Obsolete)
+	/// </summary>
+	/// <param name="fileMask">The file mask to escape.</param>
+	/// <returns>The escaped file mask.</returns>
 	[Obsolete("Use RemotePath.EscapeFileMask")]
 	public string EscapeFileMask(string fileMask)
 	{
 		return RemotePath.EscapeFileMask(fileMask);
 	}
 
+	/// <summary>
+	/// Translates a remote path to a local path. (Obsolete)
+	/// </summary>
+	/// <param name="remotePath">The remote path.</param>
+	/// <param name="remoteRoot">The remote root.</param>
+	/// <param name="localRoot">The local root.</param>
+	/// <returns>The translated local path.</returns>
 	[Obsolete("Use RemotePath.TranslateRemotePathToLocal")]
 	public string TranslateRemotePathToLocal(string remotePath, string remoteRoot, string localRoot)
 	{
 		return RemotePath.TranslateRemotePathToLocal(remotePath, remoteRoot, localRoot);
 	}
 
+	/// <summary>
+	/// Translates a local path to a remote path. (Obsolete)
+	/// </summary>
+	/// <param name="localPath">The local path.</param>
+	/// <param name="localRoot">The local root.</param>
+	/// <param name="remoteRoot">The remote root.</param>
+	/// <returns>The translated remote path.</returns>
 	[Obsolete("Use RemotePath.TranslateLocalPathToRemote")]
 	public string TranslateLocalPathToRemote(string localPath, string localRoot, string remoteRoot)
 	{
 		return RemotePath.TranslateLocalPathToRemote(localPath, localRoot, remoteRoot);
 	}
 
+	/// <summary>
+	/// Combines two paths. (Obsolete)
+	/// </summary>
+	/// <param name="path1">The first path.</param>
+	/// <param name="path2">The second path.</param>
+	/// <returns>The combined path.</returns>
 	[Obsolete("Use RemotePath.CombinePaths")]
 	public string CombinePaths(string path1, string path2)
 	{
 		return RemotePath.Combine(path1, path2);
 	}
 
+	/// <summary>
+	/// Adds a raw configuration setting.
+	/// </summary>
+	/// <param name="setting">The setting name.</param>
+	/// <param name="value">The setting value.</param>
 	public void AddRawConfiguration(string setting, string value)
 	{
 		CheckNotOpened();

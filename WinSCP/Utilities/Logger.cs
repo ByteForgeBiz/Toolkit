@@ -10,6 +10,9 @@ using System.Threading;
 
 namespace ByteForge.WinSCP;
 
+/// <summary>
+/// Provides logging functionality for debugging and troubleshooting WinSCP operations.
+/// </summary>
 internal class Logger : IDisposable
 {
 	private StreamWriter _writter;
@@ -24,6 +27,9 @@ internal class Logger : IDisposable
 
 	private int _logLevel;
 
+	/// <summary>
+	/// Gets or sets the path to the log file.
+	/// </summary>
 	public string LogPath
 	{
 		get
@@ -36,6 +42,9 @@ internal class Logger : IDisposable
 		}
 	}
 
+	/// <summary>
+	/// Gets or sets the log level (-1 to 2, where higher values include more detailed logging).
+	/// </summary>
 	public int LogLevel
 	{
 		get
@@ -48,6 +57,9 @@ internal class Logger : IDisposable
 		}
 	}
 
+	/// <summary>
+	/// Gets a value indicating whether logging is currently active.
+	/// </summary>
 	public bool Logging
 	{
 		get
@@ -60,14 +72,25 @@ internal class Logger : IDisposable
 		}
 	}
 
+	/// <summary>
+	/// Gets the lock object for synchronizing logging operations.
+	/// </summary>
 	public Lock Lock { get; } = new Lock();
 
+	/// <summary>
+	/// Gets the file path of the executing assembly.
+	/// </summary>
+	/// <returns>The file path of the executing assembly, or null if it cannot be determined.</returns>
 	public string GetAssemblyFilePath()
 	{
 		Assembly executingAssembly = Assembly.GetExecutingAssembly();
 		return DoGetAssemblyFilePath(executingAssembly);
 	}
 
+	/// <summary>
+	/// Gets the file path of the entry assembly.
+	/// </summary>
+	/// <returns>The file path of the entry assembly, or null if it cannot be determined.</returns>
 	public string GetEntryAssemblyFilePath()
 	{
 		Assembly entryAssembly = Assembly.GetEntryAssembly();
@@ -163,6 +186,10 @@ internal class Logger : IDisposable
 		_performanceCounters.Add(counter);
 	}
 
+	/// <summary>
+	/// Writes a line to the log file.
+	/// </summary>
+	/// <param name="line">The line to write.</param>
 	public void WriteLine(string line)
 	{
 		lock (_logLock)
@@ -174,6 +201,11 @@ internal class Logger : IDisposable
 		}
 	}
 
+	/// <summary>
+	/// Writes a formatted line to the log file.
+	/// </summary>
+	/// <param name="format">The format string.</param>
+	/// <param name="args">The format arguments.</param>
 	public void WriteLine(string format, params object[] args)
 	{
 		lock (_logLock)
@@ -185,6 +217,11 @@ internal class Logger : IDisposable
 		}
 	}
 
+	/// <summary>
+	/// Writes a line to the log file if the specified log level is met.
+	/// </summary>
+	/// <param name="level">The minimum log level required to write the line.</param>
+	/// <param name="line">The line to write.</param>
 	public void WriteLineLevel(int level, string line)
 	{
 		if (LogLevel >= level)
@@ -193,6 +230,12 @@ internal class Logger : IDisposable
 		}
 	}
 
+	/// <summary>
+	/// Writes a formatted line to the log file if the specified log level is met.
+	/// </summary>
+	/// <param name="level">The minimum log level required to write the line.</param>
+	/// <param name="line">The format string.</param>
+	/// <param name="args">The format arguments.</param>
 	public void WriteLineLevel(int level, string line, params object[] args)
 	{
 		if (LogLevel >= level)
@@ -206,6 +249,9 @@ internal class Logger : IDisposable
 		return Thread.CurrentThread.ManagedThreadId;
 	}
 
+	/// <summary>
+	/// Increases the indentation level for subsequent log entries.
+	/// </summary>
 	public void Indent()
 	{
 		lock (_logLock)
@@ -219,6 +265,9 @@ internal class Logger : IDisposable
 		}
 	}
 
+	/// <summary>
+	/// Decreases the indentation level for subsequent log entries.
+	/// </summary>
 	public void Unindent()
 	{
 		lock (_logLock)
@@ -228,6 +277,9 @@ internal class Logger : IDisposable
 		}
 	}
 
+	/// <summary>
+	/// Releases all resources used by the logger.
+	/// </summary>
 	public void Dispose()
 	{
 		lock (_logLock)
@@ -246,6 +298,9 @@ internal class Logger : IDisposable
 		}
 	}
 
+	/// <summary>
+	/// Writes performance counter values to the log.
+	/// </summary>
 	public void WriteCounters()
 	{
 		if (!Logging || LogLevel < 1)
@@ -265,6 +320,9 @@ internal class Logger : IDisposable
 		}
 	}
 
+	/// <summary>
+	/// Writes current process information to the log.
+	/// </summary>
 	public void WriteProcesses()
 	{
 		if (!Logging || LogLevel < 1)
@@ -309,16 +367,30 @@ internal class Logger : IDisposable
 		}
 	}
 
+	/// <summary>
+	/// Creates a callstack tracker for logging call flow.
+	/// </summary>
+	/// <param name="token">An optional token to identify the callstack.</param>
+	/// <returns>A Callstack object for tracking call flow.</returns>
 	public Callstack CreateCallstack(object token = null)
 	{
 		return new Callstack(this, token);
 	}
 
+	/// <summary>
+	/// Creates a callstack and lock tracker for synchronized logging.
+	/// </summary>
+	/// <returns>A CallstackAndLock object for synchronized call flow tracking.</returns>
 	public CallstackAndLock CreateCallstackAndLock()
 	{
 		return new CallstackAndLock(this, Lock);
 	}
 
+	/// <summary>
+	/// Logs an exception with optional stack trace information.
+	/// </summary>
+	/// <param name="e">The exception to log.</param>
+	/// <returns>The same exception that was passed in.</returns>
 	public Exception WriteException(Exception e)
 	{
 		lock (_logLock)
@@ -404,11 +476,19 @@ internal class Logger : IDisposable
 		WriteLine("Process path: " + GetProcessPath());
 	}
 
+	/// <summary>
+	/// Gets the file path of the current process executable.
+	/// </summary>
+	/// <returns>The file path of the current process executable.</returns>
 	public static string GetProcessPath()
 	{
 		return Process.GetCurrentProcess().MainModule?.FileName;
 	}
 
+	/// <summary>
+	/// Gets the error message for the last Win32 error.
+	/// </summary>
+	/// <returns>The error message describing the last Win32 error.</returns>
 	public static string LastWin32ErrorMessage()
 	{
 		return new Win32Exception(Marshal.GetLastWin32Error()).Message;

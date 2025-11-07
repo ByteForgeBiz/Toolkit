@@ -18,6 +18,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WinSCPnet", "WinSCP\WinSCPn
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ByteForge.Toolkit.Modern.Tests", "Toolkit.Modern.Tests\ByteForge.Toolkit.Modern.Tests.csproj", "{18AD53B5-B65D-4E68-9EBA-202A363E9783}"
 EndProject
+Project("{7CF6DF6D-3B04-46F8-A40B-537D21BCA0B4}") = "SHFB", "SHFB\SHFB.shfbproj", "{7C702230-644B-40A0-A8F9-398812705464}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -64,6 +66,18 @@ Global
 		{18AD53B5-B65D-4E68-9EBA-202A363E9783}.Release|x64.Build.0 = Release|Any CPU
 		{18AD53B5-B65D-4E68-9EBA-202A363E9783}.Release|x86.ActiveCfg = Release|Any CPU
 		{18AD53B5-B65D-4E68-9EBA-202A363E9783}.Release|x86.Build.0 = Release|Any CPU
+		{7C702230-644B-40A0-A8F9-398812705464}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7C702230-644B-40A0-A8F9-398812705464}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7C702230-644B-40A0-A8F9-398812705464}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{7C702230-644B-40A0-A8F9-398812705464}.Debug|x64.Build.0 = Debug|Any CPU
+		{7C702230-644B-40A0-A8F9-398812705464}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{7C702230-644B-40A0-A8F9-398812705464}.Debug|x86.Build.0 = Debug|Any CPU
+		{7C702230-644B-40A0-A8F9-398812705464}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7C702230-644B-40A0-A8F9-398812705464}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7C702230-644B-40A0-A8F9-398812705464}.Release|x64.ActiveCfg = Release|Any CPU
+		{7C702230-644B-40A0-A8F9-398812705464}.Release|x64.Build.0 = Release|Any CPU
+		{7C702230-644B-40A0-A8F9-398812705464}.Release|x86.ActiveCfg = Release|Any CPU
+		{7C702230-644B-40A0-A8F9-398812705464}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

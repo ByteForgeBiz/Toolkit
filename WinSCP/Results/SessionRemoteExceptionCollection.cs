@@ -3,6 +3,9 @@ using System.Runtime.InteropServices;
 
 namespace ByteForge.WinSCP;
 
+/// <summary>
+/// Represents a read-only collection of <see cref="SessionRemoteException"/> objects.
+/// </summary>
 [Guid("2309282F-B89B-4F6B-AEB1-D3E1629B7033")]
 [ClassInterface(ClassInterfaceType.None)]
 [ComVisible(true)]

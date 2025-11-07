@@ -6,6 +6,15 @@
     <Nullable>enable</Nullable>
     <LangVersion>12</LangVersion>
     <RootNamespace>ByteForge.Toolkit</RootNamespace>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <DocumentationFile>$(OutputPath)$(AssemblyName).xml</DocumentationFile>
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+  </PropertyGroup>
+
+  <!-- Documentation build configuration: Disable Costura to allow SHFB access to dependencies -->
+  <PropertyGroup Condition="'$(Configuration)' == 'Documentation'">
+    <DisableFody>true</DisableFody>
+    <DefineConstants>$(DefineConstants);DOCUMENTATION_BUILD</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>
@@ -59,5 +68,29 @@
     <Reference Include="System.IO.Compression" />
     <Reference Include="System.Transactions" />
   </ItemGroup>
+
+  <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+  <!--  ___           _        _    _ _                        __  __      _     _                               -->
+  <!-- | _ ) ___ __ _(_)_ _   | |  (_) |__ _ _ __ _ _ _ _  _  |  \/  |__ _(_)_ _| |_ ___ _ _  __ _ _ _  __ ___   -->
+  <!-- | _ \/ -_) _` | | ' \  | |__| | '_ \ '_/ _` | '_| || | | |\/| / _` | | ' \  _/ -_) ' \/ _` | ' \/ _/ -_)  -->
+  <!-- |___/\___\__, |_|_||_| |____|_|_.__/_| \__,_|_|  \_, | |_|  |_\__,_|_|_||_\__\___|_||_\__,_|_||_\__\___|  -->
+  <!--          |___/                                   |__/                                                     -->
+  <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+  <PropertyGroup>
+    <CentralLocationExists>false</CentralLocationExists>
+    <CentralLocationPath Condition="'$(CentralLocationPath)' == ''">$(MSBuildThisFileDirectory)</CentralLocationPath>
+    <CentralLocationExists Condition="Exists('$(CentralLocationPath)\ByteForge.Tasks.targets')">true</CentralLocationExists>
+    <CleanupUnusedFilesAfterBuild>false</CleanupUnusedFilesAfterBuild>
+  </PropertyGroup>
+  <ItemGroup>
+    <AsmInfo Include="Properties\AssemblyInfo.cs" Visible="False" />
+  </ItemGroup>
+  <Target Name="Messages" BeforeTargets="PrepareForBuild">
+    <Message Text="CentralLocationPath: '$(CentralLocationPath)'" Importance="high" />
+    <Message Text="Importing ByteForge.Tasks.targets..." Importance="high" Condition="$(CentralLocationExists)" />
+    <Message Text="NOT Importing ByteForge.Tasks.targets..." Importance="high" Condition="!$(CentralLocationExists)" />
+  </Target>
+
+  <Import Project="$(CentralLocationPath)\ByteForge.Tasks.targets" Condition="$(CentralLocationExists)" />
 
 </Project>

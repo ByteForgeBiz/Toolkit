@@ -4,8 +4,17 @@ using System.Globalization;
 
 namespace ByteForge.WinSCP;
 
+/// <summary>
+/// Provides utility methods for the WinSCP library.
+/// </summary>
 internal static class Tools
 {
+	/// <summary>
+	/// Converts a TimeSpan to milliseconds as an integer.
+	/// </summary>
+	/// <param name="value">The TimeSpan to convert.</param>
+	/// <returns>The number of milliseconds.</returns>
+	/// <exception cref="InvalidCastException">Thrown when the value is too large to fit in an integer.</exception>
 	public static int TimeSpanToMilliseconds(TimeSpan value)
 	{
 		if (value.TotalMilliseconds > 2147483647.0 || value.TotalMilliseconds < -2147483648.0)
@@ -15,11 +24,21 @@ internal static class Tools
 		return (int)value.TotalMilliseconds;
 	}
 
+	/// <summary>
+	/// Converts milliseconds to a TimeSpan.
+	/// </summary>
+	/// <param name="value">The number of milliseconds.</param>
+	/// <returns>A TimeSpan representing the specified milliseconds.</returns>
 	public static TimeSpan MillisecondsToTimeSpan(int value)
 	{
 		return TimeSpan.FromMilliseconds(value);
 	}
 
+	/// <summary>
+	/// Escapes double quotes in a string for command-line arguments.
+	/// </summary>
+	/// <param name="value">The string to escape.</param>
+	/// <returns>The escaped string.</returns>
 	public static string ArgumentEscape(string value)
 	{
 		for (int i = 0; i < value.Length; i++)
@@ -33,6 +52,13 @@ internal static class Tools
 		return value;
 	}
 
+	/// <summary>
+	/// Adds raw parameters to a command-line argument string.
+	/// </summary>
+	/// <param name="arguments">The command-line arguments to append to.</param>
+	/// <param name="parameters">The parameters to add.</param>
+	/// <param name="switchName">The switch name to use.</param>
+	/// <param name="count">Whether to include the parameter count in the switch.</param>
 	public static void AddRawParameters(ref string arguments, Dictionary<string, string> parameters, string switchName, bool count)
 	{
 		if (parameters.Count <= 0)
@@ -58,6 +84,12 @@ internal static class Tools
 		}
 	}
 
+	/// <summary>
+	/// Converts a 64-bit length to a 32-bit integer.
+	/// </summary>
+	/// <param name="length">The length to convert.</param>
+	/// <returns>The length as a 32-bit integer.</returns>
+	/// <exception cref="OverflowException">Thrown when the length is too large to fit in a 32-bit integer.</exception>
 	public static int LengthTo32Bit(long length)
 	{
 		if (length < int.MinValue || length > int.MaxValue)

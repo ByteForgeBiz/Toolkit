@@ -15,17 +15,34 @@ using Microsoft.Win32.SafeHandles;
 
 namespace ByteForge.WinSCP;
 
+/// <summary>
+/// Represents a session process for executing WinSCP commands and handling console events.
+/// </summary>
 internal class ExeSessionProcess : IDisposable
 {
+	/// <summary>
+	/// Represents a safe handle that does not require releasing.
+	/// </summary>
 	internal class NoopSafeHandle : SafeHandle
 	{
+		/// <summary>
+		/// Gets a value indicating whether the handle is invalid.
+		/// </summary>
 		public override bool IsInvalid => false;
 
+		/// <summary>
+		/// Initializes a new instance of the <see cref="NoopSafeHandle"/> class.
+		/// </summary>
+		/// <param name="handle">The handle to wrap.</param>
 		public NoopSafeHandle(IntPtr handle)
 			: base(handle, ownsHandle: false)
 		{
 		}
 
+		/// <summary>
+		/// Releases the handle. Always returns true.
+		/// </summary>
+		/// <returns>True.</returns>
 		protected override bool ReleaseHandle()
 		{
 			return true;
@@ -84,23 +101,52 @@ internal class ExeSessionProcess : IDisposable
 
 	private static readonly Dictionary<Tuple<string, DateTime>, FileVersionInfo> _versionInfoCache = new Dictionary<Tuple<string, DateTime>, FileVersionInfo>();
 
+	/// <summary>
+	/// Gets a value indicating whether the process has exited.
+	/// </summary>
 	public bool HasExited => _process.HasExited;
 
+	/// <summary>
+	/// Gets the exit code of the process.
+	/// </summary>
 	public int ExitCode => _process.ExitCode;
 
+	/// <summary>
+	/// Gets or sets the standard output stream.
+	/// </summary>
 	public PipeStream StdOut { get; set; }
 
+	/// <summary>
+	/// Gets or sets the standard input stream.
+	/// </summary>
 	public Stream StdIn { get; set; }
 
+	/// <summary>
+	/// Gets the path to the executable.
+	/// </summary>
 	public string ExecutablePath { get; }
 
+	/// <summary>
+	/// Occurs when output data is received.
+	/// </summary>
 	public event OutputDataReceivedEventHandler OutputDataReceived;
 
+	/// <summary>
+	/// Creates a new <see cref="ExeSessionProcess"/> for a session.
+	/// </summary>
+	/// <param name="session">The session to associate with the process.</param>
+	/// <returns>A new <see cref="ExeSessionProcess"/> instance.</returns>
 	public static ExeSessionProcess CreateForSession(Session session)
 	{
 		return new ExeSessionProcess(session, useXmlLog: true, null);
 	}
 
+	/// <summary>
+	/// Creates a new <see cref="ExeSessionProcess"/> for a console session with additional arguments.
+	/// </summary>
+	/// <param name="session">The session to associate with the process.</param>
+	/// <param name="additionalArguments">Additional arguments for the process.</param>
+	/// <returns>A new <see cref="ExeSessionProcess"/> instance.</returns>
 	public static ExeSessionProcess CreateForConsole(Session session, string additionalArguments)
 	{
 		return new ExeSessionProcess(session, useXmlLog: false, additionalArguments);
@@ -113,7 +159,7 @@ internal class ExeSessionProcess : IDisposable
 		_incompleteLine = string.Empty;
 		using (_logger.CreateCallstack())
 		{
-			ExecutablePath = GetExecutablePath();
+            ExecutablePath = GetExecutablePath();
 			_logger.WriteLine("EXE executable path resolved to {0}", ExecutablePath);
 			string assemblyFilePath = _logger.GetAssemblyFilePath();
 			FileVersionInfo fileVersionInfo = null;
@@ -156,6 +202,9 @@ internal class ExeSessionProcess : IDisposable
 		return Tools.ArgumentEscape(path).Replace("!", "!!");
 	}
 
+	/// <summary>
+	/// Aborts the process by killing it if it is running.
+	/// </summary>
 	public void Abort()
 	{
 		using (_logger.CreateCallstack())
@@ -170,6 +219,9 @@ internal class ExeSessionProcess : IDisposable
 		}
 	}
 
+	/// <summary>
+	/// Starts the process and initializes the console and child process.
+	/// </summary>
 	public void Start()
 	{
 		using (_logger.CreateCallstack())
@@ -695,6 +747,11 @@ internal class ExeSessionProcess : IDisposable
 		}
 	}
 
+	/// <summary>
+	/// Executes a command in the session process.
+	/// </summary>
+	/// <param name="command">The command to execute.</param>
+	/// <param name="log">The log message associated with the command.</param>
 	public void ExecuteCommand(string command, string log)
 	{
 		using (_logger.CreateCallstack())
@@ -704,6 +761,9 @@ internal class ExeSessionProcess : IDisposable
 		}
 	}
 
+	/// <summary>
+	/// Closes the process, waiting for it to exit or killing it if necessary.
+	/// </summary>
 	public void Close()
 	{
 		using (_logger.CreateCallstack())
@@ -718,7 +778,261 @@ internal class ExeSessionProcess : IDisposable
 		}
 	}
 
-	public void Dispose()
+    private string GetExecutablePath()
+    {
+        using (_logger.CreateCallstack())
+        {
+            string executablePath = _session.ExecutablePath;
+            if (!string.IsNullOrEmpty(executablePath))
+            {
+                if (!File.Exists(executablePath))
+                {
+                    throw _logger.WriteException(new SessionLocalException(_session, executablePath + " does not exists."));
+                }
+                return executablePath;
+            }
+            return FindExecutable(_session);
+        }
+    }
+
+    internal static string FindExecutable(Session session)
+    {
+        Logger logger = session.Logger;
+        List<string> list = new List<string>();
+        string assemblyPath = GetAssemblyPath(logger);
+        string path = ((!string.IsNullOrEmpty(assemblyPath)) ? null : Path.GetDirectoryName(Logger.GetProcessPath()));
+        if (!TryFindExecutableInPath(logger, list, assemblyPath, out var result) && !TryFindExecutableInPath(logger, list, GetEntryAssemblyPath(logger), out result) && !TryFindExecutableInPath(logger, list, path, out result) && !TryFindExecutableInPath(logger, list, GetInstallationPath(RegistryHive.CurrentUser), out result) && !TryFindExecutableInPath(logger, list, GetInstallationPath(RegistryHive.LocalMachine), out result) && !TryFindExecutableInPath(logger, list, GetDefaultInstallationPath(), out result))
+        {
+            string text = string.Join(", ", list);
+            string text2 = "winscp.exe";
+            string message = "The " + text2 + " executable was not found at any of the inspected locations (" + text + "). You may use Session.ExecutablePath property to explicitly set path to " + text2 + ".";
+            throw logger.WriteException(new SessionLocalException(session, message));
+        }
+        return result;
+    }
+
+    private static string GetDefaultInstallationPath()
+    {
+        string path = ((IntPtr.Size != 8) ? Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles) : Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86));
+        return Path.Combine(path, "WinSCP");
+    }
+
+    private static string GetInstallationPath(RegistryHive hive)
+    {
+        RegistryKey registryKey = RegistryKey.OpenBaseKey(hive, RegistryView.Registry32).OpenSubKey("Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\winscp3_is1");
+        if (registryKey == null)
+        {
+            return null;
+        }
+        return (string)registryKey.GetValue("Inno Setup: App Path");
+    }
+
+    private static bool TryFindExecutableInPath(Logger logger, List<string> paths, string path, out string result)
+    {
+        if (string.IsNullOrEmpty(path))
+        {
+            result = null;
+        }
+        else if (paths.Contains(path, StringComparer.CurrentCultureIgnoreCase))
+        {
+            logger.WriteLine("Already searched " + path);
+            result = null;
+        }
+        else
+        {
+            paths.Add(path);
+            string text = Path.Combine(path, "winscp.exe");
+            if (File.Exists(text))
+            {
+                result = text;
+                logger.WriteLine("Executable found in {0}", text);
+            }
+            else
+            {
+                result = null;
+                logger.WriteLine("Executable not found in {0}", text);
+            }
+        }
+        return result != null;
+    }
+
+    private static string GetAssemblyPath(Logger logger)
+    {
+        return DoGetAssemblyPath(logger.GetAssemblyFilePath());
+    }
+
+    private static string GetEntryAssemblyPath(Logger logger)
+    {
+        return DoGetAssemblyPath(logger.GetEntryAssemblyFilePath());
+    }
+
+    private static string DoGetAssemblyPath(string codeBasePath)
+    {
+        string result = null;
+        if (!string.IsNullOrEmpty(codeBasePath))
+        {
+            result = Path.GetDirectoryName(codeBasePath);
+        }
+        return result;
+    }
+
+    [DllImport("version.dll", BestFitMapping = false, CharSet = CharSet.Auto, SetLastError = true)]
+    public static extern int GetFileVersionInfoSize(string lptstrFilename, out int handle);
+
+    [DllImport("kernel32.dll", SetLastError = true)]
+    private static extern IntPtr LoadLibraryEx(string lpFileName, IntPtr hReservedNull, uint dwFlags);
+
+    [DllImport("kernel32.dll", SetLastError = true)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static extern bool FreeLibrary(IntPtr hModule);
+
+    [DllImport("kernel32.dll", SetLastError = true)]
+    private static extern IntPtr FindResource(IntPtr hModule, string lpName, string lpType);
+
+    [DllImport("kernel32.dll", SetLastError = true)]
+    private static extern uint SizeofResource(IntPtr hModule, IntPtr hResInfo);
+
+    private string GetVersionStr(FileVersionInfo version)
+    {
+        return version.FileVersion + ", product " + version.ProductName + " version is " + version.ProductVersion;
+    }
+
+    private void CheckVersion(string exePath, FileVersionInfo assemblyVersion)
+    {
+        using (_logger.CreateCallstack())
+        {
+            if (assemblyVersion == null)
+            {
+                _logger.WriteLine("Assembly version not known, cannot check version");
+                return;
+            }
+            if (assemblyVersion.ProductVersion == "9.9.9.9")
+            {
+                _logger.WriteLine("Undefined assembly version, cannot check version");
+                return;
+            }
+            DateTime lastWriteTimeUtc = File.GetLastWriteTimeUtc(exePath);
+            _logger.WriteLine($"Timestamp of {exePath} is {lastWriteTimeUtc}");
+            Tuple<string, DateTime> key = new Tuple<string, DateTime>(exePath, lastWriteTimeUtc);
+            bool flag;
+            lock (_versionInfoCache)
+            {
+                flag = _versionInfoCache.TryGetValue(key, out var value);
+                if (flag)
+                {
+                    _logger.WriteLine("Cached version of " + exePath + " is " + GetVersionStr(value) + ", and it was already deemed compatible");
+                }
+                else
+                {
+                    _logger.WriteLine($"Executable version is not cached yet, cache size is {_versionInfoCache.Count}");
+                }
+            }
+            if (flag)
+            {
+                return;
+            }
+            FileVersionInfo versionInfo = FileVersionInfo.GetVersionInfo(exePath);
+            _logger.WriteLine("Version of " + exePath + " is " + GetVersionStr(versionInfo));
+            bool flag2 = assemblyVersion.ProductVersion != versionInfo.ProductVersion;
+            Exception ex = null;
+            if (flag2 || _logger.Logging)
+            {
+                try
+                {
+                    using (File.OpenRead(exePath))
+                    {
+                    }
+                    long length = new FileInfo(exePath).Length;
+                    _logger.WriteLine($"Size of the executable file is {length}");
+                    int handle;
+                    int fileVersionInfoSize = GetFileVersionInfoSize(exePath, out handle);
+                    if (fileVersionInfoSize == 0)
+                    {
+                        throw new Exception("Cannot retrieve " + exePath + " version info", new Win32Exception());
+                    }
+                    _logger.WriteLine($"Size of the executable file version info is {fileVersionInfoSize}");
+                }
+                catch (Exception ex2)
+                {
+                    _logger.WriteLine("Accessing executable file failed");
+                    _logger.WriteException(ex2);
+                    ex = ex2;
+                }
+            }
+            if (_session.DisableVersionCheck)
+            {
+                _logger.WriteLine("Version check disabled (not recommended)");
+                return;
+            }
+            if (flag2)
+            {
+                if (_logger.Logging)
+                {
+                    try
+                    {
+                        using SHA256 sHA = SHA256.Create();
+                        using FileStream inputStream = File.OpenRead(exePath);
+                        string text = string.Concat(Array.ConvertAll(sHA.ComputeHash(inputStream), (byte b) => b.ToString("x2")));
+                        _logger.WriteLine("SHA-256 of the executable file is " + text);
+                    }
+                    catch (Exception e)
+                    {
+                        _logger.WriteLine("Calculating SHA-256 of the executable file failed");
+                        _logger.WriteException(e);
+                    }
+                    try
+                    {
+                        IntPtr intPtr = LoadLibraryEx(exePath, IntPtr.Zero, 2u);
+                        if (intPtr == IntPtr.Zero)
+                        {
+                            _logger.WriteLine("Cannot load");
+                            _logger.WriteException(new Win32Exception());
+                        }
+                        else
+                        {
+                            IntPtr intPtr2 = FindResource(intPtr, "#1", "#16");
+                            if (intPtr2 == IntPtr.Zero)
+                            {
+                                _logger.WriteLine("Cannot find version resource");
+                                _logger.WriteException(new Win32Exception());
+                            }
+                            else
+                            {
+                                uint num = SizeofResource(intPtr, intPtr2);
+                                if (num == 0)
+                                {
+                                    _logger.WriteLine("Cannot find size of version resource");
+                                    _logger.WriteException(new Win32Exception());
+                                }
+                                else
+                                {
+                                    _logger.WriteLine($"Version resource size is {num}");
+                                }
+                            }
+                            FreeLibrary(intPtr);
+                        }
+                    }
+                    catch (Exception e2)
+                    {
+                        _logger.WriteLine("Querying version resource failed");
+                        _logger.WriteException(e2);
+                    }
+                }
+                string message = ((!string.IsNullOrEmpty(versionInfo.ProductVersion) || ex == null) ? ("The version of " + exePath + " (" + versionInfo.ProductVersion + ") does not match version of this assembly " + _logger.GetAssemblyFilePath() + " (" + assemblyVersion.ProductVersion + ").") : ("Cannot use " + exePath));
+                throw _logger.WriteException(new SessionLocalException(_session, message, ex));
+            }
+            lock (_versionInfoCache)
+            {
+                _logger.WriteLine("Caching executable version");
+                _versionInfoCache[key] = versionInfo;
+            }
+        }
+    }
+
+    /// <summary>
+    /// Releases all resources used by the <see cref="ExeSessionProcess"/>.
+    /// </summary>
+    public void Dispose()
 	{
 		using (_logger.CreateCallstack())
 		{
@@ -787,262 +1101,17 @@ internal class ExeSessionProcess : IDisposable
 		}
 	}
 
-	private string GetExecutablePath()
-	{
-		using (_logger.CreateCallstack())
-		{
-			string executablePath = _session.ExecutablePath;
-			if (!string.IsNullOrEmpty(executablePath))
-			{
-				if (!File.Exists(executablePath))
-				{
-					throw _logger.WriteException(new SessionLocalException(_session, executablePath + " does not exists."));
-				}
-				return executablePath;
-			}
-			return FindExecutable(_session);
-		}
-	}
-
-	internal static string FindExecutable(Session session)
-	{
-		Logger logger = session.Logger;
-		List<string> list = new List<string>();
-		string assemblyPath = GetAssemblyPath(logger);
-		string path = ((!string.IsNullOrEmpty(assemblyPath)) ? null : Path.GetDirectoryName(Logger.GetProcessPath()));
-		if (!TryFindExecutableInPath(logger, list, assemblyPath, out var result) && !TryFindExecutableInPath(logger, list, GetEntryAssemblyPath(logger), out result) && !TryFindExecutableInPath(logger, list, path, out result) && !TryFindExecutableInPath(logger, list, GetInstallationPath(RegistryHive.CurrentUser), out result) && !TryFindExecutableInPath(logger, list, GetInstallationPath(RegistryHive.LocalMachine), out result) && !TryFindExecutableInPath(logger, list, GetDefaultInstallationPath(), out result))
-		{
-			string text = string.Join(", ", list);
-			string text2 = "winscp.exe";
-			string message = "The " + text2 + " executable was not found at any of the inspected locations (" + text + "). You may use Session.ExecutablePath property to explicitly set path to " + text2 + ".";
-			throw logger.WriteException(new SessionLocalException(session, message));
-		}
-		return result;
-	}
-
-	private static string GetDefaultInstallationPath()
-	{
-		string path = ((IntPtr.Size != 8) ? Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles) : Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86));
-		return Path.Combine(path, "WinSCP");
-	}
-
-	private static string GetInstallationPath(RegistryHive hive)
-	{
-		RegistryKey registryKey = RegistryKey.OpenBaseKey(hive, RegistryView.Registry32).OpenSubKey("Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\winscp3_is1");
-		if (registryKey == null)
-		{
-			return null;
-		}
-		return (string)registryKey.GetValue("Inno Setup: App Path");
-	}
-
-	private static bool TryFindExecutableInPath(Logger logger, List<string> paths, string path, out string result)
-	{
-		if (string.IsNullOrEmpty(path))
-		{
-			result = null;
-		}
-		else if (paths.Contains(path, StringComparer.CurrentCultureIgnoreCase))
-		{
-			logger.WriteLine("Already searched " + path);
-			result = null;
-		}
-		else
-		{
-			paths.Add(path);
-			string text = Path.Combine(path, "winscp.exe");
-			if (File.Exists(text))
-			{
-				result = text;
-				logger.WriteLine("Executable found in {0}", text);
-			}
-			else
-			{
-				result = null;
-				logger.WriteLine("Executable not found in {0}", text);
-			}
-		}
-		return result != null;
-	}
-
-	private static string GetAssemblyPath(Logger logger)
-	{
-		return DoGetAssemblyPath(logger.GetAssemblyFilePath());
-	}
-
-	private static string GetEntryAssemblyPath(Logger logger)
-	{
-		return DoGetAssemblyPath(logger.GetEntryAssemblyFilePath());
-	}
-
-	private static string DoGetAssemblyPath(string codeBasePath)
-	{
-		string result = null;
-		if (!string.IsNullOrEmpty(codeBasePath))
-		{
-			result = Path.GetDirectoryName(codeBasePath);
-		}
-		return result;
-	}
-
-	[DllImport("version.dll", BestFitMapping = false, CharSet = CharSet.Auto, SetLastError = true)]
-	public static extern int GetFileVersionInfoSize(string lptstrFilename, out int handle);
-
-	[DllImport("kernel32.dll", SetLastError = true)]
-	private static extern IntPtr LoadLibraryEx(string lpFileName, IntPtr hReservedNull, uint dwFlags);
-
-	[DllImport("kernel32.dll", SetLastError = true)]
-	[return: MarshalAs(UnmanagedType.Bool)]
-	private static extern bool FreeLibrary(IntPtr hModule);
-
-	[DllImport("kernel32.dll", SetLastError = true)]
-	private static extern IntPtr FindResource(IntPtr hModule, string lpName, string lpType);
-
-	[DllImport("kernel32.dll", SetLastError = true)]
-	private static extern uint SizeofResource(IntPtr hModule, IntPtr hResInfo);
-
-	private string GetVersionStr(FileVersionInfo version)
-	{
-		return version.FileVersion + ", product " + version.ProductName + " version is " + version.ProductVersion;
-	}
-
-	private void CheckVersion(string exePath, FileVersionInfo assemblyVersion)
-	{
-		using (_logger.CreateCallstack())
-		{
-			if (assemblyVersion == null)
-			{
-				_logger.WriteLine("Assembly version not known, cannot check version");
-				return;
-			}
-			if (assemblyVersion.ProductVersion == "9.9.9.9")
-			{
-				_logger.WriteLine("Undefined assembly version, cannot check version");
-				return;
-			}
-			DateTime lastWriteTimeUtc = File.GetLastWriteTimeUtc(exePath);
-			_logger.WriteLine($"Timestamp of {exePath} is {lastWriteTimeUtc}");
-			Tuple<string, DateTime> key = new Tuple<string, DateTime>(exePath, lastWriteTimeUtc);
-			bool flag;
-			lock (_versionInfoCache)
-			{
-				flag = _versionInfoCache.TryGetValue(key, out var value);
-				if (flag)
-				{
-					_logger.WriteLine("Cached version of " + exePath + " is " + GetVersionStr(value) + ", and it was already deemed compatible");
-				}
-				else
-				{
-					_logger.WriteLine($"Executable version is not cached yet, cache size is {_versionInfoCache.Count}");
-				}
-			}
-			if (flag)
-			{
-				return;
-			}
-			FileVersionInfo versionInfo = FileVersionInfo.GetVersionInfo(exePath);
-			_logger.WriteLine("Version of " + exePath + " is " + GetVersionStr(versionInfo));
-			bool flag2 = assemblyVersion.ProductVersion != versionInfo.ProductVersion;
-			Exception ex = null;
-			if (flag2 || _logger.Logging)
-			{
-				try
-				{
-					using (File.OpenRead(exePath))
-					{
-					}
-					long length = new FileInfo(exePath).Length;
-					_logger.WriteLine($"Size of the executable file is {length}");
-					int handle;
-					int fileVersionInfoSize = GetFileVersionInfoSize(exePath, out handle);
-					if (fileVersionInfoSize == 0)
-					{
-						throw new Exception("Cannot retrieve " + exePath + " version info", new Win32Exception());
-					}
-					_logger.WriteLine($"Size of the executable file version info is {fileVersionInfoSize}");
-				}
-				catch (Exception ex2)
-				{
-					_logger.WriteLine("Accessing executable file failed");
-					_logger.WriteException(ex2);
-					ex = ex2;
-				}
-			}
-			if (_session.DisableVersionCheck)
-			{
-				_logger.WriteLine("Version check disabled (not recommended)");
-				return;
-			}
-			if (flag2)
-			{
-				if (_logger.Logging)
-				{
-					try
-					{
-						using SHA256 sHA = SHA256.Create();
-						using FileStream inputStream = File.OpenRead(exePath);
-						string text = string.Concat(Array.ConvertAll(sHA.ComputeHash(inputStream), (byte b) => b.ToString("x2")));
-						_logger.WriteLine("SHA-256 of the executable file is " + text);
-					}
-					catch (Exception e)
-					{
-						_logger.WriteLine("Calculating SHA-256 of the executable file failed");
-						_logger.WriteException(e);
-					}
-					try
-					{
-						IntPtr intPtr = LoadLibraryEx(exePath, IntPtr.Zero, 2u);
-						if (intPtr == IntPtr.Zero)
-						{
-							_logger.WriteLine("Cannot load");
-							_logger.WriteException(new Win32Exception());
-						}
-						else
-						{
-							IntPtr intPtr2 = FindResource(intPtr, "#1", "#16");
-							if (intPtr2 == IntPtr.Zero)
-							{
-								_logger.WriteLine("Cannot find version resource");
-								_logger.WriteException(new Win32Exception());
-							}
-							else
-							{
-								uint num = SizeofResource(intPtr, intPtr2);
-								if (num == 0)
-								{
-									_logger.WriteLine("Cannot find size of version resource");
-									_logger.WriteException(new Win32Exception());
-								}
-								else
-								{
-									_logger.WriteLine($"Version resource size is {num}");
-								}
-							}
-							FreeLibrary(intPtr);
-						}
-					}
-					catch (Exception e2)
-					{
-						_logger.WriteLine("Querying version resource failed");
-						_logger.WriteException(e2);
-					}
-				}
-				string message = ((!string.IsNullOrEmpty(versionInfo.ProductVersion) || ex == null) ? ("The version of " + exePath + " (" + versionInfo.ProductVersion + ") does not match version of this assembly " + _logger.GetAssemblyFilePath() + " (" + assemblyVersion.ProductVersion + ").") : ("Cannot use " + exePath));
-				throw _logger.WriteException(new SessionLocalException(_session, message, ex));
-			}
-			lock (_versionInfoCache)
-			{
-				_logger.WriteLine("Caching executable version");
-				_versionInfoCache[key] = versionInfo;
-			}
-		}
-	}
-
+	/// <summary>
+	/// Writes the status of the executable path to the logger.
+	/// </summary>
 	public void WriteStatus()
 	{
 		_logger.WriteLine("{0} - exists [{1}]", ExecutablePath, File.Exists(ExecutablePath));
 	}
 
+	/// <summary>
+	/// Requests the callstack from the process.
+	/// </summary>
 	public void RequestCallstack()
 	{
 		using (_logger.CreateCallstack())
@@ -1085,6 +1154,9 @@ internal class ExeSessionProcess : IDisposable
 		}
 	}
 
+	/// <summary>
+	/// Cancels the current operation.
+	/// </summary>
 	public void Cancel()
 	{
 		_cancel = true;
