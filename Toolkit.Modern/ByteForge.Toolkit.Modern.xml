@@ -4,98 +4,98 @@
         <name>ByteForge.Toolkit.Modern</name>
     </assembly>
     <members>
-        <member name="T:ByteForge.Toolkit.CLI.CommandAttribute">
+        <member name="T:ByteForge.Toolkit.CommandLine.CommandAttribute">
             <summary>
             Attribute to define a command with a name, description, and optional aliases.
             </summary>
         </member>
-        <member name="M:ByteForge.Toolkit.CLI.CommandAttribute.#ctor(System.String,System.String,System.String[])">
+        <member name="M:ByteForge.Toolkit.CommandLine.CommandAttribute.#ctor(System.String,System.String,System.String[])">
             <summary>
-            Initializes a new instance of the <see cref="T:ByteForge.Toolkit.CLI.CommandAttribute"/> class.
+            Initializes a new instance of the <see cref="T:ByteForge.Toolkit.CommandLine.CommandAttribute"/> class.
             </summary>
             <param name="name">The name of the command.</param>
             <param name="description">The description of the command.</param>
             <param name="aliases">The aliases for the command.</param>
         </member>
-        <member name="P:ByteForge.Toolkit.CLI.CommandAttribute.Name">
+        <member name="P:ByteForge.Toolkit.CommandLine.CommandAttribute.Name">
             <summary>
             Gets the name of the option.
             </summary>
         </member>
-        <member name="P:ByteForge.Toolkit.CLI.CommandAttribute.Description">
+        <member name="P:ByteForge.Toolkit.CommandLine.CommandAttribute.Description">
             <summary>
             Gets the description of the option.
             </summary>
         </member>
-        <member name="P:ByteForge.Toolkit.CLI.CommandAttribute.Aliases">
+        <member name="P:ByteForge.Toolkit.CommandLine.CommandAttribute.Aliases">
             <summary>
             Gets the aliases for the option.
             </summary>
         </member>
-        <member name="T:ByteForge.Toolkit.CLI.OptionAttribute">
+        <member name="T:ByteForge.Toolkit.CommandLine.OptionAttribute">
             <summary>
             Attribute to define an option for a command parameter with a description, name, and optional aliases.
             </summary>
             <remarks>
-            The <see cref="T:ByteForge.Toolkit.CLI.OptionAttribute"/> is used to annotate parameters of methods that represent command-line options.<br/>
-            The name of the option can be set using the <see cref="P:ByteForge.Toolkit.CLI.OptionAttribute.Name"/> property. If not set, the parameter name will be used as the option name.<br/>
-            The <see cref="P:ByteForge.Toolkit.CLI.OptionAttribute.Description"/> property provides a human-readable explanation of the option's purpose and cannot be null.<br/>
-            Also, multiple aliases for the option can be specified using the <see cref="P:ByteForge.Toolkit.CLI.OptionAttribute.Aliases"/> property or the constructor parameter.<br/>
+            The <see cref="T:ByteForge.Toolkit.CommandLine.OptionAttribute"/> is used to annotate parameters of methods that represent command-line options.<br/>
+            The name of the option can be set using the <see cref="P:ByteForge.Toolkit.CommandLine.OptionAttribute.Name"/> property. If not set, the parameter name will be used as the option name.<br/>
+            The <see cref="P:ByteForge.Toolkit.CommandLine.OptionAttribute.Description"/> property provides a human-readable explanation of the option's purpose and cannot be null.<br/>
+            Also, multiple aliases for the option can be specified using the <see cref="P:ByteForge.Toolkit.CommandLine.OptionAttribute.Aliases"/> property or the constructor parameter.<br/>
             </remarks>
         </member>
-        <member name="P:ByteForge.Toolkit.CLI.OptionAttribute.Description">
+        <member name="P:ByteForge.Toolkit.CommandLine.OptionAttribute.Description">
             <summary>
             Gets the description of the option.
             </summary>
         </member>
-        <member name="P:ByteForge.Toolkit.CLI.OptionAttribute.Aliases">
+        <member name="P:ByteForge.Toolkit.CommandLine.OptionAttribute.Aliases">
             <summary>
             Gets the aliases for the option.
             </summary>
         </member>
-        <member name="P:ByteForge.Toolkit.CLI.OptionAttribute.Name">
+        <member name="P:ByteForge.Toolkit.CommandLine.OptionAttribute.Name">
             <summary>
             Gets the name of the option.
             </summary>
         </member>
-        <member name="M:ByteForge.Toolkit.CLI.OptionAttribute.#ctor(System.String)">
+        <member name="M:ByteForge.Toolkit.CommandLine.OptionAttribute.#ctor(System.String)">
             <summary>
-            Initializes a new instance of the <see cref="T:ByteForge.Toolkit.CLI.OptionAttribute"/> class with the specified description.
+            Initializes a new instance of the <see cref="T:ByteForge.Toolkit.CommandLine.OptionAttribute"/> class with the specified description.
             </summary>
             <param name="description">The description of the option. This value provides a human-readable explanation of the option's purpose and cannot be null.</param>
         </member>
-        <member name="M:ByteForge.Toolkit.CLI.OptionAttribute.#ctor(System.String,System.String[])">
+        <member name="M:ByteForge.Toolkit.CommandLine.OptionAttribute.#ctor(System.String,System.String[])">
             <summary>
-            Initializes a new instance of the <see cref="T:ByteForge.Toolkit.CLI.OptionAttribute"/> class.
+            Initializes a new instance of the <see cref="T:ByteForge.Toolkit.CommandLine.OptionAttribute"/> class.
             </summary>
             <param name="description">The description of the option.</param>
             <param name="aliases">The aliases for the option.</param>
         </member>
-        <member name="T:ByteForge.Toolkit.CLI.CommandBuilder">
+        <member name="T:ByteForge.Toolkit.CommandLine.CommandBuilder">
             <summary>
             Class to build commands from an assembly.
             </summary>
         </member>
-        <member name="P:ByteForge.Toolkit.CLI.CommandBuilder.TokenList">
+        <member name="P:ByteForge.Toolkit.CommandLine.CommandBuilder.TokenList">
             <summary>
             Gets a collection of tokens and their corresponding values.
             </summary>
         </member>
-        <member name="M:ByteForge.Toolkit.CLI.CommandBuilder.BuildFromAssembly(System.String)">
+        <member name="M:ByteForge.Toolkit.CommandLine.CommandBuilder.BuildFromAssembly(System.String)">
             <summary>
             Builds commands from the specified assembly path.
             </summary>
             <param name="assemblyPath">The path to the assembly.</param>
             <returns>A collection of commands.</returns>
         </member>
-        <member name="M:ByteForge.Toolkit.CLI.CommandBuilder.BuildFromAssembly(System.Reflection.Assembly)">
+        <member name="M:ByteForge.Toolkit.CommandLine.CommandBuilder.BuildFromAssembly(System.Reflection.Assembly)">
             <summary>
             Builds commands from the specified assembly.
             </summary>
             <param name="assembly">The assembly to build commands from.</param>
             <returns>A collection of commands.</returns>
         </member>
-        <member name="M:ByteForge.Toolkit.CLI.CommandBuilder.BuildCommandGroup(System.Type,ByteForge.Toolkit.CLI.CommandAttribute,ByteForge.Toolkit.CLI.CommandBuilder.NameTracker)">
+        <member name="M:ByteForge.Toolkit.CommandLine.CommandBuilder.BuildCommandGroup(System.Type,ByteForge.Toolkit.CommandLine.CommandAttribute,ByteForge.Toolkit.CommandLine.CommandBuilder.NameTracker)">
             <summary>
             Builds a command group from the specified type and command attribute.
             </summary>
@@ -104,7 +104,7 @@
             <param name="globalNameTracker">The global name tracker to prevent conflicts across all commands.</param>
             <returns>The built command group.</returns>
         </member>
-        <member name="M:ByteForge.Toolkit.CLI.CommandBuilder.BuildStaticCommands(System.Type,ByteForge.Toolkit.CLI.CommandBuilder.NameTracker)">
+        <member name="M:ByteForge.Toolkit.CommandLine.CommandBuilder.BuildStaticCommands(System.Type,ByteForge.Toolkit.CommandLine.CommandBuilder.NameTracker)">
             <summary>
             Builds top-level commands from static methods with CommandAttribute in the specified type.
             </summary>
@@ -112,7 +112,7 @@
             <param name="globalNameTracker">The global name tracker to prevent conflicts across all commands.</param>
             <returns>A collection of top-level commands built from static methods.</returns>
         </member>
-        <member name="M:ByteForge.Toolkit.CLI.CommandBuilder.ValidateMethodParameters(System.Reflection.MethodInfo,System.String@)">
+        <member name="M:ByteForge.Toolkit.CommandLine.CommandBuilder.ValidateMethodParameters(System.Reflection.MethodInfo,System.String@)">
             <summary>
             Validates the parameters of the specified method.
             </summary>
@@ -120,21 +120,21 @@
             <param name="error">The error message if validation fails.</param>
             <returns>True if the parameters are valid, otherwise false.</returns>
         </member>
-        <member name="M:ByteForge.Toolkit.CLI.CommandBuilder.AddOptionsFromParameters(System.CommandLine.Command,System.Reflection.MethodInfo)">
+        <member name="M:ByteForge.Toolkit.CommandLine.CommandBuilder.AddOptionsFromParameters(System.CommandLine.Command,System.Reflection.MethodInfo)">
             <summary>
             Adds options to the command from the parameters of the specified method.
             </summary>
             <param name="command">The command to add options to.</param>
             <param name="method">The method to get parameters from.</param>
         </member>
-        <member name="M:ByteForge.Toolkit.CLI.CommandBuilder.NormalizeAlias(System.String[])">
+        <member name="M:ByteForge.Toolkit.CommandLine.CommandBuilder.NormalizeAlias(System.String[])">
             <summary>
             Normalizes the provided aliases by trimming leading characters and generating standard aliases.
             </summary>
             <param name="aliases">The aliases to normalize.</param>
             <returns>A collection of normalized aliases.</returns>
         </member>
-        <member name="M:ByteForge.Toolkit.CLI.CommandBuilder.CreateTypedOption(System.Type,System.String,System.String)">
+        <member name="M:ByteForge.Toolkit.CommandLine.CommandBuilder.CreateTypedOption(System.Type,System.String,System.String)">
             <summary>
             Creates a typed option for the specified parameter type, name, and description.
             </summary>
@@ -143,140 +143,140 @@
             <param name="description">The description of the option.</param>
             <returns>The created option.</returns>
         </member>
-        <member name="M:ByteForge.Toolkit.CLI.CommandBuilder.GenerateAliases(System.String)">
+        <member name="M:ByteForge.Toolkit.CommandLine.CommandBuilder.GenerateAliases(System.String)">
             <summary>
             Generates aliases for the specified option name.
             </summary>
             <param name="name">The option name.</param>
             <returns>An array of aliases.</returns>
         </member>
-        <member name="T:ByteForge.Toolkit.CLI.CommandBuilder.NameTracker">
+        <member name="T:ByteForge.Toolkit.CommandLine.CommandBuilder.NameTracker">
             <summary>
             Tracks the names used to ensure no duplicates.
             </summary>
         </member>
-        <member name="M:ByteForge.Toolkit.CLI.CommandBuilder.NameTracker.TryAddName(System.String)">
+        <member name="M:ByteForge.Toolkit.CommandLine.CommandBuilder.NameTracker.TryAddName(System.String)">
             <summary>
             Tries to add a name to the tracker.
             </summary>
             <param name="name">The name to add.</param>
             <returns>True if the name was added, otherwise false.</returns>
         </member>
-        <member name="M:ByteForge.Toolkit.CLI.CommandBuilder.NameTracker.TryAddNames(System.Collections.Generic.IEnumerable{System.String})">
+        <member name="M:ByteForge.Toolkit.CommandLine.CommandBuilder.NameTracker.TryAddNames(System.Collections.Generic.IEnumerable{System.String})">
             <summary>
             Tries to add multiple names to the tracker.
             </summary>
             <param name="names">The names to add.</param>
             <returns>True if all names were added, otherwise false.</returns>
         </member>
-        <member name="M:ByteForge.Toolkit.CLI.CommandBuilder.NameTracker.AddNames(System.Collections.Generic.IEnumerable{System.String})">
+        <member name="M:ByteForge.Toolkit.CommandLine.CommandBuilder.NameTracker.AddNames(System.Collections.Generic.IEnumerable{System.String})">
             <summary>
             Adds multiple names to the tracker without checking for conflicts.
             </summary>
             <param name="names">The names to add.</param>
         </member>
-        <member name="M:ByteForge.Toolkit.CLI.CommandBuilder.NameTracker.Clear">
+        <member name="M:ByteForge.Toolkit.CommandLine.CommandBuilder.NameTracker.Clear">
             <summary>
             Clears all tracked names.
             </summary>
         </member>
-        <member name="M:ByteForge.Toolkit.CLI.CommandBuilder.NameTracker.GetEnumerator">
+        <member name="M:ByteForge.Toolkit.CommandLine.CommandBuilder.NameTracker.GetEnumerator">
             <summary>
             Returns an enumerator that iterates through the collection of used names.
             </summary>
             <returns>An enumerator for the collection of used names.</returns>
         </member>
-        <member name="M:ByteForge.Toolkit.CLI.CommandBuilder.NameTracker.System#Collections#IEnumerable#GetEnumerator">
+        <member name="M:ByteForge.Toolkit.CommandLine.CommandBuilder.NameTracker.System#Collections#IEnumerable#GetEnumerator">
             <summary>
             Returns an enumerator that iterates through the collection of used names.
             </summary>
             <returns>An enumerator for the collection of used names.</returns>
         </member>
-        <member name="T:ByteForge.Toolkit.CLI.CommandParser">
+        <member name="T:ByteForge.Toolkit.CommandLine.CommandParser">
             <summary>
             Provides functionality for parsing command line arguments using <see cref="N:System.CommandLine"/>.
             Supports token replacement for argument preprocessing.
             </summary>
         </member>
-        <member name="M:ByteForge.Toolkit.CLI.CommandParser.#ctor(ByteForge.Toolkit.CLI.RootCommandBuilder,System.CommandLine.Parsing.Parser,System.Collections.Generic.IDictionary{System.String,System.String})">
+        <member name="M:ByteForge.Toolkit.CommandLine.CommandParser.#ctor(ByteForge.Toolkit.CommandLine.RootCommandBuilder,System.CommandLine.Parsing.Parser,System.Collections.Generic.IDictionary{System.String,System.String})">
             <summary>
-            Initializes a new instance of the <see cref="T:ByteForge.Toolkit.CLI.CommandParser"/> class.
+            Initializes a new instance of the <see cref="T:ByteForge.Toolkit.CommandLine.CommandParser"/> class.
             </summary>
-            <param name="builder">The <see cref="T:ByteForge.Toolkit.CLI.RootCommandBuilder"/> containing configuration settings.</param>
+            <param name="builder">The <see cref="T:ByteForge.Toolkit.CommandLine.RootCommandBuilder"/> containing configuration settings.</param>
             <param name="parser">The <see cref="T:System.CommandLine.Parsing.Parser"/> to use for parsing arguments.</param>
             <param name="tokenReplacer">
             An optional dictionary of token replacements. If provided, arguments matching a key will be replaced with the corresponding value before parsing.
             </param>
             <exception cref="T:System.ArgumentNullException">Thrown when <paramref name="builder"/> or <paramref name="parser"/> is <c>null</c>.</exception>
         </member>
-        <member name="P:ByteForge.Toolkit.CLI.CommandParser.Configuration">
+        <member name="P:ByteForge.Toolkit.CommandLine.CommandParser.Configuration">
             <summary>
             Gets the <see cref="T:System.CommandLine.CommandLineConfiguration"/> associated with the parser.
             </summary>
         </member>
-        <member name="M:ByteForge.Toolkit.CLI.CommandParser.Parse(System.String[])">
+        <member name="M:ByteForge.Toolkit.CommandLine.CommandParser.Parse(System.String[])">
             <summary>
             Parses the specified command line arguments, applying token replacement if configured.
             Displays banner and parameter explanation if enabled.
             </summary>
             <param name="args">The command line arguments to parse.</param>
             <returns>
-            A <see cref="T:ByteForge.Toolkit.CLI.ParseResult"/> representing the result of parsing the arguments.
+            A <see cref="T:ByteForge.Toolkit.CommandLine.ParseResult"/> representing the result of parsing the arguments.
             </returns>
         </member>
-        <member name="M:ByteForge.Toolkit.CLI.CommandParser.DescribeCommand(ByteForge.Toolkit.CLI.ParseResult)">
+        <member name="M:ByteForge.Toolkit.CommandLine.CommandParser.DescribeCommand(ByteForge.Toolkit.CommandLine.ParseResult)">
             <summary>
             Describes the parsed command on the console, showing its name, options, and arguments.
             </summary>
             <param name="cmd">The parsed command result.</param>
             <returns>A string description of the parsed command.</returns>
         </member>
-        <member name="M:ByteForge.Toolkit.CLI.CommandParser.GetCommandPath(System.CommandLine.Parsing.CommandResult)">
+        <member name="M:ByteForge.Toolkit.CommandLine.CommandParser.GetCommandPath(System.CommandLine.Parsing.CommandResult)">
             <summary>
             Gets the full command path including all parent commands (command group).
             </summary>
             <param name="commandResult">The command result for which to build the path.</param>
             <returns>A string representing the full command path.</returns>
         </member>
-        <member name="M:ByteForge.Toolkit.CLI.CommandParser.IsHelpCommand(ByteForge.Toolkit.CLI.ParseResult)">
+        <member name="M:ByteForge.Toolkit.CommandLine.CommandParser.IsHelpCommand(ByteForge.Toolkit.CommandLine.ParseResult)">
             <summary>
             Determines whether the parsed command is a help request.
             </summary>
             <param name="parseResult">The parsed command result.</param>
             <returns>True if the command is a help request; otherwise, false.</returns>
         </member>
-        <member name="M:ByteForge.Toolkit.CLI.CommandParser.ProcessGlobalOptions(System.String[])">
+        <member name="M:ByteForge.Toolkit.CommandLine.CommandParser.ProcessGlobalOptions(System.String[])">
             <summary>
             Processes global options from the command line arguments and executes their actions.
             </summary>
             <param name="args">The command line arguments to process.</param>
             <returns>The filtered arguments with global options removed.</returns>
         </member>
-        <member name="M:ByteForge.Toolkit.CLI.CommandParser.IsHelpArg(System.String)">
+        <member name="M:ByteForge.Toolkit.CommandLine.CommandParser.IsHelpArg(System.String)">
             <summary>
             Determines if an argument is a help request.
             </summary>
             <param name="arg">The argument to check.</param>
             <returns>True if the argument is a help request; otherwise, false.</returns>
         </member>
-        <member name="M:ByteForge.Toolkit.CLI.CommandParser.ShowGlobalOptionsHelp">
+        <member name="M:ByteForge.Toolkit.CommandLine.CommandParser.ShowGlobalOptionsHelp">
             <summary>
             Shows help information about global options.
             </summary>
         </member>
-        <member name="T:ByteForge.Toolkit.CLI.ConsoleSpinner">
+        <member name="T:ByteForge.Toolkit.CommandLine.ConsoleSpinner">
             <summary>
             Provides a console-based spinner animation at a fixed or dynamic position.
             Useful for indicating progress in console applications.
             </summary>
             <remarks>
-            Thread-safe for concurrent calls to <see cref="M:ByteForge.Toolkit.CLI.ConsoleSpinner.Start"/>, <see cref="M:ByteForge.Toolkit.CLI.ConsoleSpinner.Stop"/>, and property setters.
+            Thread-safe for concurrent calls to <see cref="M:ByteForge.Toolkit.CommandLine.ConsoleSpinner.Start"/>, <see cref="M:ByteForge.Toolkit.CommandLine.ConsoleSpinner.Stop"/>, and property setters.
             If Unicode is not supported by the current console (e.g., on some Windows environments or when output encoding is not UTF-8),
             the spinner gracefully falls back to an ASCII style regardless of the requested spinner style.
             Spinner character selection is handled at construction time via the <c>GetSpinnerChars</c> method.
             </remarks>
         </member>
-        <member name="P:ByteForge.Toolkit.CLI.ConsoleSpinner.Color">
+        <member name="P:ByteForge.Toolkit.CommandLine.ConsoleSpinner.Color">
             <summary>
             Gets or sets the foreground color used while rendering the spinner (including the optional message).
             </summary>
@@ -285,29 +285,29 @@
             Setting this property after the spinner has started will affect subsequent frames.
             </remarks>
         </member>
-        <member name="P:ByteForge.Toolkit.CLI.ConsoleSpinner.PositionX">
+        <member name="P:ByteForge.Toolkit.CommandLine.ConsoleSpinner.PositionX">
             <summary>
             Gets the X (column) position where the spinner is rendered.
             A value of -1 indicates the current cursor column is used dynamically for every frame.
             </summary>
         </member>
-        <member name="P:ByteForge.Toolkit.CLI.ConsoleSpinner.PositionY">
+        <member name="P:ByteForge.Toolkit.CommandLine.ConsoleSpinner.PositionY">
             <summary>
             Gets the Y (row) position where the spinner is rendered.
             A value of -1 indicates the current cursor row is used dynamically for every frame.
             </summary>
         </member>
-        <member name="P:ByteForge.Toolkit.CLI.ConsoleSpinner.Delay">
+        <member name="P:ByteForge.Toolkit.CommandLine.ConsoleSpinner.Delay">
             <summary>
             Gets the delay in milliseconds between spinner frame updates.
             </summary>
         </member>
-        <member name="P:ByteForge.Toolkit.CLI.ConsoleSpinner.IsRunning">
+        <member name="P:ByteForge.Toolkit.CommandLine.ConsoleSpinner.IsRunning">
             <summary>
             Gets a value indicating whether the spinner thread is currently marked as running.
             </summary>
         </member>
-        <member name="P:ByteForge.Toolkit.CLI.ConsoleSpinner.Message">
+        <member name="P:ByteForge.Toolkit.CommandLine.ConsoleSpinner.Message">
             <summary>
             Gets or sets the message displayed after the spinner character (if any).
             </summary>
@@ -315,30 +315,30 @@
             Setting this property while the spinner is active updates the message on the next frame.
             </remarks>
         </member>
-        <member name="P:ByteForge.Toolkit.CLI.ConsoleSpinner.IsUnicodeSupported">
+        <member name="P:ByteForge.Toolkit.CommandLine.ConsoleSpinner.IsUnicodeSupported">
             <summary>
             Determines whether Unicode spinner styles can be rendered in the current console.
             </summary>
         </member>
-        <member name="M:ByteForge.Toolkit.CLI.ConsoleSpinner.#ctor">
+        <member name="M:ByteForge.Toolkit.CommandLine.ConsoleSpinner.#ctor">
             <summary>
             Initializes a spinner using default values (dynamic cursor position, default style, default delay).
             </summary>
         </member>
-        <member name="M:ByteForge.Toolkit.CLI.ConsoleSpinner.#ctor(System.String)">
+        <member name="M:ByteForge.Toolkit.CommandLine.ConsoleSpinner.#ctor(System.String)">
             <summary>
             Initializes a spinner with a message.
             </summary>
             <param name="message">The message to display next to the spinner.</param>
         </member>
-        <member name="M:ByteForge.Toolkit.CLI.ConsoleSpinner.#ctor(System.String,ByteForge.Toolkit.CLI.SpinnerStyle)">
+        <member name="M:ByteForge.Toolkit.CommandLine.ConsoleSpinner.#ctor(System.String,ByteForge.Toolkit.CommandLine.SpinnerStyle)">
             <summary>
             Initializes a spinner with a message and predefined style.
             </summary>
             <param name="message">The message to display.</param>
             <param name="style">The spinner style.</param>
         </member>
-        <member name="M:ByteForge.Toolkit.CLI.ConsoleSpinner.#ctor(System.String,ByteForge.Toolkit.CLI.SpinnerStyle,System.Int32)">
+        <member name="M:ByteForge.Toolkit.CommandLine.ConsoleSpinner.#ctor(System.String,ByteForge.Toolkit.CommandLine.SpinnerStyle,System.Int32)">
             <summary>
             Initializes a spinner with a message, style, and frame delay.
             </summary>
@@ -346,7 +346,7 @@
             <param name="style">The spinner style.</param>
             <param name="delayMs">Delay between frames (ms).</param>
         </member>
-        <member name="M:ByteForge.Toolkit.CLI.ConsoleSpinner.#ctor(System.String,ByteForge.Toolkit.CLI.SpinnerStyle,System.ConsoleColor)">
+        <member name="M:ByteForge.Toolkit.CommandLine.ConsoleSpinner.#ctor(System.String,ByteForge.Toolkit.CommandLine.SpinnerStyle,System.ConsoleColor)">
             <summary>
             Initializes a spinner with a message, style, and color.
             </summary>
@@ -354,7 +354,7 @@
             <param name="style">The spinner style.</param>
             <param name="color">The foreground color to use.</param>
         </member>
-        <member name="M:ByteForge.Toolkit.CLI.ConsoleSpinner.#ctor(System.String,ByteForge.Toolkit.CLI.SpinnerStyle,System.ConsoleColor,System.Int32)">
+        <member name="M:ByteForge.Toolkit.CommandLine.ConsoleSpinner.#ctor(System.String,ByteForge.Toolkit.CommandLine.SpinnerStyle,System.ConsoleColor,System.Int32)">
             <summary>
             Initializes a spinner with a message, style, color, and delay.
             </summary>
@@ -363,14 +363,14 @@
             <param name="color">The foreground color to use.</param>
             <param name="delayMs">Delay between frames (ms).</param>
         </member>
-        <member name="M:ByteForge.Toolkit.CLI.ConsoleSpinner.#ctor(System.String,System.ConsoleColor)">
+        <member name="M:ByteForge.Toolkit.CommandLine.ConsoleSpinner.#ctor(System.String,System.ConsoleColor)">
             <summary>
             Initializes a spinner with a message and color.
             </summary>
             <param name="message">The message to display.</param>
             <param name="color">Foreground color.</param>
         </member>
-        <member name="M:ByteForge.Toolkit.CLI.ConsoleSpinner.#ctor(System.String,System.ConsoleColor,System.Int32)">
+        <member name="M:ByteForge.Toolkit.CommandLine.ConsoleSpinner.#ctor(System.String,System.ConsoleColor,System.Int32)">
             <summary>
             Initializes a spinner with a message, color, and delay.
             </summary>
@@ -378,7 +378,7 @@
             <param name="color">Foreground color.</param>
             <param name="delayMs">Delay between frames (ms).</param>
         </member>
-        <member name="M:ByteForge.Toolkit.CLI.ConsoleSpinner.#ctor(System.String,System.ConsoleColor,System.String)">
+        <member name="M:ByteForge.Toolkit.CommandLine.ConsoleSpinner.#ctor(System.String,System.ConsoleColor,System.String)">
             <summary>
             Initializes a spinner with a message, color, and explicit character sequence.
             </summary>
@@ -386,7 +386,7 @@
             <param name="color">Foreground color.</param>
             <param name="spinChars">Sequence of characters cycled to animate the spinner.</param>
         </member>
-        <member name="M:ByteForge.Toolkit.CLI.ConsoleSpinner.#ctor(System.String,System.ConsoleColor,System.String,System.Int32)">
+        <member name="M:ByteForge.Toolkit.CommandLine.ConsoleSpinner.#ctor(System.String,System.ConsoleColor,System.String,System.Int32)">
             <summary>
             Initializes a spinner with a message, color, character sequence, and delay.
             </summary>
@@ -395,14 +395,14 @@
             <param name="spinChars">Spinner frame characters.</param>
             <param name="delayMs">Delay between frames (ms).</param>
         </member>
-        <member name="M:ByteForge.Toolkit.CLI.ConsoleSpinner.#ctor(System.String,System.String)">
+        <member name="M:ByteForge.Toolkit.CommandLine.ConsoleSpinner.#ctor(System.String,System.String)">
             <summary>
             Initializes a spinner with a message and explicit character sequence.
             </summary>
             <param name="message">The message to display.</param>
             <param name="spinChars">Spinner frame characters.</param>
         </member>
-        <member name="M:ByteForge.Toolkit.CLI.ConsoleSpinner.#ctor(System.String,System.String,System.Int32)">
+        <member name="M:ByteForge.Toolkit.CommandLine.ConsoleSpinner.#ctor(System.String,System.String,System.Int32)">
             <summary>
             Initializes a spinner with a message, character sequence, and delay.
             </summary>
@@ -410,33 +410,33 @@
             <param name="spinChars">Spinner frame characters.</param>
             <param name="delayMs">Delay between frames (ms).</param>
         </member>
-        <member name="M:ByteForge.Toolkit.CLI.ConsoleSpinner.#ctor(System.Int32)">
+        <member name="M:ByteForge.Toolkit.CommandLine.ConsoleSpinner.#ctor(System.Int32)">
             <summary>
             Initializes a spinner with a delay (default style, dynamic position).
             </summary>
             <param name="delayMs">Delay between frames (ms).</param>
         </member>
-        <member name="M:ByteForge.Toolkit.CLI.ConsoleSpinner.#ctor(System.String,System.Int32)">
+        <member name="M:ByteForge.Toolkit.CommandLine.ConsoleSpinner.#ctor(System.String,System.Int32)">
             <summary>
             Initializes a spinner with a character sequence and delay.
             </summary>
             <param name="spinChars">Spinner frame characters.</param>
             <param name="delayMs">Delay between frames (ms).</param>
         </member>
-        <member name="M:ByteForge.Toolkit.CLI.ConsoleSpinner.#ctor(System.ConsoleColor)">
+        <member name="M:ByteForge.Toolkit.CommandLine.ConsoleSpinner.#ctor(System.ConsoleColor)">
             <summary>
             Initializes a spinner with a color (default style, dynamic position).
             </summary>
             <param name="color">Foreground color.</param>
         </member>
-        <member name="M:ByteForge.Toolkit.CLI.ConsoleSpinner.#ctor(System.ConsoleColor,System.Int32)">
+        <member name="M:ByteForge.Toolkit.CommandLine.ConsoleSpinner.#ctor(System.ConsoleColor,System.Int32)">
             <summary>
             Initializes a spinner with a color and delay.
             </summary>
             <param name="color">Foreground color.</param>
             <param name="delayMs">Delay between frames (ms).</param>
         </member>
-        <member name="M:ByteForge.Toolkit.CLI.ConsoleSpinner.#ctor(System.ConsoleColor,System.String,System.Int32)">
+        <member name="M:ByteForge.Toolkit.CommandLine.ConsoleSpinner.#ctor(System.ConsoleColor,System.String,System.Int32)">
             <summary>
             Initializes a spinner with a color, character sequence, and delay.
             </summary>
@@ -444,27 +444,27 @@
             <param name="spinChars">Spinner frame characters.</param>
             <param name="delayMs">Delay between frames (ms).</param>
         </member>
-        <member name="M:ByteForge.Toolkit.CLI.ConsoleSpinner.#ctor(ByteForge.Toolkit.CLI.SpinnerStyle)">
+        <member name="M:ByteForge.Toolkit.CommandLine.ConsoleSpinner.#ctor(ByteForge.Toolkit.CommandLine.SpinnerStyle)">
             <summary>
             Initializes a spinner with a predefined style.
             </summary>
             <param name="style">Spinner style.</param>
         </member>
-        <member name="M:ByteForge.Toolkit.CLI.ConsoleSpinner.#ctor(ByteForge.Toolkit.CLI.SpinnerStyle,System.Int32)">
+        <member name="M:ByteForge.Toolkit.CommandLine.ConsoleSpinner.#ctor(ByteForge.Toolkit.CommandLine.SpinnerStyle,System.Int32)">
             <summary>
             Initializes a spinner with a style and delay.
             </summary>
             <param name="style">Spinner style.</param>
             <param name="delayMs">Delay between frames (ms).</param>
         </member>
-        <member name="M:ByteForge.Toolkit.CLI.ConsoleSpinner.#ctor(ByteForge.Toolkit.CLI.SpinnerStyle,System.ConsoleColor)">
+        <member name="M:ByteForge.Toolkit.CommandLine.ConsoleSpinner.#ctor(ByteForge.Toolkit.CommandLine.SpinnerStyle,System.ConsoleColor)">
             <summary>
             Initializes a spinner with a style and color.
             </summary>
             <param name="style">Spinner style.</param>
             <param name="color">Foreground color.</param>
         </member>
-        <member name="M:ByteForge.Toolkit.CLI.ConsoleSpinner.#ctor(ByteForge.Toolkit.CLI.SpinnerStyle,System.ConsoleColor,System.Int32)">
+        <member name="M:ByteForge.Toolkit.CommandLine.ConsoleSpinner.#ctor(ByteForge.Toolkit.CommandLine.SpinnerStyle,System.ConsoleColor,System.Int32)">
             <summary>
             Initializes a spinner with a style, color, and delay.
             </summary>
@@ -472,14 +472,14 @@
             <param name="color">Foreground color.</param>
             <param name="delayMs">Delay between frames (ms).</param>
         </member>
-        <member name="M:ByteForge.Toolkit.CLI.ConsoleSpinner.#ctor(System.Int32,System.Int32)">
+        <member name="M:ByteForge.Toolkit.CommandLine.ConsoleSpinner.#ctor(System.Int32,System.Int32)">
             <summary>
             Initializes a spinner with explicit positional information (dynamic message/style).
             </summary>
             <param name="positionX">Column index or -1 for dynamic current column.</param>
             <param name="positionY">Row index or -1 for dynamic current row.</param>
         </member>
-        <member name="M:ByteForge.Toolkit.CLI.ConsoleSpinner.#ctor(System.Int32,System.Int32,System.Int32)">
+        <member name="M:ByteForge.Toolkit.CommandLine.ConsoleSpinner.#ctor(System.Int32,System.Int32,System.Int32)">
             <summary>
             Initializes a spinner with position and delay.
             </summary>
@@ -487,7 +487,7 @@
             <param name="positionY">Row index or -1.</param>
             <param name="delayMs">Delay between frames (ms).</param>
         </member>
-        <member name="M:ByteForge.Toolkit.CLI.ConsoleSpinner.#ctor(System.Int32,System.Int32,System.ConsoleColor)">
+        <member name="M:ByteForge.Toolkit.CommandLine.ConsoleSpinner.#ctor(System.Int32,System.Int32,System.ConsoleColor)">
             <summary>
             Initializes a spinner with position and color.
             </summary>
@@ -495,7 +495,7 @@
             <param name="positionY">Row index or -1.</param>
             <param name="color">Foreground color.</param>
         </member>
-        <member name="M:ByteForge.Toolkit.CLI.ConsoleSpinner.#ctor(System.Int32,System.Int32,System.ConsoleColor,System.Int32)">
+        <member name="M:ByteForge.Toolkit.CommandLine.ConsoleSpinner.#ctor(System.Int32,System.Int32,System.ConsoleColor,System.Int32)">
             <summary>
             Initializes a spinner with position, color, and delay.
             </summary>
@@ -504,7 +504,7 @@
             <param name="color">Foreground color.</param>
             <param name="delayMs">Delay between frames (ms).</param>
         </member>
-        <member name="M:ByteForge.Toolkit.CLI.ConsoleSpinner.#ctor(System.Int32,System.Int32,System.ConsoleColor,System.String)">
+        <member name="M:ByteForge.Toolkit.CommandLine.ConsoleSpinner.#ctor(System.Int32,System.Int32,System.ConsoleColor,System.String)">
             <summary>
             Initializes a spinner with position, color, and custom character sequence.
             </summary>
@@ -513,7 +513,7 @@
             <param name="color">Foreground color.</param>
             <param name="spinChars">Spinner frame characters.</param>
         </member>
-        <member name="M:ByteForge.Toolkit.CLI.ConsoleSpinner.#ctor(System.Int32,System.Int32,System.ConsoleColor,ByteForge.Toolkit.CLI.SpinnerStyle)">
+        <member name="M:ByteForge.Toolkit.CommandLine.ConsoleSpinner.#ctor(System.Int32,System.Int32,System.ConsoleColor,ByteForge.Toolkit.CommandLine.SpinnerStyle)">
             <summary>
             Initializes a spinner with position, color, predefined style.
             </summary>
@@ -522,7 +522,7 @@
             <param name="color">Foreground color.</param>
             <param name="style">Spinner style.</param>
         </member>
-        <member name="M:ByteForge.Toolkit.CLI.ConsoleSpinner.#ctor(System.Int32,System.Int32,System.ConsoleColor,ByteForge.Toolkit.CLI.SpinnerStyle,System.Int32)">
+        <member name="M:ByteForge.Toolkit.CommandLine.ConsoleSpinner.#ctor(System.Int32,System.Int32,System.ConsoleColor,ByteForge.Toolkit.CommandLine.SpinnerStyle,System.Int32)">
             <summary>
             Initializes a spinner with position, color, style, and delay.
             </summary>
@@ -532,7 +532,7 @@
             <param name="style">Spinner style.</param>
             <param name="delayMs">Delay between frames (ms).</param>
         </member>
-        <member name="M:ByteForge.Toolkit.CLI.ConsoleSpinner.#ctor(System.Int32,System.Int32,System.String)">
+        <member name="M:ByteForge.Toolkit.CommandLine.ConsoleSpinner.#ctor(System.Int32,System.Int32,System.String)">
             <summary>
             Initializes a spinner with position and custom character sequence.
             </summary>
@@ -540,7 +540,7 @@
             <param name="positionY">Row index or -1.</param>
             <param name="spinChars">Spinner frame characters.</param>
         </member>
-        <member name="M:ByteForge.Toolkit.CLI.ConsoleSpinner.#ctor(System.Int32,System.Int32,System.String,System.Int32)">
+        <member name="M:ByteForge.Toolkit.CommandLine.ConsoleSpinner.#ctor(System.Int32,System.Int32,System.String,System.Int32)">
             <summary>
             Initializes a spinner with position, character sequence, and delay.
             </summary>
@@ -549,7 +549,7 @@
             <param name="spinChars">Spinner frame characters.</param>
             <param name="delayMs">Delay between frames (ms).</param>
         </member>
-        <member name="M:ByteForge.Toolkit.CLI.ConsoleSpinner.#ctor(System.Int32,System.Int32,ByteForge.Toolkit.CLI.SpinnerStyle)">
+        <member name="M:ByteForge.Toolkit.CommandLine.ConsoleSpinner.#ctor(System.Int32,System.Int32,ByteForge.Toolkit.CommandLine.SpinnerStyle)">
             <summary>
             Initializes a spinner with position and style.
             </summary>
@@ -557,7 +557,7 @@
             <param name="positionY">Row index or -1.</param>
             <param name="style">Spinner style.</param>
         </member>
-        <member name="M:ByteForge.Toolkit.CLI.ConsoleSpinner.#ctor(System.Int32,System.Int32,ByteForge.Toolkit.CLI.SpinnerStyle,System.Int32)">
+        <member name="M:ByteForge.Toolkit.CommandLine.ConsoleSpinner.#ctor(System.Int32,System.Int32,ByteForge.Toolkit.CommandLine.SpinnerStyle,System.Int32)">
             <summary>
             Initializes a spinner with position, style, and delay.
             </summary>
@@ -566,7 +566,7 @@
             <param name="style">Spinner style.</param>
             <param name="delayMs">Delay between frames (ms).</param>
         </member>
-        <member name="M:ByteForge.Toolkit.CLI.ConsoleSpinner.#ctor(System.Int32,System.Int32,System.String,System.Nullable{System.ConsoleColor},System.String,System.Nullable{System.Int32})">
+        <member name="M:ByteForge.Toolkit.CommandLine.ConsoleSpinner.#ctor(System.Int32,System.Int32,System.String,System.Nullable{System.ConsoleColor},System.String,System.Nullable{System.Int32})">
             <summary>
             Primary constructor used internally by all other overloads.
             </summary>
@@ -574,126 +574,126 @@
             <param name="positionY">Row index or -1 for dynamic.</param>
             <param name="message">Optional message text.</param>
             <param name="color">Optional spinner color.</param>
-            <param name="spinChars">Character sequence for animation. If null, defaults based on <see cref="F:ByteForge.Toolkit.CLI.SpinnerStyle.Braille"/> or ASCII fallback.</param>
+            <param name="spinChars">Character sequence for animation. If null, defaults based on <see cref="F:ByteForge.Toolkit.CommandLine.SpinnerStyle.Braille"/> or ASCII fallback.</param>
             <param name="delayMs">Delay between frames (ms). Defaults to 100 if null.</param>
         </member>
-        <member name="M:ByteForge.Toolkit.CLI.ConsoleSpinner.GetSpinnerChars(ByteForge.Toolkit.CLI.SpinnerStyle)">
+        <member name="M:ByteForge.Toolkit.CommandLine.ConsoleSpinner.GetSpinnerChars(ByteForge.Toolkit.CommandLine.SpinnerStyle)">
             <summary>
             Selects the character sequence for the specified spinner style,
             </summary>
             <param name="style">The spinner style.</param>
             <returns>The character sequence for the spinner animation.</returns>
         </member>
-        <member name="M:ByteForge.Toolkit.CLI.ConsoleSpinner.Start">
+        <member name="M:ByteForge.Toolkit.CommandLine.ConsoleSpinner.Start">
             <summary>
             Starts the spinner if it is currently stopped.
             </summary>
             <remarks>
             If the spinner was constructed with an active console, it begins immediately;
-            calling <see cref="M:ByteForge.Toolkit.CLI.ConsoleSpinner.Start"/> after construction only has an effect if <see cref="M:ByteForge.Toolkit.CLI.ConsoleSpinner.Stop"/> was previously called.
+            calling <see cref="M:ByteForge.Toolkit.CommandLine.ConsoleSpinner.Start"/> after construction only has an effect if <see cref="M:ByteForge.Toolkit.CommandLine.ConsoleSpinner.Stop"/> was previously called.
             </remarks>
         </member>
-        <member name="M:ByteForge.Toolkit.CLI.ConsoleSpinner.Stop">
+        <member name="M:ByteForge.Toolkit.CommandLine.ConsoleSpinner.Stop">
             <summary>
             Stops the spinner and clears its last frame (including the message) from the console line.
             </summary>
         </member>
-        <member name="M:ByteForge.Toolkit.CLI.ConsoleSpinner.Spin">
+        <member name="M:ByteForge.Toolkit.CommandLine.ConsoleSpinner.Spin">
             <summary>
-            Background thread loop updating the spinner frame until <see cref="M:ByteForge.Toolkit.CLI.ConsoleSpinner.Stop"/> is invoked.
+            Background thread loop updating the spinner frame until <see cref="M:ByteForge.Toolkit.CommandLine.ConsoleSpinner.Stop"/> is invoked.
             </summary>
         </member>
-        <member name="M:ByteForge.Toolkit.CLI.ConsoleSpinner.Dispose">
+        <member name="M:ByteForge.Toolkit.CommandLine.ConsoleSpinner.Dispose">
             <summary>
             Stops the spinner and waits (up to 1 second) for the background animation thread to terminate.
             </summary>
         </member>
-        <member name="T:ByteForge.Toolkit.CLI.SpinnerStyle">
+        <member name="T:ByteForge.Toolkit.CommandLine.SpinnerStyle">
             <summary>
             Defines available spinner animation styles.
             </summary>
         </member>
-        <member name="F:ByteForge.Toolkit.CLI.SpinnerStyle.ASCII">
+        <member name="F:ByteForge.Toolkit.CommandLine.SpinnerStyle.ASCII">
             <summary>
             Basic ASCII characters ("|/-\"). Guaranteed to render in any console.
             </summary>
         </member>
-        <member name="F:ByteForge.Toolkit.CLI.SpinnerStyle.Braille">
+        <member name="F:ByteForge.Toolkit.CommandLine.SpinnerStyle.Braille">
             <summary>
             Braille-inspired dot pattern sequence for smooth animation.
             </summary>
         </member>
-        <member name="F:ByteForge.Toolkit.CLI.SpinnerStyle.Circles">
+        <member name="F:ByteForge.Toolkit.CommandLine.SpinnerStyle.Circles">
             <summary>
             Rotating circle quadrants ("◐◓◑◒").
             </summary>
             
         </member>
-        <member name="F:ByteForge.Toolkit.CLI.SpinnerStyle.Arrows">
+        <member name="F:ByteForge.Toolkit.CommandLine.SpinnerStyle.Arrows">
             <summary>
             Directional arrow rotation ("←↖↑↗→↘↓↙").
             </summary>
             
         </member>
-        <member name="F:ByteForge.Toolkit.CLI.SpinnerStyle.SimpleStars">
+        <member name="F:ByteForge.Toolkit.CommandLine.SpinnerStyle.SimpleStars">
             <summary>
             Simple star burst cycle.
             </summary>
         </member>
-        <member name="F:ByteForge.Toolkit.CLI.SpinnerStyle.UnicodeStars">
+        <member name="F:ByteForge.Toolkit.CommandLine.SpinnerStyle.UnicodeStars">
             <summary>
             Decorative Unicode star sequence.
             </summary>
         </member>
-        <member name="F:ByteForge.Toolkit.CLI.SpinnerStyle.Dots">
+        <member name="F:ByteForge.Toolkit.CommandLine.SpinnerStyle.Dots">
             <summary>
-            Alias for <see cref="F:ByteForge.Toolkit.CLI.SpinnerStyle.Braille"/>.
+            Alias for <see cref="F:ByteForge.Toolkit.CommandLine.SpinnerStyle.Braille"/>.
             </summary>
         </member>
-        <member name="F:ByteForge.Toolkit.CLI.SpinnerStyle.Default">
+        <member name="F:ByteForge.Toolkit.CommandLine.SpinnerStyle.Default">
             <summary>
-            Alias for <see cref="F:ByteForge.Toolkit.CLI.SpinnerStyle.ASCII"/> (default style).
+            Alias for <see cref="F:ByteForge.Toolkit.CommandLine.SpinnerStyle.ASCII"/> (default style).
             </summary>
         </member>
-        <member name="T:ByteForge.Toolkit.CLI.GlobalOption">
+        <member name="T:ByteForge.Toolkit.CommandLine.GlobalOption">
             <summary>
             Represents a global command-line option that is processed before main command parsing.
             Global options are available across all commands and are typically used for application-wide settings.
             </summary>
         </member>
-        <member name="P:ByteForge.Toolkit.CLI.GlobalOption.Name">
+        <member name="P:ByteForge.Toolkit.CommandLine.GlobalOption.Name">
             <summary>
             Gets the primary name of the global option (without prefix).
             </summary>
         </member>
-        <member name="P:ByteForge.Toolkit.CLI.GlobalOption.Description">
+        <member name="P:ByteForge.Toolkit.CommandLine.GlobalOption.Description">
             <summary>
             Gets the description of the global option.
             </summary>
         </member>
-        <member name="P:ByteForge.Toolkit.CLI.GlobalOption.Action">
+        <member name="P:ByteForge.Toolkit.CommandLine.GlobalOption.Action">
             <summary>
             Gets the action to execute when this option is encountered.
             </summary>
         </member>
-        <member name="P:ByteForge.Toolkit.CLI.GlobalOption.CustomAliases">
+        <member name="P:ByteForge.Toolkit.CommandLine.GlobalOption.CustomAliases">
             <summary>
             Gets the custom aliases provided by the developer.
             </summary>
         </member>
-        <member name="P:ByteForge.Toolkit.CLI.GlobalOption.AllAliases">
+        <member name="P:ByteForge.Toolkit.CommandLine.GlobalOption.AllAliases">
             <summary>
             Gets all aliases for this option (both auto-generated and custom).
             </summary>
         </member>
-        <member name="P:ByteForge.Toolkit.CLI.GlobalOption.ExpectsValue">
+        <member name="P:ByteForge.Toolkit.CommandLine.GlobalOption.ExpectsValue">
             <summary>
             Gets a value indicating whether this option expects a value.
             </summary>
         </member>
-        <member name="M:ByteForge.Toolkit.CLI.GlobalOption.#ctor(System.String,System.String,System.Action,System.Boolean,System.String[])">
+        <member name="M:ByteForge.Toolkit.CommandLine.GlobalOption.#ctor(System.String,System.String,System.Action,System.Boolean,System.String[])">
             <summary>
-            Initializes a new instance of the <see cref="T:ByteForge.Toolkit.CLI.GlobalOption"/> class.
+            Initializes a new instance of the <see cref="T:ByteForge.Toolkit.CommandLine.GlobalOption"/> class.
             </summary>
             <param name="name">The primary name of the option (without dashes).</param>
             <param name="description">The description of the option.</param>
@@ -701,9 +701,9 @@
             <param name="expectsValue">Whether the option expects a value.</param>
             <param name="aliases">Custom aliases for the option.</param>
         </member>
-        <member name="M:ByteForge.Toolkit.CLI.GlobalOption.#ctor(System.String,System.String,System.Action{System.String},System.Boolean,System.String[])">
+        <member name="M:ByteForge.Toolkit.CommandLine.GlobalOption.#ctor(System.String,System.String,System.Action{System.String},System.Boolean,System.String[])">
             <summary>
-            Initializes a new instance of the <see cref="T:ByteForge.Toolkit.CLI.GlobalOption"/> class with value support.
+            Initializes a new instance of the <see cref="T:ByteForge.Toolkit.CommandLine.GlobalOption"/> class with value support.
             </summary>
             <param name="name">The primary name of the option (without dashes).</param>
             <param name="description">The description of the option.</param>
@@ -711,70 +711,70 @@
             <param name="expectsValue">Whether the option expects a value.</param>
             <param name="aliases">Custom aliases for the option.</param>
         </member>
-        <member name="M:ByteForge.Toolkit.CLI.GlobalOption.GenerateAliases(System.Collections.Generic.HashSet{System.String})">
+        <member name="M:ByteForge.Toolkit.CommandLine.GlobalOption.GenerateAliases(System.Collections.Generic.HashSet{System.String})">
             <summary>
             Generates all aliases for this global option using the same logic as CommandBuilder.
             </summary>
             <param name="usedNames">Names already in use to avoid conflicts.</param>
         </member>
-        <member name="M:ByteForge.Toolkit.CLI.GlobalOption.Matches(System.String)">
+        <member name="M:ByteForge.Toolkit.CommandLine.GlobalOption.Matches(System.String)">
             <summary>
             Checks if the given argument matches any of this option's aliases.
             </summary>
             <param name="arg">The command-line argument to check.</param>
             <returns>True if the argument matches this option; otherwise, false.</returns>
         </member>
-        <member name="M:ByteForge.Toolkit.CLI.GlobalOption.GenerateAliases(System.String)">
+        <member name="M:ByteForge.Toolkit.CommandLine.GlobalOption.GenerateAliases(System.String)">
             <summary>
             Generates standard aliases for the specified option name using CommandBuilder's logic.
             </summary>
             <param name="name">The option name.</param>
             <returns>An array of generated aliases.</returns>
         </member>
-        <member name="M:ByteForge.Toolkit.CLI.GlobalOption.NormalizeCustomAliases(System.String[])">
+        <member name="M:ByteForge.Toolkit.CommandLine.GlobalOption.NormalizeCustomAliases(System.String[])">
             <summary>
             Normalizes custom aliases by trimming prefixes and generating standard variations.
             </summary>
             <param name="aliases">The custom aliases to normalize.</param>
             <returns>A collection of normalized aliases.</returns>
         </member>
-        <member name="T:ByteForge.Toolkit.CLI.ParseResult">
+        <member name="T:ByteForge.Toolkit.CommandLine.ParseResult">
             <summary>
             Represents the result of parsing command line arguments.
             Wraps <see cref="T:System.CommandLine.Parsing.ParseResult"/> and exposes its functionality.
             </summary>
         </member>
-        <member name="M:ByteForge.Toolkit.CLI.ParseResult.#ctor(System.CommandLine.Parsing.ParseResult)">
+        <member name="M:ByteForge.Toolkit.CommandLine.ParseResult.#ctor(System.CommandLine.Parsing.ParseResult)">
             <summary>
-            Initializes a new instance of the <see cref="T:ByteForge.Toolkit.CLI.ParseResult"/> class.
+            Initializes a new instance of the <see cref="T:ByteForge.Toolkit.CommandLine.ParseResult"/> class.
             </summary>
             <param name="parseResult">The inner <see cref="T:System.CommandLine.Parsing.ParseResult"/> to wrap.</param>
             <exception cref="T:System.ArgumentNullException">Thrown when <paramref name="parseResult"/> is <see langword="null"/>.</exception>
         </member>
-        <member name="M:ByteForge.Toolkit.CLI.ParseResult.Invoke">
+        <member name="M:ByteForge.Toolkit.CommandLine.ParseResult.Invoke">
             <summary>
             Invokes the parsed command and returns the exit code.
             </summary>
             <returns>The exit code of the command execution.</returns>
         </member>
-        <member name="P:ByteForge.Toolkit.CLI.ParseResult.CommandResult">
+        <member name="P:ByteForge.Toolkit.CommandLine.ParseResult.CommandResult">
             <summary>
-            Gets the <see cref="P:ByteForge.Toolkit.CLI.ParseResult.CommandResult"/> for the parsed command.
+            Gets the <see cref="P:ByteForge.Toolkit.CommandLine.ParseResult.CommandResult"/> for the parsed command.
             </summary>
         </member>
-        <member name="P:ByteForge.Toolkit.CLI.ParseResult.Errors">
+        <member name="P:ByteForge.Toolkit.CommandLine.ParseResult.Errors">
             <summary>
             Gets the list of errors encountered during parsing.
             </summary>
         </member>
-        <member name="M:ByteForge.Toolkit.CLI.ParseResult.FindResultFor(System.CommandLine.Symbol)">
+        <member name="M:ByteForge.Toolkit.CommandLine.ParseResult.FindResultFor(System.CommandLine.Symbol)">
             <summary>
             Finds the result for the specified symbol.
             </summary>
             <param name="symbol">The symbol to find the result for.</param>
             <returns>The result for the symbol, or <see langword="null"/> if not found.</returns>
         </member>
-        <member name="M:ByteForge.Toolkit.CLI.ParseResult.GetValueForOption``1(System.CommandLine.Option{``0})">
+        <member name="M:ByteForge.Toolkit.CommandLine.ParseResult.GetValueForOption``1(System.CommandLine.Option{``0})">
             <summary>
             Gets the value for the specified option.
             </summary>
@@ -782,14 +782,14 @@
             <param name="option">The option to get the value for.</param>
             <returns>The value for the option.</returns>
         </member>
-        <member name="M:ByteForge.Toolkit.CLI.ParseResult.GetValueForOption(System.CommandLine.Option)">
+        <member name="M:ByteForge.Toolkit.CommandLine.ParseResult.GetValueForOption(System.CommandLine.Option)">
             <summary>
             Gets the value for the specified option.
             </summary>
             <param name="option">The option to get the value for.</param>
             <returns>The value for the option.</returns>
         </member>
-        <member name="M:ByteForge.Toolkit.CLI.ParseResult.GetValueForArgument``1(System.CommandLine.Argument{``0})">
+        <member name="M:ByteForge.Toolkit.CommandLine.ParseResult.GetValueForArgument``1(System.CommandLine.Argument{``0})">
             <summary>
             Gets the value for the specified argument.
             </summary>
@@ -797,21 +797,21 @@
             <param name="argument">The argument to get the value for.</param>
             <returns>The value for the argument.</returns>
         </member>
-        <member name="M:ByteForge.Toolkit.CLI.ParseResult.GetValueForArgument(System.CommandLine.Argument)">
+        <member name="M:ByteForge.Toolkit.CommandLine.ParseResult.GetValueForArgument(System.CommandLine.Argument)">
             <summary>
             Gets the value for the specified argument.
             </summary>
             <param name="argument">The argument to get the value for.</param>
             <returns>The value for the argument.</returns>
         </member>
-        <member name="T:ByteForge.Toolkit.CLI.ProgressSpinner">
+        <member name="T:ByteForge.Toolkit.CommandLine.ProgressSpinner">
             <summary>
             Provides a self-contained progress spinner that uses ConsoleUtil's DrawProgressBar functionality.
             This class allows for easy use with 'using' statements to automatically start and stop
             progress spinners around long-running operations with unknown duration.
             </summary>
             <remarks>
-            Similar to <see cref="T:ByteForge.Toolkit.CLI.ConsoleSpinner"/>, this class manages its own background thread and animation
+            Similar to <see cref="T:ByteForge.Toolkit.CommandLine.ConsoleSpinner"/>, this class manages its own background thread and animation
             but leverages the existing <see cref="M:ByteForge.Toolkit.Utilities.ConsoleUtil.DrawProgressBar(System.Double,System.String)"/> infrastructure with indefinite 
             progress (-1 percentage) to provide consistent visual feedback with the existing progress bar system.
             The spinner automatically starts when the object is created and stops when disposed.
@@ -827,34 +827,34 @@
             </code>
             </example>
         </member>
-        <member name="F:ByteForge.Toolkit.CLI.ProgressSpinner._globalConsoleLock">
+        <member name="F:ByteForge.Toolkit.CommandLine.ProgressSpinner._globalConsoleLock">
             <summary>
             Global lock object to synchronize console access across threads.
             </summary>
         </member>
-        <member name="F:ByteForge.Toolkit.CLI.ProgressSpinner._spinThread">
+        <member name="F:ByteForge.Toolkit.CommandLine.ProgressSpinner._spinThread">
             <summary>
             The thread responsible for running the spinner animation.
             </summary>
         </member>
-        <member name="F:ByteForge.Toolkit.CLI.ProgressSpinner._isSpinning">
+        <member name="F:ByteForge.Toolkit.CommandLine.ProgressSpinner._isSpinning">
             <summary>
             Indicates whether the spinner is currently running.
             </summary>
         </member>
-        <member name="F:ByteForge.Toolkit.CLI.ProgressSpinner._message">
+        <member name="F:ByteForge.Toolkit.CommandLine.ProgressSpinner._message">
             <summary>
             The current message being displayed with the spinner.
             </summary>
         </member>
-        <member name="F:ByteForge.Toolkit.CLI.ProgressSpinner._disposed">
+        <member name="F:ByteForge.Toolkit.CommandLine.ProgressSpinner._disposed">
             <summary>
             Indicates whether the spinner has been disposed.
             </summary>
         </member>
-        <member name="M:ByteForge.Toolkit.CLI.ProgressSpinner.#ctor(System.String)">
+        <member name="M:ByteForge.Toolkit.CommandLine.ProgressSpinner.#ctor(System.String)">
             <summary>
-            Initializes a new instance of the <see cref="T:ByteForge.Toolkit.CLI.ProgressSpinner"/> class and starts the spinner.
+            Initializes a new instance of the <see cref="T:ByteForge.Toolkit.CommandLine.ProgressSpinner"/> class and starts the spinner.
             </summary>
             <param name="message">The message to display with the spinner. Defaults to "Working...".</param>
             <remarks>
@@ -862,7 +862,7 @@
             If no console is available, the spinner will not display but will not cause errors.
             </remarks>
         </member>
-        <member name="P:ByteForge.Toolkit.CLI.ProgressSpinner.Message">
+        <member name="P:ByteForge.Toolkit.CommandLine.ProgressSpinner.Message">
             <summary>
             Gets or sets the message displayed with the spinner.
             </summary>
@@ -872,17 +872,17 @@
             without stopping and restarting the animation.
             </remarks>
         </member>
-        <member name="M:ByteForge.Toolkit.CLI.ProgressSpinner.UpdateMessage(System.String)">
+        <member name="M:ByteForge.Toolkit.CommandLine.ProgressSpinner.UpdateMessage(System.String)">
             <summary>
             Updates the spinner message to show the current operation.
             </summary>
             <param name="message">The new message to display.</param>
             <remarks>
-            This is a convenience method equivalent to setting the <see cref="P:ByteForge.Toolkit.CLI.ProgressSpinner.Message"/> property.
+            This is a convenience method equivalent to setting the <see cref="P:ByteForge.Toolkit.CommandLine.ProgressSpinner.Message"/> property.
             If the spinner has been disposed, this method has no effect.
             </remarks>
         </member>
-        <member name="M:ByteForge.Toolkit.CLI.ProgressSpinner.Stop">
+        <member name="M:ByteForge.Toolkit.CommandLine.ProgressSpinner.Stop">
             <summary>
             Stops the progress spinner and clears the display.
             </summary>
@@ -891,7 +891,7 @@
             It's safe to call this method multiple times.
             </remarks>
         </member>
-        <member name="M:ByteForge.Toolkit.CLI.ProgressSpinner.Dispose">
+        <member name="M:ByteForge.Toolkit.CommandLine.ProgressSpinner.Dispose">
             <summary>
             Disposes the ProgressSpinner and stops the animation.
             </summary>
@@ -900,137 +900,137 @@
             the spinner when called. It's safe to call multiple times.
             </remarks>
         </member>
-        <member name="M:ByteForge.Toolkit.CLI.ProgressSpinner.SpinLoop">
+        <member name="M:ByteForge.Toolkit.CommandLine.ProgressSpinner.SpinLoop">
             <summary>
             Background thread loop for continuous spinner animation.
             </summary>
             <remarks>
             This method runs in a background thread and continuously calls <see cref="M:ByteForge.Toolkit.Utilities.ConsoleUtil.DrawProgressBar(System.Double,System.String)"/>
             with a negative percentage to create the animated spinner effect. The loop continues
-            until <see cref="F:ByteForge.Toolkit.CLI.ProgressSpinner._isSpinning"/> is set to false.
+            until <see cref="F:ByteForge.Toolkit.CommandLine.ProgressSpinner._isSpinning"/> is set to false.
             </remarks>
         </member>
-        <member name="T:ByteForge.Toolkit.CLI.RootCommandBuilder">
+        <member name="T:ByteForge.Toolkit.CommandLine.RootCommandBuilder">
             <summary>
             Fluent builder for creating command line parsers.
             </summary>
         </member>
-        <member name="P:ByteForge.Toolkit.CLI.RootCommandBuilder.EnableHelp">
+        <member name="P:ByteForge.Toolkit.CommandLine.RootCommandBuilder.EnableHelp">
             <summary>
             Gets or sets a value indicating whether help is enabled for the command line parser.
             </summary>
         </member>
-        <member name="P:ByteForge.Toolkit.CLI.RootCommandBuilder.EnableEnvironmentVariables">
+        <member name="P:ByteForge.Toolkit.CommandLine.RootCommandBuilder.EnableEnvironmentVariables">
             <summary>
             Gets or sets a value indicating whether environment variable directive is enabled for the command line parser.
             </summary>
         </member>
-        <member name="P:ByteForge.Toolkit.CLI.RootCommandBuilder.EnableParseDirective">
+        <member name="P:ByteForge.Toolkit.CommandLine.RootCommandBuilder.EnableParseDirective">
             <summary>
             Gets or sets a value indicating whether the parse directive is enabled for the command line parser.
             </summary>
         </member>
-        <member name="P:ByteForge.Toolkit.CLI.RootCommandBuilder.EnableSuggestDirective">
+        <member name="P:ByteForge.Toolkit.CommandLine.RootCommandBuilder.EnableSuggestDirective">
             <summary>
             Gets or sets a value indicating whether the suggest directive is enabled for the command line parser.
             </summary>
         </member>
-        <member name="P:ByteForge.Toolkit.CLI.RootCommandBuilder.EnableTypoCorrections">
+        <member name="P:ByteForge.Toolkit.CommandLine.RootCommandBuilder.EnableTypoCorrections">
             <summary>
             Gets or sets a value indicating whether typo corrections are enabled for the command line parser.
             </summary>
         </member>
-        <member name="P:ByteForge.Toolkit.CLI.RootCommandBuilder.EnableParseErrorReporting">
+        <member name="P:ByteForge.Toolkit.CommandLine.RootCommandBuilder.EnableParseErrorReporting">
             <summary>
             Gets or sets a value indicating whether parse error reporting is enabled for the command line parser.
             </summary>
         </member>
-        <member name="P:ByteForge.Toolkit.CLI.RootCommandBuilder.EnableExceptionHandler">
+        <member name="P:ByteForge.Toolkit.CommandLine.RootCommandBuilder.EnableExceptionHandler">
             <summary>
             Gets or sets a value indicating whether the exception handler is enabled for the command line parser.
             </summary>
         </member>
-        <member name="P:ByteForge.Toolkit.CLI.RootCommandBuilder.EnableCancellation">
+        <member name="P:ByteForge.Toolkit.CommandLine.RootCommandBuilder.EnableCancellation">
             <summary>
             Gets or sets a value indicating whether cancellation on process termination is enabled for the command line parser.
             </summary>
         </member>
-        <member name="P:ByteForge.Toolkit.CLI.RootCommandBuilder.EnableCaseSensitivity">
+        <member name="P:ByteForge.Toolkit.CommandLine.RootCommandBuilder.EnableCaseSensitivity">
             <summary>
             Gets or sets a value indicating whether case sensitivity is enabled for command parsing.
             </summary>
         </member>
-        <member name="P:ByteForge.Toolkit.CLI.RootCommandBuilder.BannerAction">
+        <member name="P:ByteForge.Toolkit.CommandLine.RootCommandBuilder.BannerAction">
             <summary>
             Gets or sets the action to be executed to display a banner before command parsing.
             </summary>
         </member>
-        <member name="P:ByteForge.Toolkit.CLI.RootCommandBuilder.EnableParameterExplanation">
+        <member name="P:ByteForge.Toolkit.CommandLine.RootCommandBuilder.EnableParameterExplanation">
             <summary>
             Gets or sets a value indicating whether parameter explanation is enabled.
             When enabled, details about parsed commands and arguments are displayed to the user.
             </summary>
         </member>
-        <member name="P:ByteForge.Toolkit.CLI.RootCommandBuilder.GlobalOptions">
+        <member name="P:ByteForge.Toolkit.CommandLine.RootCommandBuilder.GlobalOptions">
             <summary>
             Gets the collection of global options configured for this command builder.
             </summary>
         </member>
-        <member name="M:ByteForge.Toolkit.CLI.RootCommandBuilder.#ctor(System.String)">
+        <member name="M:ByteForge.Toolkit.CommandLine.RootCommandBuilder.#ctor(System.String)">
             <summary>
-            Initializes a new instance of the <see cref="T:ByteForge.Toolkit.CLI.RootCommandBuilder"/> class.
+            Initializes a new instance of the <see cref="T:ByteForge.Toolkit.CommandLine.RootCommandBuilder"/> class.
             </summary>
             <param name="description">The description of the root command.</param>
         </member>
-        <member name="M:ByteForge.Toolkit.CLI.RootCommandBuilder.AddAssembly(System.String)">
+        <member name="M:ByteForge.Toolkit.CommandLine.RootCommandBuilder.AddAssembly(System.String)">
             <summary>
             Adds commands from the specified assembly path.
             </summary>
             <param name="assemblyPath">The path to the assembly file.</param>
-            <returns>The current <see cref="T:ByteForge.Toolkit.CLI.RootCommandBuilder"/> instance, allowing for method chaining.</returns>
+            <returns>The current <see cref="T:ByteForge.Toolkit.CommandLine.RootCommandBuilder"/> instance, allowing for method chaining.</returns>
         </member>
-        <member name="M:ByteForge.Toolkit.CLI.RootCommandBuilder.AddAssembly(System.Reflection.Assembly)">
+        <member name="M:ByteForge.Toolkit.CommandLine.RootCommandBuilder.AddAssembly(System.Reflection.Assembly)">
             <summary>
             Adds commands from the specified assembly.
             </summary>
             <param name="assembly">The assembly to load commands from.</param>
-            <returns>The current <see cref="T:ByteForge.Toolkit.CLI.RootCommandBuilder"/> instance, allowing for method chaining.</returns>
+            <returns>The current <see cref="T:ByteForge.Toolkit.CommandLine.RootCommandBuilder"/> instance, allowing for method chaining.</returns>
         </member>
-        <member name="M:ByteForge.Toolkit.CLI.RootCommandBuilder.SearchPlugins">
+        <member name="M:ByteForge.Toolkit.CommandLine.RootCommandBuilder.SearchPlugins">
             <summary>
             Searches for and loads plugins from the default plugins directory.
             </summary>
-            <returns>The current <see cref="T:ByteForge.Toolkit.CLI.RootCommandBuilder"/> instance, allowing for method chaining.</returns>
+            <returns>The current <see cref="T:ByteForge.Toolkit.CommandLine.RootCommandBuilder"/> instance, allowing for method chaining.</returns>
         </member>
-        <member name="M:ByteForge.Toolkit.CLI.RootCommandBuilder.SearchPlugins(System.String)">
+        <member name="M:ByteForge.Toolkit.CommandLine.RootCommandBuilder.SearchPlugins(System.String)">
             <summary>
             Searches for and loads plugins from the specified directory.
             </summary>
             <param name="pluginsPath">The directory to search for plugins.</param>
-            <returns>The current <see cref="T:ByteForge.Toolkit.CLI.RootCommandBuilder"/> instance, allowing for method chaining.</returns>
+            <returns>The current <see cref="T:ByteForge.Toolkit.CommandLine.RootCommandBuilder"/> instance, allowing for method chaining.</returns>
         </member>
-        <member name="M:ByteForge.Toolkit.CLI.RootCommandBuilder.AddCommand(System.CommandLine.Command)">
+        <member name="M:ByteForge.Toolkit.CommandLine.RootCommandBuilder.AddCommand(System.CommandLine.Command)">
             <summary>
             Adds a specific command to the root command.
             </summary>
             <param name="command">The command to add.</param>
-            <returns>The current <see cref="T:ByteForge.Toolkit.CLI.RootCommandBuilder"/> instance, allowing for method chaining.</returns>
+            <returns>The current <see cref="T:ByteForge.Toolkit.CommandLine.RootCommandBuilder"/> instance, allowing for method chaining.</returns>
         </member>
-        <member name="M:ByteForge.Toolkit.CLI.RootCommandBuilder.WithBanner(System.Action)">
+        <member name="M:ByteForge.Toolkit.CommandLine.RootCommandBuilder.WithBanner(System.Action)">
             <summary>
             Configures a banner action to be executed before command parsing.
             </summary>
             <param name="bannerAction">The action to execute to display the banner.</param>
-            <returns>The current <see cref="T:ByteForge.Toolkit.CLI.RootCommandBuilder"/> instance, allowing for method chaining.</returns>
+            <returns>The current <see cref="T:ByteForge.Toolkit.CommandLine.RootCommandBuilder"/> instance, allowing for method chaining.</returns>
         </member>
-        <member name="M:ByteForge.Toolkit.CLI.RootCommandBuilder.UseParameterExplanation(System.Boolean)">
+        <member name="M:ByteForge.Toolkit.CommandLine.RootCommandBuilder.UseParameterExplanation(System.Boolean)">
             <summary>
             Enables parameter explanation functionality that displays parsed command details.
             </summary>
             <param name="enable">Whether to enable parameter explanation.</param>
-            <returns>The current <see cref="T:ByteForge.Toolkit.CLI.RootCommandBuilder"/> instance, allowing for method chaining.</returns>
+            <returns>The current <see cref="T:ByteForge.Toolkit.CommandLine.RootCommandBuilder"/> instance, allowing for method chaining.</returns>
         </member>
-        <member name="M:ByteForge.Toolkit.CLI.RootCommandBuilder.AddGlobalOption(System.String,System.String,System.Action,System.String[])">
+        <member name="M:ByteForge.Toolkit.CommandLine.RootCommandBuilder.AddGlobalOption(System.String,System.String,System.Action,System.String[])">
             <summary>
             Adds a global option that is processed before command parsing and available to all commands.
             </summary>
@@ -1038,9 +1038,9 @@
             <param name="description">The description of the global option.</param>
             <param name="action">The action to execute when the option is encountered.</param>
             <param name="aliases">Custom aliases for the option.</param>
-            <returns>The current <see cref="T:ByteForge.Toolkit.CLI.RootCommandBuilder"/> instance, allowing for method chaining.</returns>
+            <returns>The current <see cref="T:ByteForge.Toolkit.CommandLine.RootCommandBuilder"/> instance, allowing for method chaining.</returns>
         </member>
-        <member name="M:ByteForge.Toolkit.CLI.RootCommandBuilder.AddGlobalOption(System.String,System.String,System.Action{System.String},System.String[])">
+        <member name="M:ByteForge.Toolkit.CommandLine.RootCommandBuilder.AddGlobalOption(System.String,System.String,System.Action{System.String},System.String[])">
             <summary>
             Adds a global option that expects a value and is processed before command parsing.
             </summary>
@@ -1048,83 +1048,83 @@
             <param name="description">The description of the global option.</param>
             <param name="action">The action to execute when the option is encountered, receiving the option value.</param>
             <param name="aliases">Custom aliases for the option.</param>
-            <returns>The current <see cref="T:ByteForge.Toolkit.CLI.RootCommandBuilder"/> instance, allowing for method chaining.</returns>
+            <returns>The current <see cref="T:ByteForge.Toolkit.CommandLine.RootCommandBuilder"/> instance, allowing for method chaining.</returns>
         </member>
-        <member name="M:ByteForge.Toolkit.CLI.RootCommandBuilder.AddConsoleLoggingOptions(System.Action,System.Action)">
+        <member name="M:ByteForge.Toolkit.CommandLine.RootCommandBuilder.AddConsoleLoggingOptions(System.Action,System.Action)">
             <summary>
             Adds common global options for console logging control.
             Adds --console/-c to enable console logging and --quiet/-q to disable it.
             </summary>
             <param name="enableConsoleAction">Action to execute when console logging should be enabled.</param>
             <param name="disableConsoleAction">Action to execute when console logging should be disabled.</param>
-            <returns>The current <see cref="T:ByteForge.Toolkit.CLI.RootCommandBuilder"/> instance, allowing for method chaining.</returns>
+            <returns>The current <see cref="T:ByteForge.Toolkit.CommandLine.RootCommandBuilder"/> instance, allowing for method chaining.</returns>
         </member>
-        <member name="M:ByteForge.Toolkit.CLI.RootCommandBuilder.UseHelp(System.Boolean)">
+        <member name="M:ByteForge.Toolkit.CommandLine.RootCommandBuilder.UseHelp(System.Boolean)">
             <summary>
             Configures whether to use the help directive.
             </summary>
             <param name="enable">Whether to enable the feature.</param>
-            <returns>The current <see cref="T:ByteForge.Toolkit.CLI.RootCommandBuilder"/> instance, allowing for method chaining.</returns>
+            <returns>The current <see cref="T:ByteForge.Toolkit.CommandLine.RootCommandBuilder"/> instance, allowing for method chaining.</returns>
         </member>
-        <member name="M:ByteForge.Toolkit.CLI.RootCommandBuilder.UseEnvironmentVariables(System.Boolean)">
+        <member name="M:ByteForge.Toolkit.CommandLine.RootCommandBuilder.UseEnvironmentVariables(System.Boolean)">
             <summary>
             Configures whether to use environment variables.
             </summary>
             <param name="enable">Whether to enable the feature.</param>
-            <returns>The current <see cref="T:ByteForge.Toolkit.CLI.RootCommandBuilder"/> instance, allowing for method chaining.</returns>
+            <returns>The current <see cref="T:ByteForge.Toolkit.CommandLine.RootCommandBuilder"/> instance, allowing for method chaining.</returns>
         </member>
-        <member name="M:ByteForge.Toolkit.CLI.RootCommandBuilder.UseParseDirective(System.Boolean)">
+        <member name="M:ByteForge.Toolkit.CommandLine.RootCommandBuilder.UseParseDirective(System.Boolean)">
             <summary>
             Configures whether to use the parse directive.
             </summary>
             <param name="enable">Whether to enable the feature.</param>
-            <returns>The current <see cref="T:ByteForge.Toolkit.CLI.RootCommandBuilder"/> instance, allowing for method chaining.</returns>
+            <returns>The current <see cref="T:ByteForge.Toolkit.CommandLine.RootCommandBuilder"/> instance, allowing for method chaining.</returns>
         </member>
-        <member name="M:ByteForge.Toolkit.CLI.RootCommandBuilder.UseSuggestDirective(System.Boolean)">
+        <member name="M:ByteForge.Toolkit.CommandLine.RootCommandBuilder.UseSuggestDirective(System.Boolean)">
             <summary>
             Configures whether to use the suggest directive.
             </summary>
             <param name="enable">Whether to enable the feature.</param>
-            <returns>The current <see cref="T:ByteForge.Toolkit.CLI.RootCommandBuilder"/> instance, allowing for method chaining.</returns>
+            <returns>The current <see cref="T:ByteForge.Toolkit.CommandLine.RootCommandBuilder"/> instance, allowing for method chaining.</returns>
         </member>
-        <member name="M:ByteForge.Toolkit.CLI.RootCommandBuilder.UseTypoCorrections(System.Boolean)">
+        <member name="M:ByteForge.Toolkit.CommandLine.RootCommandBuilder.UseTypoCorrections(System.Boolean)">
             <summary>
             Configures whether to use typo corrections.
             </summary>
             <param name="enable">Whether to enable the feature.</param>
-            <returns>The current <see cref="T:ByteForge.Toolkit.CLI.RootCommandBuilder"/> instance, allowing for method chaining.</returns>
+            <returns>The current <see cref="T:ByteForge.Toolkit.CommandLine.RootCommandBuilder"/> instance, allowing for method chaining.</returns>
         </member>
-        <member name="M:ByteForge.Toolkit.CLI.RootCommandBuilder.UseParseErrorReporting(System.Boolean)">
+        <member name="M:ByteForge.Toolkit.CommandLine.RootCommandBuilder.UseParseErrorReporting(System.Boolean)">
             <summary>
             Configures whether to use parse error reporting.
             </summary>
             <param name="enable">Whether to enable the feature.</param>
-            <returns>The current <see cref="T:ByteForge.Toolkit.CLI.RootCommandBuilder"/> instance, allowing for method chaining.</returns>
+            <returns>The current <see cref="T:ByteForge.Toolkit.CommandLine.RootCommandBuilder"/> instance, allowing for method chaining.</returns>
         </member>
-        <member name="M:ByteForge.Toolkit.CLI.RootCommandBuilder.UseCaseSensitivity(System.Boolean)">
+        <member name="M:ByteForge.Toolkit.CommandLine.RootCommandBuilder.UseCaseSensitivity(System.Boolean)">
             <summary>
             Configures the case sensitivity for command parsing, including command names, options, and arguments.<br/>
             The default is case-insensitive.
             </summary>
             <param name="enable">A value indicating whether case sensitivity should be enabled.<br/>
             The default is <see langword="false"/>, meaning that command parsing is case-insensitive.</param>
-            <returns>The current <see cref="T:ByteForge.Toolkit.CLI.RootCommandBuilder"/> instance, allowing for method chaining.</returns>
+            <returns>The current <see cref="T:ByteForge.Toolkit.CommandLine.RootCommandBuilder"/> instance, allowing for method chaining.</returns>
         </member>
-        <member name="M:ByteForge.Toolkit.CLI.RootCommandBuilder.UseExceptionHandler(System.Boolean)">
+        <member name="M:ByteForge.Toolkit.CommandLine.RootCommandBuilder.UseExceptionHandler(System.Boolean)">
             <summary>
             Configures whether to use the exception handler.
             </summary>
             <param name="enable">Whether to enable the feature.</param>
-            <returns>The current <see cref="T:ByteForge.Toolkit.CLI.RootCommandBuilder"/> instance, allowing for method chaining.</returns>
+            <returns>The current <see cref="T:ByteForge.Toolkit.CommandLine.RootCommandBuilder"/> instance, allowing for method chaining.</returns>
         </member>
-        <member name="M:ByteForge.Toolkit.CLI.RootCommandBuilder.UseCancellation(System.Boolean)">
+        <member name="M:ByteForge.Toolkit.CommandLine.RootCommandBuilder.UseCancellation(System.Boolean)">
             <summary>
             Configures whether to use cancellation on process termination.
             </summary>
             <param name="enable">Whether to enable the feature.</param>
-            <returns>The current <see cref="T:ByteForge.Toolkit.CLI.RootCommandBuilder"/> instance, allowing for method chaining.</returns>
+            <returns>The current <see cref="T:ByteForge.Toolkit.CommandLine.RootCommandBuilder"/> instance, allowing for method chaining.</returns>
         </member>
-        <member name="M:ByteForge.Toolkit.CLI.RootCommandBuilder.Build">
+        <member name="M:ByteForge.Toolkit.CommandLine.RootCommandBuilder.Build">
             <summary>
             Builds and returns the command line parser.
             </summary>
