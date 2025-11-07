@@ -1,4 +1,5 @@
 using AwesomeAssertions;
+using ByteForge.Toolkit.Configuration;
 using ByteForge.Toolkit.Tests.Helpers;
 using ByteForge.Toolkit.Tests.Models;
 using System.Reflection;
@@ -35,7 +36,7 @@ namespace ByteForge.Toolkit.Tests.Unit.Configuration
             var configContent = @"[TestSection]
 StringValue=Hello World";
             
-            IConfigurationManager config = new ByteForge.Toolkit.Configuration();
+            IConfigurationManager config = new ByteForge.Toolkit.Configuration.Configuration();
             _tempConfigPath = TestConfigurationHelper.CreateTempConfigFile(configContent);
             config.Initialize(_tempConfigPath);
 
@@ -59,7 +60,7 @@ StringValue=Hello World";
             var configContent = @"[TestSection]
 IntValue=42";
             
-            IConfigurationManager config = new ByteForge.Toolkit.Configuration();
+            IConfigurationManager config = new ByteForge.Toolkit.Configuration.Configuration();
             _tempConfigPath = TestConfigurationHelper.CreateTempConfigFile(configContent);
             config.Initialize(_tempConfigPath);
 
@@ -83,7 +84,7 @@ IntValue=42";
             var configContent = @"[TestSection]
 BoolValue=true";
             
-            IConfigurationManager config = new ByteForge.Toolkit.Configuration();
+            IConfigurationManager config = new ByteForge.Toolkit.Configuration.Configuration();
             _tempConfigPath = TestConfigurationHelper.CreateTempConfigFile(configContent);
             config.Initialize(_tempConfigPath);
 
@@ -107,7 +108,7 @@ BoolValue=true";
             var configContent = @"[TestSection]
 BoolValue=false";
             
-            IConfigurationManager config = new ByteForge.Toolkit.Configuration();
+            IConfigurationManager config = new ByteForge.Toolkit.Configuration.Configuration();
             _tempConfigPath = TestConfigurationHelper.CreateTempConfigFile(configContent);
             config.Initialize(_tempConfigPath);
 
@@ -131,7 +132,7 @@ BoolValue=false";
             var configContent = @"[TestSection]
 DoubleValue=3.14159";
             
-            IConfigurationManager config = new ByteForge.Toolkit.Configuration();
+            IConfigurationManager config = new ByteForge.Toolkit.Configuration.Configuration();
             _tempConfigPath = TestConfigurationHelper.CreateTempConfigFile(configContent);
             config.Initialize(_tempConfigPath);
 
@@ -156,7 +157,7 @@ DoubleValue=3.14159";
             var configContent = @"[TestSection]
 DateValue=2024-01-15T10:30:00";
             
-            IConfigurationManager config = new ByteForge.Toolkit.Configuration();
+            IConfigurationManager config = new ByteForge.Toolkit.Configuration.Configuration();
             _tempConfigPath = TestConfigurationHelper.CreateTempConfigFile(configContent);
             config.Initialize(_tempConfigPath);
 
@@ -183,7 +184,7 @@ DateValue=2024-01-15T10:30:00";
 Level=Warning
 DbType=PostgreSQL";
             
-            IConfigurationManager config = new ByteForge.Toolkit.Configuration();
+            IConfigurationManager config = new ByteForge.Toolkit.Configuration.Configuration();
             _tempConfigPath = TestConfigurationHelper.CreateTempConfigFile(configContent);
             config.Initialize(_tempConfigPath);
 
@@ -214,7 +215,7 @@ DbType=PostgreSQL";
             var configContent = @"[TestSection]
 StringValue=Test";
             
-            IConfigurationManager config = new ByteForge.Toolkit.Configuration();
+            IConfigurationManager config = new ByteForge.Toolkit.Configuration.Configuration();
             _tempConfigPath = TestConfigurationHelper.CreateTempConfigFile(configContent);
             config.Initialize(_tempConfigPath);
 
@@ -240,7 +241,7 @@ StringValue=Test";
             var configContent = @"[TestSection]
 RegularProperty=Some Value";
             
-            IConfigurationManager config = new ByteForge.Toolkit.Configuration();
+            IConfigurationManager config = new ByteForge.Toolkit.Configuration.Configuration();
             _tempConfigPath = TestConfigurationHelper.CreateTempConfigFile(configContent);
             config.Initialize(_tempConfigPath);
 
@@ -267,7 +268,7 @@ RegularProperty=Some Value";
             var configContent = @"[TestSection]
 OptionalString=";
             
-            IConfigurationManager config = new ByteForge.Toolkit.Configuration();
+            IConfigurationManager config = new ByteForge.Toolkit.Configuration.Configuration();
             _tempConfigPath = TestConfigurationHelper.CreateTempConfigFile(configContent);
             config.Initialize(_tempConfigPath);
 
@@ -299,7 +300,7 @@ NullableBool=true
 NullableDateTime=2024-01-15T10:30:00
 NullableDouble=3.14";
             
-            IConfigurationManager config = new ByteForge.Toolkit.Configuration();
+            IConfigurationManager config = new ByteForge.Toolkit.Configuration.Configuration();
             _tempConfigPath = TestConfigurationHelper.CreateTempConfigFile(configContent);
             config.Initialize(_tempConfigPath);
 
@@ -332,7 +333,7 @@ NullableDouble=3.14";
             var configContent = @"[TestSection]
 CustomName=Mapped Value";
             
-            IConfigurationManager config = new ByteForge.Toolkit.Configuration();
+            IConfigurationManager config = new ByteForge.Toolkit.Configuration.Configuration();
             _tempConfigPath = TestConfigurationHelper.CreateTempConfigFile(configContent);
             config.Initialize(_tempConfigPath);
 
@@ -359,7 +360,7 @@ CustomName=Mapped Value";
 StringValue=Test
 LastAccessed=2024-01-15T10:30:00";
             
-            IConfigurationManager config = new ByteForge.Toolkit.Configuration();
+            IConfigurationManager config = new ByteForge.Toolkit.Configuration.Configuration();
             _tempConfigPath = TestConfigurationHelper.CreateTempConfigFile(configContent);
             config.Initialize(_tempConfigPath);
 
@@ -392,7 +393,7 @@ LastAccessed=2024-01-15T10:30:00";
 StringValue=Test
 ComputedProperty=This should be ignored";
             
-            IConfigurationManager config = new ByteForge.Toolkit.Configuration();
+            IConfigurationManager config = new ByteForge.Toolkit.Configuration.Configuration();
             _tempConfigPath = TestConfigurationHelper.CreateTempConfigFile(configContent);
             config.Initialize(_tempConfigPath);
 
@@ -422,7 +423,7 @@ ComputedProperty=This should be ignored";
             var configContent = @"[TestSection]
 IntValue=12345";
             
-            IConfigurationManager config = new ByteForge.Toolkit.Configuration();
+            IConfigurationManager config = new ByteForge.Toolkit.Configuration.Configuration();
             _tempConfigPath = TestConfigurationHelper.CreateTempConfigFile(configContent);
             config.Initialize(_tempConfigPath);
 
@@ -464,7 +465,7 @@ IntValue=12345";
 BoolValue={input}";
                 
                 _tempConfigPath = TestConfigurationHelper.CreateTempConfigFile(configContent);
-                IConfigurationManager config = new ByteForge.Toolkit.Configuration();
+                IConfigurationManager config = new ByteForge.Toolkit.Configuration.Configuration();
                 config.Initialize(_tempConfigPath);
 
                 // Act
@@ -497,7 +498,7 @@ IntValue=not_a_number";
             // Act & Assert - Invalid conversion should be handled gracefully
             Action act = () =>
             {
-                IConfigurationManager config = new ByteForge.Toolkit.Configuration();
+                IConfigurationManager config = new ByteForge.Toolkit.Configuration.Configuration();
                 config.Initialize(_tempConfigPath);
                 var section = config.GetSection<BasicTestConfig>("TestSection");
             };
@@ -524,7 +525,7 @@ IntValue=not_a_number";
         {
             // Arrange
             var configContent = @"[TestSection]";
-            IConfigurationManager config = new ByteForge.Toolkit.Configuration();
+            IConfigurationManager config = new ByteForge.Toolkit.Configuration.Configuration();
             _tempConfigPath = TestConfigurationHelper.CreateTempConfigFile(configContent);
             config.Initialize(_tempConfigPath);
 
@@ -561,7 +562,7 @@ IntValue=not_a_number";
         {
             // Arrange
             var configContent = @"[TestSection]";
-            IConfigurationManager config = new ByteForge.Toolkit.Configuration();
+            IConfigurationManager config = new ByteForge.Toolkit.Configuration.Configuration();
             _tempConfigPath = TestConfigurationHelper.CreateTempConfigFile(configContent);
             config.Initialize(_tempConfigPath);
 
@@ -582,13 +583,13 @@ IntValue=not_a_number";
 
         private void ResetConfiguration()
         {
-            var instanceField = typeof(ByteForge.Toolkit.Configuration).GetField("_instance", BindingFlags.NonPublic | BindingFlags.Static);
-            var isInitializedField = typeof(ByteForge.Toolkit.Configuration).GetField("IsInitialized", BindingFlags.Public | BindingFlags.Static);
-            var manuallyInitializedField = typeof(ByteForge.Toolkit.Configuration).GetField("_manuallyInitialized", BindingFlags.NonPublic | BindingFlags.Static);
+            var instanceField = typeof(ByteForge.Toolkit.Configuration.Configuration).GetField("_instance", BindingFlags.NonPublic | BindingFlags.Static);
+            var isInitializedField = typeof(ByteForge.Toolkit.Configuration.Configuration).GetField("IsInitialized", BindingFlags.Public | BindingFlags.Static);
+            var manuallyInitializedField = typeof(ByteForge.Toolkit.Configuration.Configuration).GetField("_manuallyInitialized", BindingFlags.NonPublic | BindingFlags.Static);
 
             if (instanceField != null)
             {
-                var newLazy = new Lazy<ByteForge.Toolkit.Configuration>();
+                var newLazy = new Lazy<ByteForge.Toolkit.Configuration.Configuration>();
                 instanceField.SetValue(null, newLazy);
             }
 

@@ -1,4 +1,6 @@
-namespace ByteForge.Toolkit;
+using ByteForge.Toolkit.Utils;
+
+namespace ByteForge.Toolkit.CLI;
 /// <summary>
 /// Provides a console-based spinner animation at a fixed or dynamic position.
 /// Useful for indicating progress in console applications.

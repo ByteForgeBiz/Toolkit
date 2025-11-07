@@ -1,4 +1,5 @@
 using AwesomeAssertions;
+using ByteForge.Toolkit.Configuration;
 using ByteForge.Toolkit.Tests.Helpers;
 using System.Globalization;
 using System.Reflection;
@@ -35,7 +36,7 @@ namespace ByteForge.Toolkit.Tests.Unit.Configuration
         {
             // Arrange
             var configContent = @"[Globalization]";
-            IConfigurationManager config = new ByteForge.Toolkit.Configuration();
+            IConfigurationManager config = new ByteForge.Toolkit.Configuration.Configuration();
             _tempConfigPath = TestConfigurationHelper.CreateTempConfigFile(configContent);
             config.Initialize(_tempConfigPath);
 
@@ -70,7 +71,7 @@ TimeFormat=HH:mm
 CurrencyFormat=# ##0,00 €
 NumberFormat=# ##0,000";
             
-            IConfigurationManager config = new ByteForge.Toolkit.Configuration();
+            IConfigurationManager config = new ByteForge.Toolkit.Configuration.Configuration();
             _tempConfigPath = TestConfigurationHelper.CreateTempConfigFile(configContent);
             config.Initialize(_tempConfigPath);
 
@@ -101,7 +102,7 @@ NumberFormat=# ##0,000";
 DateFormat=yyyy-MM-dd
 CurrencyFormat=¥#,##0";
             
-            IConfigurationManager config = new ByteForge.Toolkit.Configuration();
+            IConfigurationManager config = new ByteForge.Toolkit.Configuration.Configuration();
             _tempConfigPath = TestConfigurationHelper.CreateTempConfigFile(configContent);
             config.Initialize(_tempConfigPath);
 
@@ -134,7 +135,7 @@ CurrencyFormat=¥#,##0";
             var configContent = @"[Globalization]
 DateFormat=yyyy-MM-dd";
             
-            IConfigurationManager config = new ByteForge.Toolkit.Configuration();
+            IConfigurationManager config = new ByteForge.Toolkit.Configuration.Configuration();
             _tempConfigPath = TestConfigurationHelper.CreateTempConfigFile(configContent);
             config.Initialize(_tempConfigPath);
             var globalization = config.Globalization;
@@ -160,7 +161,7 @@ DateFormat=yyyy-MM-dd";
         {
             // Arrange
             var configContent = @"[Globalization]";
-            IConfigurationManager config = new ByteForge.Toolkit.Configuration();
+            IConfigurationManager config = new ByteForge.Toolkit.Configuration.Configuration();
             _tempConfigPath = TestConfigurationHelper.CreateTempConfigFile(configContent);
             config.Initialize(_tempConfigPath);
             var globalization = config.Globalization;
@@ -187,7 +188,7 @@ DateFormat=yyyy-MM-dd";
             var configContent = @"[Globalization]
 LongDateFormat=dddd, MMMM d, yyyy";
             
-            IConfigurationManager config = new ByteForge.Toolkit.Configuration();
+            IConfigurationManager config = new ByteForge.Toolkit.Configuration.Configuration();
             _tempConfigPath = TestConfigurationHelper.CreateTempConfigFile(configContent);
             config.Initialize(_tempConfigPath);
             var globalization = config.Globalization;
@@ -216,7 +217,7 @@ LongDateFormat=dddd, MMMM d, yyyy";
 DateFormat=yyyy-MM-dd
 TimeFormat=HH:mm:ss";
             
-            IConfigurationManager config = new ByteForge.Toolkit.Configuration();
+            IConfigurationManager config = new ByteForge.Toolkit.Configuration.Configuration();
             _tempConfigPath = TestConfigurationHelper.CreateTempConfigFile(configContent);
             config.Initialize(_tempConfigPath);
             var globalization = config.Globalization;
@@ -248,7 +249,7 @@ TimeFormat=HH:mm:ss";
             var configContent = @"[Globalization]
 TimeFormat=HH:mm:ss";
             
-            IConfigurationManager config = new ByteForge.Toolkit.Configuration();
+            IConfigurationManager config = new ByteForge.Toolkit.Configuration.Configuration();
             _tempConfigPath = TestConfigurationHelper.CreateTempConfigFile(configContent);
             config.Initialize(_tempConfigPath);
             var globalization = config.Globalization;
@@ -276,7 +277,7 @@ TimeFormat=HH:mm:ss";
             var configContent = @"[Globalization]
 ShortTimeFormat=HH:mm";
             
-            IConfigurationManager config = new ByteForge.Toolkit.Configuration();
+            IConfigurationManager config = new ByteForge.Toolkit.Configuration.Configuration();
             _tempConfigPath = TestConfigurationHelper.CreateTempConfigFile(configContent);
             config.Initialize(_tempConfigPath);
             var globalization = config.Globalization;
@@ -304,7 +305,7 @@ ShortTimeFormat=HH:mm";
             var configContent = @"[Globalization]
 LongTimeFormat=HH:mm:ss.fff";
             
-            IConfigurationManager config = new ByteForge.Toolkit.Configuration();
+            IConfigurationManager config = new ByteForge.Toolkit.Configuration.Configuration();
             _tempConfigPath = TestConfigurationHelper.CreateTempConfigFile(configContent);
             config.Initialize(_tempConfigPath);
             var globalization = config.Globalization;
@@ -332,7 +333,7 @@ LongTimeFormat=HH:mm:ss.fff";
             var configContent = @"[Globalization]
 Time12Format=hh:mm:ss tt";
             
-            IConfigurationManager config = new ByteForge.Toolkit.Configuration();
+            IConfigurationManager config = new ByteForge.Toolkit.Configuration.Configuration();
             _tempConfigPath = TestConfigurationHelper.CreateTempConfigFile(configContent);
             config.Initialize(_tempConfigPath);
             var globalization = config.Globalization;
@@ -360,7 +361,7 @@ Time12Format=hh:mm:ss tt";
             var configContent = @"[Globalization]
 ShortTime12Format=h:mm tt";
             
-            IConfigurationManager config = new ByteForge.Toolkit.Configuration();
+            IConfigurationManager config = new ByteForge.Toolkit.Configuration.Configuration();
             _tempConfigPath = TestConfigurationHelper.CreateTempConfigFile(configContent);
             config.Initialize(_tempConfigPath);
             var globalization = config.Globalization;
@@ -392,7 +393,7 @@ ShortTime12Format=h:mm tt";
             var configContent = @"[Globalization]
 IntegerFormat=#,##0";
             
-            IConfigurationManager config = new ByteForge.Toolkit.Configuration();
+            IConfigurationManager config = new ByteForge.Toolkit.Configuration.Configuration();
             _tempConfigPath = TestConfigurationHelper.CreateTempConfigFile(configContent);
             config.Initialize(_tempConfigPath);
             var globalization = config.Globalization;
@@ -417,7 +418,7 @@ IntegerFormat=#,##0";
         {
             // Arrange
             var configContent = @"[Globalization]";
-            IConfigurationManager config = new ByteForge.Toolkit.Configuration();
+            IConfigurationManager config = new ByteForge.Toolkit.Configuration.Configuration();
             _tempConfigPath = TestConfigurationHelper.CreateTempConfigFile(configContent);
             config.Initialize(_tempConfigPath);
             var globalization = config.Globalization;
@@ -444,7 +445,7 @@ IntegerFormat=#,##0";
             var configContent = @"[Globalization]
 NumberFormat=#,##0.000";
             
-            IConfigurationManager config = new ByteForge.Toolkit.Configuration();
+            IConfigurationManager config = new ByteForge.Toolkit.Configuration.Configuration();
             _tempConfigPath = TestConfigurationHelper.CreateTempConfigFile(configContent);
             config.Initialize(_tempConfigPath);
             var globalization = config.Globalization;
@@ -471,7 +472,7 @@ NumberFormat=#,##0.000";
             var configContent = @"[Globalization]
 NumberFormat=#,##0.00";
             
-            IConfigurationManager config = new ByteForge.Toolkit.Configuration();
+            IConfigurationManager config = new ByteForge.Toolkit.Configuration.Configuration();
             _tempConfigPath = TestConfigurationHelper.CreateTempConfigFile(configContent);
             config.Initialize(_tempConfigPath);
             var globalization = config.Globalization;
@@ -498,7 +499,7 @@ NumberFormat=#,##0.00";
             var configContent = @"[Globalization]
 NumberFormat=#,##0.0000";
             
-            IConfigurationManager config = new ByteForge.Toolkit.Configuration();
+            IConfigurationManager config = new ByteForge.Toolkit.Configuration.Configuration();
             _tempConfigPath = TestConfigurationHelper.CreateTempConfigFile(configContent);
             config.Initialize(_tempConfigPath);
             var globalization = config.Globalization;
@@ -529,7 +530,7 @@ NumberFormat=#,##0.0000";
             var configContent = @"[Globalization]
 CurrencyFormat='$' #,##0.00";
             
-            IConfigurationManager config = new ByteForge.Toolkit.Configuration();
+            IConfigurationManager config = new ByteForge.Toolkit.Configuration.Configuration();
             _tempConfigPath = TestConfigurationHelper.CreateTempConfigFile(configContent);
             config.Initialize(_tempConfigPath);
             var globalization = config.Globalization;
@@ -557,7 +558,7 @@ CurrencyFormat='$' #,##0.00";
 CurrencyFormat=# ##0.00 '€'
 CultureInfo=pt-br";
             
-            IConfigurationManager config = new ByteForge.Toolkit.Configuration();
+            IConfigurationManager config = new ByteForge.Toolkit.Configuration.Configuration();
             _tempConfigPath = TestConfigurationHelper.CreateTempConfigFile(configContent);
             config.Initialize(_tempConfigPath);
             var globalization = config.Globalization;
@@ -585,7 +586,7 @@ CultureInfo=pt-br";
             var configContent = @"[Globalization]
 CurrencyFormat='$' #,##0.00";
             
-            IConfigurationManager config = new ByteForge.Toolkit.Configuration();
+            IConfigurationManager config = new ByteForge.Toolkit.Configuration.Configuration();
             _tempConfigPath = TestConfigurationHelper.CreateTempConfigFile(configContent);
             config.Initialize(_tempConfigPath);
             var globalization = config.Globalization;
@@ -612,7 +613,7 @@ CurrencyFormat='$' #,##0.00";
             var configContent = @"[Globalization]
 CurrencyFormat='$' #,##0.00";
             
-            IConfigurationManager config = new ByteForge.Toolkit.Configuration();
+            IConfigurationManager config = new ByteForge.Toolkit.Configuration.Configuration();
             _tempConfigPath = TestConfigurationHelper.CreateTempConfigFile(configContent);
             config.Initialize(_tempConfigPath);
             var globalization = config.Globalization;
@@ -645,7 +646,7 @@ CultureInfo=fr-FR
 NumberFormat=# ##0.00
 CurrencyFormat=# ##0.00 '€'";
             
-            IConfigurationManager config = new ByteForge.Toolkit.Configuration();
+            IConfigurationManager config = new ByteForge.Toolkit.Configuration.Configuration();
             _tempConfigPath = TestConfigurationHelper.CreateTempConfigFile(configContent);
             config.Initialize(_tempConfigPath);
             var globalization = config.Globalization;
@@ -677,7 +678,7 @@ CurrencyFormat=# ##0.00 '€'";
             var configContent = @"[Globalization]
 NumberFormat=# ##0.00";
             
-            IConfigurationManager config = new ByteForge.Toolkit.Configuration();
+            IConfigurationManager config = new ByteForge.Toolkit.Configuration.Configuration();
             _tempConfigPath = TestConfigurationHelper.CreateTempConfigFile(configContent);
             config.Initialize(_tempConfigPath);
             var globalization = config.Globalization;
@@ -711,7 +712,7 @@ NumberFormat=# ##0.00";
             var configContent = @"[Globalization]
 IntegerFormat=#,##0";
             
-            IConfigurationManager config = new ByteForge.Toolkit.Configuration();
+            IConfigurationManager config = new ByteForge.Toolkit.Configuration.Configuration();
             _tempConfigPath = TestConfigurationHelper.CreateTempConfigFile(configContent);
             config.Initialize(_tempConfigPath);
             var globalization = config.Globalization;
@@ -751,7 +752,7 @@ ShortTimeFormat=HH:mm
 ShortTime12Format=h:mm tt
 LongTime12Format=hh:mm:ss.fff tt";
             
-            IConfigurationManager config = new ByteForge.Toolkit.Configuration();
+            IConfigurationManager config = new ByteForge.Toolkit.Configuration.Configuration();
             _tempConfigPath = TestConfigurationHelper.CreateTempConfigFile(configContent);
             config.Initialize(_tempConfigPath);
             var globalization = config.Globalization;
@@ -780,7 +781,7 @@ LongTime12Format=hh:mm:ss.fff tt";
 DateFormat=yyyy-MM-dd
 ShortTimeFormat=HH:mm";
             
-            IConfigurationManager config = new ByteForge.Toolkit.Configuration();
+            IConfigurationManager config = new ByteForge.Toolkit.Configuration.Configuration();
             _tempConfigPath = TestConfigurationHelper.CreateTempConfigFile(configContent);
             config.Initialize(_tempConfigPath);
             var globalization = config.Globalization;
@@ -809,7 +810,7 @@ ShortTimeFormat=HH:mm";
 LongDateFormat=dddd, MMMM d, yyyy
 LongTimeFormat=HH:mm:ss.fff";
             
-            IConfigurationManager config = new ByteForge.Toolkit.Configuration();
+            IConfigurationManager config = new ByteForge.Toolkit.Configuration.Configuration();
             _tempConfigPath = TestConfigurationHelper.CreateTempConfigFile(configContent);
             config.Initialize(_tempConfigPath);
             var globalization = config.Globalization;
@@ -828,14 +829,14 @@ LongTimeFormat=HH:mm:ss.fff";
 
         private void ResetConfiguration()
         {
-            var instanceField = typeof(ByteForge.Toolkit.Configuration).GetField("_instance", BindingFlags.NonPublic | BindingFlags.Static);
-            var isInitializedField = typeof(ByteForge.Toolkit.Configuration).GetField("IsInitialized", BindingFlags.Public | BindingFlags.Static);
-            var manuallyInitializedField = typeof(ByteForge.Toolkit.Configuration).GetField("_manuallyInitialized", BindingFlags.NonPublic | BindingFlags.Static);
-            var globalizationField = typeof(ByteForge.Toolkit.Configuration).GetField("_globalizationInfo", BindingFlags.NonPublic | BindingFlags.Static);
+            var instanceField = typeof(ByteForge.Toolkit.Configuration.Configuration).GetField("_instance", BindingFlags.NonPublic | BindingFlags.Static);
+            var isInitializedField = typeof(ByteForge.Toolkit.Configuration.Configuration).GetField("IsInitialized", BindingFlags.Public | BindingFlags.Static);
+            var manuallyInitializedField = typeof(ByteForge.Toolkit.Configuration.Configuration).GetField("_manuallyInitialized", BindingFlags.NonPublic | BindingFlags.Static);
+            var globalizationField = typeof(ByteForge.Toolkit.Configuration.Configuration).GetField("_globalizationInfo", BindingFlags.NonPublic | BindingFlags.Static);
 
             if (instanceField != null)
             {
-                var newLazy = new Lazy<ByteForge.Toolkit.Configuration>();
+                var newLazy = new Lazy<ByteForge.Toolkit.Configuration.Configuration>();
                 instanceField.SetValue(null, newLazy);
             }
 
@@ -851,7 +852,7 @@ LongTimeFormat=HH:mm:ss.fff";
 
             if (globalizationField != null)
             {
-                var newGlobalizationLazy = new Lazy<GlobalizationInfo>(() => ByteForge.Toolkit.Configuration.GetSection<GlobalizationInfo>("Globalization"));
+                var newGlobalizationLazy = new Lazy<GlobalizationInfo>(() => ByteForge.Toolkit.Configuration.Configuration.GetSection<GlobalizationInfo>("Globalization"));
                 globalizationField.SetValue(null, newGlobalizationLazy);
             }
         }

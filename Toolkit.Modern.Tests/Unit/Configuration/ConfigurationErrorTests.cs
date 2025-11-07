@@ -1,4 +1,5 @@
 using AwesomeAssertions;
+using ByteForge.Toolkit.Configuration;
 using ByteForge.Toolkit.Tests.Helpers;
 using ByteForge.Toolkit.Tests.Models;
 using System.Reflection;
@@ -37,7 +38,7 @@ namespace ByteForge.Toolkit.Tests.Unit.Configuration
             var configContent = @"[TestSection]
 StringValue=Test";
             
-            IConfigurationManager config = new ByteForge.Toolkit.Configuration();
+            IConfigurationManager config = new ByteForge.Toolkit.Configuration.Configuration();
             _tempConfigPath = TestConfigurationHelper.CreateTempConfigFile(configContent);
             config.Initialize(_tempConfigPath);
             
@@ -75,7 +76,7 @@ StringValue=Test";
 
             // Act & Assert
             Action act = () => {
-                IConfigurationManager testConfig = new ByteForge.Toolkit.Configuration();
+                IConfigurationManager testConfig = new ByteForge.Toolkit.Configuration.Configuration();
                 testConfig.Initialize(nonExistentPath);
             };
             act.Should().Throw<FileNotFoundException>("non-existent file should throw FileNotFoundException");
@@ -96,7 +97,7 @@ StringValue=Test";
 
             // Act & Assert
             Action act = () => {
-                IConfigurationManager testConfig = new ByteForge.Toolkit.Configuration();
+                IConfigurationManager testConfig = new ByteForge.Toolkit.Configuration.Configuration();
                 testConfig.Initialize(invalidPath);
             };
             act.Should().Throw<DirectoryNotFoundException>("invalid path should throw DirectoryNotFoundException");
@@ -119,7 +120,7 @@ StringValue=Test";
 
             // Act & Assert
             Action act = () => {
-                IConfigurationManager testConfig = new ByteForge.Toolkit.Configuration();
+                IConfigurationManager testConfig = new ByteForge.Toolkit.Configuration.Configuration();
                 testConfig.Initialize(tooLongPath);
             };
             act.Should().Throw<Exception>("path too long should throw an exception");
@@ -150,7 +151,7 @@ IntValue=42";
             // Act & Assert - Should handle malformed sections gracefully
             Action act = () =>
             {
-                IConfigurationManager testConfig = new ByteForge.Toolkit.Configuration();
+                IConfigurationManager testConfig = new ByteForge.Toolkit.Configuration.Configuration();
                 testConfig.Initialize(_tempConfigPath);
                 var section = testConfig.GetSection<BasicTestConfig>("ValidSection");
             };
@@ -181,7 +182,7 @@ KeyWithMultipleEquals=Value=With=Equals";
             // Act & Assert - Should handle invalid key-value pairs gracefully
             Action act = () =>
             {
-                IConfigurationManager testConfig = new ByteForge.Toolkit.Configuration();
+                IConfigurationManager testConfig = new ByteForge.Toolkit.Configuration.Configuration();
                 testConfig.Initialize(_tempConfigPath);
                 var section = testConfig.GetSection<BasicTestConfig>("TestSection");
             };
@@ -203,7 +204,7 @@ KeyWithMultipleEquals=Value=With=Equals";
             _tempConfigPath = TestConfigurationHelper.CreateTempConfigFile("");
 
             // Act
-            IConfigurationManager config = new ByteForge.Toolkit.Configuration();
+            IConfigurationManager config = new ByteForge.Toolkit.Configuration.Configuration();
             config.Initialize(_tempConfigPath);
             var section = config.GetSection<BasicTestConfig>("TestSection");
 
@@ -231,7 +232,7 @@ KeyWithMultipleEquals=Value=With=Equals";
             _tempConfigPath = TestConfigurationHelper.CreateTempConfigFile(commentsOnlyContent);
 
             // Act
-            IConfigurationManager config = new ByteForge.Toolkit.Configuration();
+            IConfigurationManager config = new ByteForge.Toolkit.Configuration.Configuration();
             config.Initialize(_tempConfigPath);
             var section = config.GetSection<BasicTestConfig>("TestSection");
 
@@ -264,7 +265,7 @@ DoubleValue=not_a_double";
             // Act & Assert - Invalid type conversions should be handled gracefully
             Action act = () =>
             {
-                IConfigurationManager config = new ByteForge.Toolkit.Configuration();
+                IConfigurationManager config = new ByteForge.Toolkit.Configuration.Configuration();
                 config.Initialize(_tempConfigPath);
                 var section = config.GetSection<BasicTestConfig>("TestSection");
             };
@@ -293,7 +294,7 @@ DoubleValue=1.7976931348623157e+309";
             // Act & Assert
             Action act = () =>
             {
-                IConfigurationManager config = new ByteForge.Toolkit.Configuration();
+                IConfigurationManager config = new ByteForge.Toolkit.Configuration.Configuration();
                 config.Initialize(_tempConfigPath);
                 var section = config.GetSection<BasicTestConfig>("TestSection");
             };
@@ -322,7 +323,7 @@ DateValue3=2024-13-45";
             // Act & Assert
             Action act = () =>
             {
-                IConfigurationManager config = new ByteForge.Toolkit.Configuration();
+                IConfigurationManager config = new ByteForge.Toolkit.Configuration.Configuration();
                 config.Initialize(_tempConfigPath);
                 var section = config.GetSection<BasicTestConfig>("TestSection");
             };
@@ -350,7 +351,7 @@ DbType=UnknownDatabase";
             // Act & Assert
             Action act = () =>
             {
-                IConfigurationManager config = new ByteForge.Toolkit.Configuration();
+                IConfigurationManager config = new ByteForge.Toolkit.Configuration.Configuration();
                 config.Initialize(_tempConfigPath);
                 var section = config.GetSection<EnumTestConfig>("TestSection");
             };
@@ -376,7 +377,7 @@ DbType=UnknownDatabase";
             var configContent = @"[TestSection]
 StringArray=NonExistentArraySection";
             
-            IConfigurationManager config = new ByteForge.Toolkit.Configuration();
+            IConfigurationManager config = new ByteForge.Toolkit.Configuration.Configuration();
             _tempConfigPath = TestConfigurationHelper.CreateTempConfigFile(configContent);
             config.Initialize(_tempConfigPath);
 
@@ -414,7 +415,7 @@ NumberList=MixedNumberArray
             // Act & Assert
             Action act = () =>
             {
-                IConfigurationManager config = new ByteForge.Toolkit.Configuration();
+                IConfigurationManager config = new ByteForge.Toolkit.Configuration.Configuration();
                 config.Initialize(_tempConfigPath);
                 var section = config.GetSection<ArrayTestConfig>("TestSection");
             };
@@ -448,7 +449,7 @@ StringArray=ArraySection1";
             // Act & Assert
             Action act = () =>
             {
-                IConfigurationManager config = new ByteForge.Toolkit.Configuration();
+                IConfigurationManager config = new ByteForge.Toolkit.Configuration.Configuration();
                 config.Initialize(_tempConfigPath);
                 var section = config.GetSection<ArrayTestConfig>("TestSection");
             };
@@ -482,7 +483,7 @@ RegularProperty=TestValue";
             // Act & Assert
             Action act = () =>
             {
-                IConfigurationManager config = new ByteForge.Toolkit.Configuration();
+                IConfigurationManager config = new ByteForge.Toolkit.Configuration.Configuration();
                 config.Initialize(_tempConfigPath);
                 var section = config.GetSection<CustomDefaultConfig>("TestSection");
             };
@@ -505,7 +506,7 @@ RegularProperty=TestValue";
             var configContent = @"[TestSection]
 CustomName=MappedValue";
             
-            IConfigurationManager config = new ByteForge.Toolkit.Configuration();
+            IConfigurationManager config = new ByteForge.Toolkit.Configuration.Configuration();
             _tempConfigPath = TestConfigurationHelper.CreateTempConfigFile(configContent);
             config.Initialize(_tempConfigPath);
 
@@ -542,7 +543,7 @@ CustomName=MappedValue";
             // Act & Assert
             Action act = () =>
             {
-                IConfigurationManager config = new ByteForge.Toolkit.Configuration();
+                IConfigurationManager config = new ByteForge.Toolkit.Configuration.Configuration();
                 config.Initialize(_tempConfigPath);
                 var section = config.GetSection<BasicTestConfig>("TestSection");
             };
@@ -573,7 +574,7 @@ CustomName=MappedValue";
             // Act & Assert
             Action act = () =>
             {
-                IConfigurationManager config = new ByteForge.Toolkit.Configuration();
+                IConfigurationManager config = new ByteForge.Toolkit.Configuration.Configuration();
                 config.Initialize(_tempConfigPath);
                 
                 // Access multiple sections
@@ -605,7 +606,7 @@ CustomName=MappedValue";
 StringValue=Hello 世界 🌍 Ñoël Café
 UnicodeProperty=Здравствуй мир";
             
-            IConfigurationManager config = new ByteForge.Toolkit.Configuration();
+            IConfigurationManager config = new ByteForge.Toolkit.Configuration.Configuration();
             _tempConfigPath = TestConfigurationHelper.CreateTempConfigFile(configContent);
             config.Initialize(_tempConfigPath);
 
@@ -638,7 +639,7 @@ String Value=Spaced key";
             // Act & Assert
             Action act = () =>
             {
-                IConfigurationManager config = new ByteForge.Toolkit.Configuration();
+                IConfigurationManager config = new ByteForge.Toolkit.Configuration.Configuration();
                 config.Initialize(_tempConfigPath);
                 var section = config.GetSection<BasicTestConfig>("TestSection");
             };
@@ -662,7 +663,7 @@ StringValue=Value with ""quotes""
 PathValue=C:\Windows\System32
 UrlValue=https://example.com/path?param=value&other=test";
             
-            IConfigurationManager config = new ByteForge.Toolkit.Configuration();
+            IConfigurationManager config = new ByteForge.Toolkit.Configuration.Configuration();
             _tempConfigPath = TestConfigurationHelper.CreateTempConfigFile(configContent);
             config.Initialize(_tempConfigPath);
 
@@ -696,7 +697,7 @@ UrlValue=https://example.com/path?param=value&other=test";
             }
 
             _tempConfigPath = TestConfigurationHelper.CreateTempConfigFile(sb.ToString());
-            IConfigurationManager config = new ByteForge.Toolkit.Configuration();
+            IConfigurationManager config = new ByteForge.Toolkit.Configuration.Configuration();
             config.Initialize(_tempConfigPath);
 
             // Act - Attempt concurrent save operations
@@ -750,7 +751,7 @@ UrlValue=https://example.com/path?param=value&other=test";
             var configContent = @"[TestSection]
 StringValue=Initial";
             
-            IConfigurationManager config = new ByteForge.Toolkit.Configuration();
+            IConfigurationManager config = new ByteForge.Toolkit.Configuration.Configuration();
             _tempConfigPath = TestConfigurationHelper.CreateTempConfigFile(configContent);
             config.Initialize(_tempConfigPath);
 
@@ -778,13 +779,13 @@ StringValue=Initial";
 
         private void ResetConfiguration()
         {
-            var instanceField = typeof(ByteForge.Toolkit.Configuration).GetField("_instance", BindingFlags.NonPublic | BindingFlags.Static);
-            var isInitializedField = typeof(ByteForge.Toolkit.Configuration).GetField("IsInitialized", BindingFlags.Public | BindingFlags.Static);
-            var manuallyInitializedField = typeof(ByteForge.Toolkit.Configuration).GetField("_manuallyInitialized", BindingFlags.NonPublic | BindingFlags.Static);
+            var instanceField = typeof(ByteForge.Toolkit.Configuration.Configuration).GetField("_instance", BindingFlags.NonPublic | BindingFlags.Static);
+            var isInitializedField = typeof(ByteForge.Toolkit.Configuration.Configuration).GetField("IsInitialized", BindingFlags.Public | BindingFlags.Static);
+            var manuallyInitializedField = typeof(ByteForge.Toolkit.Configuration.Configuration).GetField("_manuallyInitialized", BindingFlags.NonPublic | BindingFlags.Static);
 
             if (instanceField != null)
             {
-                var newLazy = new Lazy<ByteForge.Toolkit.Configuration>();
+                var newLazy = new Lazy<ByteForge.Toolkit.Configuration.Configuration>();
                 instanceField.SetValue(null, newLazy);
             }
 

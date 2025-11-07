@@ -2,7 +2,7 @@ using System.Collections.Concurrent;
 using System.Globalization;
 using System.Text.RegularExpressions;
 
-namespace ByteForge.Toolkit;
+namespace ByteForge.Toolkit.Utils;
 /*
  *  ___       _      _____ _           ___                      
  * |   \ __ _| |_ __|_   _(_)_ __  ___| _ \__ _ _ _ ___ ___ _ _ 

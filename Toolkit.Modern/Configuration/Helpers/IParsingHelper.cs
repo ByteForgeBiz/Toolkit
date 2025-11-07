@@ -1,6 +1,6 @@
 using System.Reflection;
 
-namespace ByteForge.Toolkit;
+namespace ByteForge.Toolkit.Configuration;
 /// <summary>
 /// Defines parsing operations that transform a textual representation into object instances or
 /// populate existing objects / properties using reflection.

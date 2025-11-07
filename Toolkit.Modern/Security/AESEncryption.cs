@@ -1,7 +1,7 @@
 using System.Security.Cryptography;
 using System.Text;
 
-namespace ByteForge.Toolkit;
+namespace ByteForge.Toolkit.Security;
 /*
  *    _   ___ ___ ___                       _   _          
  *   /_\ | __/ __| __|_ _  __ _ _ _  _ _ __| |_(_)___ _ _  

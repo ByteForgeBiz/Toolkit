@@ -1,4 +1,4 @@
-namespace ByteForge.Toolkit;
+namespace ByteForge.Toolkit.Mail;
 /*
  *    _  _   _           _                  _   ___                       ___             _ _   
  *   /_\| |_| |_ __ _ __| |_  _ __  ___ _ _| |_| _ \_ _ ___  __ ___ _____| _ \___ ____  _| | |_ 

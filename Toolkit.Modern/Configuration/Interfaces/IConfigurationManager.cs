@@ -1,4 +1,4 @@
-namespace ByteForge.Toolkit;
+namespace ByteForge.Toolkit.Configuration;
 /// <summary>
 /// Interface for configuration management providing access to INI-based configuration with strongly-typed sections.
 /// </summary>

@@ -1,7 +1,8 @@
+using ByteForge.Toolkit.Logging;
 using System.Runtime.InteropServices;
 using System.Text;
 
-namespace ByteForge.Toolkit;
+namespace ByteForge.Toolkit.Utils;
 /*
  *  ___ ___  _   _ _   _ _    
  * |_ _/ _ \| | | | |_(_) |___

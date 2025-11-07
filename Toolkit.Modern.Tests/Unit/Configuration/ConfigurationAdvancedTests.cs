@@ -1,4 +1,5 @@
 using AwesomeAssertions;
+using ByteForge.Toolkit.Configuration;
 using ByteForge.Toolkit.Tests.Helpers;
 using ByteForge.Toolkit.Tests.Models;
 using System.Reflection;
@@ -52,7 +53,7 @@ DefaultKey2=DefaultValue2
 CustomKey1=CustomValue1
 CustomKey2=CustomValue2";
             
-            IConfigurationManager config = new ByteForge.Toolkit.Configuration();
+            IConfigurationManager config = new ByteForge.Toolkit.Configuration.Configuration();
             _tempConfigPath = TestConfigurationHelper.CreateTempConfigFile(configContent);
             config.Initialize(_tempConfigPath);
 
@@ -90,7 +91,7 @@ CustomKey2=CustomValue2";
             var configContent = $@"[{sectionName}]
 RegularProperty=Initial";
             
-            IConfigurationManager config = new ByteForge.Toolkit.Configuration();
+            IConfigurationManager config = new ByteForge.Toolkit.Configuration.Configuration();
             _tempConfigPath = TestConfigurationHelper.CreateTempConfigFile(configContent);
             config.Initialize(_tempConfigPath);
 
@@ -148,7 +149,7 @@ ExtendedSettings=ExtendedSettings
 Setting1=Value1
 Setting2=Value2";
             
-            IConfigurationManager config = new ByteForge.Toolkit.Configuration();
+            IConfigurationManager config = new ByteForge.Toolkit.Configuration.Configuration();
             _tempConfigPath = TestConfigurationHelper.CreateTempConfigFile(configContent);
             config.Initialize(_tempConfigPath);
 
@@ -204,7 +205,7 @@ PrimaryKey2=PrimaryValue2
 SecondaryKey1=SecondaryValue1
 SecondaryKey2=SecondaryValue2";
             
-            IConfigurationManager config = new ByteForge.Toolkit.Configuration();
+            IConfigurationManager config = new ByteForge.Toolkit.Configuration.Configuration();
             _tempConfigPath = TestConfigurationHelper.CreateTempConfigFile(configContent);
             config.Initialize(_tempConfigPath);
 
@@ -264,7 +265,7 @@ CRC=\\server\export\crc\
 GICS=\\server\export\gics\
 LMCA=\\server\export\lmca\";
             
-            IConfigurationManager config = new ByteForge.Toolkit.Configuration();
+            IConfigurationManager config = new ByteForge.Toolkit.Configuration.Configuration();
             _tempConfigPath = TestConfigurationHelper.CreateTempConfigFile(configContent);
             config.Initialize(_tempConfigPath);
 
@@ -303,7 +304,7 @@ FormatConfigurations=GHMFormats
 TCI=TCI_MMddyyyy_WIN_Return.txt
 CRC=CRC_MMddyyyy_Return.csv";
             
-            IConfigurationManager config = new ByteForge.Toolkit.Configuration();
+            IConfigurationManager config = new ByteForge.Toolkit.Configuration.Configuration();
             _tempConfigPath = TestConfigurationHelper.CreateTempConfigFile(configContent);
             config.Initialize(_tempConfigPath);
 
@@ -319,7 +320,7 @@ CRC=CRC_MMddyyyy_Return.csv";
             config.Save();
 
             // Reload and verify
-            IConfigurationManager newConfig = new ByteForge.Toolkit.Configuration();
+            IConfigurationManager newConfig = new ByteForge.Toolkit.Configuration.Configuration();
             newConfig.Initialize(_tempConfigPath);
             var reloadedSection = newConfig.GetSection<GHMExportTestConfig>("GHMExport");
 
@@ -364,7 +365,7 @@ StringArray=ValidArray
             // Act & Assert - Should handle valid sections despite corruption
             Action act = () =>
             {
-                IConfigurationManager config = new ByteForge.Toolkit.Configuration();
+                IConfigurationManager config = new ByteForge.Toolkit.Configuration.Configuration();
                 _tempConfigPath = TestConfigurationHelper.CreateTempConfigFile(configContent);
                 config.Initialize(_tempConfigPath);
                 
@@ -411,7 +412,7 @@ StringArray=NonExistentArraySection
 FileFormats=NonExistentDictSection
 StringValue=ValidValue";
             
-            IConfigurationManager config = new ByteForge.Toolkit.Configuration();
+            IConfigurationManager config = new ByteForge.Toolkit.Configuration.Configuration();
             _tempConfigPath = TestConfigurationHelper.CreateTempConfigFile(configContent);
             config.Initialize(_tempConfigPath);
 
@@ -441,7 +442,7 @@ StringValue=ValidValue";
         {
             // Arrange
             var configContent = @"[MemoryTest]";
-            IConfigurationManager config = new ByteForge.Toolkit.Configuration();
+            IConfigurationManager config = new ByteForge.Toolkit.Configuration.Configuration();
             _tempConfigPath = TestConfigurationHelper.CreateTempConfigFile(configContent);
             config.Initialize(_tempConfigPath);
 
@@ -479,7 +480,7 @@ StringValue=ValidValue";
 
         private void ResetConfiguration()
         {
-            var instanceField = typeof(ByteForge.Toolkit.Configuration).GetField("_defaultInstance", BindingFlags.NonPublic | BindingFlags.Static);
+            var instanceField = typeof(ByteForge.Toolkit.Configuration.Configuration).GetField("_defaultInstance", BindingFlags.NonPublic | BindingFlags.Static);
             
             if (instanceField != null)
             {

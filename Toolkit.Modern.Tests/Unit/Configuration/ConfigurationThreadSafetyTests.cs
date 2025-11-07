@@ -1,4 +1,5 @@
 using AwesomeAssertions;
+using ByteForge.Toolkit.Configuration;
 using ByteForge.Toolkit.Tests.Helpers;
 using ByteForge.Toolkit.Tests.Models;
 using System.Collections.Concurrent;
@@ -40,7 +41,7 @@ namespace ByteForge.Toolkit.Tests.Unit.Configuration
                 configContent.AppendLine();
             }
 
-            IConfigurationManager config = new ByteForge.Toolkit.Configuration();
+            IConfigurationManager config = new ByteForge.Toolkit.Configuration.Configuration();
             _tempConfigPath = TestConfigurationHelper.CreateTempConfigFile(configContent.ToString());
             config.Initialize(_tempConfigPath);
 
@@ -92,7 +93,7 @@ namespace ByteForge.Toolkit.Tests.Unit.Configuration
             var configContent = @"[ExistingSection]
 ExistingValue=Test";
 
-            IConfigurationManager config = new ByteForge.Toolkit.Configuration();
+            IConfigurationManager config = new ByteForge.Toolkit.Configuration.Configuration();
             _tempConfigPath = TestConfigurationHelper.CreateTempConfigFile(configContent);
             config.Initialize(_tempConfigPath);
 
@@ -139,7 +140,7 @@ ExistingValue=Test";
 StringValue=Shared
 IntValue=100";
 
-            IConfigurationManager config = new ByteForge.Toolkit.Configuration();
+            IConfigurationManager config = new ByteForge.Toolkit.Configuration.Configuration();
             _tempConfigPath = TestConfigurationHelper.CreateTempConfigFile(configContent);
             config.Initialize(_tempConfigPath);
 
@@ -195,7 +196,7 @@ StringArray=TestStringArray
 0=Initial1
 1=Initial2";
 
-            IConfigurationManager config = new ByteForge.Toolkit.Configuration();
+            IConfigurationManager config = new ByteForge.Toolkit.Configuration.Configuration();
             _tempConfigPath = TestConfigurationHelper.CreateTempConfigFile(configContent);
             config.Initialize(_tempConfigPath);
 
@@ -242,7 +243,7 @@ StringArray=TestStringArray
             // Arrange
             var configContent = @"[TestSection]";
 
-            IConfigurationManager config = new ByteForge.Toolkit.Configuration();
+            IConfigurationManager config = new ByteForge.Toolkit.Configuration.Configuration();
             _tempConfigPath = TestConfigurationHelper.CreateTempConfigFile(configContent);
             config.Initialize(_tempConfigPath);
 
@@ -321,7 +322,7 @@ StringArray=TestStringArray
 
             // Act - Measure load time
             var startTime = DateTime.Now;
-            IConfigurationManager config = new ByteForge.Toolkit.Configuration();
+            IConfigurationManager config = new ByteForge.Toolkit.Configuration.Configuration();
             config.Initialize(_tempConfigPath);
 
             var arraySection = config.GetSection<ArrayTestConfig>("MainSection");
@@ -344,7 +345,7 @@ StringArray=TestStringArray
         {
             // Arrange
             var configContent = @"[MainSection]";
-            IConfigurationManager config = new ByteForge.Toolkit.Configuration();
+            IConfigurationManager config = new ByteForge.Toolkit.Configuration.Configuration();
             _tempConfigPath = TestConfigurationHelper.CreateTempConfigFile(configContent);
             config.Initialize(_tempConfigPath);
 
@@ -391,7 +392,7 @@ StringArray=TestStringArray
 StringValue=Initial
 IntValue=0";
 
-            IConfigurationManager config = new ByteForge.Toolkit.Configuration();
+            IConfigurationManager config = new ByteForge.Toolkit.Configuration.Configuration();
             _tempConfigPath = TestConfigurationHelper.CreateTempConfigFile(configContent);
             config.Initialize(_tempConfigPath);
 
@@ -453,7 +454,7 @@ IntValue=0";
                 configBuilder.AppendLine();
             }
 
-            IConfigurationManager config = new ByteForge.Toolkit.Configuration();
+            IConfigurationManager config = new ByteForge.Toolkit.Configuration.Configuration();
             _tempConfigPath = TestConfigurationHelper.CreateTempConfigFile(configBuilder.ToString());
             config.Initialize(_tempConfigPath);
 
@@ -518,7 +519,7 @@ IntValue=0";
 
         private void ResetConfiguration()
         {
-            var instanceField = typeof(ByteForge.Toolkit.Configuration).GetField("_defaultInstance", BindingFlags.NonPublic | BindingFlags.Static);
+            var instanceField = typeof(ByteForge.Toolkit.Configuration.Configuration).GetField("_defaultInstance", BindingFlags.NonPublic | BindingFlags.Static);
             
             if (instanceField != null)
             {

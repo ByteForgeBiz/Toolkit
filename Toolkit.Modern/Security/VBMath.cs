@@ -1,4 +1,4 @@
-namespace ByteForge.Toolkit;
+namespace ByteForge.Toolkit.Security;
 
 /*
  * __   _____ __  __      _   _    

@@ -1,6 +1,6 @@
 using System.Data;
 
-namespace ByteForge.Toolkit;
+namespace ByteForge.Toolkit.Data;
 /*
  *  ___         _      _   ___                 _   _          ___             _ _   
  * / __| __ _ _(_)_ __| |_| __|_ _____ __ _  _| |_(_)___ _ _ | _ \___ ____  _| | |_ 

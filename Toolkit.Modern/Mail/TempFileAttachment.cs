@@ -1,7 +1,7 @@
 using System.Net.Mail;
 using System.Net.Mime;
 
-namespace ByteForge.Toolkit;
+namespace ByteForge.Toolkit.Mail;
 /// <summary>
 /// Represents an email attachment backed by a temporary file.
 /// Automatically deletes the temporary file when disposed.

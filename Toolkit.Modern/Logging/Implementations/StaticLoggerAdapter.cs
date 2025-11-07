@@ -14,7 +14,7 @@ internal class StaticLoggerAdapter : ILogger
 {
     public StaticLoggerAdapter()
     {
-        if (!ByteForge.Toolkit.Log.IsInitialized)
+        if (!Logging.Log.IsInitialized)
             throw new InvalidOperationException("The static Log class must be initialized before using StaticLoggerAdapter.");
     }
 
@@ -28,8 +28,8 @@ internal class StaticLoggerAdapter : ILogger
     /// </summary>
     public LogLevel MinLogLevel 
     { 
-        get => ByteForge.Toolkit.Log.LogLevel; 
-        set => ByteForge.Toolkit.Log.LogLevel = value; 
+        get => Logging.Log.LogLevel; 
+        set => Logging.Log.LogLevel = value; 
     }
 
     /// <summary>
@@ -44,43 +44,43 @@ internal class StaticLoggerAdapter : ILogger
         switch (level)
         {
             case LogLevel.Trace:
-                ByteForge.Toolkit.Log.Trace(message);
+                Logging.Log.Trace(message);
                 break;
             case LogLevel.Debug:
-                ByteForge.Toolkit.Log.Debug(message);
+                Logging.Log.Debug(message);
                 break;
             case LogLevel.Verbose:
-                ByteForge.Toolkit.Log.Verbose(message);
+                Logging.Log.Verbose(message);
                 break;
             case LogLevel.Info:
-                ByteForge.Toolkit.Log.Info(message);
+                Logging.Log.Info(message);
                 break;
             case LogLevel.Notice:
-                ByteForge.Toolkit.Log.Notice(message);
+                Logging.Log.Notice(message);
                 break;
             case LogLevel.Warning:
                 if (ex != null)
-                    ByteForge.Toolkit.Log.Warning(message, ex);
+                    Logging.Log.Warning(message, ex);
                 else
-                    ByteForge.Toolkit.Log.Warning(message);
+                    Logging.Log.Warning(message);
                 break;
             case LogLevel.Error:
                 if (ex != null)
-                    ByteForge.Toolkit.Log.Error(message, ex);
+                    Logging.Log.Error(message, ex);
                 else
-                    ByteForge.Toolkit.Log.Error(message);
+                    Logging.Log.Error(message);
                 break;
             case LogLevel.Critical:
                 if (ex != null)
-                    ByteForge.Toolkit.Log.Critical(message, ex);
+                    Logging.Log.Critical(message, ex);
                 else
-                    ByteForge.Toolkit.Log.Critical(message);
+                    Logging.Log.Critical(message);
                 break;
             case LogLevel.Fatal:
                 if (ex != null)
-                    ByteForge.Toolkit.Log.Fatal(message, ex);
+                    Logging.Log.Fatal(message, ex);
                 else
-                    ByteForge.Toolkit.Log.Fatal(message);
+                    Logging.Log.Fatal(message);
                 break;
         }
     }
@@ -91,7 +91,7 @@ internal class StaticLoggerAdapter : ILogger
     /// <param name="message">The message to log.</param>
             public void LogTrace(string message)
     {
-        ByteForge.Toolkit.Log.Trace(message);
+        Logging.Log.Trace(message);
     }
 
     /// <summary>
@@ -100,7 +100,7 @@ internal class StaticLoggerAdapter : ILogger
     /// <param name="message">The message to log.</param>
             public void LogDebug(string message)
     {
-        ByteForge.Toolkit.Log.Debug(message);
+        Logging.Log.Debug(message);
     }
 
     /// <summary>
@@ -109,7 +109,7 @@ internal class StaticLoggerAdapter : ILogger
     /// <param name="message">The message to log.</param>
             public void LogVerbose(string message)
     {
-        ByteForge.Toolkit.Log.Verbose(message);
+        Logging.Log.Verbose(message);
     }
 
     /// <summary>
@@ -118,7 +118,7 @@ internal class StaticLoggerAdapter : ILogger
     /// <param name="message">The message to log.</param>
             public void LogInfo(string message)
     {
-        ByteForge.Toolkit.Log.Info(message);
+        Logging.Log.Info(message);
     }
 
     /// <summary>
@@ -127,7 +127,7 @@ internal class StaticLoggerAdapter : ILogger
     /// <param name="message">The message to log.</param>
             public void LogNotice(string message)
     {
-        ByteForge.Toolkit.Log.Notice(message);
+        Logging.Log.Notice(message);
     }
 
     /// <summary>
@@ -136,7 +136,7 @@ internal class StaticLoggerAdapter : ILogger
     /// <param name="message">The message to log.</param>
             public void LogWarning(string message)
     {
-        ByteForge.Toolkit.Log.Warning(message);
+        Logging.Log.Warning(message);
     }
 
     /// <summary>
@@ -147,9 +147,9 @@ internal class StaticLoggerAdapter : ILogger
             public void LogError(string message, Exception? ex = null)
     {
         if (ex != null)
-            ByteForge.Toolkit.Log.Error(message, ex);
+            Logging.Log.Error(message, ex);
         else
-            ByteForge.Toolkit.Log.Error(message);
+            Logging.Log.Error(message);
     }
 
     /// <summary>
@@ -160,9 +160,9 @@ internal class StaticLoggerAdapter : ILogger
             public void LogCritical(string message, Exception? ex = null)
     {
         if (ex != null)
-            ByteForge.Toolkit.Log.Critical(message, ex);
+            Logging.Log.Critical(message, ex);
         else
-            ByteForge.Toolkit.Log.Critical(message);
+            Logging.Log.Critical(message);
     }
 
     /// <summary>
@@ -173,8 +173,8 @@ internal class StaticLoggerAdapter : ILogger
             public void LogFatal(string message, Exception? ex = null)
     {
         if (ex != null)
-            ByteForge.Toolkit.Log.Fatal(message, ex);
+            Logging.Log.Fatal(message, ex);
         else
-            ByteForge.Toolkit.Log.Fatal(message);
+            Logging.Log.Fatal(message);
     }
 }

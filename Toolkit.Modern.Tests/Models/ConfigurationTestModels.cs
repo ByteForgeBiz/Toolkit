@@ -1,3 +1,4 @@
+using ByteForge.Toolkit.Configuration;
 using System.ComponentModel;
 
 namespace ByteForge.Toolkit.Tests.Models
@@ -22,7 +23,7 @@ namespace ByteForge.Toolkit.Tests.Models
         [DoNotPersist]
         public DateTime LastAccessed { get; set; }
         
-        [Ignore]
+        [Configuration.Ignore]
         public string ComputedProperty => $"{StringValue}_computed";
     }
 
@@ -75,7 +76,7 @@ namespace ByteForge.Toolkit.Tests.Models
         [DoNotPersist]
         public DateTime LastConnectionTime { get; set; }
         
-        [Ignore]
+        [Configuration.Ignore]
         public string FullConnectionString => $"Server={Server};Port={Port};User={Username};Password={Password};SSL={UseSSL}";
     }
 
@@ -119,7 +120,7 @@ namespace ByteForge.Toolkit.Tests.Models
         [DoNotPersist]
         public DateTime CreatedTime { get; set; }
         
-        [Ignore]
+        [Configuration.Ignore]
         public int FeatureCount => EnabledFeatures?.Count ?? 0;
     }
 
@@ -279,7 +280,7 @@ namespace ByteForge.Toolkit.Tests.Models
         [DoNotPersist]
         public DateTime LastUpdated { get; set; }
         
-        [Ignore]
+        [Configuration.Ignore]
         public int ConnectionCount => Connections?.Count ?? 0;
     }
 
@@ -364,7 +365,7 @@ namespace ByteForge.Toolkit.Tests.Models
         [DoNotPersist]
         public DateTime ProcessedTime { get; set; }
         
-        [Ignore]
+        [Configuration.Ignore]
         public int TotalItems => (PrimaryItems?.Length ?? 0) + (SecondaryItems?.Count ?? 0);
     }
 

@@ -1,4 +1,5 @@
 using AwesomeAssertions;
+using ByteForge.Toolkit.Configuration;
 using ByteForge.Toolkit.Tests.Helpers;
 using ByteForge.Toolkit.Tests.Models;
 using System.Reflection;
@@ -38,7 +39,7 @@ FileFormats=FileFormatsDict
 {longKey}={longValue}
 ShortKey=ShortValue";
             
-            IConfigurationManager config = new Toolkit.Configuration();
+            IConfigurationManager config = new Toolkit.Configuration.Configuration();
             _tempConfigPath = TestConfigurationHelper.CreateTempConfigFile(configContent);
             config.Initialize(_tempConfigPath);
 
@@ -71,7 +72,7 @@ ShortKey=ShortValue";
                 configBuilder.AppendLine($"Key{i:D3}=Value{i:D3}");
             }
             
-            IConfigurationManager config = new Toolkit.Configuration();
+            IConfigurationManager config = new Toolkit.Configuration.Configuration();
             _tempConfigPath = TestConfigurationHelper.CreateTempConfigFile(configBuilder.ToString());
             config.Initialize(_tempConfigPath);
 
@@ -104,7 +105,7 @@ Café=CoffeeValue
 Москва=RussianValue
 🚀=EmojiValue";
             
-            IConfigurationManager config = new Toolkit.Configuration();
+            IConfigurationManager config = new Toolkit.Configuration.Configuration();
             _tempConfigPath = TestConfigurationHelper.CreateTempConfigFile(configContent);
             config.Initialize(_tempConfigPath);
 
@@ -136,7 +137,7 @@ EqualsKey=Value=WithEquals
 BracketKey=Value[WithBrackets]
 QuoteKey=Value""WithQuotes""";
             
-            IConfigurationManager config = new Toolkit.Configuration();
+            IConfigurationManager config = new Toolkit.Configuration.Configuration();
             _tempConfigPath = TestConfigurationHelper.CreateTempConfigFile(configContent);
             config.Initialize(_tempConfigPath);
 
@@ -164,7 +165,7 @@ QuoteKey=Value""WithQuotes""";
         {
             // Arrange
             var entriesCount = 1000;
-            IConfigurationManager config = new Toolkit.Configuration();
+            IConfigurationManager config = new Toolkit.Configuration.Configuration();
             _tempConfigPath = TestConfigurationHelper.CreateTempConfigFile("[TestSection]");
             config.Initialize(_tempConfigPath);
 
@@ -183,7 +184,7 @@ QuoteKey=Value""WithQuotes""";
             var saveTime = DateTime.Now - startTime;
 
             // Reload to test loading performance
-            config = new Toolkit.Configuration();
+            config = new Toolkit.Configuration.Configuration();
             config.Initialize(_tempConfigPath);
             
             startTime = DateTime.Now;
@@ -223,7 +224,7 @@ Feature1=true
 Feature2=false
 Feature3=experimental";
             
-            IConfigurationManager config = new Toolkit.Configuration();
+            IConfigurationManager config = new Toolkit.Configuration.Configuration();
             _tempConfigPath = TestConfigurationHelper.CreateTempConfigFile(configContent);
             config.Initialize(_tempConfigPath);
 
@@ -265,7 +266,7 @@ Stage=stage-connection
 1=Staging
 2=Development";
             
-            IConfigurationManager config = new Toolkit.Configuration();
+            IConfigurationManager config = new Toolkit.Configuration.Configuration();
             _tempConfigPath = TestConfigurationHelper.CreateTempConfigFile(configContent);
             config.Initialize(_tempConfigPath);
 
@@ -309,7 +310,7 @@ Redirect=SectionB
 Key2=Value2
 BackToA=SectionA";
             
-            IConfigurationManager config = new Toolkit.Configuration();
+            IConfigurationManager config = new Toolkit.Configuration.Configuration();
             _tempConfigPath = TestConfigurationHelper.CreateTempConfigFile(configContent);
             config.Initialize(_tempConfigPath);
 
@@ -334,7 +335,7 @@ BackToA=SectionA";
         {
             // Arrange
             var configContent = @"[TestSection]";
-            IConfigurationManager config = new Toolkit.Configuration();
+            IConfigurationManager config = new Toolkit.Configuration.Configuration();
             _tempConfigPath = TestConfigurationHelper.CreateTempConfigFile(configContent);
             config.Initialize(_tempConfigPath);
 
@@ -361,7 +362,7 @@ Key1=
 Key2=
 Key3=";
             
-            IConfigurationManager config = new Toolkit.Configuration();
+            IConfigurationManager config = new Toolkit.Configuration.Configuration();
             _tempConfigPath = TestConfigurationHelper.CreateTempConfigFile(configContent);
             config.Initialize(_tempConfigPath);
 
@@ -400,7 +401,7 @@ LowerCase=lowercase_value
 UPPERCASE=uppercase_value
 MixedCase=mixedcase_value";
             
-            IConfigurationManager config = new Toolkit.Configuration();
+            IConfigurationManager config = new Toolkit.Configuration.Configuration();
             _tempConfigPath = TestConfigurationHelper.CreateTempConfigFile(configContent);
             config.Initialize(_tempConfigPath);
 
@@ -424,13 +425,13 @@ MixedCase=mixedcase_value";
 
         private void ResetConfiguration()
         {
-            var instanceField = typeof(Toolkit.Configuration).GetField("_instance", BindingFlags.NonPublic | BindingFlags.Static);
-            var isInitializedField = typeof(Toolkit.Configuration).GetField("IsInitialized", BindingFlags.Public | BindingFlags.Static);
-            var manuallyInitializedField = typeof(Toolkit.Configuration).GetField("_manuallyInitialized", BindingFlags.NonPublic | BindingFlags.Static);
+            var instanceField = typeof(Toolkit.Configuration.Configuration).GetField("_instance", BindingFlags.NonPublic | BindingFlags.Static);
+            var isInitializedField = typeof(Toolkit.Configuration.Configuration).GetField("IsInitialized", BindingFlags.Public | BindingFlags.Static);
+            var manuallyInitializedField = typeof(Toolkit.Configuration.Configuration).GetField("_manuallyInitialized", BindingFlags.NonPublic | BindingFlags.Static);
 
             if (instanceField != null)
             {
-                var newLazy = new Lazy<Toolkit.Configuration>();
+                var newLazy = new Lazy<Toolkit.Configuration.Configuration>();
                 instanceField.SetValue(null, newLazy);
             }
 

@@ -1,4 +1,4 @@
-namespace ByteForge.Toolkit;
+namespace ByteForge.Toolkit.Data;
 /*
  *  ___  ___   _                     ___             
  * |   \| _ ) /_\  __ __ ___ ______ / __|___ _ _ ___ 
@@ -70,13 +70,13 @@ public partial class DBAccess
     {
         if (string.IsNullOrEmpty(dbSection))
         {
-            var _rootOptions = Configuration.GetSection<DatabaseRootOptions>("Data Source");
+            var _rootOptions = Configuration.Configuration.GetSection<DatabaseRootOptions>("Data Source");
             dbSection = _rootOptions.SelectedDatabase;
         }
         if (dbSection.Contains(":"))
             throw new ArgumentException("The database section cannot contain a colon.", nameof(dbSection));
 
-        Options = Configuration.GetSection<DatabaseOptions>(dbSection);
+        Options = Configuration.Configuration.GetSection<DatabaseOptions>(dbSection);
     }
 
     /// <summary>

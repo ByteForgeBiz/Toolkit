@@ -18,10 +18,10 @@ namespace ByteForge.Toolkit.Tests.Unit.Utils
         public void ArrCRLF_ShouldContainCorrectCharacters()
         {
             // Assert
-            ByteForge.Toolkit.Utils.arrCRLF.Should().NotBeNull();
-            ByteForge.Toolkit.Utils.arrCRLF.Length.Should().Be(2);
-            ByteForge.Toolkit.Utils.arrCRLF[0].Should().Be('\r');
-            ByteForge.Toolkit.Utils.arrCRLF[1].Should().Be('\n');
+            ByteForge.Toolkit.Utils.Utils.arrCRLF.Should().NotBeNull();
+            ByteForge.Toolkit.Utils.Utils.arrCRLF.Length.Should().Be(2);
+            ByteForge.Toolkit.Utils.Utils.arrCRLF[0].Should().Be('\r');
+            ByteForge.Toolkit.Utils.Utils.arrCRLF[1].Should().Be('\n');
         }
 
         /// <summary>
@@ -44,7 +44,7 @@ namespace ByteForge.Toolkit.Tests.Unit.Utils
             // Act & Assert
             foreach (var (input, expected) in testCases)
             {
-                var result = ByteForge.Toolkit.Utils.FormatUSPhoneNumber(input);
+                var result = Toolkit.Utils.Utils.FormatUSPhoneNumber(input);
                 result.Should().Be(expected, $"'{input}' should format to '{expected}'");
             }
         }
@@ -69,7 +69,7 @@ namespace ByteForge.Toolkit.Tests.Unit.Utils
             // Act & Assert
             foreach (var (input, expected) in testCases)
             {
-                var result = ByteForge.Toolkit.Utils.FormatUSPhoneNumber(input);
+                var result = Toolkit.Utils.Utils.FormatUSPhoneNumber(input);
                 result.Should().Be(expected, $"'{input}' should format to '{expected}'");
             }
         }
@@ -96,7 +96,7 @@ namespace ByteForge.Toolkit.Tests.Unit.Utils
             // Act & Assert
             foreach (var (input, expected) in testCases)
             {
-                var result = ByteForge.Toolkit.Utils.FormatUSPhoneNumber(input);
+                var result = Toolkit.Utils.Utils.FormatUSPhoneNumber(input);
                 result.Should().Be(expected, $"'{input}' should format to '{expected}'");
             }
         }
@@ -122,7 +122,7 @@ namespace ByteForge.Toolkit.Tests.Unit.Utils
             // Act & Assert
             foreach (var (input, expected) in testCases)
             {
-                var result = ByteForge.Toolkit.Utils.FormatUSPhoneNumber(input);
+                var result = Toolkit.Utils.Utils.FormatUSPhoneNumber(input);
                 result.Should().Be(expected, $"'{input}' should format to '{expected}'");
             }
         }
@@ -149,7 +149,7 @@ namespace ByteForge.Toolkit.Tests.Unit.Utils
             // Act & Assert
             foreach (var (input, expected) in testCases)
             {
-                var result = ByteForge.Toolkit.Utils.FormatUSPhoneNumber(input);
+                var result = Toolkit.Utils.Utils.FormatUSPhoneNumber(input);
                 result.Should().Be(expected, $"'{input}' should format to '{expected}'");
             }
         }
@@ -187,7 +187,7 @@ namespace ByteForge.Toolkit.Tests.Unit.Utils
             // Act & Assert
             foreach (var (input, expected) in testCases)
             {
-                var result = ByteForge.Toolkit.Utils.FormatUSPhoneNumber(input);
+                var result = Toolkit.Utils.Utils.FormatUSPhoneNumber(input);
                 result.Should().Be(expected, $"'{input}' should format to '{expected}'");
             }
         }
@@ -213,7 +213,7 @@ namespace ByteForge.Toolkit.Tests.Unit.Utils
             // Act & Assert
             foreach (var (input, expected) in testCases)
             {
-                var result = ByteForge.Toolkit.Utils.FormatUSPhoneNumber(input);
+                var result = Toolkit.Utils.Utils.FormatUSPhoneNumber(input);
                 result.Should().Be(expected, $"'{input}' should format to '{expected}'");
             }
         }
@@ -233,7 +233,7 @@ namespace ByteForge.Toolkit.Tests.Unit.Utils
             // Act & Assert
             foreach (var input in invalidInputs)
             {
-                var result = ByteForge.Toolkit.Utils.FormatUSPhoneNumber(input);
+                var result = Toolkit.Utils.Utils.FormatUSPhoneNumber(input);
                 result.Should().Be(string.Empty, $"'{input}' should return empty string");
             }
         }
@@ -262,7 +262,7 @@ namespace ByteForge.Toolkit.Tests.Unit.Utils
             // Act & Assert
             foreach (var input in invalidInputs)
             {
-                var result = ByteForge.Toolkit.Utils.FormatUSPhoneNumber(input);
+                var result = Toolkit.Utils.Utils.FormatUSPhoneNumber(input);
                 result.Should().Be(input, $"'{input}' should be returned unchanged");
             }
         }
@@ -282,7 +282,7 @@ namespace ByteForge.Toolkit.Tests.Unit.Utils
             // Act & Assert
             foreach (var input in invalidInputs)
             {
-                var result = ByteForge.Toolkit.Utils.NullIfEmpty(input);
+                var result = Toolkit.Utils.Utils.NullIfEmpty(input);
                 result.Should().BeNull($"'{input}' should return null");
             }
         }
@@ -302,7 +302,7 @@ namespace ByteForge.Toolkit.Tests.Unit.Utils
             // Act & Assert
             foreach (var input in validInputs)
             {
-                var result = ByteForge.Toolkit.Utils.NullIfEmpty(input);
+                var result = Toolkit.Utils.Utils.NullIfEmpty(input);
                 result.Should().Be(input, $"'{input}' should be returned unchanged");
             }
         }
@@ -325,7 +325,7 @@ namespace ByteForge.Toolkit.Tests.Unit.Utils
             }
 
             // Act
-            var result = ByteForge.Toolkit.Utils.RunSync(asyncFunc);
+            var result = ByteForge.Toolkit.Utils.Utils.RunSync(asyncFunc);
 
             // Assert
             result.Should().Be(expectedResult);
@@ -341,21 +341,21 @@ namespace ByteForge.Toolkit.Tests.Unit.Utils
         public void RunSync_DifferentReturnTypes_ShouldHandleCorrectly()
         {
             // Arrange & Act & Assert
-            var intResult = ByteForge.Toolkit.Utils.RunSync<int>(async (ct) =>
+            var intResult = Toolkit.Utils.Utils.RunSync<int>(async (ct) =>
             {
                 await Task.Delay(1, ct);
                 return 42;
             });
             intResult.Should().Be(42);
 
-            var boolResult = ByteForge.Toolkit.Utils.RunSync<bool>(async (ct) =>
+            var boolResult = Toolkit.Utils.Utils.RunSync<bool>(async (ct) =>
             {
                 await Task.Delay(1, ct);
                 return true;
             });
             boolResult.Should().BeTrue();
 
-            var dateResult = ByteForge.Toolkit.Utils.RunSync<DateTime>(async (ct) =>
+            var dateResult = Toolkit.Utils.Utils.RunSync<DateTime>(async (ct) =>
             {
                 await Task.Delay(1, ct);
                 return new DateTime(2024, 1, 1);
@@ -381,7 +381,7 @@ namespace ByteForge.Toolkit.Tests.Unit.Utils
             }
 
             // Act & Assert
-            AssertionHelpers.AssertThrows<AggregateException>(() => ByteForge.Toolkit.Utils.RunSync(asyncFunc));
+            AssertionHelpers.AssertThrows<AggregateException>(() => Toolkit.Utils.Utils.RunSync(asyncFunc));
         }
 
         /// <summary>
@@ -398,7 +398,7 @@ namespace ByteForge.Toolkit.Tests.Unit.Utils
             Task<string> asyncFunc(CancellationToken ct) => Task.FromResult(expectedResult);
 
             // Act
-            var result = ByteForge.Toolkit.Utils.RunSync(asyncFunc);
+            var result = Toolkit.Utils.Utils.RunSync(asyncFunc);
 
             // Assert
             result.Should().Be(expectedResult);
@@ -421,7 +421,7 @@ namespace ByteForge.Toolkit.Tests.Unit.Utils
             }
 
             // Act
-            var result = ByteForge.Toolkit.Utils.RunSync(asyncFunc);
+            var result = Toolkit.Utils.Utils.RunSync(asyncFunc);
 
             // Assert
             result.Should().BeNull();
@@ -443,7 +443,7 @@ namespace ByteForge.Toolkit.Tests.Unit.Utils
             // Act
             for (var i = 0; i < iterations; i++)
             {
-                var result = ByteForge.Toolkit.Utils.RunSync<int>(async (ct) =>
+                var result = Toolkit.Utils.Utils.RunSync<int>(async (ct) =>
                 {
                     await Task.Delay(1, ct);
                     return i;

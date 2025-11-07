@@ -1,6 +1,7 @@
+using ByteForge.Toolkit.Utils;
 using System.Reflection;
 
-namespace ByteForge.Toolkit;
+namespace ByteForge.Toolkit.Configuration;
 /// <summary>
 /// Provides helper methods that leverage an <see cref="IParser"/> to parse textual configuration
 /// values and populate object instances or property values using reflection.

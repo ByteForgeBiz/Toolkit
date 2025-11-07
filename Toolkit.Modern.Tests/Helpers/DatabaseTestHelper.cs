@@ -1,4 +1,5 @@
 using AwesomeAssertions;
+using ByteForge.Toolkit.Data;
 using System.Diagnostics;
 
 namespace ByteForge.Toolkit.Tests.Helpers

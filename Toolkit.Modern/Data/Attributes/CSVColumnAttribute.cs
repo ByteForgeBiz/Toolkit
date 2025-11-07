@@ -1,4 +1,4 @@
-namespace ByteForge.Toolkit;
+namespace ByteForge.Toolkit.Data;
 /// <summary>
 /// Attribute to specify CSV column mapping for a property.
 /// </summary>

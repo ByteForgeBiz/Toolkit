@@ -1,9 +1,10 @@
+using ByteForge.Toolkit.Logging;
 using System.Collections.Concurrent;
 using System.Data;
 using System.Globalization;
 using System.Reflection;
 
-namespace ByteForge.Toolkit;
+namespace ByteForge.Toolkit.Data;
 /*
  *  _____                ___                     _           
  * |_   _|  _ _ __  ___ / __|___ _ ___ _____ _ _| |_ ___ _ _ 

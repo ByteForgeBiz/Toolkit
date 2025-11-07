@@ -1,4 +1,5 @@
 using AwesomeAssertions;
+using ByteForge.Toolkit.Mail;
 using System.Net.Mail;
 using System.Reflection;
 

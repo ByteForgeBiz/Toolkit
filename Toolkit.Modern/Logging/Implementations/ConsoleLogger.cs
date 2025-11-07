@@ -1,3 +1,5 @@
+using ByteForge.Toolkit.Utils;
+
 namespace ByteForge.Toolkit.Logging;
 /*
  *   ___                  _     _                           

@@ -1,4 +1,5 @@
 using AwesomeAssertions;
+using ByteForge.Toolkit.Configuration;
 using ByteForge.Toolkit.Tests.Helpers;
 using ByteForge.Toolkit.Tests.Models;
 using System.Reflection;
@@ -65,7 +66,7 @@ CurrencySymbol=$";
         public void Initialize_WithFilePath_ShouldLoadConfiguration()
         {
             // Arrange - Create isolated instance for testing
-            IConfigurationManager config = new ByteForge.Toolkit.Configuration();
+            IConfigurationManager config = new ByteForge.Toolkit.Configuration.Configuration();
             _tempConfigPath = TestConfigurationHelper.CreateTempConfigFile(_testConfigContent);
 
             // Act
@@ -87,7 +88,7 @@ CurrencySymbol=$";
         public void Initialize_WithDirectoryAndFileName_ShouldLoadConfiguration()
         {
             // Arrange - Create isolated instance for testing
-            IConfigurationManager config = new ByteForge.Toolkit.Configuration();
+            IConfigurationManager config = new ByteForge.Toolkit.Configuration.Configuration();
             _tempConfigPath = TestConfigurationHelper.CreateTempConfigFile(_testConfigContent);
             var directory = Path.GetDirectoryName(_tempConfigPath);
             var fileName = Path.GetFileName(_tempConfigPath);
@@ -111,7 +112,7 @@ CurrencySymbol=$";
         public void Initialize_WithNullDirectory_ShouldThrowArgumentNullException()
         {
             // Arrange
-            IConfigurationManager config = new ByteForge.Toolkit.Configuration();
+            IConfigurationManager config = new ByteForge.Toolkit.Configuration.Configuration();
 
             // Act & Assert
             Action act = () => config.Initialize(null, "test.ini");
@@ -131,7 +132,7 @@ CurrencySymbol=$";
         public void Initialize_WithNullFileName_ShouldThrowArgumentNullException()
         {
             // Arrange
-            IConfigurationManager config = new ByteForge.Toolkit.Configuration();
+            IConfigurationManager config = new ByteForge.Toolkit.Configuration.Configuration();
 
             // Act & Assert
             Action act = () => config.Initialize(@"C:\Temp", null);
@@ -151,7 +152,7 @@ CurrencySymbol=$";
         public void Initialize_WithEmptyDirectory_ShouldThrowArgumentNullException()
         {
             // Arrange
-            IConfigurationManager config = new ByteForge.Toolkit.Configuration();
+            IConfigurationManager config = new ByteForge.Toolkit.Configuration.Configuration();
 
             // Act & Assert
             Action act = () => config.Initialize("", "test.ini");
@@ -171,7 +172,7 @@ CurrencySymbol=$";
         public void Initialize_WithEmptyFileName_ShouldThrowArgumentNullException()
         {
             // Arrange
-            IConfigurationManager config = new ByteForge.Toolkit.Configuration();
+            IConfigurationManager config = new ByteForge.Toolkit.Configuration.Configuration();
 
             // Act & Assert
             Action act = () => config.Initialize(@"C:\Temp", "");
@@ -192,7 +193,7 @@ CurrencySymbol=$";
         public void Initialize_TwiceWithSameFile_ShouldThrowInvalidOperationException()
         {
             // Arrange
-            IConfigurationManager config = new ByteForge.Toolkit.Configuration();
+            IConfigurationManager config = new ByteForge.Toolkit.Configuration.Configuration();
             _tempConfigPath = TestConfigurationHelper.CreateTempConfigFile(_testConfigContent);
             config.Initialize(_tempConfigPath);
 
@@ -215,7 +216,7 @@ CurrencySymbol=$";
         public void Initialize_WithNonExistentDirectory_ShouldThrowDirectoryNotFoundException()
         {
             // Arrange
-            IConfigurationManager config = new ByteForge.Toolkit.Configuration();
+            IConfigurationManager config = new ByteForge.Toolkit.Configuration.Configuration();
 
             // Act & Assert
             Action act = () => config.Initialize(@"C:\NonExistentDirectory\SubDir", "test.ini");
@@ -236,7 +237,7 @@ CurrencySymbol=$";
         public void Initialize_WithNonExistentFile_ShouldThrowFileNotFoundException()
         {
             // Arrange
-            IConfigurationManager config = new ByteForge.Toolkit.Configuration();
+            IConfigurationManager config = new ByteForge.Toolkit.Configuration.Configuration();
             var tempDir = Path.GetTempPath();
 
             // Act & Assert
@@ -261,7 +262,7 @@ CurrencySymbol=$";
         public void AddSection_WithValidType_ShouldCreateSection()
         {
             // Arrange
-            IConfigurationManager config = new ByteForge.Toolkit.Configuration();
+            IConfigurationManager config = new ByteForge.Toolkit.Configuration.Configuration();
             _tempConfigPath = TestConfigurationHelper.CreateTempConfigFile(_testConfigContent);
             config.Initialize(_tempConfigPath);
 
@@ -285,7 +286,7 @@ CurrencySymbol=$";
         public void AddSection_WithCustomSectionName_ShouldCreateNamedSection()
         {
             // Arrange
-            IConfigurationManager config = new ByteForge.Toolkit.Configuration();
+            IConfigurationManager config = new ByteForge.Toolkit.Configuration.Configuration();
             _tempConfigPath = TestConfigurationHelper.CreateTempConfigFile(_testConfigContent);
             config.Initialize(_tempConfigPath);
 
@@ -309,7 +310,7 @@ CurrencySymbol=$";
         public void AddSection_Duplicate_ShouldThrowInvalidOperationException()
         {
             // Arrange
-            IConfigurationManager config = new ByteForge.Toolkit.Configuration();
+            IConfigurationManager config = new ByteForge.Toolkit.Configuration.Configuration();
             _tempConfigPath = TestConfigurationHelper.CreateTempConfigFile(_testConfigContent);
             config.Initialize(_tempConfigPath);
             config.AddSection<BasicTestConfig>();
@@ -333,7 +334,7 @@ CurrencySymbol=$";
         public void GetSection_ExistingSection_ShouldReturnSection()
         {
             // Arrange
-            IConfigurationManager config = new ByteForge.Toolkit.Configuration();
+            IConfigurationManager config = new ByteForge.Toolkit.Configuration.Configuration();
             _tempConfigPath = TestConfigurationHelper.CreateTempConfigFile(_testConfigContent);
             config.Initialize(_tempConfigPath);
             var originalSection = config.AddSection<BasicTestConfig>();
@@ -358,7 +359,7 @@ CurrencySymbol=$";
         public void GetSection_NonExistingSection_ShouldAutoCreate()
         {
             // Arrange
-            IConfigurationManager config = new ByteForge.Toolkit.Configuration();
+            IConfigurationManager config = new ByteForge.Toolkit.Configuration.Configuration();
             _tempConfigPath = TestConfigurationHelper.CreateTempConfigFile(_testConfigContent);
             config.Initialize(_tempConfigPath);
 
@@ -386,7 +387,7 @@ CurrencySymbol=$";
                                      "IntValue=100" + Environment.NewLine +
                                      "BoolValue=false" + Environment.NewLine;
             // Arrange
-            IConfigurationManager config = new ByteForge.Toolkit.Configuration();
+            IConfigurationManager config = new ByteForge.Toolkit.Configuration.Configuration();
             _tempConfigPath = TestConfigurationHelper.CreateTempConfigFile(_tempConfigContent);
             config.Initialize(_tempConfigPath);
             var originalSection = config.AddSection<BasicTestConfig>("CustomSection");
@@ -415,7 +416,7 @@ CurrencySymbol=$";
         public void Save_WithModifiedSection_ShouldPersistChanges()
         {
             // Arrange
-            IConfigurationManager config = new ByteForge.Toolkit.Configuration();
+            IConfigurationManager config = new ByteForge.Toolkit.Configuration.Configuration();
             _tempConfigPath = TestConfigurationHelper.CreateTempConfigFile(_testConfigContent);
             config.Initialize(_tempConfigPath);
             var section = config.GetSection<BasicTestConfig>("TestSection");
@@ -447,7 +448,7 @@ CurrencySymbol=$";
         public void Save_WithNewSection_ShouldAddToFile()
         {
             // Arrange
-            IConfigurationManager config = new ByteForge.Toolkit.Configuration();
+            IConfigurationManager config = new ByteForge.Toolkit.Configuration.Configuration();
             _tempConfigPath = TestConfigurationHelper.CreateTempConfigFile(_testConfigContent);
             config.Initialize(_tempConfigPath);
             var newSection = config.AddSection<DatabaseConfig>("NewDatabaseSection");
@@ -478,7 +479,7 @@ CurrencySymbol=$";
         public void RoundTrip_SaveAndReload_ShouldPreserveData()
         {
             // Arrange
-            IConfigurationManager config = new ByteForge.Toolkit.Configuration();
+            IConfigurationManager config = new ByteForge.Toolkit.Configuration.Configuration();
             _tempConfigPath = TestConfigurationHelper.CreateTempConfigFile(_testConfigContent);
             config.Initialize(_tempConfigPath);
             var originalSection = config.GetSection<BasicTestConfig>("TestSection");
@@ -493,7 +494,7 @@ CurrencySymbol=$";
             config.Save();
 
             // Create new instance and reload
-            IConfigurationManager newConfig = new ByteForge.Toolkit.Configuration();
+            IConfigurationManager newConfig = new ByteForge.Toolkit.Configuration.Configuration();
             newConfig.Initialize(_tempConfigPath);
             var reloadedSection = newConfig.GetSection<BasicTestConfig>("TestSection");
 
@@ -519,7 +520,7 @@ CurrencySymbol=$";
         public void ConcurrentAccess_MultipleSections_ShouldBeThreadSafe()
         {
             // Arrange
-            IConfigurationManager config = new ByteForge.Toolkit.Configuration();
+            IConfigurationManager config = new ByteForge.Toolkit.Configuration.Configuration();
             _tempConfigPath = TestConfigurationHelper.CreateTempConfigFile(_testConfigContent);
             config.Initialize(_tempConfigPath);
 
@@ -555,14 +556,14 @@ CurrencySymbol=$";
         private void ResetConfiguration()
         {
             // Use reflection to reset the singleton instance for testing
-            var instanceField = typeof(ByteForge.Toolkit.Configuration).GetField("_instance", BindingFlags.NonPublic | BindingFlags.Static);
-            var isInitializedField = typeof(ByteForge.Toolkit.Configuration).GetField("IsInitialized", BindingFlags.Public | BindingFlags.Static);
-            var manuallyInitializedField = typeof(ByteForge.Toolkit.Configuration).GetField("_manuallyInitialized", BindingFlags.NonPublic | BindingFlags.Static);
+            var instanceField = typeof(ByteForge.Toolkit.Configuration.Configuration).GetField("_instance", BindingFlags.NonPublic | BindingFlags.Static);
+            var isInitializedField = typeof(ByteForge.Toolkit.Configuration.Configuration).GetField("IsInitialized", BindingFlags.Public | BindingFlags.Static);
+            var manuallyInitializedField = typeof(ByteForge.Toolkit.Configuration.Configuration).GetField("_manuallyInitialized", BindingFlags.NonPublic | BindingFlags.Static);
 
             if (instanceField != null)
             {
                 // Reset the lazy instance
-                var newLazy = new Lazy<ByteForge.Toolkit.Configuration>();
+                var newLazy = new Lazy<ByteForge.Toolkit.Configuration.Configuration>();
                 instanceField.SetValue(null, newLazy);
             }
 

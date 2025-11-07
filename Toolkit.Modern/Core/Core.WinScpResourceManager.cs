@@ -1,7 +1,7 @@
 using System.Reflection;
 using System.Security.Cryptography;
 
-namespace ByteForge.Toolkit;
+namespace ByteForge.Toolkit.Core;
 public static partial class Core
 {
     /// <summary>

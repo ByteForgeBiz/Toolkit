@@ -1,4 +1,6 @@
-namespace ByteForge.Toolkit;
+using ByteForge.Toolkit.Logging;
+
+namespace ByteForge.Toolkit.Data;
 public partial class BulkDbProcessor<T>
 {
 

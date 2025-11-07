@@ -1,3 +1,5 @@
+using ByteForge.Toolkit.Configuration;
+
 namespace ByteForge.Toolkit.Tests.Helpers
 {
     /// <summary>
@@ -12,7 +14,7 @@ namespace ByteForge.Toolkit.Tests.Helpers
         /// <returns>An initialized Configuration instance.</returns>
         public static IConfigurationManager CreateTestConfiguration(string iniContent)
         {
-            var config = new Configuration();
+            var config = new Configuration.Configuration();
             var tempPath = TestConfigurationHelper.CreateTempConfigFile(iniContent);
             ((IConfigurationManager)config).Initialize(tempPath);
             return config;
@@ -24,7 +26,7 @@ namespace ByteForge.Toolkit.Tests.Helpers
         /// <returns>An uninitialized Configuration instance.</returns>
         public static IConfigurationManager CreateConfiguration()
         {
-            return new Configuration();
+            return new Configuration.Configuration();
         }
 
         /// <summary>

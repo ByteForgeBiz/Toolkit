@@ -1,4 +1,4 @@
-namespace ByteForge.Toolkit.CommandLine;
+namespace ByteForge.Toolkit.CLI;
 /// <summary>
 /// Attribute to define a command with a name, description, and optional aliases.
 /// </summary>

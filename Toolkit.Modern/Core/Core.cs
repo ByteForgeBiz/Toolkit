@@ -1,4 +1,4 @@
-namespace ByteForge.Toolkit;
+namespace ByteForge.Toolkit.Core;
 /// <summary>
 /// Provides core helper functionality for the toolkit.
 /// </summary>

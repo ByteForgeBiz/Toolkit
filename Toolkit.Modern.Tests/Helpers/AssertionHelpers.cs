@@ -1,4 +1,5 @@
 using AwesomeAssertions;
+using ByteForge.Toolkit.DataStructures;
 
 namespace ByteForge.Toolkit.Tests.Helpers
 {

@@ -1,6 +1,7 @@
+using ByteForge.Toolkit.Logging;
 using System.Text;
 
-namespace ByteForge.Toolkit;
+namespace ByteForge.Toolkit.Data;
 /*
  *   ___ _____   _____             _         
  *  / __/ __\ \ / / _ \___ __ _ __| |___ _ _ 

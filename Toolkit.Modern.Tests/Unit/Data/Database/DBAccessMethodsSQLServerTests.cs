@@ -1,5 +1,6 @@
 using ByteForge.Toolkit.Tests.Helpers;
 using AwesomeAssertions;
+using ByteForge.Toolkit.Data;
 
 #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
 

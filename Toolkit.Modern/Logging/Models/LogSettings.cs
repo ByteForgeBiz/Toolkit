@@ -1,8 +1,9 @@
+using ByteForge.Toolkit.Configuration;
 using ByteForge.Toolkit.Logging;
 using System.ComponentModel;
 using System.Reflection;
 
-namespace ByteForge.Toolkit;
+namespace ByteForge.Toolkit.Logging;
 /*
  *  _              ___      _   _   _              
  * | |   ___  __ _/ __| ___| |_| |_(_)_ _  __ _ ___

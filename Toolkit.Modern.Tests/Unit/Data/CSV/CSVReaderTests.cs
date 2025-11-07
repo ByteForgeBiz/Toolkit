@@ -1,4 +1,5 @@
 using AwesomeAssertions;
+using ByteForge.Toolkit.Data;
 using ByteForge.Toolkit.Tests.Helpers;
 using System.Text;
 

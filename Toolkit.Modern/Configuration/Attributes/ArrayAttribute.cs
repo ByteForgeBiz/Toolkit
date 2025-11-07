@@ -1,4 +1,4 @@
-namespace ByteForge.Toolkit;
+namespace ByteForge.Toolkit.Configuration;
 /*
  *    _                       _  _   _       _ _         _       
  *   /_\  _ _ _ _ __ _ _  _  /_\| |_| |_ _ _(_) |__ _  _| |_ ___ 

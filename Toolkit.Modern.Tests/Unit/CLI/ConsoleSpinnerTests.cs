@@ -1,4 +1,5 @@
 using AwesomeAssertions;
+using ByteForge.Toolkit.CLI;
 
 namespace ByteForge.Toolkit.Tests.Unit.CLI
 {

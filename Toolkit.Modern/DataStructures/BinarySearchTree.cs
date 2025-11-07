@@ -1,4 +1,4 @@
-namespace ByteForge.Toolkit;
+namespace ByteForge.Toolkit.DataStructures;
 /*
  *  ___ _                    ___                  _  _____             _________  
  * | _ )_)_ _  __ _ _ _ _  _/ __| ___ __ _ _ _ __| ||_   _| _ ___ ___ / /_   _\ \ 

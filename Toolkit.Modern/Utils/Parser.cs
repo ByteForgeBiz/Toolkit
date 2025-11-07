@@ -2,7 +2,7 @@ using Newtonsoft.Json;
 using System.Globalization;
 using System.Text;
 
-namespace ByteForge.Toolkit;
+namespace ByteForge.Toolkit.Utils;
 /*
  *  ___                      
  * | _ \__ _ _ _ ___ ___ _ _ 

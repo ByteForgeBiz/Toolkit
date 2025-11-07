@@ -1,7 +1,7 @@
 using System.IO.Compression;
 using System.Net.Mail;
 
-namespace ByteForge.Toolkit;
+namespace ByteForge.Toolkit.Mail;
 /*
  *  ___            _ _   _  _   _           _                  _   _  _              _ _         
  * | __|_ __  __ _(_) | /_\| |_| |_ __ _ __| |_  _ __  ___ _ _| |_| || |__ _ _ _  __| | |___ _ _ 

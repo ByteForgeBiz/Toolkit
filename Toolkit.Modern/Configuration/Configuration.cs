@@ -5,7 +5,7 @@ using System.Reflection;
 using System.Web;
 #endif
 
-namespace ByteForge.Toolkit;
+namespace ByteForge.Toolkit.Configuration;
 /*
  *   ___           __ _                    _   _          
  *  / __|___ _ _  / _(_)__ _ _  _ _ _ __ _| |_(_)___ _ _  

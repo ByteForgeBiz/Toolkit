@@ -1,8 +1,9 @@
+using ByteForge.Toolkit.Utils;
 using System.Data;
 using System.Reflection;
 using System.Text;
 
-namespace ByteForge.Toolkit;
+namespace ByteForge.Toolkit.Data;
 public partial class BulkDbProcessor<T>
 {
     /// <summary>

@@ -1,4 +1,4 @@
-namespace ByteForge.Toolkit;
+namespace ByteForge.Toolkit.Configuration;
 /// <summary>
 /// Represents errors that occur during assembly operations within the ByteForge.Toolkit.
 /// </summary>

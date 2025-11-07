@@ -1,6 +1,7 @@
+using ByteForge.Toolkit.Utils;
 using System.Data;
 
-namespace ByteForge.Toolkit;
+namespace ByteForge.Toolkit.Data;
 /// <summary>
 /// Attribute to specify database column mapping for a property.
 /// </summary>

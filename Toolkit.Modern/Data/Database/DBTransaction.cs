@@ -1,6 +1,7 @@
+using ByteForge.Toolkit.Logging;
 using System.Transactions;
 
-namespace ByteForge.Toolkit;
+namespace ByteForge.Toolkit.Data;
 /// <summary>
 /// Represents a database transaction context for use with <see cref="DBAccess"/>.
 /// Supports nested transactions via a stack model.

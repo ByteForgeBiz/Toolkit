@@ -1,4 +1,6 @@
-namespace ByteForge.Toolkit;
+using ByteForge.Toolkit.Logging;
+
+namespace ByteForge.Toolkit.Data;
 /// <summary>
 /// Partial class for DBAccess to support transaction management.
 /// </summary>

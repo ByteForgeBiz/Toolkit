@@ -1,7 +1,7 @@
 using System.ComponentModel;
 using System.Globalization;
 
-namespace ByteForge.Toolkit;
+namespace ByteForge.Toolkit.Configuration;
 /*
  *   ___ _     _          _ _         _   _          ___       __     
  *  / __| |___| |__  __ _| (_)_____ _| |_(_)___ _ _ |_ _|_ _  / _|___ 

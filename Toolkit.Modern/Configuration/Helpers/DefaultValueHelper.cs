@@ -1,7 +1,7 @@
 using System.ComponentModel;
 using System.Reflection;
 
-namespace ByteForge.Toolkit;
+namespace ByteForge.Toolkit.Configuration;
 /// <summary>
 /// Provides helper methods for resolving default values for properties using attributes or type defaults.
 /// </summary>

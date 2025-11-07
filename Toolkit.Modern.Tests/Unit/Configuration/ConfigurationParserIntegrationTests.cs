@@ -1,6 +1,8 @@
 using AwesomeAssertions;
+using ByteForge.Toolkit.Configuration;
 using ByteForge.Toolkit.Tests.Helpers;
 using ByteForge.Toolkit.Tests.Models;
+using ByteForge.Toolkit.Utils;
 using System.Reflection;
 
 namespace ByteForge.Toolkit.Tests.Unit.Configuration
@@ -37,7 +39,7 @@ DoubleValue=3.14159
 DateValue=2024-01-15T10:30:00
 TimeoutValue=45";
             
-            IConfigurationManager config = new ByteForge.Toolkit.Configuration();
+            IConfigurationManager config = new ByteForge.Toolkit.Configuration.Configuration();
             _tempConfigPath = TestConfigurationHelper.CreateTempConfigFile(configContent);
             config.Initialize(_tempConfigPath);
 
@@ -65,7 +67,7 @@ Level=Warning
 DbType=PostgreSQL
 Mode=Batch";
             
-            IConfigurationManager config = new ByteForge.Toolkit.Configuration();
+            IConfigurationManager config = new ByteForge.Toolkit.Configuration.Configuration();
             _tempConfigPath = TestConfigurationHelper.CreateTempConfigFile(configContent);
             config.Initialize(_tempConfigPath);
 
@@ -91,7 +93,7 @@ NullableBool=true
 NullableDateTime=2024-01-15
 NullableDouble=3.14";
             
-            IConfigurationManager config = new ByteForge.Toolkit.Configuration();
+            IConfigurationManager config = new ByteForge.Toolkit.Configuration.Configuration();
             _tempConfigPath = TestConfigurationHelper.CreateTempConfigFile(configContent);
             config.Initialize(_tempConfigPath);
 
@@ -115,7 +117,7 @@ NullableDouble=3.14";
             var configContent = @"[NullableTest]
 OptionalString=";
             
-            IConfigurationManager config = new ByteForge.Toolkit.Configuration();
+            IConfigurationManager config = new ByteForge.Toolkit.Configuration.Configuration();
             _tempConfigPath = TestConfigurationHelper.CreateTempConfigFile(configContent);
             config.Initialize(_tempConfigPath);
 
@@ -153,7 +155,7 @@ StringArray=StringArray
 1=Second
 2=Third";
             
-            IConfigurationManager config = new ByteForge.Toolkit.Configuration();
+            IConfigurationManager config = new ByteForge.Toolkit.Configuration.Configuration();
             _tempConfigPath = TestConfigurationHelper.CreateTempConfigFile(configContent);
             config.Initialize(_tempConfigPath);
 
@@ -191,7 +193,7 @@ NumberList=InvalidNumberArray
             // Act & Assert
             Action act = () =>
             {
-                IConfigurationManager config = new ByteForge.Toolkit.Configuration();
+                IConfigurationManager config = new ByteForge.Toolkit.Configuration.Configuration();
                 config.Initialize(_tempConfigPath);
                 var section = config.GetSection<ArrayTestConfig>("ArrayParserTest");
             };
@@ -220,7 +222,7 @@ NumberList=InvalidNumberArray
 StringValue=Test
 TimeSpanValue=02:30:45";
 
-            IConfigurationManager config = new ByteForge.Toolkit.Configuration();
+            IConfigurationManager config = new ByteForge.Toolkit.Configuration.Configuration();
             _tempConfigPath = TestConfigurationHelper.CreateTempConfigFile(configContent);
             config.Initialize(_tempConfigPath);
 
@@ -248,7 +250,7 @@ TimeSpanValue=02:30:45";
             var configContent = @"[CustomTimeSpanTest]
 StringValue=Initial";
 
-            IConfigurationManager config = new ByteForge.Toolkit.Configuration();
+            IConfigurationManager config = new ByteForge.Toolkit.Configuration.Configuration();
             _tempConfigPath = TestConfigurationHelper.CreateTempConfigFile(configContent);
             config.Initialize(_tempConfigPath);
 
@@ -284,7 +286,7 @@ Level=InvalidLogLevel";
             // Act & Assert
             Action act = () =>
             {
-                IConfigurationManager config = new ByteForge.Toolkit.Configuration();
+                IConfigurationManager config = new ByteForge.Toolkit.Configuration.Configuration();
                 config.Initialize(_tempConfigPath);
                 var section = config.GetSection<EnumTestConfig>("EnumTest");
             };
@@ -307,7 +309,7 @@ DateValue=not-a-date";
             // Act & Assert
             Action act = () =>
             {
-                IConfigurationManager config = new ByteForge.Toolkit.Configuration();
+                IConfigurationManager config = new ByteForge.Toolkit.Configuration.Configuration();
                 config.Initialize(_tempConfigPath);
                 var section = config.GetSection<BasicTestConfig>("ParserTest");
             };
@@ -342,7 +344,7 @@ DateValue=not-a-date";
 
         private void ResetConfiguration()
         {
-            var instanceField = typeof(ByteForge.Toolkit.Configuration).GetField("_defaultInstance", BindingFlags.NonPublic | BindingFlags.Static);
+            var instanceField = typeof(ByteForge.Toolkit.Configuration.Configuration).GetField("_defaultInstance", BindingFlags.NonPublic | BindingFlags.Static);
             
             if (instanceField != null)
             {

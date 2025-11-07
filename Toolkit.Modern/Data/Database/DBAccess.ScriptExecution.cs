@@ -1,8 +1,9 @@
+using ByteForge.Toolkit.Logging;
 using System.Data;
 using System.Text;
 using System.Text.RegularExpressions;
 
-namespace ByteForge.Toolkit;
+namespace ByteForge.Toolkit.Data;
 
 /*
  * The `ExecuteScript` and `ExecuteQuery` methods both execute SQL commands against the database, but they have some key differences:

@@ -3,7 +3,7 @@ using System.Web;
 #endif
 using ByteForge.Toolkit.Logging;
 
-namespace ByteForge.Toolkit;
+namespace ByteForge.Toolkit.Logging;
 /*
  *  _              
  * | |   ___  __ _ 
@@ -30,19 +30,19 @@ public class Log : CompositeLogger
     /// </summary>
     private Log() : base("ByteForge.Toolkit->Static Logger")
     {
-        if (!Configuration.IsInitialized)
+        if (!Configuration.Configuration.IsInitialized)
             Settings = new LogSettings();
         else
-            Settings = Configuration.GetSection<LogSettings>("Logging");
+            Settings = Configuration.Configuration.GetSection<LogSettings>("Logging");
 
         // Create the appropriate file logger based on configuration
         if (Settings.UseSessionLogging)
         {
             SessionFileLoggerOptions sessionOptions;
-            if (!Configuration.IsInitialized)
+            if (!Configuration.Configuration.IsInitialized)
                 sessionOptions = new SessionFileLoggerOptions();
             else
-                sessionOptions = Configuration.GetSection<SessionFileLoggerOptions>("FileLogger");
+                sessionOptions = Configuration.Configuration.GetSection<SessionFileLoggerOptions>("FileLogger");
 
             fileLogger = new SessionFileLogger(Settings.LogFilePath, sessionOptions)
             {
@@ -287,7 +287,7 @@ public class Log : CompositeLogger
     {
         if (string.IsNullOrEmpty(message))
             return;
-        Instance.WriteToLog(level, message.Split(Utils.arrCRLF, StringSplitOptions.RemoveEmptyEntries), ex);
+        Instance.WriteToLog(level, message.Split(Utils.Utils.arrCRLF, StringSplitOptions.RemoveEmptyEntries), ex);
     }
 
     /// <summary>

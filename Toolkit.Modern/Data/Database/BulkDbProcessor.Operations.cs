@@ -1,9 +1,10 @@
 using System.Data;
 using System.Data.SqlClient;
 using System.Reflection;
-using static ByteForge.Toolkit.DBAccess;
+using ByteForge.Toolkit.Utils;
+using static ByteForge.Toolkit.Data.DBAccess;
 
-namespace ByteForge.Toolkit;
+namespace ByteForge.Toolkit.Data;
 public partial class BulkDbProcessor<T>
 {
     // Public Methods (sorted)
@@ -16,7 +17,7 @@ public partial class BulkDbProcessor<T>
     /// <remarks>
     /// This is a synchronous wrapper around <see cref="BulkInsertAsync"/>.
     /// </remarks>
-    public bool BulkInsert(DBAccess db, IEnumerable<T> records) => Utils.RunSync((c) => BulkInsertAsync(db, records, c));
+    public bool BulkInsert(DBAccess db, IEnumerable<T> records) => Utils.Utils.RunSync((c) => BulkInsertAsync(db, records, c));
 
     /// <summary>
     /// Inserts a collection of records into the database in a single bulk operation.
@@ -103,7 +104,7 @@ public partial class BulkDbProcessor<T>
     /// <summary>
     /// Performs a bulk upsert operation (update existing records, insert new ones) for a collection of records.
     /// </summary>
-    public bool BulkUpsert(DBAccess db, IEnumerable<T> records) => Utils.RunSync((c) => BulkUpsertAsync(db, records, c));
+    public bool BulkUpsert(DBAccess db, IEnumerable<T> records) => Utils.Utils.RunSync((c) => BulkUpsertAsync(db, records, c));
 
     /// <summary>
     /// Performs a bulk upsert operation (update existing records, insert new ones) for a collection of records.
@@ -227,7 +228,7 @@ public partial class BulkDbProcessor<T>
     /// <summary>
     /// Performs a bulk delete operation for a collection of records based on their key values.
     /// </summary>
-    public bool BulkDelete(DBAccess db, IEnumerable<T> records) => Utils.RunSync((c) => BulkDeleteAsync(db, records, c));
+    public bool BulkDelete(DBAccess db, IEnumerable<T> records) => Utils.Utils.RunSync((c) => BulkDeleteAsync(db, records, c));
 
     /// <summary>
     /// Performs a bulk delete operation for a collection of records based on their key values.

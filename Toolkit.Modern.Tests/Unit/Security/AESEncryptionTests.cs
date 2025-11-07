@@ -1,4 +1,5 @@
 using AwesomeAssertions;
+using ByteForge.Toolkit.Security;
 using ByteForge.Toolkit.Tests.Helpers;
 using System.Diagnostics;
 using System.Security.Cryptography;

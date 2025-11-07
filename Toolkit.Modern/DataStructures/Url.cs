@@ -1,6 +1,6 @@
 using System.Text.RegularExpressions;
 
-namespace ByteForge.Toolkit;
+namespace ByteForge.Toolkit.DataStructures;
 /*
  *  _   _     _ 
  * | | | |_ _| |

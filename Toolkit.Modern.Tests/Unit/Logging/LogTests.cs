@@ -19,7 +19,7 @@ eTraceLogLevel=All
 bUseSessionLogging=False
 sLogFile={tempLog}";
             var iniFile = TempFileHelper.CreateTempIniFile(iniText);
-            Toolkit.Configuration.Initialize(iniFile);
+            Toolkit.Configuration.Configuration.Initialize(iniFile);
         }
 
         [TestInitialize]

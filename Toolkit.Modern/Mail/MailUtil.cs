@@ -1,8 +1,11 @@
+using ByteForge.Toolkit.Configuration;
+using ByteForge.Toolkit.Logging;
+using ByteForge.Toolkit.Security;
 using System.ComponentModel;
 using System.Net;
 using System.Net.Mail;
 
-namespace ByteForge.Toolkit;
+namespace ByteForge.Toolkit.Mail;
 
 /*
  *  __  __      _ _ _   _ _   _ _ 
@@ -21,7 +24,7 @@ private static MailServerSettings? _mailSettings;
 /// <summary>
 /// Gets the mail server settings from the configuration.
 /// </summary>
-public static MailServerSettings Settings => _mailSettings ??= Configuration.GetSection<MailServerSettings>("Mail Server");
+public static MailServerSettings Settings => _mailSettings ??= Configuration.Configuration.GetSection<MailServerSettings>("Mail Server");
 
 /// <summary>
 /// Sends an email to the default recipient with the specified subject, body, and optional attachments.

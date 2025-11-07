@@ -1,9 +1,10 @@
+using ByteForge.Toolkit.Logging;
 using System.Data;
 using System.Data.Common;
 using System.Data.Odbc;
 using System.Data.SqlClient;
 
-namespace ByteForge.Toolkit;
+namespace ByteForge.Toolkit.Data;
 /*
  *  ___  ___   _                     ___        _                
  * |   \| _ ) /_\  __ __ ___ ______ | __|_ _ __| |_ ___ _ _ _  _ 

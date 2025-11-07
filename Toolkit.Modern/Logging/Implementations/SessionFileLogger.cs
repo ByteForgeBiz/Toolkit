@@ -1,3 +1,4 @@
+using ByteForge.Toolkit.Configuration;
 using System.Reflection;
 using System.Text;
 
@@ -34,7 +35,7 @@ public class SessionFileLogger : FileLogger
     public SessionFileLogger(string? baseFilePath, SessionFileLoggerOptions? sessionOptions  = null) : base(baseFilePath, sessionOptions, true)
     {
         SessionStartTime = DateTime.Now;
-        Settings = sessionOptions ?? (Configuration.IsInitialized ? Configuration.GetSection<SessionFileLoggerOptions>("SessionFileLogger") : null) ?? new SessionFileLoggerOptions();
+        Settings = sessionOptions ?? (Configuration.Configuration.IsInitialized ? Configuration.Configuration.GetSection<SessionFileLoggerOptions>("SessionFileLogger") : null) ?? new SessionFileLoggerOptions();
 
         // Override the logger name to indicate it's a session logger
         this.Name = $"SessionFile-{SessionId}";

@@ -1,3 +1,5 @@
+using ByteForge.Toolkit.Data;
+
 namespace ByteForge.Toolkit.Tests.Models
 {
     /// <summary>

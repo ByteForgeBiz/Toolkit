@@ -1,5 +1,6 @@
 using ByteForge.Toolkit.Tests.Helpers;
 using AwesomeAssertions;
+using ByteForge.Toolkit.Data;
 
 #pragma warning disable CS8600 // Converting null literal or possible null value to non-nullable type.
 

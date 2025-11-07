@@ -1,5 +1,6 @@
 using ByteForge.Toolkit.Tests.Helpers;
 using AwesomeAssertions;
+using ByteForge.Toolkit.Data;
 
 namespace ByteForge.Toolkit.Tests.Unit.Data.Database
 {

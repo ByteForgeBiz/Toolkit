@@ -1,6 +1,6 @@
 using System.Reflection;
 
-namespace ByteForge.Toolkit;
+namespace ByteForge.Toolkit.Utils;
 /// <summary>
 /// Provides utility methods for resolving the effective (non-nullable) type of a given property or type.
 /// </summary>
