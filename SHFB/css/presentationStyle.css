@@ -1,4 +1,4 @@
-/* CSS Custom Properties for theming */
+﻿/* CSS Custom Properties for theming */
 :root {
     /* Light theme colors */
     --primary-bg: #ffffff;
@@ -104,48 +104,6 @@
     --code-text: #7bb3ff;
     --keyword-color: #569cd6;
     --literal-color: #ff8080;
-}
-
-/* Automatic dark theme based on system preference */
-@media (prefers-color-scheme: dark) {
-    :root:not([data-theme="light"]) {
-        --primary-bg: #1a1d21;
-        --secondary-bg: #22262b;
-        --tertiary-bg: #2d3238;
-        --text-primary: #f0f2f5;
-        --text-secondary: #c9d1d9;
-        --text-muted: #8b949e;
-        --border-color: #3d444d;
-        --link-color: #58a6ff;
-        --link-hover: #79b8ff;
-        --header-bg: #0d1117;
-        --header-text: #f0f2f5;
-        --code-bg: #161b22;
-        --code-border: #30363d;
-        --sidebar-bg: #161b22;
-        --highlight-bg: #3b4b1f;
-        --warning-bg: #4d1f24;
-        --info-bg: #1f3a4d;
-        --success-bg: #1f4d2f;
-        /* Dark theme text colors - for use on dark backgrounds */
-        --text-01: #ffffff; /* Primary - Highest importance, body text */
-        --text-02: #f0f0f0; /* Secondary - Headings, key content */
-        --text-03: #d4d4d4; /* Tertiary - Supporting text */
-        --text-04: #a3a3a3; /* Quaternary - Less important details */
-        --text-05: #737373; /* Quinary - Hints, metadata, placeholders */
-        --text-06: #525252; /* Senary - Disabled, very subtle text */
-        --text-01-i: #0a0a0a; /* Primary - Highest importance, body text */
-        --text-02-i: #1a1a1a; /* Secondary - Headings, key content */
-        --text-03-i: #404040; /* Tertiary - Supporting text */
-        --text-04-i: #666666; /* Quaternary - Less important details */
-        --text-05-i: #8c8c8c; /* Quinary - Hints, metadata, placeholders */
-        --text-06-i: #b3b3b3; /* Senary - Disabled, very subtle text */
-        /* code colors */
-        --code-bg: #2d2d2d;
-        --code-text: #7bb3ff;
-        --keyword-color: #569cd6;
-        --literal-color: #ff8080;
-    }
 }
 
 /* High contrast mode support */
@@ -695,26 +653,35 @@ body {
     }
 
 /* Theme toggle button */
+/* Theme toggle button - matching language dropdown style */
 .theme-toggle {
-    position: fixed;
-    bottom: 100px;
-    right: var(--spacing-md);
-    z-index: 1001;
     background: var(--secondary-bg);
     border: 1px solid var(--border-color);
-    border-radius: var(--border-radius-md);
-    padding: var(--spacing-sm) var(--spacing-md);
+    border-radius: 4px;
+    padding: calc(0.5em - 1px) 1em;
     cursor: pointer;
-    transition: all 0.3s ease;
-    box-shadow: var(--shadow-light);
-    font-size: var(--font-size-sm);
+    transition: all 0.2s ease;
+    font-size: 1rem;
     color: var(--text-primary);
+    height: 2.5em; /* Match Bulma button height */
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1.5;
+    white-space: nowrap;
+    box-shadow: none;
 }
 
     .theme-toggle:hover {
         background: var(--tertiary-bg);
-        box-shadow: var(--shadow-medium);
-        transform: translateY(-2px);
+        border-color: var(--border-color);
+    }
+
+    .theme-toggle:active,
+    .theme-toggle:focus {
+        box-shadow: 0 0 0 0.125em rgba(88, 166, 255, 0.25);
+        border-color: var(--link-color);
+        outline: none;
     }
 
 /* Navigation and Search */
@@ -1371,17 +1338,6 @@ h6 {
     color: var(--text-06) !important;
 }
 
-/* Enhanced h1 contrast for dark mode */
-[data-theme="dark"] h1 {
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
-}
-
-@media (prefers-color-scheme: dark) {
-    :root:not([data-theme="light"]) h1 {
-        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
-    }
-}
-
 /* Fix 2: Code snippet header styling */
 .codeSnippet {
     position: relative;
@@ -1501,24 +1457,6 @@ h6 strong {
         background-color: var(--secondary-bg) !important;
     }
 
-@media (prefers-color-scheme: dark) {
-    :root:not([data-theme="light"]) .table {
-        background-color: var(--primary-bg) !important;
-        color: var(--text-primary) !important;
-    }
-
-        :root:not([data-theme="light"]) .table td,
-        :root:not([data-theme="light"]) .table th {
-            background-color: transparent !important;
-            color: var(--text-primary) !important;
-            border-color: var(--border-color) !important;
-        }
-
-        :root:not([data-theme="light"]) .table th {
-            background-color: var(--secondary-bg) !important;
-        }
-}
-
 /* =========================================================================
    AGGRESSIVE BULMA OVERRIDES
    These rules fight against Bulma's hardcoded colors for dark theme support
@@ -1631,35 +1569,6 @@ h6 strong {
 
 [data-theme="dark"] strong {
     color: var(--text-primary) !important;
-}
-
-@media (prefers-color-scheme: dark) {
-    :root:not([data-theme="light"]) .table,
-    :root:not([data-theme="light"]) table.table,
-    :root:not([data-theme="light"]) .table td,
-    :root:not([data-theme="light"]) .table th {
-        background-color: transparent !important;
-    }
-
-    :root:not([data-theme="light"]) .table {
-        background-color: var(--primary-bg) !important;
-    }
-
-        :root:not([data-theme="light"]) .table th,
-        :root:not([data-theme="light"]) .table thead th,
-        :root:not([data-theme="light"]) .table thead td {
-            background-color: var(--secondary-bg) !important;
-        }
-
-    :root:not([data-theme="light"]) code,
-    :root:not([data-theme="light"]) pre {
-        background-color: var(--code-bg) !important;
-        color: var(--text-primary) !important;
-    }
-
-    :root:not([data-theme="light"]) strong {
-        color: var(--text-primary) !important;
-    }
 }
 
 /* =========================================================================
@@ -1823,37 +1732,6 @@ nav.breadcrumb ul {
     }
 
 /* System light mode */
-@media (prefers-color-scheme: light) {
-    :root:not([data-theme="dark"]) nav.breadcrumb,
-    :root:not([data-theme="dark"]) .breadcrumb {
-        background: #f8f9fa !important;
-        border-bottom-color: #dee2e6 !important;
-    }
-
-        :root:not([data-theme="dark"]) #TopicBreadcrumbs li,
-        :root:not([data-theme="dark"]) .breadcrumb li {
-            color: #495057 !important;
-        }
-
-        :root:not([data-theme="dark"]) #TopicBreadcrumbs a,
-        :root:not([data-theme="dark"]) .breadcrumb a {
-            color: #495057 !important;
-        }
-
-            :root:not([data-theme="dark"]) #TopicBreadcrumbs a:hover,
-            :root:not([data-theme="dark"]) .breadcrumb a:hover {
-                color: #0066cc !important;
-                background: #e9ecef !important;
-            }
-
-        :root:not([data-theme="dark"]) #TopicBreadcrumbs li:last-child,
-        :root:not([data-theme="dark"]) #TopicBreadcrumbs li:last-child p,
-        :root:not([data-theme="dark"]) .breadcrumb li:last-child,
-        :root:not([data-theme="dark"]) .breadcrumb li:last-child p {
-            color: #212529 !important;
-        }
-}
-
 /* Ensure breadcrumb is visible (override any display:none) */
 nav.breadcrumb,
 .breadcrumb {
@@ -1873,26 +1751,11 @@ nav.breadcrumb,
     border-top-color: #dee2e6 !important;
 }
 
-@media (prefers-color-scheme: light) {
-    :root:not([data-theme="dark"]) nav.breadcrumb,
-    :root:not([data-theme="dark"]) .breadcrumb {
-        border-top-color: #dee2e6 !important;
-    }
-}
-
 /* Better contrast for breadcrumb in dark theme */
 [data-theme="dark"] nav.breadcrumb,
 [data-theme="dark"] .breadcrumb {
     background: #22262b !important;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3) !important;
-}
-
-@media (prefers-color-scheme: dark) {
-    :root:not([data-theme="light"]) nav.breadcrumb,
-    :root:not([data-theme="light"]) .breadcrumb {
-        background: #22262b !important;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3) !important;
-    }
 }
 
 /* Ensure proper word wrapping for long breadcrumbs */
