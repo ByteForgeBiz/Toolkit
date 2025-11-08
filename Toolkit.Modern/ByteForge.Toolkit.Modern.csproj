@@ -16,6 +16,11 @@
     <DisableFody>true</DisableFody>
     <DefineConstants>$(DefineConstants);DOCUMENTATION_BUILD</DefineConstants>
   </PropertyGroup>
+  <ItemGroup>
+    <Compile Remove="Logs\**" />
+    <EmbeddedResource Remove="Logs\**" />
+    <None Remove="Logs\**" />
+  </ItemGroup>
 
   <ItemGroup>
     <EmbeddedResource Include="Dependencies\WinSCP.exe" />

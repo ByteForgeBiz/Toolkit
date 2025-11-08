@@ -218,12 +218,12 @@ class Program
 
 ### Common Issues
 
-| Issue | Cause | Solution |
-|-------|-------|----------|
-| Resource not found | Embedded file missing | Rebuild project, check resource names |
-| Checksum mismatch | File corrupted/modified | Delete extracted file, re-extract |
-| Extract permission denied | No write permission | Run with appropriate permissions |
-| WinSCP not found | Resource extraction failed | Check .NET Framework target |
+| Issue                     | Cause                      | Solution                              |
+|---------------------------|----------------------------|---------------------------------------|
+| Resource not found        | Embedded file missing      | Rebuild project, check resource names |
+| Checksum mismatch         | File corrupted/modified    | Delete extracted file, re-extract     |
+| Extract permission denied | No write permission        | Run with appropriate permissions      |
+| WinSCP not found          | Resource extraction failed | Check .NET Framework target           |
 
 ### Exception Handling
 
@@ -478,3 +478,21 @@ The Core module provides:
 - Windows-specific resources
 - Limited to .NET Framework
 - Not suitable for portable Linux deployments
+
+---
+
+## 📖 Documentation Links
+
+### 🏗️ Related Modules
+| Module                                            | Description                |
+|---------------------------------------------------|----------------------------|
+| **[CLI](../CommandLine/readme.md)**               | Command-line parsing       |
+| **[Configuration](../Configuration/readme.md)**   | INI-based configuration    |
+| **[Data](../Data/readme.md)**                     | Database & file processing |
+| **[DataStructures](../DataStructures/readme.md)** | Collections & utilities    |
+| **[JSON](../Json/readme.md)**                     | Delta serialization        |
+| **[Logging](../Logging/readme.md)**               | Structured logging         |
+| **[Mail](../Mail/readme.md)**                     | Email processing           |
+| **[Net](../Net/readme.md)**                       | Network file transfers     |
+| **[Security](../Security/readme.md)**             | Encryption & security      |
+| **[Utils](../Utilities/readme.md)**               | General utilities          |

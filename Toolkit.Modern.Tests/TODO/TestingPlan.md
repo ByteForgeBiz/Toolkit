@@ -379,16 +379,16 @@ public static class AssertionHelpers
 
 ## Coverage Goals by Module
 
-| Module           | Target Coverage   | Priority   | Complexity   |
-|------------------|-------------------|------------|--------------|
-| DataStructures   | 95%               | High       | Low          |
-| Security         | 90%               | High       | Medium       |
-| Configuration    | 85%               | High       | Medium       |
-| Utils            | 85%               | High       | Low          |
-| CSV              | 75%               | Medium     | Medium       |
-| Logging          | 70%               | Medium     | Medium       |
-| CLI              | 60%               | Medium     | High         |
-| Database         | 30%               | Low        | Very High    |
+| Module             | Target Coverage     | Priority     | Complexity     |
+|--------------------|---------------------|--------------|----------------|
+| DataStructures     | 95%                 | High         | Low            |
+| Security           | 90%                 | High         | Medium         |
+| Configuration      | 85%                 | High         | Medium         |
+| Utils              | 85%                 | High         | Low            |
+| CSV                | 75%                 | Medium       | Medium         |
+| Logging            | 70%                 | Medium       | Medium         |
+| CLI                | 60%                 | Medium       | High           |
+| Database           | 30%                 | Low          | Very High      |
 
 ## Risk Mitigation
 
@@ -519,3 +519,4 @@ Consider adding Moq or similar for:
 - Random input generation for robustness testing
 
 This comprehensive testing plan provides a structured approach to achieving significant test coverage while working within the constraints of the existing codebase and available testing tools.
+

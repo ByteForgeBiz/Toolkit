@@ -64,3 +64,4 @@ The security tests verify not only functional correctness but also security prop
 ## Notes
 
 While the tests provide good coverage of encryption functionality, they do not replace a formal security audit. The tests focus on correct implementation and behavior rather than cryptographic strength or resistance to specific attacks.
+

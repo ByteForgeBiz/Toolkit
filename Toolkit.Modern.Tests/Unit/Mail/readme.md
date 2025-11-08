@@ -49,3 +49,4 @@ The Mail module focuses on robust email attachment handling, with particular att
 4. **Flexibility**: Support for various attachment processing methods
 
 While actual email sending is part of the Mail module, the tests focus primarily on attachment handling to avoid sending test emails during automated testing.
+

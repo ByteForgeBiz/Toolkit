@@ -391,13 +391,13 @@ foreach (var part in parts)
 
 ### Common Issues
 
-| Issue | Cause | Solution |
-|-------|-------|----------|
-| Attachment too large | Exceeds size limit | Increase limit or reject |
-| Unsupported file type | Unsafe file extension | Add to whitelist or reject |
-| Corrupted attachment | Damaged file in email | Log and skip |
-| Temp folder full | No space for temporary files | Increase temp folder size |
-| Permission denied | Can't write to temp | Check folder permissions |
+| Issue                 | Cause                        | Solution                   |
+|-----------------------|------------------------------|----------------------------|
+| Attachment too large  | Exceeds size limit           | Increase limit or reject   |
+| Unsupported file type | Unsafe file extension        | Add to whitelist or reject |
+| Corrupted attachment  | Damaged file in email        | Log and skip               |
+| Temp folder full      | No space for temporary files | Increase temp folder size  |
+| Permission denied     | Can't write to temp          | Check folder permissions   |
 
 ### Exception Handling
 
@@ -577,4 +577,23 @@ The Mail module provides:
 - Real-time email streaming
 - Complex MIME structure processing
 - Complete email client implementation
+
+---
+
+## 📖 Documentation Links
+
+### 🏗️ Related Modules
+| Module                                            | Description                |
+|---------------------------------------------------|----------------------------|
+| **[CLI](../CommandLine/readme.md)**               | Command-line parsing       |
+| **[Configuration](../Configuration/readme.md)**   | INI-based configuration    |
+| **[Core](../Core/readme.md)**                     | Core utilities             |
+| **[Data](../Data/readme.md)**                     | Database & file processing |
+| **[DataStructures](../DataStructures/readme.md)** | Collections & utilities    |
+| **[JSON](../Json/readme.md)**                     | Delta serialization        |
+| **[Logging](../Logging/readme.md)**               | Structured logging         |
+| **[Net](../Net/readme.md)**                       | Network file transfers     |
+| **[Security](../Security/readme.md)**             | Encryption & security      |
+| **[Utils](../Utilities/readme.md)**               | General utilities          |
+
 

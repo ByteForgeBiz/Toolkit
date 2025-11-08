@@ -19,6 +19,9 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ByteForge.Toolkit.Modern.Tests", "Toolkit.Modern.Tests\ByteForge.Toolkit.Modern.Tests.csproj", "{18AD53B5-B65D-4E68-9EBA-202A363E9783}"
 EndProject
 Project("{7CF6DF6D-3B04-46F8-A40B-537D21BCA0B4}") = "SHFB", "SHFB\SHFB.shfbproj", "{7C702230-644B-40A0-A8F9-398812705464}"
+	ProjectSection(ProjectDependencies) = postProject
+		{85F00757-D326-92D5-8554-8490A4F50AD7} = {85F00757-D326-92D5-8554-8490A4F50AD7}
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

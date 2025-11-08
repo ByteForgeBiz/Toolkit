@@ -33,3 +33,23 @@ This folder contains a collection of utility classes for various common tasks su
 - **TypeHelper**: Helpers for type reflection and manipulation.
 
 - **ValueConverterRegistry**: Registry for value converters between types.
+
+See also: Individual class files for detailed documentation and the Toolkit.Modern.Tests project for usage examples.
+
+---
+
+## 📖 Documentation Links
+
+### 🏗️ Related Modules
+| Module                                            | Description                |
+|---------------------------------------------------|----------------------------|
+| **[CLI](../CommandLine/readme.md)**               | Command-line parsing       |
+| **[Configuration](../Configuration/readme.md)**   | INI-based configuration    |
+| **[Core](../Core/readme.md)**                     | Core utilities             |
+| **[Data](../Data/readme.md)**                     | Database & file processing |
+| **[DataStructures](../DataStructures/readme.md)** | Collections & utilities    |
+| **[JSON](../Json/readme.md)**                     | Delta serialization        |
+| **[Logging](../Logging/readme.md)**               | Structured logging         |
+| **[Mail](../Mail/readme.md)**                     | Email processing           |
+| **[Net](../Net/readme.md)**                       | Network file transfers     |
+| **[Security](../Security/readme.md)**             | Encryption & security      |

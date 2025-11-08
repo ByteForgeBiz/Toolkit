@@ -42,3 +42,4 @@ The tests use various audio file samples:
 ## Notes
 
 The AudioFormatDetector implements format detection based on file headers and signatures rather than relying on file extensions. This allows for accurate format identification even when files have incorrect or missing extensions.
+

@@ -105,3 +105,4 @@ Many of these tests require a working database connection. The tests are configu
 - Windows Authentication (Integrated Security)
 
 Tests will be skipped if the database connection cannot be established.
+

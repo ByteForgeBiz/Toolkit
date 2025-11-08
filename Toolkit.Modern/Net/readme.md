@@ -271,13 +271,13 @@ foreach (var file in remoteDir.Files)
 
 ### Common Transfer Errors
 
-| Error | Cause | Recovery |
-|-------|-------|----------|
-| Connection timeout | Network delay | Retry with longer timeout |
-| Authentication failed | Wrong credentials | Verify username/password |
-| File not found | Path incorrect | Check remote path |
-| Permission denied | Insufficient rights | Request access or use different account |
-| Disk full | No space | Free up space or use compression |
+| Error                 | Cause               | Recovery                                |
+|-----------------------|---------------------|-----------------------------------------|
+| Connection timeout    | Network delay       | Retry with longer timeout               |
+| Authentication failed | Wrong credentials   | Verify username/password                |
+| File not found        | Path incorrect      | Check remote path                       |
+| Permission denied     | Insufficient rights | Request access or use different account |
+| Disk full             | No space            | Free up space or use compression        |
 
 ### Exception Handling
 
@@ -400,4 +400,28 @@ The Net module provides:
 - Real-time streaming
 - Extremely high-frequency operations
 - Direct socket-level control
+
+---
+
+## 📖 Documentation Links
+
+### 🏗️ Related Modules
+| Module                                            | Description                |
+|---------------------------------------------------|----------------------------|
+| **[CLI](../CommandLine/readme.md)**               | Command-line parsing       |
+| **[Configuration](../Configuration/readme.md)**   | INI-based configuration    |
+| **[Core](../Core/readme.md)**                     | Core utilities             |
+| **[Data](../Data/readme.md)**                     | Database & file processing |
+| **[DataStructures](../DataStructures/readme.md)** | Collections & utilities    |
+| **[JSON](../Json/readme.md)**                     | Delta serialization        |
+| **[Logging](../Logging/readme.md)**               | Structured logging         |
+| **[Mail](../Mail/readme.md)**                     | Email processing           |
+| **[Security](../Security/readme.md)**             | Encryption & security      |
+| **[Utils](../Utilities/readme.md)**               | General utilities          |
+
+### 🏗️ Related Components
+| Component                            | Description           |
+|--------------------------------------|-----------------------|
+| **[WinSCP](../../WinSCP/readme.md)** | File transfer backend |
+
 

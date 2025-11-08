@@ -65,3 +65,4 @@ The tests cover various logger implementations:
 ## Notes
 
 The Logging module is designed to be highly extensible, allowing custom logger implementations to be plugged in as needed. The tests verify both the core logging functionality and the extensibility mechanisms.
+

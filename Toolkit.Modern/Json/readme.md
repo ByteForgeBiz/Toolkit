@@ -512,3 +512,22 @@ The Json module provides:
 - Small objects (overhead outweighs benefit)
 - Offline-first applications (complex merging)
 
+---
+
+## 📖 Documentation Links
+
+### 🏗️ Related Modules
+| Module                                            | Description                |
+|---------------------------------------------------|----------------------------|
+| **[CLI](../CommandLine/readme.md)**               | Command-line parsing       |
+| **[Configuration](../Configuration/readme.md)**   | INI-based configuration    |
+| **[Core](../Core/readme.md)**                     | Core utilities             |
+| **[Data](../Data/readme.md)**                     | Database & file processing |
+| **[DataStructures](../DataStructures/readme.md)** | Collections & utilities    |
+| **[Logging](../Logging/readme.md)**               | Structured logging         |
+| **[Mail](../Mail/readme.md)**                     | Email processing           |
+| **[Net](../Net/readme.md)**                       | Network file transfers     |
+| **[Security](../Security/readme.md)**             | Encryption & security      |
+| **[Utils](../Utilities/readme.md)**               | General utilities          |
+
+

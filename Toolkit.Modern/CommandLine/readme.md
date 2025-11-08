@@ -698,3 +698,21 @@ The CLI module provides:
 - Complex interactive CLIs (consider Spectre.Console)
 - Real-time user interfaces
 - Web applications
+
+---
+
+## 📖 Documentation Links
+
+### 🏗️ Related Modules
+| Module                                            | Description                |
+|---------------------------------------------------|----------------------------|
+| **[Configuration](../Configuration/readme.md)**   | INI-based configuration    |
+| **[Core](../Core/readme.md)**                     | Core utilities             |
+| **[Data](../Data/readme.md)**                     | Database & file processing |
+| **[DataStructures](../DataStructures/readme.md)** | Collections & utilities    |
+| **[JSON](../Json/readme.md)**                     | Delta serialization        |
+| **[Logging](../Logging/readme.md)**               | Structured logging         |
+| **[Mail](../Mail/readme.md)**                     | Email processing           |
+| **[Net](../Net/readme.md)**                       | Network file transfers     |
+| **[Security](../Security/readme.md)**             | Encryption & security      |
+| **[Utils](../Utilities/readme.md)**               | General utilities          |

@@ -155,3 +155,34 @@ public void DatabaseOperationTest()
 - They encapsulate common testing patterns to reduce duplication
 - Most helpers include proper cleanup mechanisms to prevent test pollution
 - The helpers focus on making tests more readable and maintainable
+
+---
+
+## 📖 Documentation Links
+
+### 🏠 Project Navigation
+| Location           | Description           | Documentation                                                       |
+|--------------------|-----------------------|---------------------------------------------------------------------|
+| **Root**           | Solution overview     | [📘 ../../readme.md](../../readme.md)                               |
+| **Toolkit.Modern** | Core library overview | [📘 ../../Toolkit.Modern/readme.md](../../Toolkit.Modern/readme.md) |
+| **Tests**          | Test suite overview   | [📘 ../README.md](../README.md)                                     |
+
+### 🧪 Related Test Modules
+| Module                  | Description           | Documentation                                                         |
+|-------------------------|-----------------------|-----------------------------------------------------------------------|
+| **Unit Tests**          | Unit test suite       | [📘 ../Unit/readme.md](../Unit/readme.md)                             |
+| **Test Models**         | Test data models      | [📘 ../Models/README.md](../Models/README.md)                         |
+| **CLI Tests**           | CLI module tests      | [📘 ../Unit/CLI/readme.md](../Unit/CLI/readme.md)                     |
+| **Configuration Tests** | Configuration tests   | [📘 ../Unit/Configuration/readme.md](../Unit/Configuration/readme.md) |
+| **Data Tests**          | Data module tests     | [📘 ../Unit/Data/readme.md](../Unit/Data/readme.md)                   |
+| **Security Tests**      | Security module tests | [📘 ../Unit/Security/readme.md](../Unit/Security/readme.md)           |
+
+### 🏗️ Production Modules
+| Module            | Description                | Documentation                                                                                   |
+|-------------------|----------------------------|-------------------------------------------------------------------------------------------------|
+| **CLI**           | Command-line parsing       | [📘 ../../Toolkit.Modern/CommandLine/readme.md](../../Toolkit.Modern/CommandLine/readme.md)     |
+| **Configuration** | INI-based configuration    | [📘 ../../Toolkit.Modern/Configuration/readme.md](../../Toolkit.Modern/Configuration/readme.md) |
+| **Data**          | Database & file processing | [📘 ../../Toolkit.Modern/Data/readme.md](../../Toolkit.Modern/Data/readme.md)                   |
+| **Logging**       | Structured logging         | [📘 ../../Toolkit.Modern/Logging/readme.md](../../Toolkit.Modern/Logging/readme.md)             |
+| **Security**      | Encryption & security      | [📘 ../../Toolkit.Modern/Security/readme.md](../../Toolkit.Modern/Security/readme.md)           |
+

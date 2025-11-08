@@ -69,3 +69,4 @@ Execute all tests in the CLI test directory:
 ```powershell
 dotnet test --filter "FullyQualifiedName~CLI" --verbosity normal --no-build
 ```
+

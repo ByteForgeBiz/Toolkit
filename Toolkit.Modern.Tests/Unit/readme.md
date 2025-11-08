@@ -55,3 +55,4 @@ dotnet test "Tests\ByteForge.Toolkit.Tests\ByteForge.Toolkit.Tests.csproj"
 ```
 
 For performance testing or tests that require specific resources, some tests may be marked with `[TestCategory("Manual")]` and require manual execution.
+

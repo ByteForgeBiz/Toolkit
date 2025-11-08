@@ -41,3 +41,29 @@ var format = AudioFormatDetector.DetectFormat(audioBytes);
 ```
 
 See subfolders for specialized modules and additional documentation.
+
+---
+
+## 📖 Documentation Links
+
+### 🏗️ Related Modules
+| Module                                            | Description             |
+|---------------------------------------------------|-------------------------|
+| **[CLI](../CommandLine/readme.md)**               | Command-line parsing    |
+| **[Configuration](../Configuration/readme.md)**   | INI-based configuration |
+| **[Core](../Core/readme.md)**                     | Core utilities          |
+| **[DataStructures](../DataStructures/readme.md)** | Collections & utilities |
+| **[JSON](../Json/readme.md)**                     | Delta serialization     |
+| **[Logging](../Logging/readme.md)**               | Structured logging      |
+| **[Mail](../Mail/readme.md)**                     | Email processing        |
+| **[Net](../Net/readme.md)**                       | Network file transfers  |
+| **[Security](../Security/readme.md)**             | Encryption & security   |
+| **[Utils](../Utilities/readme.md)**               | General utilities       |
+
+### 🔧 Data Submodules
+| Submodule                              | Description             |
+|----------------------------------------|-------------------------|
+| **[Audio](Audio/readme.md)**           | Audio format detection  |
+| **[CSV](CSV/readme.md)**               | CSV file processing     |
+| **[Database](Database/readme.md)**     | Database operations     |
+| **[Attributes](Attributes/readme.md)** | Data mapping attributes |

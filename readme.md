@@ -98,14 +98,14 @@ cd "Toolkit.Modern.Tests"
 
 Each module contains comprehensive documentation and examples:
 
-| Module | Purpose | Key Features |
-|--------|---------|-------------|
-| [**CLI**](Toolkit.Modern/CLI/readme.md) | Command-line parsing | Attribute-based, type-safe, help generation |
-| [**Configuration**](Toolkit.Modern/Configuration/readme.md) | INI configuration management | Strong typing, sections, arrays, encryption |
-| [**Data**](Toolkit.Modern/Data/readme.md) | Database & file processing | Multi-DB support, CSV, audio detection, bulk ops |
-| [**Security**](Toolkit.Modern/Security/readme.md) | Encryption & security | AES encryption, secure storage, validation |
-| [**Logging**](Toolkit.Modern/Logging/readme.md) | Structured logging | Thread-safe, multi-target, configurable output |
-| [**Utils**](Toolkit.Modern/Utils/readme.md) | General utilities | Parsing, string manipulation, I/O, templates |
+| Module                                                      | Purpose                      | Key Features                                     |
+|-------------------------------------------------------------|------------------------------|--------------------------------------------------|
+| [**CLI**](Toolkit.Modern/CLI/readme.md)                     | Command-line parsing         | Attribute-based, type-safe, help generation      |
+| [**Configuration**](Toolkit.Modern/Configuration/readme.md) | INI configuration management | Strong typing, sections, arrays, encryption      |
+| [**Data**](Toolkit.Modern/Data/readme.md)                   | Database & file processing   | Multi-DB support, CSV, audio detection, bulk ops |
+| [**Security**](Toolkit.Modern/Security/readme.md)           | Encryption & security        | AES encryption, secure storage, validation       |
+| [**Logging**](Toolkit.Modern/Logging/readme.md)             | Structured logging           | Thread-safe, multi-target, configurable output   |
+| [**Utils**](Toolkit.Modern/Utils/readme.md)                 | General utilities            | Parsing, string manipulation, I/O, templates     |
 
 ---
 
@@ -191,12 +191,12 @@ Each module contains comprehensive documentation and examples:
 
 ## 📋 Build Artifacts
 
-| Configuration | Output Location | Description |
-|---------------|-----------------|-------------|
-| **Debug** | `bin\Debug\netX.X\` | Development builds with symbols |
-| **Release** | `bin\Release\netX.X\` | Optimized production builds |
+| Configuration     | Output Location             | Description                      |
+|-------------------|-----------------------------|----------------------------------|
+| **Debug**         | `bin\Debug\netX.X\`         | Development builds with symbols  |
+| **Release**       | `bin\Release\netX.X\`       | Optimized production builds      |
 | **Documentation** | `bin\ByteForge.Toolkit.xml` | Auto-generated API documentation |
-| **Test Results** | `TestResults\` | Coverage reports and test output |
+| **Test Results**  | `TestResults\`              | Coverage reports and test output |
 
 ---
 
@@ -268,3 +268,33 @@ foreach (var record in reader.Records)
 ---
 
 For detailed documentation on specific modules, see the individual readme files in each module directory.
+
+---
+
+## 📖 Documentation Links
+
+### 📁 Main Projects
+| Module                                         | Description               |
+|------------------------------------------------|---------------------------|
+| **[Toolkit.Modern](Toolkit.Modern/readme.md)** | Core multi-target library |
+| **[WinSCP](WinSCP/readme.md)**                 | SFTP/FTP wrapper library  |
+
+### 🏗️ Core Modules
+| Module                                                        | Description                |
+|---------------------------------------------------------------|----------------------------|
+| **[CLI](Toolkit.Modern/CommandLine/readme.md)**               | Command-line parsing       |
+| **[Configuration](Toolkit.Modern/Configuration/readme.md)**   | INI-based configuration    |
+| **[Core](Toolkit.Modern/Core/readme.md)**                     | Core utilities             |
+| **[Data](Toolkit.Modern/Data/readme.md)**                     | Database & file processing |
+| **[DataStructures](Toolkit.Modern/DataStructures/readme.md)** | Collections & utilities    |
+| **[JSON](Toolkit.Modern/Json/readme.md)**                     | Delta serialization        |
+| **[Logging](Toolkit.Modern/Logging/readme.md)**               | Structured logging         |
+| **[Mail](Toolkit.Modern/Mail/readme.md)**                     | Email processing           |
+| **[Net](Toolkit.Modern/Net/readme.md)**                       | Network file transfers     |
+| **[Security](Toolkit.Modern/Security/readme.md)**             | Encryption & security      |
+| **[Utils](Toolkit.Modern/Utilities/readme.md)**               | General utilities          |
+
+### 📊 Data Modules
+| Module                                                          | Description             |
+|-----------------------------------------------------------------|-------------------------|
+| **[Data.Attributes](Toolkit.Modern/Data/Attributes/readme.md)** | Data mapping attributes |

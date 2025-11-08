@@ -246,13 +246,13 @@ tree.Insert(5);
 
 ### Performance Characteristics
 
-| Operation | Best | Average | Worst |
-|-----------|------|---------|-------|
-| Insert | O(1) | O(log n) | O(log n) |
-| Delete | O(log n) | O(log n) | O(log n) |
-| Search | O(log n) | O(log n) | O(log n) |
-| Min/Max | O(log n) | O(log n) | O(log n) |
-| Traversal | O(n) | O(n) | O(n) |
+| Operation   | Best     | Average   | Worst    |
+|-------------|----------|-----------|----------|
+| Insert      | O(1)     | O(log n)  | O(log n) |
+| Delete      | O(log n) | O(log n)  | O(log n) |
+| Search      | O(log n) | O(log n)  | O(log n) |
+| Min/Max     | O(log n) | O(log n)  | O(log n) |
+| Traversal   | O(n)     | O(n)      | O(n)     |
 
 **Comparison with Other Structures:**
 - **Unordered List:** Insert O(1), Search O(n), Delete O(n)
@@ -458,3 +458,21 @@ The DataStructures module provides:
 - Highly frequent insertions/deletions (consider hash tables)
 - Multi-threaded scenarios (add synchronization)
 - Duplicate-heavy datasets (not supported)
+
+---
+
+## 📖 Documentation Links
+
+### 🏗️ Related Modules
+| Module                                          | Description                |
+|-------------------------------------------------|----------------------------|
+| **[CLI](../CommandLine/readme.md)**             | Command-line parsing       |
+| **[Configuration](../Configuration/readme.md)** | INI-based configuration    |
+| **[Core](../Core/readme.md)**                   | Core utilities             |
+| **[Data](../Data/readme.md)**                   | Database & file processing |
+| **[JSON](../Json/readme.md)**                   | Delta serialization        |
+| **[Logging](../Logging/readme.md)**             | Structured logging         |
+| **[Mail](../Mail/readme.md)**                   | Email processing           |
+| **[Net](../Net/readme.md)**                     | Network file transfers     |
+| **[Security](../Security/readme.md)**           | Encryption & security      |
+| **[Utils](../Utilities/readme.md)**             | General utilities          |
