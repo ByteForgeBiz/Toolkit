@@ -14,7 +14,10 @@
       "Bash(dir:*)",
       "Bash(timeout:*)",
       "Bash(.BuildSolution.bat)",
-      "Bash(cmd.exe:*)"
+      "Bash(cmd.exe:*)",
+      "Bash(mkdir:*)",
+      "Bash(dotnet build)",
+      "Bash(dotnet build:*)"
     ],
     "deny": [],
     "ask": []

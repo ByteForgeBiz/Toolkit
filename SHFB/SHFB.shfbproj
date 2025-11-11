@@ -31,7 +31,8 @@
       <Argument Key="maxVersionParts" Value="" xmlns="" />
     </TransformComponentArguments>
     <DocumentationSources>
-      <DocumentationSource sourceFile="..\Toolkit.Modern\ByteForge.Toolkit.Modern.csproj" xmlns="" />
+      <DocumentationSource sourceFile="merged-docs\ByteForge.Toolkit.Modern.merged.xml" />
+      <DocumentationSource sourceFile="..\Toolkit.Modern\ByteForge.Toolkit.Modern.csproj" />
     </DocumentationSources>
     <HelpFileFormat>Website</HelpFileFormat>
     <SyntaxFilters>C#, Visual Basic</SyntaxFilters>
@@ -66,6 +67,7 @@
       <NamespaceSummaryItem name="ByteForge.Toolkit.Security" isDocumented="True">Security and encryption utilities including AES encryption implementation, high-level encryption wrappers, and VB6-compatible mathematical functions for legacy compatibility.</NamespaceSummaryItem>
       <NamespaceSummaryItem name="ByteForge.Toolkit.Utilities" isDocumented="True">General-purpose utility classes for common tasks including string manipulation, parsing, I/O operations, template processing, type helpers, and value conversion.</NamespaceSummaryItem>
     </NamespaceSummaries>
+    <ComponentConfigurations />
   </PropertyGroup>
   <!-- There are no properties for these groups.  AnyCPU needs to appear in order for Visual Studio to perform
 			 the build.  The others are optional common platform types that may appear. -->
@@ -89,10 +91,25 @@
     <Folder Include="Content" />
     <Folder Include="icons" />
     <Folder Include="css" />
+    <Folder Include="merged-docs\" />
     <Folder Include="scripts" />
+    <Folder Include="xml-docs\" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Content\Welcome.aml" />
+    <None Include="merged-docs\ByteForge.Toolkit.Modern.merged.xml" />
+    <None Include="xml-docs\CLI.Examples.xml" />
+    <None Include="xml-docs\CommandLine.Examples.xml" />
+    <None Include="xml-docs\Configuration.Examples.xml" />
+    <None Include="xml-docs\Core.Examples.xml" />
+    <None Include="xml-docs\Data.Examples.xml" />
+    <None Include="xml-docs\DataStructures.Examples.xml" />
+    <None Include="xml-docs\Json.Examples.xml" />
+    <None Include="xml-docs\Logging.Examples.xml" />
+    <None Include="xml-docs\Mail.Examples.xml" />
+    <None Include="xml-docs\Net.Examples.xml" />
+    <None Include="xml-docs\Security.Examples.xml" />
+    <None Include="xml-docs\Utils.Examples.xml" />
   </ItemGroup>
   <ItemGroup>
     <ContentLayout Include="ContentLayout.content" />
@@ -114,6 +131,11 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Newtonsoft.Json">
+      <Version>13.0.4</Version>
+    </PackageReference>
+  </ItemGroup>
   <!-- Import the common build targets during NuGet restore because before the packages are being installed, $(SHFBROOT) is not set yet -->
   <Import Project="$(MSBuildToolsPath)\Microsoft.Common.targets" Condition="'$(MSBuildRestoreSessionId)' != ''" />
   <!-- Import the SHFB build targets during build -->
@@ -121,8 +143,7 @@
   <!-- The pre-build and post-build event properties must appear *after* the targets file import in order to be
 			 evaluated correctly. -->
   <PropertyGroup>
-    <PreBuildEvent>
-    </PreBuildEvent>
+    <PreBuildEvent>pwsh -ep Bypass -f "$(MSBuildThisFileDirectory)Merge-Documentation.ps1"</PreBuildEvent>
     <PostBuildEvent>
     </PostBuildEvent>
     <RunPostBuildEvent>OnBuildSuccess</RunPostBuildEvent>

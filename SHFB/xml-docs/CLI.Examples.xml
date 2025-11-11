@@ -1,0 +1,617 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>ByteForge.Toolkit.Modern</name>
+    </assembly>
+    <members>
+        <!-- CLI Module Examples -->
+        
+        <!-- CommandAttribute -->
+        <member name="T:ByteForge.Toolkit.CommandLine.CommandAttribute">
+            <example>
+                <para>Define a simple command using method with attributes:</para>
+                <code language="cs">
+<![CDATA[
+using ByteForge.Toolkit.CommandLine;
+
+[Command("greet", "Greet a person")]
+public class GreetCommands
+{
+    [Command("hello", "Say hello to someone")]
+    public void Hello(
+        [Option("Person's name", "n")] string name,
+        [Option("Custom greeting")] string greeting = "Hello")
+    {
+        Console.WriteLine($"{greeting}, {name}!");
+    }
+}
+
+// Usage with RootCommandBuilder:
+var builder = new RootCommandBuilder("My App");
+builder.AddAssembly(Assembly.GetExecutingAssembly());
+var parser = builder.Build();
+]]>
+                </code>
+            </example>
+            
+            <example>
+                <para>Define a command with multiple aliases:</para>
+                <code language="cs">
+<![CDATA[
+using ByteForge.Toolkit.CommandLine;
+
+[Command("process", "Process data files", "proc", "run")]
+public class ProcessCommands
+{
+    [Command("start", "Start processing")]
+    public void Start(
+        [Option("Input file path", "i")] string inputFile,
+        [Option("Output directory")] string outputDir = "output")
+    {
+        Console.WriteLine($"Processing {inputFile} to {outputDir}");
+    }
+}
+]]>
+                </code>
+            </example>
+        </member>
+ 
+        <!-- OptionAttribute -->
+        <member name="T:ByteForge.Toolkit.CommandLine.OptionAttribute">
+            <example>
+                <para>Define options on method parameters:</para>
+                <code language="cs">
+<![CDATA[
+using ByteForge.Toolkit.CommandLine;
+
+public class DataCommands
+{
+    [Command("import", "Import data from various sources")]
+    public static void Import(
+        [Option("Input file path", "i")] string inputFile,
+        [Option("Data format: csv, json, xml")] string format = "csv",
+        [Option("Batch size for processing")] int batchSize = 1000,
+        [Option("Skip validation")] bool skipValidation = false)
+    {
+        Console.WriteLine($"Importing from: {inputFile}");
+        Console.WriteLine($"Format: {format}");
+        Console.WriteLine($"Batch size: {batchSize}");
+        Console.WriteLine($"Skip validation: {skipValidation}");
+    }
+}
+]]>
+                </code>
+            </example>
+          
+            <example>
+                <para>Using enum types with options:</para>
+                <code language="cs">
+<![CDATA[
+using ByteForge.Toolkit.CommandLine;
+
+public enum LogLevel { Debug, Info, Warning, Error }
+public enum OutputFormat { Json, Xml, Csv }
+
+public class ConfigCommands
+{
+    [Command("setup", "Configure application settings")]
+    public static void Setup(
+        [Option("Minimum log level")] LogLevel logLevel = LogLevel.Info,
+        [Option("Output format for reports")] OutputFormat format = OutputFormat.Json,
+        [Option("Enable verbose output")] bool verbose = false)
+    {
+        Console.WriteLine($"Log Level: {logLevel}");
+        Console.WriteLine($"Output Format: {format}");
+        Console.WriteLine($"Verbose: {verbose}");
+    }
+}
+]]>
+                </code>
+            </example>
+        </member>
+        
+        <!-- RootCommandBuilder -->
+        <member name="T:ByteForge.Toolkit.CommandLine.RootCommandBuilder">
+            <example>
+                <para>Build and parse commands using RootCommandBuilder:</para>
+                <code language="cs">
+<![CDATA[
+using ByteForge.Toolkit.CommandLine;
+using System.Reflection;
+
+public class Program
+{
+    public static async Task<int> Main(string[] args)
+    {
+        // Create root command builder
+        var builder = new RootCommandBuilder("My CLI Application");
+        
+        // Configure features
+        builder.EnableHelp = true;
+        builder.EnableTypoCorrections = true;
+        builder.EnableParameterExplanation = true;
+        
+        // Add banner
+        builder.BannerAction = () =>
+        {
+            Console.WriteLine("══════════════════════════");
+            Console.WriteLine("║  My Application v1.0   ║");
+            Console.WriteLine("══════════════════════════");
+        };
+        
+        // Add commands from assembly
+        builder.AddAssembly(Assembly.GetExecutingAssembly());
+        
+        // Build parser
+        var parser = builder.Build();
+        
+        // Parse and invoke
+        return await parser.InvokeAsync(args);
+    }
+}
+]]>
+                </code>
+            </example>
+            
+            <example>
+                <para>Adding global options:</para>
+                <code language="cs">
+<![CDATA[
+using ByteForge.Toolkit.CommandLine;
+
+public class Program
+{
+    public static async Task<int> Main(string[] args)
+    {
+        var builder = new RootCommandBuilder("My Tool");
+        
+        // Add global verbose option
+        builder.AddGlobalOption(
+            "verbose",
+            "Enable verbose output",
+            () => Environment.SetEnvironmentVariable("VERBOSE", "1"),
+            "v");
+        
+        // Add global config option that expects a value
+        builder.AddGlobalOption(
+            "config",
+            "Configuration file path",
+            (value) => Environment.SetEnvironmentVariable("CONFIG_PATH", value),
+            "c");
+        
+        builder.AddAssembly(Assembly.GetExecutingAssembly());
+        var parser = builder.Build();
+        return await parser.InvokeAsync(args);
+    }
+}
+]]>
+                </code>
+            </example>
+        </member>
+        
+        <!-- ConsoleSpinner -->
+        <member name="T:ByteForge.Toolkit.CommandLine.ConsoleSpinner">
+            <example>
+                <para>Use ConsoleSpinner for long-running operations:</para>
+                <code language="cs">
+<![CDATA[
+using ByteForge.Toolkit.CommandLine;
+
+public class BackupCommands
+{
+    [Command("backup", "Backup files to destination")]
+    public static void Backup(
+        [Option("Source directory", "s")] string source,
+        [Option("Destination directory", "d")] string destination)
+    {
+        using (var spinner = new ConsoleSpinner("Preparing backup"))
+        {
+            // Validation
+            if (!Directory.Exists(source))
+                throw new DirectoryNotFoundException($"Source not found: {source}");
+            
+            Directory.CreateDirectory(destination);
+            Thread.Sleep(1000); // Simulate work
+        }
+        
+        Console.WriteLine("✓ Preparation complete");
+        
+        using (var spinner = new ConsoleSpinner("Copying files"))
+        {
+            // Simulate file copy
+            Thread.Sleep(3000);
+        }
+        
+        Console.WriteLine("✓ Backup completed!");
+    }
+}
+]]>
+                </code>
+            </example>
+            
+            <example>
+                <para>Dynamic spinner messages with different styles:</para>
+                <code language="cs">
+<![CDATA[
+using ByteForge.Toolkit.CommandLine;
+
+public class ProcessCommands
+{
+    [Command("process", "Process data files")]
+    public static void Process(
+        [Option("Input file")] string input)
+    {
+        // Create spinner with custom style and color
+        var spinner = new ConsoleSpinner("Starting", SpinnerStyle.Braille, ConsoleColor.Cyan);
+        
+        try
+        {
+            // Update message dynamically
+            for (int i = 1; i <= 5; i++)
+            {
+                spinner.Message = $"Processing step {i}/5";
+                Thread.Sleep(1000);
+            }
+            
+            spinner.Color = ConsoleColor.Green;
+            spinner.Message = "Finalizing";
+            Thread.Sleep(1000);
+        }
+        finally
+        {
+            spinner.Dispose();
+        }
+        
+        Console.WriteLine("✓ Processing complete!");
+    }
+}
+]]>
+                </code>
+            </example>
+            
+            <example>
+                <para>Available spinner styles:</para>
+                <code language="cs">
+<![CDATA[
+using ByteForge.Toolkit.CommandLine;
+
+// Different spinner styles available
+var asciiSpinner = new ConsoleSpinner("Loading", SpinnerStyle.ASCII);      // |/-\
+var brailleSpinner = new ConsoleSpinner("Loading", SpinnerStyle.Braille);  // ⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏
+var circleSpinner = new ConsoleSpinner("Loading", SpinnerStyle.Circles);   // ◐◓◑◒
+var arrowSpinner = new ConsoleSpinner("Loading", SpinnerStyle.Arrows);     // ←↖↑↗→↘↓↙
+var starSpinner = new ConsoleSpinner("Loading", SpinnerStyle.UnicodeStars); // ✶✸✹✺✹✷
+
+// Custom spinner characters
+var customSpinner = new ConsoleSpinner("Working", "⣾⣽⣻⢿⡿⣟⣯⣷");
+
+// Positional spinners
+var positionedSpinner = new ConsoleSpinner(5, 10, "Loading at position (5,10)");
+]]>
+                </code>
+            </example>
+        </member>
+        
+        <!-- ProgressSpinner -->
+        <member name="T:ByteForge.Toolkit.CommandLine.ProgressSpinner">
+            <example>
+                <para>Use ProgressSpinner for simple progress indication:</para>
+                <code language="cs">
+<![CDATA[
+using ByteForge.Toolkit.CommandLine;
+
+public class DownloadCommands
+{
+    [Command("download", "Download files from URL")]
+    public static async Task Download(
+        [Option("File URL")] string url,
+        [Option("Output path")] string output)
+    {
+        using (new ProgressSpinner("Downloading"))
+        {
+            // Simulate download
+            await Task.Delay(3000);
+        }
+        
+        Console.WriteLine($"✓ Downloaded to: {output}");
+    }
+}
+]]>
+                </code>
+            </example>
+    
+            <example>
+                <para>Multiple operations with ProgressSpinner:</para>
+                <code language="cs">
+<![CDATA[
+using ByteForge.Toolkit.CommandLine;
+
+public class DeployCommands
+{
+    [Command("deploy", "Deploy application")]
+    public static async Task<int> Deploy(
+        [Option("Environment")] string environment,
+        [Option("Version")] string version)
+    {
+        Console.WriteLine($"Deploying v{version} to {environment}\n");
+        
+        using (new ProgressSpinner("Building application"))
+        {
+            await Task.Delay(2000);
+        }
+        Console.WriteLine("✓ Build complete\n");
+        
+        using (new ProgressSpinner("Running tests"))
+        {
+            await Task.Delay(1500);
+        }
+        Console.WriteLine("✓ Tests passed\n");
+        
+        using (var spinner = new ProgressSpinner("Uploading artifacts"))
+        {
+            await Task.Delay(1000);
+            spinner.UpdateMessage("Finalizing upload");
+            await Task.Delay(1500);
+        }
+        Console.WriteLine("✓ Upload complete\n");
+        
+        Console.WriteLine("✓ Deployment successful!");
+        return 0;
+    }
+}
+]]>
+                </code>
+            </example>
+        </member>
+        
+        <!-- GlobalOption -->
+        <member name="T:ByteForge.Toolkit.CommandLine.GlobalOption">
+            <example>
+                <para>Define global options for application-wide settings:</para>
+                <code language="cs">
+<![CDATA[
+using ByteForge.Toolkit.CommandLine;
+
+public class GlobalOptionsExample
+{
+    public static void ConfigureGlobalOptions(RootCommandBuilder builder)
+    {
+        // Simple flag option (no value expected)
+        builder.AddGlobalOption(
+            "verbose",
+            "Enable verbose logging",
+            () => Console.WriteLine("Verbose mode enabled"),
+            "v");
+        
+        // Option that expects a value
+        builder.AddGlobalOption(
+            "config",
+            "Path to configuration file",
+            (configPath) => 
+            {
+                Environment.SetEnvironmentVariable("CONFIG_FILE", configPath);
+                Console.WriteLine($"Using config file: {configPath}");
+            },
+            "c", "cfg");
+        
+        // Debug level option with value
+        builder.AddGlobalOption(
+            "debug-level",
+            "Set debug level (1-5)",
+            (level) => 
+            {
+                if (int.TryParse(level, out int debugLevel))
+                    Environment.SetEnvironmentVariable("DEBUG_LEVEL", level);
+                else
+                    Console.WriteLine($"Invalid debug level: {level}");
+            },
+            "d");
+    }
+}
+
+// Usage examples:
+// app.exe --verbose command
+// app.exe -v command  
+// app.exe --config myconfig.json command
+// app.exe -c myconfig.json command
+// app.exe --debug-level 3 command
+// app.exe -d 2 command
+]]>
+                </code>
+            </example>
+        </member>
+        
+        <!-- Complete Application Example -->
+        <member name="M:ByteForge.Toolkit.CommandLine.Examples.CompleteApplication">
+            <example>
+                <para>Complete CLI application example:</para>
+                <code language="cs">
+<![CDATA[
+using ByteForge.Toolkit.CommandLine;
+using System;
+using System.IO;
+using System.Threading.Tasks;
+using System.Reflection;
+
+// ═══════════════════════════════════════════
+// Complete CLI Application Example
+// ═══════════════════════════════════════════
+
+public class Program
+{
+    public static async Task<int> Main(string[] args)
+    {
+        var builder = new RootCommandBuilder("File Manager Tool")
+        {
+            EnableHelp = true,
+            EnableTypoCorrections = true,
+            EnableCaseSensitivity = false,
+            EnableParameterExplanation = true
+        };
+  
+        // Add banner
+        builder.BannerAction = () =>
+        {
+            Console.ForegroundColor = ConsoleColor.Green;
+            Console.WriteLine(@"
+╔═══════════════════════════════════╗
+║      File Manager Tool v1.0       ║
+║   Professional File Operations    ║
+╚═══════════════════════════════════╝
+");
+            Console.ResetColor();
+        };
+        
+        // Add global options
+        builder.AddGlobalOption(
+            "verbose",
+            "Enable detailed logging",
+            () => Environment.SetEnvironmentVariable("VERBOSE", "1"),
+            "v");
+        
+        // Load commands from assembly
+        builder.AddAssembly(Assembly.GetExecutingAssembly());
+        
+        // Build and parse
+        var parser = builder.Build();
+        return await parser.InvokeAsync(args);
+    }
+}
+
+// ═══════════════════════════════════════════
+// File Commands
+// ═══════════════════════════════════════════
+
+[Command("file", "File operations")]
+public class FileCommands
+{
+    [Command("copy", "Copy files")]
+    public async Task<int> Copy(
+        [Option("Source file path", "s")] string source,
+        [Option("Destination path", "d")] string destination,
+        [Option("Overwrite existing files")] bool overwrite = false)
+    {
+        try
+        {
+            using (new ConsoleSpinner("Validating paths"))
+            {
+                if (!File.Exists(source))
+                    throw new FileNotFoundException($"Source file not found: {source}");
+                
+                var destDir = Path.GetDirectoryName(destination);
+                if (!string.IsNullOrEmpty(destDir) && !Directory.Exists(destDir))
+                    Directory.CreateDirectory(destDir);
+                
+                await Task.Delay(500);
+            }
+            Console.WriteLine("✓ Validation complete\n");
+            
+            using (new ProgressSpinner("Copying file"))
+            {
+                File.Copy(source, destination, overwrite);
+                await Task.Delay(1000); // Simulate copy time
+            }
+            
+            Console.WriteLine($"\n✓ File copied successfully!");
+            return 0;
+        }
+        catch (Exception ex)
+        {
+            Console.ForegroundColor = ConsoleColor.Red;
+            Console.WriteLine($"\n✗ Copy failed: {ex.Message}");
+            Console.ResetColor();
+            return 1;
+        }
+    }
+    
+    [Command("list", "List files in directory")]
+    public void List(
+        [Option("Directory path")] string directory = ".",
+        [Option("Include hidden files")] bool includeHidden = false)
+    {
+        Console.WriteLine($"Files in: {Path.GetFullPath(directory)}\n");
+        
+        var searchOption = includeHidden 
+            ? SearchOption.AllDirectories 
+            : SearchOption.TopDirectoryOnly;
+            
+        var files = Directory.GetFiles(directory, "*", searchOption);
+        
+        if (files.Length == 0)
+        {
+            Console.WriteLine("No files found");
+            return;
+        }
+        
+        foreach (var file in files)
+        {
+            var info = new FileInfo(file);
+            Console.WriteLine($"  📄 {info.Name}");
+            Console.WriteLine($"     Size: {info.Length} bytes");
+            Console.WriteLine($"     Modified: {info.LastWriteTime}");
+            Console.WriteLine();
+        }
+    }
+}
+
+// ═══════════════════════════════════════════
+// Utility Commands
+// ═══════════════════════════════════════════
+
+public class UtilityCommands
+{
+    [Command("version", "Show version information", "ver", "v")]
+    public static void ShowVersion()
+    {
+        var version = Assembly.GetExecutingAssembly().GetName().Version;
+        Console.WriteLine($"File Manager Tool v{version}");
+    }
+    
+    [Command("help", "Show help information", "h", "?")]
+    public static void ShowHelp()
+    {
+        Console.WriteLine("File Manager Tool - Professional File Operations");
+        Console.WriteLine();
+        Console.WriteLine("Usage: filemgr [global-options] [command] [options]");
+        Console.WriteLine();
+        Console.WriteLine("Global Options:");
+        Console.WriteLine("  --verbose, -v    Enable verbose output");
+        Console.WriteLine();
+        Console.WriteLine("Commands:");
+        Console.WriteLine("  file copy        Copy files");
+        Console.WriteLine("  file list        List files in directory");
+        Console.WriteLine("  version          Show version");
+        Console.WriteLine();
+        Console.WriteLine("Use 'filemgr [command] --help' for command-specific help");
+    }
+}
+
+// ═══════════════════════════════════════════
+// Usage Examples
+// ═══════════════════════════════════════════
+
+/*
+# Copy file
+filemgr.exe file copy --source C:\Documents\file.txt --destination D:\Backup\file.txt
+
+# Copy with overwrite
+filemgr.exe file copy -s C:\Data\data.csv -d D:\Backup\data.csv --overwrite
+
+# List files
+filemgr.exe file list --directory C:\Documents
+
+# List with hidden files
+filemgr.exe file list --directory C:\Data --include-hidden
+
+# Show version
+filemgr.exe version
+
+# Verbose mode
+filemgr.exe --verbose file copy -s source.txt -d dest.txt
+*/
+]]>
+                </code>
+            </example>
+        </member>
+    </members>
+</doc>

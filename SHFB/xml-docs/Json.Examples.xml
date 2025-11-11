@@ -1,0 +1,1408 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>ByteForge.Toolkit.Modern</name>
+    </assembly>
+    <members>
+        <!-- Json Module Examples -->
+        
+        <!-- JsonDeltaSerializer -->
+        <member name="T:ByteForge.Toolkit.Json.JsonDeltaSerializer">
+            <example>
+            <para>Basic delta serialization to reduce bandwidth:</para>
+            <code language="cs">
+using ByteForge.Toolkit;
+using Newtonsoft.Json;
+
+// Define entity class
+public class Customer
+{
+    public int Id { get; set; }
+    public string Name { get; set; }
+    public string Email { get; set; }
+    public string Phone { get; set; }
+    public string Address { get; set; }
+    public DateTime LastModified { get; set; }
+    public bool IsActive { get; set; }
+}
+
+// Create delta serializer
+var deltaSerializer = new JsonDeltaSerializer();
+
+// Original customer state
+var originalCustomer = new Customer
+{
+    Id = 123,
+    Name = "John Smith", 
+    Email = "john@example.com",
+    Phone = "555-1234",
+    Address = "123 Main St",
+    LastModified = DateTime.Now.AddHours(-1),
+    IsActive = true
+};
+
+// Serialize full object initially
+string fullJson = JsonConvert.SerializeObject(originalCustomer, Formatting.Indented);
+Console.WriteLine("Full JSON serialization:");
+Console.WriteLine(fullJson);
+Console.WriteLine($"Size: {fullJson.Length} characters");
+Console.WriteLine();
+
+// Later, customer is modified (only 2 properties changed)
+var modifiedCustomer = new Customer
+{
+    Id = 123,
+    Name = "John Smith", 
+    Email = "john.smith@example.com",  // Email changed
+    Phone = "555-5678",                // Phone changed
+    Address = "123 Main St",           // Address same
+    LastModified = DateTime.Now,       // LastModified changed
+    IsActive = true                    // IsActive same
+};
+
+// Serialize only the changes (delta)
+string deltaJson = deltaSerializer.SerializeDelta(modifiedCustomer, originalCustomer);
+Console.WriteLine("Delta JSON serialization:");
+Console.WriteLine(deltaJson);
+Console.WriteLine($"Size: {deltaJson.Length} characters");
+
+// Calculate size reduction
+double reduction = (double)(fullJson.Length - deltaJson.Length) / fullJson.Length * 100;
+Console.WriteLine($"Size reduction: {reduction:F1}%");
+Console.WriteLine();
+
+// Get list of changed properties
+var changedProperties = deltaSerializer.GetChangedProperties(modifiedCustomer, originalCustomer);
+Console.WriteLine("Changed properties:");
+foreach (string property in changedProperties)
+{
+    Console.WriteLine($"  - {property}");
+}
+Console.WriteLine();
+
+// Demonstrate delta deserialization
+var reconstructedCustomer = deltaSerializer.DeserializeDelta(originalCustomer, deltaJson);
+Console.WriteLine("Reconstructed customer:");
+Console.WriteLine($"  Name: {reconstructedCustomer.Name}");
+Console.WriteLine($"  Email: {reconstructedCustomer.Email}");
+Console.WriteLine($"  Phone: {reconstructedCustomer.Phone}");
+Console.WriteLine($"  Address: {reconstructedCustomer.Address}");
+Console.WriteLine($"  LastModified: {reconstructedCustomer.LastModified:yyyy-MM-dd HH:mm:ss}");
+Console.WriteLine($"  IsActive: {reconstructedCustomer.IsActive}");
+            </code>
+            </example>
+            
+            <example>
+            <para>API response optimization with delta serialization:</para>
+            <code language="cs">
+// Enterprise API service using delta serialization
+public class CustomerApiService
+{
+    private readonly JsonDeltaSerializer _deltaSerializer;
+    private readonly Dictionary&lt;int, Customer&gt; _cache;
+    
+    public CustomerApiService()
+    {
+        _deltaSerializer = new JsonDeltaSerializer();
+        _cache = new Dictionary&lt;int, Customer&gt;();
+    }
+    
+    // GET endpoint - returns full customer data
+    public ApiResponse GetCustomer(int customerId)
+    {
+        var customer = GetCustomerFromDatabase(customerId);
+        
+        // Cache the customer for future delta operations
+        _cache[customerId] = CloneCustomer(customer);
+        
+        return new ApiResponse
+        {
+            Data = JsonConvert.SerializeObject(customer),
+            IsPartial = false,
+            Timestamp = DateTime.UtcNow
+        };
+    }
+    
+    // PUT endpoint - returns only changed properties
+    public ApiResponse UpdateCustomer(int customerId, Customer updates)
+    {
+        var existingCustomer = GetCustomerFromDatabase(customerId);
+        var originalState = _cache.ContainsKey(customerId) 
+            ? _cache[customerId] 
+            : CloneCustomer(existingCustomer);
+        
+        // Apply updates
+        ApplyUpdates(existingCustomer, updates);
+        
+        // Save to database
+        SaveCustomerToDatabase(existingCustomer);
+        
+        // Generate delta response
+        string deltaJson = _deltaSerializer.SerializeDelta(existingCustomer, originalState);
+        
+        // Update cache
+        _cache[customerId] = CloneCustomer(existingCustomer);
+        
+        return new ApiResponse
+        {
+            Data = deltaJson,
+            IsPartial = true,
+            Timestamp = DateTime.UtcNow,
+            ChangedProperties = _deltaSerializer.GetChangedProperties(existingCustomer, originalState).ToList()
+        };
+    }
+    
+    // Batch update with delta tracking
+    public BatchApiResponse UpdateMultipleCustomers(Dictionary&lt;int, Customer&gt; updates)
+    {
+        var responses = new List&lt;CustomerUpdateResult&gt;();
+        var totalDataSize = 0;
+        var totalDeltaSize = 0;
+        
+        foreach (var kvp in updates)
+        {
+            int customerId = kvp.Key;
+            var updateData = kvp.Value;
+            
+            var existing = GetCustomerFromDatabase(customerId);
+            var original = _cache.ContainsKey(customerId) 
+                ? _cache[customerId] 
+                : CloneCustomer(existing);
+            
+            // Measure full vs delta sizes
+            string fullJson = JsonConvert.SerializeObject(existing);
+            totalDataSize += fullJson.Length;
+            
+            // Apply updates
+            ApplyUpdates(existing, updateData);
+            SaveCustomerToDatabase(existing);
+            
+            // Generate delta
+            string deltaJson = _deltaSerializer.SerializeDelta(existing, original);
+            totalDeltaSize += deltaJson.Length;
+            
+            responses.Add(new CustomerUpdateResult
+            {
+                CustomerId = customerId,
+                DeltaData = deltaJson,
+                ChangedProperties = _deltaSerializer.GetChangedProperties(existing, original).ToList(),
+                FullSizeBytes = fullJson.Length,
+                DeltaSizeBytes = deltaJson.Length
+            });
+            
+            _cache[customerId] = CloneCustomer(existing);
+        }
+        
+        return new BatchApiResponse
+        {
+            Results = responses,
+            TotalUpdated = responses.Count,
+            TotalFullSizeBytes = totalDataSize,
+            TotalDeltaSizeBytes = totalDeltaSize,
+            CompressionRatio = (double)totalDeltaSize / totalDataSize,
+            BandwidthSavings = totalDataSize - totalDeltaSize
+        };
+    }
+    
+    private void ApplyUpdates(Customer target, Customer updates)
+    {
+        if (updates.Name != null) target.Name = updates.Name;
+        if (updates.Email != null) target.Email = updates.Email;
+        if (updates.Phone != null) target.Phone = updates.Phone;
+        if (updates.Address != null) target.Address = updates.Address;
+        if (updates.IsActive != target.IsActive) target.IsActive = updates.IsActive;
+        target.LastModified = DateTime.UtcNow;
+    }
+    
+    private Customer CloneCustomer(Customer original)
+    {
+        return new Customer
+        {
+            Id = original.Id,
+            Name = original.Name,
+            Email = original.Email,
+            Phone = original.Phone,
+            Address = original.Address,
+            LastModified = original.LastModified,
+            IsActive = original.IsActive
+        };
+    }
+    
+    private Customer GetCustomerFromDatabase(int id)
+    {
+        // Simulate database retrieval
+        return new Customer
+        {
+            Id = id,
+            Name = "Sample Customer",
+            Email = "customer@example.com",
+            Phone = "555-0000",
+            Address = "123 Sample St",
+            LastModified = DateTime.Now.AddDays(-1),
+            IsActive = true
+        };
+    }
+    
+    private void SaveCustomerToDatabase(Customer customer)
+    {
+        // Simulate database save
+        Console.WriteLine($"Saved customer {customer.Id} to database");
+    }
+}
+
+// Response models
+public class ApiResponse
+{
+    public string Data { get; set; }
+    public bool IsPartial { get; set; }
+    public DateTime Timestamp { get; set; }
+    public List&lt;string&gt; ChangedProperties { get; set; } = new();
+}
+
+public class CustomerUpdateResult
+{
+    public int CustomerId { get; set; }
+    public string DeltaData { get; set; }
+    public List&lt;string&gt; ChangedProperties { get; set; }
+    public int FullSizeBytes { get; set; }
+    public int DeltaSizeBytes { get; set; }
+}
+
+public class BatchApiResponse
+{
+    public List&lt;CustomerUpdateResult&gt; Results { get; set; }
+    public int TotalUpdated { get; set; }
+    public int TotalFullSizeBytes { get; set; }
+    public int TotalDeltaSizeBytes { get; set; }
+    public double CompressionRatio { get; set; }
+    public int BandwidthSavings { get; set; }
+}
+
+// Example usage
+var apiService = new CustomerApiService();
+
+// Initial GET request
+var getResponse = apiService.GetCustomer(123);
+Console.WriteLine("GET response:");
+Console.WriteLine($"  Full data: {getResponse.Data.Length} bytes");
+Console.WriteLine($"  Is partial: {getResponse.IsPartial}");
+
+// Update customer
+var updates = new Customer
+{
+    Email = "newemail@example.com",
+    Phone = "555-9999"
+};
+
+var updateResponse = apiService.UpdateCustomer(123, updates);
+Console.WriteLine("\nUPDATE response:");
+Console.WriteLine($"  Delta data: {updateResponse.Data}");
+Console.WriteLine($"  Delta size: {updateResponse.Data.Length} bytes");
+Console.WriteLine($"  Is partial: {updateResponse.IsPartial}");
+Console.WriteLine($"  Changed properties: {string.Join(", ", updateResponse.ChangedProperties)}");
+
+// Batch update
+var batchUpdates = new Dictionary&lt;int, Customer&gt;
+{
+    { 124, new Customer { Name = "Updated Name 1", Email = "update1@example.com" } },
+    { 125, new Customer { Phone = "555-1111", Address = "New Address" } },
+    { 126, new Customer { IsActive = false } }
+};
+
+var batchResponse = apiService.UpdateMultipleCustomers(batchUpdates);
+Console.WriteLine("\nBATCH UPDATE response:");
+Console.WriteLine($"  Updated customers: {batchResponse.TotalUpdated}");
+Console.WriteLine($"  Total full size: {batchResponse.TotalFullSizeBytes:N0} bytes");
+Console.WriteLine($"  Total delta size: {batchResponse.TotalDeltaSizeBytes:N0} bytes");
+Console.WriteLine($"  Compression ratio: {batchResponse.CompressionRatio:P1}");
+Console.WriteLine($"  Bandwidth savings: {batchResponse.BandwidthSavings:N0} bytes");
+            </code>
+            </example>
+            
+            <example>
+            <para>Real-time data synchronization with change tracking:</para>
+            <code language="cs">
+// Change tracking interface and implementation
+public interface IChangeTracker
+{
+    bool HasChanged(string propertyName);
+    IEnumerable&lt;string&gt; GetChangedProperties();
+    void ClearChanges();
+    void MarkAsChanged(string propertyName);
+}
+
+// Enhanced customer class with change tracking
+public class TrackableCustomer : IChangeTracker
+{
+    private readonly HashSet&lt;string&gt; _changedProperties = new();
+    
+    public int Id { get; set; }
+    
+    private string _name;
+    public string Name
+    {
+        get => _name;
+        set
+        {
+            if (_name != value)
+            {
+                _name = value;
+                MarkAsChanged(nameof(Name));
+            }
+        }
+    }
+    
+    private string _email;
+    public string Email
+    {
+        get => _email;
+        set
+        {
+            if (_email != value)
+            {
+                _email = value;
+                MarkAsChanged(nameof(Email));
+            }
+        }
+    }
+    
+    private string _phone;
+    public string Phone
+    {
+        get => _phone;
+        set
+        {
+            if (_phone != value)
+            {
+                _phone = value;
+                MarkAsChanged(nameof(Phone));
+            }
+        }
+    }
+    
+    private bool _isActive;
+    public bool IsActive
+    {
+        get => _isActive;
+        set
+        {
+            if (_isActive != value)
+            {
+                _isActive = value;
+                MarkAsChanged(nameof(IsActive));
+            }
+        }
+    }
+    
+    public DateTime LastModified { get; set; }
+    
+    // IChangeTracker implementation
+    public bool HasChanged(string propertyName) => _changedProperties.Contains(propertyName);
+    public IEnumerable&lt;string&gt; GetChangedProperties() => _changedProperties.ToList();
+    public void ClearChanges() => _changedProperties.Clear();
+    public void MarkAsChanged(string propertyName) => _changedProperties.Add(propertyName);
+}
+
+// Real-time sync service
+public class RealTimeSyncService
+{
+    private readonly JsonDeltaSerializer _deltaSerializer;
+    private readonly Dictionary&lt;int, TrackableCustomer&gt; _clientCache;
+    private readonly Queue&lt;SyncUpdate&gt; _pendingUpdates;
+    
+    public RealTimeSyncService()
+    {
+        _deltaSerializer = new JsonDeltaSerializer();
+        _clientCache = new Dictionary&lt;int, TrackableCustomer&gt;();
+        _pendingUpdates = new Queue&lt;SyncUpdate&gt;();
+    }
+    
+    // Simulate receiving update from server
+    public void HandleServerUpdate(int customerId, string deltaJson)
+    {
+        Console.WriteLine($"Received server update for customer {customerId}");
+        Console.WriteLine($"Delta: {deltaJson}");
+        
+        if (!_clientCache.TryGetValue(customerId, out var existingCustomer))
+        {
+            // First time seeing this customer - deserialize full object
+            existingCustomer = JsonConvert.DeserializeObject&lt;TrackableCustomer&gt;(deltaJson);
+            _clientCache[customerId] = existingCustomer;
+            Console.WriteLine($"New customer cached: {customerId}");
+        }
+        else
+        {
+            // Merge delta with existing cached data
+            var updated = _deltaSerializer.DeserializeDelta(existingCustomer, deltaJson);
+            _clientCache[customerId] = updated;
+            Console.WriteLine($"Customer {customerId} updated from delta");
+        }
+        
+        // Clear change tracking after server sync
+        _clientCache[customerId].ClearChanges();
+        
+        // Notify UI of update
+        OnCustomerUpdated?.Invoke(customerId, _clientCache[customerId]);
+    }
+    
+    // Handle local changes and prepare for server sync
+    public void HandleLocalChange(int customerId)
+    {
+        if (!_clientCache.TryGetValue(customerId, out var customer))
+            return;
+        
+        var changedProperties = customer.GetChangedProperties().ToList();
+        if (!changedProperties.Any())
+            return;
+        
+        Console.WriteLine($"Local changes detected for customer {customerId}:");
+        foreach (var prop in changedProperties)
+        {
+            Console.WriteLine($"  - {prop}");
+        }
+        
+        // Create delta for server sync
+        var deltaJson = _deltaSerializer.SerializeDelta(customer, customer);
+        
+        var update = new SyncUpdate
+        {
+            CustomerId = customerId,
+            DeltaJson = deltaJson,
+            Timestamp = DateTime.UtcNow,
+            ChangedProperties = changedProperties
+        };
+        
+        _pendingUpdates.Enqueue(update);
+        Console.WriteLine($"Queued update for sync: {deltaJson}");
+    }
+    
+    // Sync pending changes to server
+    public async Task SyncPendingChanges()
+    {
+        Console.WriteLine($"Syncing {_pendingUpdates.Count} pending changes...");
+        
+        var syncBatch = new List&lt;SyncUpdate&gt;();
+        
+        // Drain pending updates
+        while (_pendingUpdates.Any())
+        {
+            syncBatch.Add(_pendingUpdates.Dequeue());
+        }
+        
+        if (!syncBatch.Any()) return;
+        
+        foreach (var update in syncBatch)
+        {
+            try
+            {
+                // Simulate server API call
+                await SendUpdateToServer(update);
+                
+                // Clear changes after successful sync
+                if (_clientCache.TryGetValue(update.CustomerId, out var customer))
+                {
+                    customer.ClearChanges();
+                }
+                
+                Console.WriteLine($"✓ Synced customer {update.CustomerId}");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"✗ Failed to sync customer {update.CustomerId}: {ex.Message}");
+                
+                // Re-queue failed update
+                _pendingUpdates.Enqueue(update);
+            }
+        }
+    }
+    
+    private async Task SendUpdateToServer(SyncUpdate update)
+    {
+        // Simulate network delay
+        await Task.Delay(100);
+        
+        // Simulate API call
+        Console.WriteLine($"  POST /api/customers/{update.CustomerId}/delta");
+        Console.WriteLine($"  Body: {update.DeltaJson}");
+        
+        // Simulate occasional network failure
+        if (new Random().Next(10) &lt; 2)
+        {
+            throw new Exception("Network timeout");
+        }
+    }
+    
+    public void PrintCacheStatus()
+    {
+        Console.WriteLine("\n=== Cache Status ===");
+        Console.WriteLine($"Cached customers: {_clientCache.Count}");
+        Console.WriteLine($"Pending updates: {_pendingUpdates.Count}");
+        
+        foreach (var kvp in _clientCache)
+        {
+            var customer = kvp.Value;
+            var changes = customer.GetChangedProperties().ToList();
+            Console.WriteLine($"  Customer {kvp.Key}: {changes.Count} pending changes");
+            
+            if (changes.Any())
+            {
+                Console.WriteLine($"    Changed: {string.Join(", ", changes)}");
+            }
+        }
+        Console.WriteLine();
+    }
+    
+    public event Action&lt;int, TrackableCustomer&gt; OnCustomerUpdated;
+}
+
+// Supporting classes
+public class SyncUpdate
+{
+    public int CustomerId { get; set; }
+    public string DeltaJson { get; set; }
+    public DateTime Timestamp { get; set; }
+    public List&lt;string&gt; ChangedProperties { get; set; }
+}
+
+// Demonstration
+public class RealTimeSyncDemo
+{
+    public static async Task RunDemo()
+    {
+        var syncService = new RealTimeSyncService();
+        
+        // Subscribe to customer updates
+        syncService.OnCustomerUpdated += (id, customer) =>
+        {
+            Console.WriteLine($"UI notification: Customer {id} updated - {customer.Name}");
+        };
+        
+        Console.WriteLine("=== Real-Time Sync Demo ===");
+        
+        // Simulate initial data from server
+        string initialData = JsonConvert.SerializeObject(new TrackableCustomer
+        {
+            Id = 1,
+            Name = "John Doe",
+            Email = "john@example.com",
+            Phone = "555-1234",
+            IsActive = true
+        });
+        
+        syncService.HandleServerUpdate(1, initialData);
+        
+        // Simulate local changes
+        var customer = new TrackableCustomer
+        {
+            Id = 1,
+            Name = "John Doe",
+            Email = "john.doe@example.com",  // Changed
+            Phone = "555-5678",             // Changed
+            IsActive = true
+        };
+        
+        Console.WriteLine("\nMaking local changes...");
+        customer.Email = "john.doe@example.com";
+        customer.Phone = "555-5678";
+        
+        // This would be called by the client cache
+        syncService.HandleLocalChange(1);
+        syncService.PrintCacheStatus();
+        
+        // Sync changes
+        await syncService.SyncPendingChanges();
+        syncService.PrintCacheStatus();
+        
+        // Simulate server update to same customer
+        string serverUpdate = "{\"Name\":\"John D. Doe\",\"LastModified\":\"2024-01-15T14:30:00Z\"}";
+        syncService.HandleServerUpdate(1, serverUpdate);
+        syncService.PrintCacheStatus();
+    }
+}
+
+// Run the demo
+await RealTimeSyncDemo.RunDemo();
+            </code>
+            </example>
+        </member>
+        
+        <!-- DeltaContractResolver -->
+        <member name="T:ByteForge.Toolkit.Json.DeltaContractResolver">
+            <example>
+            <para>Custom JSON.NET contract resolver for advanced delta serialization:</para>
+            <code language="cs">
+using ByteForge.Toolkit;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
+
+// Advanced delta contract resolver with custom filtering
+public class AdvancedDeltaResolver : DeltaContractResolver
+{
+    private readonly HashSet&lt;string&gt; _excludedProperties = new();
+    private readonly Dictionary&lt;Type, Func&lt;object, object, bool&gt;&gt; _customComparers = new();
+    
+    public void ExcludeProperty(string propertyName)
+    {
+        _excludedProperties.Add(propertyName);
+    }
+    
+    public void SetCustomComparer&lt;T&gt;(Func&lt;T, T, bool&gt; comparer) where T : class
+    {
+        _customComparers[typeof(T)] = (a, b) => comparer(a as T, b as T);
+    }
+    
+    protected override JsonProperty CreateProperty(MemberInfo member, MemberSerialization memberSerialization)
+    {
+        var property = base.CreateProperty(member, memberSerialization);
+        
+        // Skip excluded properties
+        if (_excludedProperties.Contains(property.PropertyName))
+        {
+            property.ShouldSerialize = _ => false;
+            return property;
+        }
+        
+        // Apply custom comparison logic
+        var originalShouldSerialize = property.ShouldSerialize;
+        property.ShouldSerialize = instance =>
+        {
+            // Call base logic first
+            if (originalShouldSerialize?.Invoke(instance) == false)
+                return false;
+            
+            // Apply custom comparer if available
+            if (_customComparers.TryGetValue(instance.GetType(), out var comparer))
+            {
+                // Custom comparison logic here
+                return true; // Simplified for example
+            }
+            
+            return true;
+        };
+        
+        return property;
+    }
+}
+
+// Example usage with complex object types
+public class Order
+{
+    public int OrderId { get; set; }
+    public DateTime OrderDate { get; set; }
+    public Customer Customer { get; set; }
+    public List&lt;OrderItem&gt; Items { get; set; } = new();
+    public decimal Total { get; set; }
+    public OrderStatus Status { get; set; }
+    public string InternalNotes { get; set; }  // Should not be serialized
+    public DateTime LastModified { get; set; }
+    public string ProcessingMetadata { get; set; }  // Should be excluded in deltas
+}
+
+public class OrderItem
+{
+    public int ProductId { get; set; }
+    public string ProductName { get; set; }
+    public int Quantity { get; set; }
+    public decimal UnitPrice { get; set; }
+    public decimal LineTotal => Quantity * UnitPrice;
+}
+
+public enum OrderStatus
+{
+    Pending,
+    Processing,
+    Shipped,
+    Delivered,
+    Cancelled
+}
+
+// Advanced delta serialization service
+public class AdvancedDeltaService
+{
+    private readonly AdvancedDeltaResolver _resolver;
+    private readonly JsonSerializerSettings _deltaSettings;
+    private readonly JsonSerializerSettings _fullSettings;
+    
+    public AdvancedDeltaService()
+    {
+        _resolver = new AdvancedDeltaResolver();
+        
+        // Exclude internal properties from delta serialization
+        _resolver.ExcludeProperty("InternalNotes");
+        _resolver.ExcludeProperty("ProcessingMetadata");
+        
+        // Set up custom comparers
+        _resolver.SetCustomComparer&lt;Customer&gt;((c1, c2) => 
+            c1.Name == c2.Name &amp;&amp; c1.Email == c2.Email);
+        
+        _deltaSettings = new JsonSerializerSettings
+        {
+            ContractResolver = _resolver,
+            NullValueHandling = NullValueHandling.Ignore,
+            Formatting = Formatting.None,
+            DateFormatString = "yyyy-MM-ddTHH:mm:ssZ"
+        };
+        
+        _fullSettings = new JsonSerializerSettings
+        {
+            Formatting = Formatting.Indented,
+            DateFormatString = "yyyy-MM-ddTHH:mm:ssZ"
+        };
+    }
+    
+    public string SerializeOrderDelta(Order current, Order original)
+    {
+        // Configure resolver with original object
+        _resolver.SetOriginalObject(original);
+        
+        // Serialize delta
+        string deltaJson = JsonConvert.SerializeObject(current, _deltaSettings);
+        
+        return deltaJson;
+    }
+    
+    public string SerializeFullOrder(Order order)
+    {
+        return JsonConvert.SerializeObject(order, _fullSettings);
+    }
+    
+    public Order DeserializeOrderDelta(Order original, string deltaJson)
+    {
+        // Create a deep copy of the original
+        var originalJson = SerializeFullOrder(original);
+        var workingCopy = JsonConvert.DeserializeObject&lt;Order&gt;(originalJson, _fullSettings);
+        
+        // Apply delta changes
+        JsonConvert.PopulateObject(deltaJson, workingCopy, _deltaSettings);
+        
+        // Update LastModified
+        workingCopy.LastModified = DateTime.UtcNow;
+        
+        return workingCopy;
+    }
+}
+
+// Demonstration of advanced delta serialization
+public class AdvancedDeltaDemo
+{
+    public static void RunDemo()
+    {
+        var deltaService = new AdvancedDeltaService();
+        
+        // Create complex original order
+        var originalOrder = new Order
+        {
+            OrderId = 1001,
+            OrderDate = DateTime.Now.AddDays(-1),
+            Customer = new Customer
+            {
+                Id = 123,
+                Name = "John Smith",
+                Email = "john@example.com",
+                Phone = "555-1234",
+                Address = "123 Main St",
+                IsActive = true
+            },
+            Items = new List&lt;OrderItem&gt;
+            {
+                new OrderItem { ProductId = 1, ProductName = "Widget A", Quantity = 2, UnitPrice = 10.00m },
+                new OrderItem { ProductId = 2, ProductName = "Widget B", Quantity = 1, UnitPrice = 15.00m }
+            },
+            Status = OrderStatus.Pending,
+            InternalNotes = "Priority customer - expedite",
+            ProcessingMetadata = "Queue: standard, Batch: 2024-001",
+            LastModified = DateTime.Now.AddDays(-1)
+        };
+        
+        originalOrder.Total = originalOrder.Items.Sum(i => i.LineTotal);
+        
+        Console.WriteLine("Original Order:");
+        string fullJson = deltaService.SerializeFullOrder(originalOrder);
+        Console.WriteLine(fullJson);
+        Console.WriteLine($"Full size: {fullJson.Length} characters\n");
+        
+        // Modify order (customer email, add item, change status)
+        var modifiedOrder = new Order
+        {
+            OrderId = 1001,
+            OrderDate = originalOrder.OrderDate,
+            Customer = new Customer
+            {
+                Id = 123,
+                Name = "John Smith",
+                Email = "john.smith@example.com",  // Email changed
+                Phone = "555-1234",
+                Address = "123 Main St",
+                IsActive = true
+            },
+            Items = new List&lt;OrderItem&gt;
+            {
+                new OrderItem { ProductId = 1, ProductName = "Widget A", Quantity = 2, UnitPrice = 10.00m },
+                new OrderItem { ProductId = 2, ProductName = "Widget B", Quantity = 1, UnitPrice = 15.00m },
+                new OrderItem { ProductId = 3, ProductName = "Widget C", Quantity = 3, UnitPrice = 8.00m }  // Added item
+            },
+            Status = OrderStatus.Processing,  // Status changed
+            InternalNotes = "Priority customer - expedite - processing started",
+            ProcessingMetadata = "Queue: expedite, Batch: 2024-002",  // This should be excluded
+            LastModified = DateTime.Now
+        };
+        
+        modifiedOrder.Total = modifiedOrder.Items.Sum(i => i.LineTotal);
+        
+        // Generate delta
+        string deltaJson = deltaService.SerializeOrderDelta(modifiedOrder, originalOrder);
+        Console.WriteLine("Delta JSON (only changes):");
+        Console.WriteLine(deltaJson);
+        Console.WriteLine($"Delta size: {deltaJson.Length} characters");
+        
+        // Calculate compression
+        double compression = (double)deltaJson.Length / fullJson.Length;
+        Console.WriteLine($"Compression ratio: {compression:P1}");
+        Console.WriteLine($"Size reduction: {(1 - compression):P1}\n");
+        
+        // Deserialize delta back to full object
+        var reconstructed = deltaService.DeserializeOrderDelta(originalOrder, deltaJson);
+        
+        Console.WriteLine("Reconstructed Order:");
+        string reconstructedJson = deltaService.SerializeFullOrder(reconstructed);
+        Console.WriteLine(reconstructedJson);
+        
+        // Verify reconstruction
+        Console.WriteLine("\nVerification:");
+        Console.WriteLine($"Original total: ${originalOrder.Total:F2}");
+        Console.WriteLine($"Modified total: ${modifiedOrder.Total:F2}");
+        Console.WriteLine($"Reconstructed total: ${reconstructed.Total:F2}");
+        Console.WriteLine($"Totals match: {modifiedOrder.Total == reconstructed.Total}");
+        Console.WriteLine($"Status match: {modifiedOrder.Status == reconstructed.Status}");
+        Console.WriteLine($"Email match: {modifiedOrder.Customer.Email == reconstructed.Customer.Email}");
+        Console.WriteLine($"Items count match: {modifiedOrder.Items.Count == reconstructed.Items.Count}");
+        
+        // Show that excluded properties were not serialized
+        Console.WriteLine($"\nExcluded properties verification:");
+        Console.WriteLine($"ProcessingMetadata in delta: {deltaJson.Contains("ProcessingMetadata")}");
+        Console.WriteLine($"InternalNotes in delta: {deltaJson.Contains("InternalNotes")}");
+    }
+}
+
+// Run the demonstration
+AdvancedDeltaDemo.RunDemo();
+            </code>
+            </example>
+        </member>
+        
+        <!-- Module-level examples -->
+        <member name="N:ByteForge.Toolkit.Json">
+            <example>
+            <para>Complete enterprise JSON delta serialization system:</para>
+            <code language="cs">
+using ByteForge.Toolkit;
+using Newtonsoft.Json;
+using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+
+// Enterprise delta serialization service with caching and compression
+public class EnterpriseDeltaService
+{
+    private readonly ConcurrentDictionary&lt;string, ObjectSnapshot&gt; _snapshotCache;
+    private readonly JsonDeltaSerializer _deltaSerializer;
+    private readonly ILogger _logger;
+    private readonly DeltaConfiguration _config;
+    
+    public EnterpriseDeltaService(ILogger logger, DeltaConfiguration config = null)
+    {
+        _logger = logger;
+        _config = config ?? new DeltaConfiguration();
+        _snapshotCache = new ConcurrentDictionary&lt;string, ObjectSnapshot&gt;();
+        _deltaSerializer = new JsonDeltaSerializer();
+        
+        // Start cleanup task
+        _ = Task.Run(CleanupExpiredSnapshots);
+    }
+    
+    public DeltaResult&lt;T&gt; CreateDelta&lt;T&gt;(T current, string snapshotKey) where T : class
+    {
+        var result = new DeltaResult&lt;T&gt;();
+        
+        try
+        {
+            // Get or create snapshot
+            var snapshot = GetOrCreateSnapshot(current, snapshotKey);
+            var original = JsonConvert.DeserializeObject&lt;T&gt;(snapshot.Data);
+            
+            // Generate delta
+            var stopwatch = System.Diagnostics.Stopwatch.StartNew();
+            string deltaJson = _deltaSerializer.SerializeDelta(current, original);
+            stopwatch.Stop();
+            
+            // Calculate metrics
+            string fullJson = JsonConvert.SerializeObject(current);
+            var changedProperties = _deltaSerializer.GetChangedProperties(current, original);
+            
+            result.Success = true;
+            result.DeltaJson = deltaJson;
+            result.FullJson = fullJson;
+            result.ChangedProperties = changedProperties.ToList();
+            result.DeltaSize = deltaJson.Length;
+            result.FullSize = fullJson.Length;
+            result.CompressionRatio = (double)deltaJson.Length / fullJson.Length;
+            result.SerializationTimeMs = stopwatch.ElapsedMilliseconds;
+            result.BandwidthSavings = fullJson.Length - deltaJson.Length;
+            
+            // Update snapshot
+            snapshot.Data = fullJson;
+            snapshot.LastUsed = DateTime.UtcNow;
+            snapshot.AccessCount++;
+            
+            _logger.Info($"Delta created for {snapshotKey}: {result.CompressionRatio:P1} compression, {result.BandwidthSavings} bytes saved");
+            
+        }
+        catch (Exception ex)
+        {
+            result.Success = false;
+            result.ErrorMessage = ex.Message;
+            _logger.Error($"Failed to create delta for {snapshotKey}", ex);
+        }
+        
+        return result;
+    }
+    
+    public DeltaResult&lt;T&gt; ApplyDelta&lt;T&gt;(string deltaJson, string snapshotKey) where T : class
+    {
+        var result = new DeltaResult&lt;T&gt;();
+        
+        try
+        {
+            // Get snapshot
+            if (!_snapshotCache.TryGetValue(snapshotKey, out var snapshot))
+            {
+                throw new InvalidOperationException($"No snapshot found for key: {snapshotKey}");
+            }
+            
+            var original = JsonConvert.DeserializeObject&lt;T&gt;(snapshot.Data);
+            
+            // Apply delta
+            var stopwatch = System.Diagnostics.Stopwatch.StartNew();
+            var updated = _deltaSerializer.DeserializeDelta(original, deltaJson);
+            stopwatch.Stop();
+            
+            result.Success = true;
+            result.Current = updated;
+            result.DeltaJson = deltaJson;
+            result.DeserializationTimeMs = stopwatch.ElapsedMilliseconds;
+            
+            // Update snapshot
+            snapshot.Data = JsonConvert.SerializeObject(updated);
+            snapshot.LastUsed = DateTime.UtcNow;
+            snapshot.AccessCount++;
+            
+            _logger.Info($"Delta applied for {snapshotKey} in {stopwatch.ElapsedMilliseconds}ms");
+        }
+        catch (Exception ex)
+        {
+            result.Success = false;
+            result.ErrorMessage = ex.Message;
+            _logger.Error($"Failed to apply delta for {snapshotKey}", ex);
+        }
+        
+        return result;
+    }
+    
+    public BatchDeltaResult&lt;T&gt; CreateBatchDeltas&lt;T&gt;(Dictionary&lt;string, T&gt; objects) where T : class
+    {
+        var batchResult = new BatchDeltaResult&lt;T&gt;
+        {
+            StartTime = DateTime.UtcNow
+        };
+        
+        var tasks = objects.Select(async kvp =>
+        {
+            var result = CreateDelta(kvp.Value, kvp.Key);
+            return new KeyValuePair&lt;string, DeltaResult&lt;T&gt;&gt;(kvp.Key, result);
+        });
+        
+        var results = await Task.WhenAll(tasks);
+        
+        batchResult.Results = results.ToDictionary(r => r.Key, r => r.Value);
+        batchResult.EndTime = DateTime.UtcNow;
+        batchResult.ProcessingTimeMs = (batchResult.EndTime - batchResult.StartTime).TotalMilliseconds;
+        batchResult.TotalObjects = objects.Count;
+        batchResult.SuccessfulDeltas = results.Count(r => r.Value.Success);
+        batchResult.TotalBandwidthSavings = results.Where(r => r.Value.Success).Sum(r => r.Value.BandwidthSavings);
+        batchResult.AverageCompressionRatio = results.Where(r => r.Value.Success).Average(r => r.Value.CompressionRatio);
+        
+        _logger.Info($"Batch delta creation completed: {batchResult.SuccessfulDeltas}/{batchResult.TotalObjects} successful, {batchResult.TotalBandwidthSavings:N0} bytes saved");
+        
+        return batchResult;
+    }
+    
+    private ObjectSnapshot GetOrCreateSnapshot&lt;T&gt;(T obj, string key)
+    {
+        return _snapshotCache.GetOrAdd(key, _ => new ObjectSnapshot
+        {
+            Key = key,
+            Data = JsonConvert.SerializeObject(obj),
+            Created = DateTime.UtcNow,
+            LastUsed = DateTime.UtcNow,
+            AccessCount = 0
+        });
+    }
+    
+    private async Task CleanupExpiredSnapshots()
+    {
+        while (true)
+        {
+            try
+            {
+                var cutoff = DateTime.UtcNow - _config.SnapshotExpiration;
+                var expiredKeys = _snapshotCache
+                    .Where(kvp => kvp.Value.LastUsed &lt; cutoff)
+                    .Select(kvp => kvp.Key)
+                    .ToList();
+                
+                foreach (var key in expiredKeys)
+                {
+                    if (_snapshotCache.TryRemove(key, out var snapshot))
+                    {
+                        _logger.Debug($"Expired snapshot removed: {key} (last used: {snapshot.LastUsed})");
+                    }
+                }
+                
+                if (expiredKeys.Any())
+                {
+                    _logger.Info($"Cleanup completed: {expiredKeys.Count} expired snapshots removed");
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.Error("Error during snapshot cleanup", ex);
+            }
+            
+            await Task.Delay(_config.CleanupInterval);
+        }
+    }
+    
+    public DeltaServiceStatistics GetStatistics()
+    {
+        var snapshots = _snapshotCache.Values.ToList();
+        
+        return new DeltaServiceStatistics
+        {
+            TotalSnapshots = snapshots.Count,
+            TotalCacheSize = snapshots.Sum(s => s.Data.Length),
+            AverageSnapshotSize = snapshots.Any() ? snapshots.Average(s => s.Data.Length) : 0,
+            OldestSnapshot = snapshots.Any() ? snapshots.Min(s => s.Created) : DateTime.MinValue,
+            MostRecentSnapshot = snapshots.Any() ? snapshots.Max(s => s.LastUsed) : DateTime.MinValue,
+            TotalAccessCount = snapshots.Sum(s => s.AccessCount),
+            MostAccessedSnapshot = snapshots.OrderByDescending(s => s.AccessCount).FirstOrDefault()?.Key
+        };
+    }
+}
+
+// Configuration class
+public class DeltaConfiguration
+{
+    public TimeSpan SnapshotExpiration { get; set; } = TimeSpan.FromHours(24);
+    public TimeSpan CleanupInterval { get; set; } = TimeSpan.FromMinutes(15);
+    public int MaxSnapshotSize { get; set; } = 1024 * 1024; // 1 MB
+    public int MaxSnapshots { get; set; } = 10000;
+}
+
+// Result classes
+public class DeltaResult&lt;T&gt; where T : class
+{
+    public bool Success { get; set; }
+    public T Current { get; set; }
+    public string DeltaJson { get; set; }
+    public string FullJson { get; set; }
+    public List&lt;string&gt; ChangedProperties { get; set; } = new();
+    public int DeltaSize { get; set; }
+    public int FullSize { get; set; }
+    public double CompressionRatio { get; set; }
+    public long SerializationTimeMs { get; set; }
+    public long DeserializationTimeMs { get; set; }
+    public int BandwidthSavings { get; set; }
+    public string ErrorMessage { get; set; }
+}
+
+public class BatchDeltaResult&lt;T&gt; where T : class
+{
+    public Dictionary&lt;string, DeltaResult&lt;T&gt;&gt; Results { get; set; } = new();
+    public DateTime StartTime { get; set; }
+    public DateTime EndTime { get; set; }
+    public double ProcessingTimeMs { get; set; }
+    public int TotalObjects { get; set; }
+    public int SuccessfulDeltas { get; set; }
+    public int TotalBandwidthSavings { get; set; }
+    public double AverageCompressionRatio { get; set; }
+}
+
+public class ObjectSnapshot
+{
+    public string Key { get; set; }
+    public string Data { get; set; }
+    public DateTime Created { get; set; }
+    public DateTime LastUsed { get; set; }
+    public int AccessCount { get; set; }
+}
+
+public class DeltaServiceStatistics
+{
+    public int TotalSnapshots { get; set; }
+    public long TotalCacheSize { get; set; }
+    public double AverageSnapshotSize { get; set; }
+    public DateTime OldestSnapshot { get; set; }
+    public DateTime MostRecentSnapshot { get; set; }
+    public long TotalAccessCount { get; set; }
+    public string MostAccessedSnapshot { get; set; }
+}
+
+// Sample entity classes
+public class Product
+{
+    public int Id { get; set; }
+    public string Name { get; set; }
+    public string Description { get; set; }
+    public decimal Price { get; set; }
+    public int Stock { get; set; }
+    public string Category { get; set; }
+    public string Manufacturer { get; set; }
+    public DateTime CreatedDate { get; set; }
+    public DateTime LastModified { get; set; }
+    public bool IsActive { get; set; }
+    public List&lt;string&gt; Tags { get; set; } = new();
+    public ProductMetadata Metadata { get; set; } = new();
+}
+
+public class ProductMetadata
+{
+    public string SKU { get; set; }
+    public string Barcode { get; set; }
+    public decimal Weight { get; set; }
+    public string Dimensions { get; set; }
+    public string Color { get; set; }
+    public string Size { get; set; }
+}
+
+// Demonstration application
+public class DeltaServiceDemo
+{
+    private readonly EnterpriseDeltaService _deltaService;
+    private readonly ILogger _logger;
+    
+    public DeltaServiceDemo(ILogger logger)
+    {
+        _logger = logger;
+        
+        var config = new DeltaConfiguration
+        {
+            SnapshotExpiration = TimeSpan.FromMinutes(30),
+            CleanupInterval = TimeSpan.FromMinutes(5)
+        };
+        
+        _deltaService = new EnterpriseDeltaService(logger, config);
+    }
+    
+    public async Task RunDemo()
+    {
+        Console.WriteLine("=== Enterprise Delta Serialization Demo ===\n");
+        
+        // Create sample products
+        var products = CreateSampleProducts();
+        
+        // Demonstrate single product delta
+        await DemonstrateSingleProductDelta(products.First());
+        
+        // Demonstrate batch processing
+        await DemonstrateBatchProcessing(products);
+        
+        // Show statistics
+        ShowStatistics();
+    }
+    
+    private List&lt;Product&gt; CreateSampleProducts()
+    {
+        return new List&lt;Product&gt;
+        {
+            new Product
+            {
+                Id = 1,
+                Name = "Wireless Headphones",
+                Description = "High-quality wireless headphones with noise cancellation",
+                Price = 299.99m,
+                Stock = 50,
+                Category = "Electronics",
+                Manufacturer = "AudioTech",
+                CreatedDate = DateTime.Now.AddDays(-30),
+                LastModified = DateTime.Now.AddDays(-1),
+                IsActive = true,
+                Tags = new List&lt;string&gt; { "wireless", "bluetooth", "noise-cancelling" },
+                Metadata = new ProductMetadata
+                {
+                    SKU = "AT-WH-001",
+                    Barcode = "123456789012",
+                    Weight = 0.3m,
+                    Dimensions = "20x18x8 cm",
+                    Color = "Black",
+                    Size = "Standard"
+                }
+            },
+            new Product
+            {
+                Id = 2,
+                Name = "Gaming Mouse",
+                Description = "Precision gaming mouse with RGB lighting",
+                Price = 79.99m,
+                Stock = 125,
+                Category = "Electronics",
+                Manufacturer = "GamePro",
+                CreatedDate = DateTime.Now.AddDays(-20),
+                LastModified = DateTime.Now.AddDays(-2),
+                IsActive = true,
+                Tags = new List&lt;string&gt; { "gaming", "rgb", "precision" },
+                Metadata = new ProductMetadata
+                {
+                    SKU = "GP-GM-002",
+                    Barcode = "123456789013",
+                    Weight = 0.15m,
+                    Dimensions = "12x7x4 cm",
+                    Color = "RGB",
+                    Size = "Standard"
+                }
+            }
+        };
+    }
+    
+    private async Task DemonstrateSingleProductDelta(Product product)
+    {
+        Console.WriteLine("1. Single Product Delta Demonstration");
+        Console.WriteLine("====================================");
+        
+        // Create initial snapshot
+        string productKey = $"product_{product.Id}";
+        var result1 = _deltaService.CreateDelta(product, productKey);
+        
+        Console.WriteLine($"Initial snapshot created for {product.Name}");
+        Console.WriteLine($"Full size: {result1.FullSize:N0} bytes");
+        Console.WriteLine();
+        
+        // Modify product
+        product.Price = 279.99m;  // Price change
+        product.Stock = 45;       // Stock change
+        product.Tags.Add("sale"); // Tags change
+        product.LastModified = DateTime.Now;
+        
+        // Create delta
+        var result2 = _deltaService.CreateDelta(product, productKey);
+        
+        Console.WriteLine("After modifications:");
+        Console.WriteLine($"Delta JSON: {result2.DeltaJson}");
+        Console.WriteLine($"Changed properties: {string.Join(", ", result2.ChangedProperties)}");
+        Console.WriteLine($"Delta size: {result2.DeltaSize:N0} bytes");
+        Console.WriteLine($"Compression ratio: {result2.CompressionRatio:P1}");
+        Console.WriteLine($"Bandwidth savings: {result2.BandwidthSavings:N0} bytes");
+        Console.WriteLine($"Serialization time: {result2.SerializationTimeMs}ms");
+        Console.WriteLine();
+    }
+    
+    private async Task DemonstrateBatchProcessing(List&lt;Product&gt; products)
+    {
+        Console.WriteLine("2. Batch Processing Demonstration");
+        Console.WriteLine("=================================");
+        
+        // Create product dictionary
+        var productDict = products.ToDictionary(p => $"product_{p.Id}", p => p);
+        
+        // First batch - initial snapshots
+        var batchResult1 = await _deltaService.CreateBatchDeltas(productDict);
+        
+        Console.WriteLine("Initial batch processing:");
+        Console.WriteLine($"Processed: {batchResult1.TotalObjects} products");
+        Console.WriteLine($"Successful: {batchResult1.SuccessfulDeltas}");
+        Console.WriteLine($"Processing time: {batchResult1.ProcessingTimeMs:F0}ms");
+        Console.WriteLine();
+        
+        // Modify all products
+        foreach (var product in products)
+        {
+            product.Price *= 0.9m;  // 10% discount
+            product.LastModified = DateTime.Now;
+        }
+        
+        // Second batch - deltas
+        var batchResult2 = await _deltaService.CreateBatchDeltas(productDict);
+        
+        Console.WriteLine("After modifications (deltas):");
+        Console.WriteLine($"Total bandwidth savings: {batchResult2.TotalBandwidthSavings:N0} bytes");
+        Console.WriteLine($"Average compression: {batchResult2.AverageCompressionRatio:P1}");
+        Console.WriteLine($"Processing time: {batchResult2.ProcessingTimeMs:F0}ms");
+        Console.WriteLine();
+        
+        // Show individual results
+        foreach (var result in batchResult2.Results.Where(r => r.Value.Success))
+        {
+            Console.WriteLine($"  {result.Key}: {result.Value.CompressionRatio:P1} compression, " +
+                            $"{result.Value.BandwidthSavings:N0} bytes saved");
+        }
+        Console.WriteLine();
+    }
+    
+    private void ShowStatistics()
+    {
+        Console.WriteLine("3. Service Statistics");
+        Console.WriteLine("====================");
+        
+        var stats = _deltaService.GetStatistics();
+        
+        Console.WriteLine($"Total snapshots: {stats.TotalSnapshots:N0}");
+        Console.WriteLine($"Total cache size: {stats.TotalCacheSize:N0} bytes");
+        Console.WriteLine($"Average snapshot size: {stats.AverageSnapshotSize:F0} bytes");
+        Console.WriteLine($"Oldest snapshot: {stats.OldestSnapshot:yyyy-MM-dd HH:mm:ss}");
+        Console.WriteLine($"Most recent: {stats.MostRecentSnapshot:yyyy-MM-dd HH:mm:ss}");
+        Console.WriteLine($"Total accesses: {stats.TotalAccessCount:N0}");
+        Console.WriteLine($"Most accessed: {stats.MostAccessedSnapshot}");
+    }
+}
+
+// Program entry point
+public class Program
+{
+    static async Task Main(string[] args)
+    {
+        var logger = new ConsoleLogger();
+        var demo = new DeltaServiceDemo(logger);
+        
+        try
+        {
+            await demo.RunDemo();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Demo failed: {ex.Message}");
+        }
+    }
+}
+
+// Simple logger implementation
+public interface ILogger
+{
+    void Debug(string message);
+    void Info(string message);
+    void Warning(string message);
+    void Error(string message, Exception ex = null);
+}
+
+public class ConsoleLogger : ILogger
+{
+    public void Debug(string message) => Console.WriteLine($"[DEBUG] {message}");
+    public void Info(string message) => Console.WriteLine($"[INFO] {message}");
+    public void Warning(string message) => Console.WriteLine($"[WARN] {message}");
+    public void Error(string message, Exception ex = null) => Console.WriteLine($"[ERROR] {message}" + (ex != null ? $" - {ex.Message}" : ""));
+}
+            </code>
+            </example>
+        </member>
+    </members>
+</doc>

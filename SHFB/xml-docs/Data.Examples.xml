@@ -1,0 +1,870 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>ByteForge.Toolkit.Modern</name>
+    </assembly>
+    <members>
+        <!-- Data Module Examples -->
+        
+        <!-- DBAccess -->
+        <member name="T:ByteForge.Toolkit.DBAccess">
+            <example>
+            <para>Basic database operations with SQL Server:</para>
+            <code language="cs">
+using ByteForge.Toolkit;
+
+// Initialize database connection
+var connectionString = "Server=localhost;Database=MyApp;Integrated Security=true;";
+var db = new DBAccess(connectionString);
+
+// Execute a simple query
+var userCount = db.GetValue&lt;int&gt;("SELECT COUNT(*) FROM Users");
+Console.WriteLine($"Total users: {userCount}");
+
+// Execute query with parameters
+var activeUsers = db.GetRecords(
+    "SELECT * FROM Users WHERE IsActive = @active AND CreatedDate > @date",
+    true, DateTime.Now.AddDays(-30) );
+
+Console.WriteLine($"Active users in last 30 days: {activeUsers.Rows.Count}");
+
+// Execute stored procedure
+var results = db.GetRecords("exec GetUsersByDepartment @DepartmentID, @IncludeInactive",
+    5, false );
+
+foreach (DataRow row in results.Rows)
+{
+    Console.WriteLine($"User: {row["FirstName"]} {row["LastName"]}");
+}
+            </code>
+            </example>
+            
+            <example>
+            <para>Transaction handling with rollback:</para>
+            <code language="cs">
+var db = new DBAccess(connectionString);
+
+using (var transaction = db.BeginTransaction())
+{
+    try
+    {
+        // Create new user
+        var userId = db.GetValue&lt;int&gt;(
+            "INSERT INTO Users (FirstName, LastName, Email) OUTPUT INSERTED.UserId VALUES (@first, @last, @email)",
+            new { first = "John", last = "Doe", email = "john.doe@company.com" },
+            transaction
+        );
+        
+        // Add user to role
+        db.ExecuteQuery(
+            "INSERT INTO UserRoles (UserId, RoleId) VALUES (@userId, @roleId)",
+            new { userId = userId, roleId = 2 },
+            transaction
+        );
+        
+        // Create user profile
+        db.ExecuteQuery(
+            "INSERT INTO UserProfiles (UserId, Department, StartDate) VALUES (@userId, @dept, @date)",
+            new { userId = userId, dept = "Engineering", date = DateTime.Now },
+            transaction
+        );
+        
+        // Commit all changes
+        transaction.Commit();
+        Console.WriteLine($"User created successfully with ID: {userId}");
+    }
+    catch (Exception ex)
+    {
+        transaction.Rollback();
+        Console.WriteLine($"Transaction failed: {ex.Message}");
+        throw;
+    }
+}
+            </code>
+            </example>
+            
+            <example>
+            <para>Async database operations with cancellation:</para>
+            <code language="cs">
+var db = new DBAccess(connectionString);
+var cancellationToken = new CancellationTokenSource(TimeSpan.FromMinutes(5)).Token;
+
+try
+{
+    // Async query execution
+    var users = await db.GetDataTableAsync(
+        "SELECT * FROM Users WHERE Department = @dept ORDER BY LastName",
+        new { dept = "Sales" },
+        cancellationToken
+    );
+    
+    Console.WriteLine($"Found {users.Rows.Count} sales users");
+    
+    // Async bulk update
+    await db.ExecuteNonQueryAsync(
+        "UPDATE Users SET LastLoginDate = @date WHERE Department = @dept",
+        new { date = DateTime.Now, dept = "Sales" },
+        cancellationToken
+    );
+    
+    // Async scalar value
+    var totalSalesUsers = await db.GetValueAsync&lt;int&gt;(
+        "SELECT COUNT(*) FROM Users WHERE Department = 'Sales'",
+        cancellationToken
+    );
+    
+    Console.WriteLine($"Updated {totalSalesUsers} sales users");
+}
+catch (OperationCanceledException)
+{
+    Console.WriteLine("Database operation was cancelled");
+}
+catch (Exception ex)
+{
+    Console.WriteLine($"Database error: {ex.Message}");
+}
+            </code>
+            </example>
+        </member>
+        
+        <!-- BulkDbProcessor<T> -->
+        <member name="T:ByteForge.Toolkit.BulkDbProcessor`1">
+            <example>
+            <para>High-performance bulk insert operations:</para>
+            <code language="cs">
+// Define entity class with DB column mapping
+public class Product
+{
+    [DBColumn("ProductId", isPrimaryKey: true, isIdentity: true)]
+    public int Id { get; set; }
+    
+    [DBColumn("ProductName")]
+    public string Name { get; set; }
+    
+    [DBColumn("CategoryId")]
+    public int CategoryId { get; set; }
+    
+    [DBColumn("UnitPrice")]
+    public decimal Price { get; set; }
+    
+    [DBColumn("UnitsInStock")]
+    public int Stock { get; set; }
+    
+    [DBColumn("CreatedDate")]
+    public DateTime CreatedDate { get; set; } = DateTime.Now;
+}
+
+// Bulk insert with progress reporting
+var db = new DBAccess(connectionString);
+var bulkProcessor = new BulkDbProcessor&lt;Product&gt;(db);
+
+// Subscribe to progress events
+bulkProcessor.ProgressReported += (sender, e) =>
+{
+    Console.WriteLine($"Processed {e.ProcessedCount}/{e.TotalCount} ({e.PercentComplete:F1}%)");
+};
+
+// Create sample data
+var products = new List&lt;Product&gt;();
+for (int i = 1; i &lt;= 10000; i++)
+{
+    products.Add(new Product
+    {
+        Name = $"Product {i}",
+        CategoryId = (i % 5) + 1,
+        Price = Math.Round((decimal)(10 + (i % 100)), 2),
+        Stock = i % 50
+    });
+}
+
+// Bulk insert all products
+await bulkProcessor.BulkInsertAsync("Products", products);
+Console.WriteLine("Bulk insert completed!");
+            </code>
+            </example>
+            
+            <example>
+            <para>Bulk update and upsert operations:</para>
+            <code language="cs">
+public class Customer
+{
+    [DBColumn("CustomerId", isPrimaryKey: true)]
+    public string Id { get; set; }
+    
+    [DBColumn("CompanyName")]
+    public string CompanyName { get; set; }
+    
+    [DBColumn("ContactName")]
+    public string ContactName { get; set; }
+    
+    [DBColumn("Phone")]
+    public string Phone { get; set; }
+    
+    [DBColumn("LastUpdated")]
+    public DateTime LastUpdated { get; set; } = DateTime.Now;
+}
+
+var bulkProcessor = new BulkDbProcessor&lt;Customer&gt;(db);
+
+// Sample customer updates
+var customers = new List&lt;Customer&gt;
+{
+    new Customer { Id = "ALFKI", CompanyName = "Alfreds Futterkiste Updated", Phone = "555-1234" },
+    new Customer { Id = "ANATR", CompanyName = "Ana Trujillo Emparedados", Phone = "555-5678" },
+    new Customer { Id = "NEWCO", CompanyName = "New Company LLC", Phone = "555-9999" }
+};
+
+// Bulk update existing customers by primary key
+var updateResult = await bulkProcessor.BulkUpdateAsync("Customers", customers);
+Console.WriteLine($"Updated {updateResult.RowsAffected} customers");
+
+// Bulk upsert (insert new, update existing)
+var upsertResult = await bulkProcessor.BulkUpsertAsync("Customers", customers, 
+    updateColumns: new[] { "CompanyName", "ContactName", "Phone", "LastUpdated" });
+
+Console.WriteLine($"Upserted {upsertResult.RowsAffected} customers");
+            </code>
+            </example>
+        </member>
+        
+        <!-- CSVReader -->
+        <member name="T:ByteForge.Toolkit.CSVReader">
+            <example>
+            <para>Read CSV file with automatic format detection:</para>
+            <code language="cs">
+using ByteForge.Toolkit;
+
+var csvReader = new CSVReader();
+
+// Subscribe to progress events for large files
+csvReader.ProgressReported += (sender, e) =>
+{
+    Console.WriteLine($"Reading: {e.PercentComplete:F1}% ({e.RecordsProcessed} records)");
+};
+
+// Read CSV file with automatic format detection
+csvReader.ReadFile("customers.csv");
+
+Console.WriteLine($"Loaded {csvReader.Records.Count} records");
+Console.WriteLine($"Columns: {string.Join(", ", csvReader.Headers)}");
+
+// Access data by column name
+foreach (var record in csvReader.Records)
+{
+    var customerId = record["CustomerId"];
+    var companyName = record["CompanyName"];
+    var contactName = record["ContactName"];
+    var phone = record["Phone"];
+    
+    Console.WriteLine($"{customerId}: {companyName} - {contactName} ({phone})");
+}
+            </code>
+            </example>
+            
+            <example>
+            <para>Custom CSV format with specific delimiters:</para>
+            <code language="cs">
+var csvReader = new CSVReader();
+
+// Configure custom CSV format
+var format = new CSVFormat
+{
+    Delimiter = ';',           // Use semicolon delimiter
+    QuoteCharacter = '"',      // Double quotes for text
+    EscapeCharacter = '\\',    // Backslash for escaping
+    HasHeaders = true,         // First row contains headers
+    TrimFields = true,         // Trim whitespace
+    SkipEmptyLines = true,     // Skip blank lines
+    Encoding = Encoding.UTF8   // UTF-8 encoding
+};
+
+csvReader.ReadFile("data.csv", format);
+
+// Process records with type conversion
+foreach (var record in csvReader.Records)
+{
+    try
+    {
+        var id = int.Parse(record["Id"]);
+        var name = record["Name"];
+        var price = decimal.Parse(record["Price"]);
+        var date = DateTime.Parse(record["CreatedDate"]);
+        
+        Console.WriteLine($"ID: {id}, Name: {name}, Price: {price:C}, Date: {date:d}");
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"Error processing record: {ex.Message}");
+    }
+}
+            </code>
+            </example>
+        </member>
+        
+        <!-- CSVWriter -->
+        <member name="T:ByteForge.Toolkit.CSVWriter">
+            <example>
+            <para>Write data to CSV file with custom formatting:</para>
+            <code language="cs">
+var csvWriter = new CSVWriter();
+
+// Configure output format
+var format = new CSVFormat
+{
+    Delimiter = ',',
+    QuoteCharacter = '"',
+    HasHeaders = true,
+    Encoding = Encoding.UTF8
+};
+
+// Define headers
+var headers = new[] { "ProductId", "ProductName", "Category", "Price", "InStock" };
+
+// Sample data
+var products = new[]
+{
+    new { Id = 1, Name = "Laptop Computer", Category = "Electronics", Price = 999.99m, Stock = true },
+    new { Id = 2, Name = "Office Chair", Category = "Furniture", Price = 249.50m, Stock = false },
+    new { Id = 3, Name = "Wireless Mouse", Category = "Electronics", Price = 29.99m, Stock = true }
+};
+
+// Write to CSV
+csvWriter.WriteFile("products.csv", format, headers, products.Select(p => new object[]
+{
+    p.Id,
+    p.Name,
+    p.Category,
+    p.Price,
+    p.Stock ? "Yes" : "No"
+}));
+
+Console.WriteLine("CSV file written successfully");
+            </code>
+            </example>
+            
+            <example>
+            <para>Write DataTable to CSV with progress reporting:</para>
+            <code language="cs">
+// Get data from database
+var db = new DBAccess(connectionString);
+var dataTable = db.GetDataTable("SELECT * FROM Orders WHERE OrderDate >= @date", 
+    new { date = DateTime.Now.AddMonths(-6) });
+
+var csvWriter = new CSVWriter();
+
+// Subscribe to progress events
+csvWriter.ProgressReported += (sender, e) =>
+{
+    Console.WriteLine($"Writing: {e.PercentComplete:F1}% ({e.RecordsProcessed} of {e.TotalRecords})");
+};
+
+// Write DataTable directly to CSV
+var format = new CSVFormat
+{
+    Delimiter = ',',
+    HasHeaders = true,
+    QuoteCharacter = '"',
+    DateTimeFormat = "yyyy-MM-dd HH:mm:ss",
+    NumberFormat = "F2"
+};
+
+csvWriter.WriteDataTable("orders_export.csv", dataTable, format);
+Console.WriteLine($"Exported {dataTable.Rows.Count} orders to CSV");
+            </code>
+            </example>
+        </member>
+        
+        <!-- AudioFormatDetector -->
+        <member name="T:ByteForge.Toolkit.AudioFormatDetector">
+            <example>
+            <para>Detect audio file formats and properties:</para>
+            <code language="cs">
+using ByteForge.Toolkit;
+
+var detector = new AudioFormatDetector();
+
+// Check single audio file
+var audioFile = @"C:\Music\song.mp3";
+if (detector.IsAudioFile(audioFile))
+{
+    var format = detector.DetectFormat(audioFile);
+    var info = detector.GetAudioInfo(audioFile);
+    
+    Console.WriteLine($"File: {Path.GetFileName(audioFile)}");
+    Console.WriteLine($"Format: {format}");
+    Console.WriteLine($"Duration: {info.Duration}");
+    Console.WriteLine($"Bitrate: {info.Bitrate} kbps");
+    Console.WriteLine($"Sample Rate: {info.SampleRate} Hz");
+    Console.WriteLine($"Channels: {info.Channels}");
+}
+
+// Process multiple audio files
+var musicFolder = @"C:\Music";
+var audioFiles = Directory.GetFiles(musicFolder, "*.*", SearchOption.AllDirectories)
+    .Where(f => detector.IsAudioFile(f))
+    .ToList();
+
+Console.WriteLine($"Found {audioFiles.Count} audio files");
+
+foreach (var file in audioFiles)
+{
+    try
+    {
+        var format = detector.DetectFormat(file);
+        var size = new FileInfo(file).Length / 1024 / 1024; // Size in MB
+        
+        Console.WriteLine($"{Path.GetFileName(file)}: {format}, {size:F1} MB");
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"Error processing {file}: {ex.Message}");
+    }
+}
+            </code>
+            </example>
+        </member>
+        
+        <!-- Data Attributes -->
+        <member name="T:ByteForge.Toolkit.DBColumnAttribute">
+            <example>
+            <para>Map entity classes to database tables:</para>
+            <code language="cs">
+public class Employee
+{
+    [DBColumn("EmployeeID", isPrimaryKey: true, isIdentity: true)]
+    public int Id { get; set; }
+    
+    [DBColumn("FirstName", maxLength: 50, isRequired: true)]
+    public string FirstName { get; set; }
+    
+    [DBColumn("LastName", maxLength: 50, isRequired: true)]
+    public string LastName { get; set; }
+    
+    [DBColumn("Email", maxLength: 100, isRequired: true, isUnique: true)]
+    public string Email { get; set; }
+    
+    [DBColumn("HireDate")]
+    public DateTime HireDate { get; set; }
+    
+    [DBColumn("Salary", precision: 10, scale: 2)]
+    public decimal? Salary { get; set; }
+    
+    [DBColumn("DepartmentID")]
+    public int? DepartmentId { get; set; }
+    
+    [DBColumn("IsActive")]
+    public bool IsActive { get; set; } = true;
+    
+    // Computed property - not mapped to database
+    public string FullName => $"{FirstName} {LastName}";
+    
+    // Navigation property - handled separately
+    public Department Department { get; set; }
+}
+
+public class Department
+{
+    [DBColumn("DepartmentID", isPrimaryKey: true, isIdentity: true)]
+    public int Id { get; set; }
+    
+    [DBColumn("DepartmentName", maxLength: 100, isRequired: true)]
+    public string Name { get; set; }
+    
+    [DBColumn("ManagerID")]
+    public int? ManagerId { get; set; }
+    
+    [DBColumn("Budget", precision: 15, scale: 2)]
+    public decimal Budget { get; set; }
+}
+
+// Usage with BulkDbProcessor
+var employees = new List&lt;Employee&gt;
+{
+    new Employee 
+    { 
+        FirstName = "John", 
+        LastName = "Doe", 
+        Email = "john.doe@company.com",
+        HireDate = DateTime.Now,
+        Salary = 75000m,
+        DepartmentId = 1
+    },
+    new Employee 
+    { 
+        FirstName = "Jane", 
+        LastName = "Smith", 
+        Email = "jane.smith@company.com",
+        HireDate = DateTime.Now,
+        Salary = 82000m,
+        DepartmentId = 2
+    }
+};
+
+var bulkProcessor = new BulkDbProcessor&lt;Employee&gt;(db);
+await bulkProcessor.BulkInsertAsync("Employees", employees);
+            </code>
+            </example>
+        </member>
+        
+        <member name="T:ByteForge.Toolkit.CSVColumnAttribute">
+            <example>
+            <para>Map entity classes to CSV columns:</para>
+            <code language="cs">
+public class ProductImport
+{
+    [CSVColumn("Product ID", isRequired: true)]
+    public int ProductId { get; set; }
+    
+    [CSVColumn("Product Name", maxLength: 100, isRequired: true)]
+    public string Name { get; set; }
+    
+    [CSVColumn("Category")]
+    public string Category { get; set; }
+    
+    [CSVColumn("Unit Price", format: "C")]
+    public decimal Price { get; set; }
+    
+    [CSVColumn("Units in Stock")]
+    public int Stock { get; set; }
+    
+    [CSVColumn("Discontinued", format: "Yes/No")]
+    public bool IsDiscontinued { get; set; }
+    
+    [CSVColumn("Last Updated", format: "yyyy-MM-dd")]
+    public DateTime LastUpdated { get; set; }
+    
+    // Property without attribute - will use property name
+    public string Supplier { get; set; }
+}
+
+// Read CSV with automatic mapping
+var csvReader = new CSVReader();
+csvReader.ReadFile("products.csv");
+
+var products = new List&lt;ProductImport&gt;();
+
+foreach (var record in csvReader.Records)
+{
+    var product = new ProductImport
+    {
+        ProductId = int.Parse(record["Product ID"]),
+        Name = record["Product Name"],
+        Category = record["Category"],
+        Price = decimal.Parse(record["Unit Price"].Replace("$", "")),
+        Stock = int.Parse(record["Units in Stock"]),
+        IsDiscontinued = record["Discontinued"].ToLower() == "yes",
+        LastUpdated = DateTime.Parse(record["Last Updated"]),
+        Supplier = record["Supplier"]
+    };
+    
+    products.Add(product);
+}
+
+Console.WriteLine($"Imported {products.Count} products from CSV");
+
+// Validate imported data
+var validProducts = products.Where(p => 
+    !string.IsNullOrEmpty(p.Name) &amp;&amp; 
+    p.Price > 0 &amp;&amp;
+    p.Stock >= 0
+).ToList();
+
+Console.WriteLine($"{validProducts.Count} products passed validation");
+            </code>
+            </example>
+        </member>
+        
+        <!-- Module-level examples -->
+        <member name="N:ByteForge.Toolkit.Data">
+            <example>
+            <para>Complete data processing workflow:</para>
+            <code language="cs">
+using ByteForge.Toolkit;
+using System;
+using System.Collections.Generic;
+using System.Data;
+using System.IO;
+using System.Linq;
+using System.Threading.Tasks;
+
+// Entity definitions with proper mapping
+public class Customer
+{
+    [DBColumn("CustomerID", isPrimaryKey: true)]
+    [CSVColumn("Customer ID")]
+    public string Id { get; set; }
+    
+    [DBColumn("CompanyName", maxLength: 100, isRequired: true)]
+    [CSVColumn("Company Name")]
+    public string CompanyName { get; set; }
+    
+    [DBColumn("ContactName", maxLength: 50)]
+    [CSVColumn("Contact Name")]
+    public string ContactName { get; set; }
+    
+    [DBColumn("Phone", maxLength: 20)]
+    [CSVColumn("Phone")]
+    public string Phone { get; set; }
+    
+    [DBColumn("Email", maxLength: 100)]
+    [CSVColumn("Email")]
+    public string Email { get; set; }
+    
+    [DBColumn("CreatedDate")]
+    public DateTime CreatedDate { get; set; } = DateTime.Now;
+    
+    [DBColumn("LastUpdated")]
+    public DateTime LastUpdated { get; set; } = DateTime.Now;
+}
+
+public class DataProcessingService
+{
+    private readonly string _connectionString;
+    private readonly DBAccess _db;
+    
+    public DataProcessingService(string connectionString)
+    {
+        _connectionString = connectionString;
+        _db = new DBAccess(connectionString);
+    }
+    
+    public async Task&lt;int&gt; ImportCustomersFromCSV(string csvFilePath)
+    {
+        try
+        {
+            Console.WriteLine($"Starting CSV import from: {csvFilePath}");
+            
+            // Read CSV file
+            var csvReader = new CSVReader();
+            csvReader.ProgressReported += (s, e) => 
+                Console.WriteLine($"Reading CSV: {e.PercentComplete:F1}%");
+            
+            csvReader.ReadFile(csvFilePath);
+            Console.WriteLine($"Read {csvReader.Records.Count} records from CSV");
+            
+            // Convert CSV records to entities
+            var customers = new List&lt;Customer&gt;();
+            var errors = new List&lt;string&gt;();
+            
+            foreach (var record in csvReader.Records)
+            {
+                try
+                {
+                    var customer = new Customer
+                    {
+                        Id = record["Customer ID"],
+                        CompanyName = record["Company Name"],
+                        ContactName = record["Contact Name"],
+                        Phone = record["Phone"],
+                        Email = record["Email"]
+                    };
+                    
+                    // Validate required fields
+                    if (string.IsNullOrEmpty(customer.Id) || string.IsNullOrEmpty(customer.CompanyName))
+                    {
+                        errors.Add($"Invalid customer: ID and Company Name are required");
+                        continue;
+                    }
+                    
+                    customers.Add(customer);
+                }
+                catch (Exception ex)
+                {
+                    errors.Add($"Error processing record: {ex.Message}");
+                }
+            }
+            
+            if (errors.Any())
+            {
+                Console.WriteLine($"Import warnings: {errors.Count} records had issues");
+                foreach (var error in errors.Take(10)) // Show first 10 errors
+                {
+                    Console.WriteLine($"  {error}");
+                }
+            }
+            
+            // Bulk insert customers
+            var bulkProcessor = new BulkDbProcessor&lt;Customer&gt;(_db);
+            bulkProcessor.ProgressReported += (s, e) => 
+                Console.WriteLine($"Inserting: {e.PercentComplete:F1}% ({e.ProcessedCount}/{e.TotalCount})");
+            
+            var result = await bulkProcessor.BulkUpsertAsync("Customers", customers,
+                updateColumns: new[] { "CompanyName", "ContactName", "Phone", "Email", "LastUpdated" });
+            
+            Console.WriteLine($"Import completed: {result.RowsAffected} customers processed");
+            return result.RowsAffected;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Import failed: {ex.Message}");
+            throw;
+        }
+    }
+    
+    public async Task&lt;string&gt; ExportCustomersToCSV(string outputPath, DateTime? modifiedSince = null)
+    {
+        try
+        {
+            Console.WriteLine("Starting customer export...");
+            
+            // Query customers with optional date filter
+            string query = "SELECT * FROM Customers";
+            object parameters = null;
+            
+            if (modifiedSince.HasValue)
+            {
+                query += " WHERE LastUpdated >= @modifiedSince";
+                parameters = new { modifiedSince = modifiedSince.Value };
+            }
+            
+            query += " ORDER BY CompanyName";
+            
+            var dataTable = await _db.GetDataTableAsync(query, parameters);
+            Console.WriteLine($"Retrieved {dataTable.Rows.Count} customers for export");
+            
+            // Export to CSV
+            var csvWriter = new CSVWriter();
+            csvWriter.ProgressReported += (s, e) => 
+                Console.WriteLine($"Writing CSV: {e.PercentComplete:F1}%");
+            
+            var format = new CSVFormat
+            {
+                Delimiter = ',',
+                HasHeaders = true,
+                QuoteCharacter = '"',
+                DateTimeFormat = "yyyy-MM-dd HH:mm:ss"
+            };
+            
+            csvWriter.WriteDataTable(outputPath, dataTable, format);
+            
+            Console.WriteLine($"Export completed: {outputPath}");
+            return outputPath;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Export failed: {ex.Message}");
+            throw;
+        }
+    }
+    
+    public async Task&lt;DataProcessingSummary&gt; ProcessCustomerData(string inputPath, string outputPath)
+    {
+        var summary = new DataProcessingSummary();
+        
+        try
+        {
+            // Import from CSV
+            summary.ImportedCount = await ImportCustomersFromCSV(inputPath);
+            
+            // Perform data cleanup
+            summary.UpdatedCount = await CleanupCustomerData();
+            
+            // Export updated data
+            var exportPath = await ExportCustomersToCSV(outputPath, DateTime.Now.AddHours(-1));
+            summary.ExportPath = exportPath;
+            
+            // Generate statistics
+            summary.TotalCustomers = _db.GetValue&lt;int&gt;("SELECT COUNT(*) FROM Customers");
+            summary.ActiveCustomers = _db.GetValue&lt;int&gt;("SELECT COUNT(*) FROM Customers WHERE Email IS NOT NULL");
+            
+            summary.Success = true;
+            Console.WriteLine("Data processing completed successfully");
+            
+            return summary;
+        }
+        catch (Exception ex)
+        {
+            summary.Success = false;
+            summary.ErrorMessage = ex.Message;
+            Console.WriteLine($"Data processing failed: {ex.Message}");
+            throw;
+        }
+    }
+    
+    private async Task&lt;int&gt; CleanupCustomerData()
+    {
+        var updates = 0;
+        
+        // Normalize phone numbers
+        updates += await _db.ExecuteNonQueryAsync(@"
+            UPDATE Customers 
+            SET Phone = REPLACE(REPLACE(REPLACE(Phone, '(', ''), ')', ''), '-', ''),
+                LastUpdated = GETDATE()
+            WHERE Phone LIKE '%[()-]%'");
+        
+        // Normalize email addresses
+        updates += await _db.ExecuteNonQueryAsync(@"
+            UPDATE Customers 
+            SET Email = LOWER(LTRIM(RTRIM(Email))),
+                LastUpdated = GETDATE()
+            WHERE Email != LOWER(LTRIM(RTRIM(Email)))");
+        
+        // Remove duplicate customers (keep most recent)
+        updates += await _db.ExecuteNonQueryAsync(@"
+            DELETE c1 FROM Customers c1
+            INNER JOIN Customers c2 
+            WHERE c1.Email = c2.Email 
+            AND c1.CreatedDate &lt; c2.CreatedDate");
+        
+        Console.WriteLine($"Data cleanup completed: {updates} records updated");
+        return updates;
+    }
+}
+
+public class DataProcessingSummary
+{
+    public bool Success { get; set; }
+    public int ImportedCount { get; set; }
+    public int UpdatedCount { get; set; }
+    public int TotalCustomers { get; set; }
+    public int ActiveCustomers { get; set; }
+    public string ExportPath { get; set; }
+    public string ErrorMessage { get; set; }
+    
+    public void PrintSummary()
+    {
+        Console.WriteLine("=== Data Processing Summary ===");
+        Console.WriteLine($"Success: {Success}");
+        if (Success)
+        {
+            Console.WriteLine($"Imported: {ImportedCount} customers");
+            Console.WriteLine($"Updated: {UpdatedCount} records");
+            Console.WriteLine($"Total Customers: {TotalCustomers}");
+            Console.WriteLine($"Active Customers: {ActiveCustomers}");
+            Console.WriteLine($"Export File: {ExportPath}");
+        }
+        else
+        {
+            Console.WriteLine($"Error: {ErrorMessage}");
+        }
+        Console.WriteLine("===============================");
+    }
+}
+
+// Main program
+public class Program
+{
+    static async Task Main(string[] args)
+    {
+        var connectionString = "Server=localhost;Database=MyApp;Integrated Security=true;";
+        var processor = new DataProcessingService(connectionString);
+        
+        try
+        {
+            var inputFile = "customers_import.csv";
+            var outputFile = $"customers_export_{DateTime.Now:yyyyMMdd_HHmmss}.csv";
+            
+            var summary = await processor.ProcessCustomerData(inputFile, outputFile);
+            summary.PrintSummary();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Application error: {ex.Message}");
+        }
+    }
+}
+            </code>
+            </example>
+        </member>
+    </members>
+</doc>

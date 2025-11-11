@@ -1,0 +1,870 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>ByteForge.Toolkit.Modern</name>
+    </assembly>
+    <members>
+        <!-- Security Module Examples -->
+        
+        <!-- AESEncryption -->
+        <member name="T:ByteForge.Toolkit.AESEncryption">
+            <example>
+            <para>Basic AES encryption and decryption:</para>
+            <code language="cs">
+using ByteForge.Toolkit;
+
+// Create AES encryption instance
+var aes = new AESEncryption();
+
+// Encrypt sensitive data
+string plainText = "This is confidential information";
+string encryptedData = aes.Encrypt(plainText);
+Console.WriteLine($"Encrypted: {encryptedData}");
+
+// Decrypt the data
+string decryptedText = aes.Decrypt(encryptedData);
+Console.WriteLine($"Decrypted: {decryptedText}");
+
+// Verify the data matches
+if (plainText == decryptedText)
+{
+    Console.WriteLine("Encryption/Decryption successful!");
+}
+            </code>
+            </example>
+            
+            <example>
+            <para>Encrypt with custom key:</para>
+            <code language="cs">
+// Generate a secure key (in practice, store this securely)
+byte[] key = AESEncryption.GenerateKey();
+byte[] iv = AESEncryption.GenerateIV();
+
+var aes = new AESEncryption(key, iv);
+
+// Encrypt multiple pieces of data with the same key
+var sensitiveData = new[]
+{
+    "User password: mySecretPassword123",
+    "Credit card: 4532-1234-5678-9012",
+    "SSN: 123-45-6789"
+};
+
+var encryptedData = new List&lt;string&gt;();
+
+foreach (var data in sensitiveData)
+{
+    var encrypted = aes.Encrypt(data);
+    encryptedData.Add(encrypted);
+    Console.WriteLine($"Original: {data}");
+    Console.WriteLine($"Encrypted: {encrypted}");
+    Console.WriteLine();
+}
+
+// Decrypt all data
+Console.WriteLine("Decrypting data:");
+foreach (var encrypted in encryptedData)
+{
+    var decrypted = aes.Decrypt(encrypted);
+    Console.WriteLine($"Decrypted: {decrypted}");
+}
+            </code>
+            </example>
+            
+            <example>
+            <para>File encryption and decryption:</para>
+            <code language="cs">
+var aes = new AESEncryption();
+
+// Encrypt a file
+string inputFile = "sensitive_document.txt";
+string encryptedFile = "sensitive_document.encrypted";
+
+try
+{
+    // Read original file
+    string fileContent = File.ReadAllText(inputFile);
+    Console.WriteLine($"Original file size: {new FileInfo(inputFile).Length} bytes");
+    
+    // Encrypt content
+    string encryptedContent = aes.Encrypt(fileContent);
+    
+    // Write encrypted content to new file
+    File.WriteAllText(encryptedFile, encryptedContent);
+    Console.WriteLine($"Encrypted file size: {new FileInfo(encryptedFile).Length} bytes");
+    
+    // Verify by decrypting
+    string readEncryptedContent = File.ReadAllText(encryptedFile);
+    string decryptedContent = aes.Decrypt(readEncryptedContent);
+    
+    if (fileContent == decryptedContent)
+    {
+        Console.WriteLine("File encryption/decryption successful!");
+    }
+    
+    // Securely delete original file if needed
+    File.Delete(inputFile);
+    Console.WriteLine("Original file securely deleted");
+}
+catch (Exception ex)
+{
+    Console.WriteLine($"Encryption error: {ex.Message}");
+}
+            </code>
+            </example>
+        </member>
+        
+        <!-- Encryptor -->
+        <member name="T:ByteForge.Toolkit.Encryptor">
+            <example>
+            <para>High-level encryption for configuration values:</para>
+            <code language="cs">
+using ByteForge.Toolkit;
+
+// Simple string encryption/decryption
+var encryptor = new Encryptor();
+
+// Encrypt sensitive configuration values
+string connectionString = "Server=myServer;Database=myDB;User=admin;Password=secret123";
+string apiKey = "abc123def456ghi789";
+string licenseKey = "PROD-2024-ENTERPRISE-XYZ789";
+
+var encryptedConnStr = encryptor.EncryptString(connectionString);
+var encryptedApiKey = encryptor.EncryptString(apiKey);
+var encryptedLicense = encryptor.EncryptString(licenseKey);
+
+Console.WriteLine("Encrypted values for configuration:");
+Console.WriteLine($"ConnectionString={encryptedConnStr}");
+Console.WriteLine($"ApiKey={encryptedApiKey}");
+Console.WriteLine($"LicenseKey={encryptedLicense}");
+
+// Later, decrypt when needed
+var decryptedConnStr = encryptor.DecryptString(encryptedConnStr);
+var decryptedApiKey = encryptor.DecryptString(encryptedApiKey);
+var decryptedLicense = encryptor.DecryptString(encryptedLicense);
+
+Console.WriteLine("\nDecrypted values:");
+Console.WriteLine($"Connection: {decryptedConnStr}");
+Console.WriteLine($"API Key: {decryptedApiKey}");
+Console.WriteLine($"License: {decryptedLicense}");
+            </code>
+            </example>
+            
+            <example>
+            <para>Integration with configuration system:</para>
+            <code language="cs">
+public class SecureConfigExample
+{
+    private readonly Encryptor _encryptor;
+    
+    public SecureConfigExample()
+    {
+        _encryptor = new Encryptor();
+    }
+    
+    public void SaveSecureConfiguration()
+    {
+        // Configuration values to encrypt
+        var configValues = new Dictionary&lt;string, string&gt;
+        {
+            { "Database.ConnectionString", "Server=prod-db;Database=MyApp;User=appuser;Password=P@ssw0rd123" },
+            { "Email.Password", "emailPassword456" },
+            { "Api.SecretKey", "super-secret-api-key-xyz789" },
+            { "License.Key", "ENT-2024-UNLIMITED-ABC123" }
+        };
+        
+        // Create INI content with encrypted values
+        var iniContent = new StringBuilder();
+        iniContent.AppendLine("[Database]");
+        iniContent.AppendLine($"ConnectionString={_encryptor.EncryptString(configValues["Database.ConnectionString"])}");
+        iniContent.AppendLine();
+        
+        iniContent.AppendLine("[Email]");
+        iniContent.AppendLine("SmtpServer=smtp.company.com");
+        iniContent.AppendLine("Port=587");
+        iniContent.AppendLine("Username=noreply@company.com");
+        iniContent.AppendLine($"Password={_encryptor.EncryptString(configValues["Email.Password"])}");
+        iniContent.AppendLine();
+        
+        iniContent.AppendLine("[Api]");
+        iniContent.AppendLine("BaseUrl=https://api.company.com");
+        iniContent.AppendLine($"SecretKey={_encryptor.EncryptString(configValues["Api.SecretKey"])}");
+        iniContent.AppendLine();
+        
+        iniContent.AppendLine("[License]");
+        iniContent.AppendLine($"Key={_encryptor.EncryptString(configValues["License.Key"])}");
+        
+        // Save to file
+        File.WriteAllText("secure_config.ini", iniContent.ToString());
+        Console.WriteLine("Secure configuration saved to secure_config.ini");
+    }
+    
+    public void LoadSecureConfiguration()
+    {
+        // Read configuration and decrypt sensitive values
+        var config = new Dictionary&lt;string, string&gt;();
+        
+        // Simulate reading from INI file (in practice, use Configuration class)
+        var lines = File.ReadAllLines("secure_config.ini");
+        string currentSection = "";
+        
+        foreach (var line in lines)
+        {
+            if (line.StartsWith("[") &amp;&amp; line.EndsWith("]"))
+            {
+                currentSection = line.Trim('[', ']');
+            }
+            else if (line.Contains("="))
+            {
+                var parts = line.Split('=', 2);
+                var key = $"{currentSection}.{parts[0].Trim()}";
+                var value = parts[1].Trim();
+                
+                // Decrypt sensitive values
+                if (key.Contains("Password") || key.Contains("ConnectionString") || 
+                    key.Contains("SecretKey") || key.Contains("Key"))
+                {
+                    try
+                    {
+                        value = _encryptor.DecryptString(value);
+                        Console.WriteLine($"Decrypted {key}: [HIDDEN]");
+                    }
+                    catch
+                    {
+                        // Value might not be encrypted
+                        Console.WriteLine($"Plain text {key}: {value}");
+                    }
+                }
+                else
+                {
+                    Console.WriteLine($"Plain text {key}: {value}");
+                }
+                
+                config[key] = value;
+            }
+        }
+        
+        // Use decrypted values
+        var connectionString = config["Database.ConnectionString"];
+        var emailPassword = config["Email.Password"];
+        var apiKey = config["Api.SecretKey"];
+        
+        Console.WriteLine("Configuration loaded and decrypted successfully");
+    }
+}
+
+// Usage
+var secureConfig = new SecureConfigExample();
+secureConfig.SaveSecureConfiguration();
+secureConfig.LoadSecureConfiguration();
+            </code>
+            </example>
+        </member>
+        
+        <!-- VBMath -->
+        <member name="T:ByteForge.Toolkit.VBMath">
+            <example>
+            <para>VB6-compatible random number generation:</para>
+            <code language="cs">
+using ByteForge.Toolkit;
+
+// Initialize random number generator
+VBMath.Randomize(); // Use current time as seed
+
+Console.WriteLine("VB6-compatible random numbers:");
+
+// Generate random floating-point numbers (0 to 1)
+for (int i = 0; i &lt; 5; i++)
+{
+    float randomFloat = VBMath.Rnd();
+    Console.WriteLine($"Rnd(): {randomFloat:F6}");
+}
+
+// Generate random integers in a range
+Console.WriteLine("\nRandom integers (1-100):");
+for (int i = 0; i &lt; 10; i++)
+{
+    // VB6 pattern: Int(Rnd() * range) + min
+    int randomInt = (int)(VBMath.Rnd() * 100) + 1;
+    Console.WriteLine($"Random(1-100): {randomInt}");
+}
+
+// Seed with specific value for reproducible results
+Console.WriteLine("\nReproducible sequence (seed = 12345):");
+VBMath.Randomize(12345);
+
+var sequence1 = new List&lt;float&gt;();
+for (int i = 0; i &lt; 5; i++)
+{
+    float val = VBMath.Rnd();
+    sequence1.Add(val);
+    Console.WriteLine($"Value {i + 1}: {val:F6}");
+}
+
+// Reset with same seed - should get same sequence
+VBMath.Randomize(12345);
+Console.WriteLine("\nSame seed - should match above:");
+
+for (int i = 0; i &lt; 5; i++)
+{
+    float val = VBMath.Rnd();
+    Console.WriteLine($"Value {i + 1}: {val:F6} (Match: {Math.Abs(val - sequence1[i]) &lt; 0.000001})");
+}
+            </code>
+            </example>
+            
+            <example>
+            <para>Legacy VB6 code migration example:</para>
+            <code language="cs">
+// Migrating VB6 code that used Rnd() function
+public class LegacyGameLogic
+{
+    public void SimulateDiceRoll()
+    {
+        // VB6: Randomize
+        VBMath.Randomize();
+        
+        Console.WriteLine("Rolling two dice...");
+        
+        // VB6: die1 = Int(Rnd() * 6) + 1
+        int die1 = (int)(VBMath.Rnd() * 6) + 1;
+        int die2 = (int)(VBMath.Rnd() * 6) + 1;
+        
+        Console.WriteLine($"Die 1: {die1}");
+        Console.WriteLine($"Die 2: {die2}");
+        Console.WriteLine($"Total: {die1 + die2}");
+        
+        // VB6 logic for special combinations
+        if (die1 == die2)
+        {
+            Console.WriteLine("Doubles!");
+        }
+        
+        if (die1 + die2 == 7)
+        {
+            Console.WriteLine("Lucky seven!");
+        }
+    }
+    
+    public void GenerateRandomPassword(int length = 8)
+    {
+        // VB6-style random password generation
+        VBMath.Randomize();
+        
+        string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+        var password = new StringBuilder();
+        
+        for (int i = 0; i &lt; length; i++)
+        {
+            // VB6: index = Int(Rnd() * Len(chars))
+            int index = (int)(VBMath.Rnd() * chars.Length);
+            password.Append(chars[index]);
+        }
+        
+        Console.WriteLine($"Generated password: {password}");
+    }
+    
+    public List&lt;int&gt; ShuffleArray(List&lt;int&gt; array)
+    {
+        // VB6-style array shuffling (Fisher-Yates)
+        var shuffled = new List&lt;int&gt;(array);
+        
+        for (int i = shuffled.Count - 1; i > 0; i--)
+        {
+            // VB6: j = Int(Rnd() * (i + 1))
+            int j = (int)(VBMath.Rnd() * (i + 1));
+            
+            // Swap elements
+            int temp = shuffled[i];
+            shuffled[i] = shuffled[j];
+            shuffled[j] = temp;
+        }
+        
+        return shuffled;
+    }
+}
+
+// Usage
+var game = new LegacyGameLogic();
+
+Console.WriteLine("=== Dice Roll Simulation ===");
+game.SimulateDiceRoll();
+
+Console.WriteLine("\n=== Password Generation ===");
+game.GenerateRandomPassword(12);
+
+Console.WriteLine("\n=== Array Shuffling ===");
+var originalArray = Enumerable.Range(1, 10).ToList();
+Console.WriteLine($"Original: [{string.Join(", ", originalArray)}]");
+
+var shuffledArray = game.ShuffleArray(originalArray);
+Console.WriteLine($"Shuffled: [{string.Join(", ", shuffledArray)}]");
+            </code>
+            </example>
+        </member>
+        
+        <!-- Module-level examples -->
+        <member name="N:ByteForge.Toolkit.Security">
+            <example>
+            <para>Complete security implementation for an application:</para>
+            <code language="cs">
+using ByteForge.Toolkit;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Security.Cryptography;
+using System.Text;
+
+// Comprehensive security service
+public class ApplicationSecurityService
+{
+    private readonly AESEncryption _aesEncryption;
+    private readonly Encryptor _encryptor;
+    private readonly string _keyStorePath;
+    
+    public ApplicationSecurityService(string keyStorePath = "security.key")
+    {
+        _keyStorePath = keyStorePath;
+        _aesEncryption = InitializeAESEncryption();
+        _encryptor = new Encryptor();
+    }
+    
+    private AESEncryption InitializeAESEncryption()
+    {
+        // Try to load existing key, or generate new one
+        if (File.Exists(_keyStorePath))
+        {
+            try
+            {
+                var keyData = File.ReadAllBytes(_keyStorePath);
+                var key = new byte[32]; // 256-bit key
+                var iv = new byte[16];  // 128-bit IV
+                
+                Array.Copy(keyData, 0, key, 0, 32);
+                Array.Copy(keyData, 32, iv, 0, 16);
+                
+                return new AESEncryption(key, iv);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Warning: Could not load existing key: {ex.Message}");
+            }
+        }
+        
+        // Generate new key and save it
+        var newKey = AESEncryption.GenerateKey();
+        var newIV = AESEncryption.GenerateIV();
+        
+        var combinedKeyData = new byte[48]; // 32 + 16
+        Array.Copy(newKey, 0, combinedKeyData, 0, 32);
+        Array.Copy(newIV, 0, combinedKeyData, 32, 16);
+        
+        File.WriteAllBytes(_keyStorePath, combinedKeyData);
+        Console.WriteLine($"Generated new encryption key: {_keyStorePath}");
+        
+        return new AESEncryption(newKey, newIV);
+    }
+    
+    public string EncryptSensitiveData(string plainText)
+    {
+        try
+        {
+            return _aesEncryption.Encrypt(plainText);
+        }
+        catch (Exception ex)
+        {
+            throw new SecurityException($"Encryption failed: {ex.Message}", ex);
+        }
+    }
+    
+    public string DecryptSensitiveData(string encryptedText)
+    {
+        try
+        {
+            return _aesEncryption.Decrypt(encryptedText);
+        }
+        catch (Exception ex)
+        {
+            throw new SecurityException($"Decryption failed: {ex.Message}", ex);
+        }
+    }
+    
+    public void EncryptFile(string sourceFile, string destinationFile)
+    {
+        try
+        {
+            var plainText = File.ReadAllText(sourceFile);
+            var encryptedText = _aesEncryption.Encrypt(plainText);
+            File.WriteAllText(destinationFile, encryptedText);
+            
+            Console.WriteLine($"File encrypted: {sourceFile} -> {destinationFile}");
+        }
+        catch (Exception ex)
+        {
+            throw new SecurityException($"File encryption failed: {ex.Message}", ex);
+        }
+    }
+    
+    public void DecryptFile(string encryptedFile, string destinationFile)
+    {
+        try
+        {
+            var encryptedText = File.ReadAllText(encryptedFile);
+            var plainText = _aesEncryption.Decrypt(encryptedText);
+            File.WriteAllText(destinationFile, plainText);
+            
+            Console.WriteLine($"File decrypted: {encryptedFile} -> {destinationFile}");
+        }
+        catch (Exception ex)
+        {
+            throw new SecurityException($"File decryption failed: {ex.Message}", ex);
+        }
+    }
+    
+    public Dictionary&lt;string, string&gt; EncryptConfigurationSection(Dictionary&lt;string, string&gt; configValues)
+    {
+        var encryptedConfig = new Dictionary&lt;string, string&gt;();
+        
+        foreach (var kvp in configValues)
+        {
+            // Only encrypt sensitive keys
+            if (IsSensitiveKey(kvp.Key))
+            {
+                encryptedConfig[kvp.Key] = _encryptor.EncryptString(kvp.Value);
+                Console.WriteLine($"Encrypted configuration key: {kvp.Key}");
+            }
+            else
+            {
+                encryptedConfig[kvp.Key] = kvp.Value;
+            }
+        }
+        
+        return encryptedConfig;
+    }
+    
+    public Dictionary&lt;string, string&gt; DecryptConfigurationSection(Dictionary&lt;string, string&gt; encryptedConfig)
+    {
+        var decryptedConfig = new Dictionary&lt;string, string&gt;();
+        
+        foreach (var kvp in encryptedConfig)
+        {
+            if (IsSensitiveKey(kvp.Key))
+            {
+                try
+                {
+                    decryptedConfig[kvp.Key] = _encryptor.DecryptString(kvp.Value);
+                }
+                catch
+                {
+                    // Value might not be encrypted
+                    decryptedConfig[kvp.Key] = kvp.Value;
+                    Console.WriteLine($"Warning: Could not decrypt {kvp.Key}, using as-is");
+                }
+            }
+            else
+            {
+                decryptedConfig[kvp.Key] = kvp.Value;
+            }
+        }
+        
+        return decryptedConfig;
+    }
+    
+    private bool IsSensitiveKey(string key)
+    {
+        var sensitiveKeywords = new[] { "password", "key", "secret", "token", "credential", "connectionstring" };
+        return sensitiveKeywords.Any(keyword => key.ToLower().Contains(keyword));
+    }
+    
+    public string GenerateSecureToken(int length = 32)
+    {
+        // Use VBMath for VB6 compatibility if needed
+        VBMath.Randomize();
+        
+        const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+        var token = new StringBuilder();
+        
+        for (int i = 0; i &lt; length; i++)
+        {
+            int index = (int)(VBMath.Rnd() * chars.Length);
+            token.Append(chars[index]);
+        }
+        
+        return token.ToString();
+    }
+    
+    public void SecureDelete(string filePath)
+    {
+        if (!File.Exists(filePath))
+            return;
+        
+        try
+        {
+            // Overwrite file with random data before deletion
+            var fileInfo = new FileInfo(filePath);
+            var fileLength = fileInfo.Length;
+            
+            using (var fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Write))
+            {
+                var randomData = new byte[1024];
+                var random = new Random();
+                
+                for (long i = 0; i &lt; fileLength; i += randomData.Length)
+                {
+                    random.NextBytes(randomData);
+                    var bytesToWrite = (int)Math.Min(randomData.Length, fileLength - i);
+                    fileStream.Write(randomData, 0, bytesToWrite);
+                }
+                
+                fileStream.Flush();
+            }
+            
+            // Delete the file
+            File.Delete(filePath);
+            Console.WriteLine($"File securely deleted: {filePath}");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Secure delete failed for {filePath}: {ex.Message}");
+            throw;
+        }
+    }
+    
+    public void RotateEncryptionKey()
+    {
+        try
+        {
+            Console.WriteLine("Rotating encryption key...");
+            
+            // Backup current key
+            var backupPath = $"{_keyStorePath}.backup.{DateTime.Now:yyyyMMddHHmmss}";
+            if (File.Exists(_keyStorePath))
+            {
+                File.Copy(_keyStorePath, backupPath);
+                Console.WriteLine($"Current key backed up to: {backupPath}");
+            }
+            
+            // Generate new key
+            var newKey = AESEncryption.GenerateKey();
+            var newIV = AESEncryption.GenerateIV();
+            
+            var combinedKeyData = new byte[48];
+            Array.Copy(newKey, 0, combinedKeyData, 0, 32);
+            Array.Copy(newIV, 0, combinedKeyData, 32, 16);
+            
+            File.WriteAllBytes(_keyStorePath, combinedKeyData);
+            
+            // Update encryption instance
+            _aesEncryption.Dispose();
+            var newAes = new AESEncryption(newKey, newIV);
+            
+            Console.WriteLine("Encryption key rotated successfully");
+            Console.WriteLine("Note: Previously encrypted data will need to be re-encrypted with the new key");
+        }
+        catch (Exception ex)
+        {
+            throw new SecurityException($"Key rotation failed: {ex.Message}", ex);
+        }
+    }
+}
+
+// Custom security exception
+public class SecurityException : Exception
+{
+    public SecurityException(string message) : base(message) { }
+    public SecurityException(string message, Exception innerException) : base(message, innerException) { }
+}
+
+// Main application demonstrating security features
+public class SecureApplication
+{
+    private readonly ApplicationSecurityService _security;
+    
+    public SecureApplication()
+    {
+        _security = new ApplicationSecurityService();
+    }
+    
+    public void DemonstrateEncryption()
+    {
+        Console.WriteLine("=== Encryption Demo ===");
+        
+        // Encrypt various types of sensitive data
+        var sensitiveData = new[]
+        {
+            "Credit Card: 4532-1234-5678-9012",
+            "SSN: 123-45-6789",
+            "API Key: sk_live_abc123def456ghi789",
+            "Database Password: MySecureP@ssw0rd123"
+        };
+        
+        var encryptedData = new List&lt;string&gt;();
+        
+        foreach (var data in sensitiveData)
+        {
+            var encrypted = _security.EncryptSensitiveData(data);
+            encryptedData.Add(encrypted);
+            
+            Console.WriteLine($"Original: {data}");
+            Console.WriteLine($"Encrypted: {encrypted}");
+            Console.WriteLine($"Length change: {data.Length} -> {encrypted.Length}");
+            Console.WriteLine();
+        }
+        
+        // Decrypt and verify
+        Console.WriteLine("Decryption verification:");
+        for (int i = 0; i &lt; sensitiveData.Length; i++)
+        {
+            var decrypted = _security.DecryptSensitiveData(encryptedData[i]);
+            var matches = sensitiveData[i] == decrypted;
+            Console.WriteLine($"Match {i + 1}: {matches} - {(matches ? "✓" : "✗")}");
+        }
+    }
+    
+    public void DemonstrateConfigurationSecurity()
+    {
+        Console.WriteLine("\n=== Configuration Security Demo ===");
+        
+        var config = new Dictionary&lt;string, string&gt;
+        {
+            { "AppName", "MySecureApp" },
+            { "Version", "1.0.0" },
+            { "DatabaseConnectionString", "Server=prod-db;Database=App;User=admin;Password=secret123" },
+            { "ApiKey", "abc123def456" },
+            { "SmtpPassword", "emailpass456" },
+            { "LogLevel", "Information" },
+            { "MaxConnections", "100" }
+        };
+        
+        Console.WriteLine("Original configuration:");
+        foreach (var kvp in config)
+        {
+            Console.WriteLine($"  {kvp.Key}: {kvp.Value}");
+        }
+        
+        // Encrypt sensitive values
+        var encryptedConfig = _security.EncryptConfigurationSection(config);
+        
+        Console.WriteLine("\nEncrypted configuration:");
+        foreach (var kvp in encryptedConfig)
+        {
+            Console.WriteLine($"  {kvp.Key}: {kvp.Value}");
+        }
+        
+        // Decrypt for use
+        var decryptedConfig = _security.DecryptConfigurationSection(encryptedConfig);
+        
+        Console.WriteLine("\nDecrypted configuration:");
+        foreach (var kvp in decryptedConfig)
+        {
+            Console.WriteLine($"  {kvp.Key}: {kvp.Value}");
+        }
+    }
+    
+    public void DemonstrateFileEncryption()
+    {
+        Console.WriteLine("\n=== File Encryption Demo ===");
+        
+        var testFile = "sensitive_document.txt";
+        var encryptedFile = "sensitive_document.encrypted";
+        var decryptedFile = "sensitive_document_decrypted.txt";
+        
+        // Create test file
+        var content = @"CONFIDENTIAL DOCUMENT
+        
+Employee Salary Information:
+- John Doe: $75,000
+- Jane Smith: $82,000
+- Bob Johnson: $68,500
+
+API Credentials:
+- Production Key: prod_abc123def456
+- Test Key: test_xyz789uvw012
+
+Database Connection:
+Server=prod-sql.company.com;Database=HR;User=hr_admin;Password=hrP@ss2024
+        ";
+        
+        File.WriteAllText(testFile, content);
+        Console.WriteLine($"Created test file: {testFile} ({new FileInfo(testFile).Length} bytes)");
+        
+        // Encrypt file
+        _security.EncryptFile(testFile, encryptedFile);
+        Console.WriteLine($"Encrypted file: {encryptedFile} ({new FileInfo(encryptedFile).Length} bytes)");
+        
+        // Decrypt file
+        _security.DecryptFile(encryptedFile, decryptedFile);
+        Console.WriteLine($"Decrypted file: {decryptedFile} ({new FileInfo(decryptedFile).Length} bytes)");
+        
+        // Verify content matches
+        var originalContent = File.ReadAllText(testFile);
+        var decryptedContent = File.ReadAllText(decryptedFile);
+        var matches = originalContent == decryptedContent;
+        
+        Console.WriteLine($"Content verification: {(matches ? "✓ PASS" : "✗ FAIL")}");
+        
+        // Secure cleanup
+        _security.SecureDelete(testFile);
+        _security.SecureDelete(decryptedFile);
+        File.Delete(encryptedFile);
+    }
+    
+    public void DemonstrateTokenGeneration()
+    {
+        Console.WriteLine("\n=== Token Generation Demo ===");
+        
+        Console.WriteLine("Generated secure tokens:");
+        for (int i = 0; i &lt; 5; i++)
+        {
+            var token = _security.GenerateSecureToken(16);
+            Console.WriteLine($"Token {i + 1}: {token}");
+        }
+        
+        Console.WriteLine("\nLonger tokens:");
+        for (int i = 0; i &lt; 3; i++)
+        {
+            var token = _security.GenerateSecureToken(32);
+            Console.WriteLine($"Long token {i + 1}: {token}");
+        }
+    }
+    
+    public void Run()
+    {
+        try
+        {
+            Console.WriteLine("ByteForge Security Module Demonstration");
+            Console.WriteLine("=====================================");
+            
+            DemonstrateEncryption();
+            DemonstrateConfigurationSecurity();
+            DemonstrateFileEncryption();
+            DemonstrateTokenGeneration();
+            
+            Console.WriteLine("\n=== Security Demo Complete ===");
+            Console.WriteLine("All security operations completed successfully!");
+        }
+        catch (SecurityException ex)
+        {
+            Console.WriteLine($"Security error: {ex.Message}");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Unexpected error: {ex.Message}");
+        }
+    }
+}
+
+// Program entry point
+public class Program
+{
+    static void Main(string[] args)
+    {
+        var app = new SecureApplication();
+        app.Run();
+    }
+}
+            </code>
+            </example>
+        </member>
+    </members>
+</doc>

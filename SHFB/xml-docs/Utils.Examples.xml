@@ -1,0 +1,1056 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>ByteForge.Toolkit.Modern</name>
+    </assembly>
+    <members>
+        <!-- Utils Module Examples -->
+        
+        <!-- StringUtil -->
+        <member name="T:ByteForge.Toolkit.StringUtil">
+            <example>
+            <para>String manipulation and parsing utilities:</para>
+            <code language="cs">
+using ByteForge.Toolkit;
+
+// String trimming and cleaning
+string dirtyText = "  Hello World!  \r\n\t  ";
+string cleaned = StringUtil.CleanText(dirtyText);
+Console.WriteLine($"Cleaned: '{cleaned}'"); // "Hello World!"
+
+// Safe substring operations
+string text = "Hello World";
+string safe1 = StringUtil.SafeSubstring(text, 0, 5);   // "Hello"
+string safe2 = StringUtil.SafeSubstring(text, 6, 100); // "World" (no exception)
+string safe3 = StringUtil.SafeSubstring(text, 20, 5);  // "" (no exception)
+
+// String comparison utilities
+bool equals1 = StringUtil.SafeEquals("Hello", "hello", ignoreCase: true);  // true
+bool equals2 = StringUtil.SafeEquals("Test", null, ignoreCase: false);     // false
+bool equals3 = StringUtil.SafeEquals(null, null, ignoreCase: false);       // true
+
+// String formatting and templates
+string template = "Hello {name}, you have {count} messages.";
+var values = new Dictionary&lt;string, object&gt; 
+{ 
+    { "name", "John" }, 
+    { "count", 5 } 
+};
+string formatted = StringUtil.FormatTemplate(template, values);
+Console.WriteLine(formatted); // "Hello John, you have 5 messages."
+
+// String validation
+bool isValidEmail = StringUtil.IsValidEmail("user@example.com");     // true
+bool isValidPhone = StringUtil.IsValidPhoneNumber("(555) 123-4567"); // true
+bool isValidUrl = StringUtil.IsValidUrl("https://www.example.com");  // true
+            </code>
+            </example>
+        </member>
+        
+        <!-- BooleanParser -->
+        <member name="T:ByteForge.Toolkit.BooleanParser">
+            <example>
+            <para>Parse boolean values from various string formats:</para>
+            <code language="cs">
+using ByteForge.Toolkit;
+
+var parser = new BooleanParser();
+
+// Standard boolean parsing
+bool result1 = parser.Parse("true");   // true
+bool result2 = parser.Parse("false");  // false
+bool result3 = parser.Parse("TRUE");   // true (case-insensitive)
+
+// Yes/No parsing
+bool result4 = parser.Parse("yes");    // true
+bool result5 = parser.Parse("no");     // false
+bool result6 = parser.Parse("Y");      // true
+bool result7 = parser.Parse("N");      // false
+
+// Numeric parsing
+bool result8 = parser.Parse("1");      // true
+bool result9 = parser.Parse("0");      // false
+
+// Custom string parsing
+bool result10 = parser.Parse("on");    // true
+bool result11 = parser.Parse("off");   // false
+bool result12 = parser.Parse("enabled");  // true
+bool result13 = parser.Parse("disabled"); // false
+
+// Safe parsing with default values
+bool safe1 = parser.TryParse("invalid", defaultValue: false); // false
+bool safe2 = parser.TryParse("true", defaultValue: false);    // true
+bool safe3 = parser.TryParse(null, defaultValue: true);       // true
+
+// Parse from configuration or user input
+var configValues = new Dictionary&lt;string, string&gt;
+{
+    { "EnableLogging", "yes" },
+    { "DebugMode", "1" },
+    { "SendEmails", "off" },
+    { "UseCompression", "enabled" },
+    { "InvalidSetting", "maybe" }
+};
+
+foreach (var setting in configValues)
+{
+    try
+    {
+        bool value = parser.Parse(setting.Value);
+        Console.WriteLine($"{setting.Key}: {value}");
+    }
+    catch (FormatException)
+    {
+        bool defaultValue = parser.TryParse(setting.Value, defaultValue: false);
+        Console.WriteLine($"{setting.Key}: {defaultValue} (using default)");
+    }
+}
+            </code>
+            </example>
+        </member>
+        
+        <!-- DateTimeParser -->
+        <member name="T:ByteForge.Toolkit.DateTimeParser">
+            <example>
+            <para>Parse dates from various formats and cultures:</para>
+            <code language="cs">
+using ByteForge.Toolkit;
+using System.Globalization;
+
+var parser = new DateTimeParser();
+
+// Standard date parsing
+DateTime date1 = parser.Parse("2024-01-15");              // ISO format
+DateTime date2 = parser.Parse("01/15/2024");              // US format
+DateTime date3 = parser.Parse("15/01/2024");              // European format
+DateTime date4 = parser.Parse("January 15, 2024");        // Long format
+
+// Time parsing
+DateTime time1 = parser.Parse("14:30:00");                // 24-hour
+DateTime time2 = parser.Parse("2:30 PM");                 // 12-hour
+DateTime time3 = parser.Parse("2:30:45.123 PM");          // With milliseconds
+
+// Date and time combinations
+DateTime dt1 = parser.Parse("2024-01-15 14:30:00");
+DateTime dt2 = parser.Parse("January 15, 2024 2:30 PM");
+DateTime dt3 = parser.Parse("15/01/2024 14:30");
+
+// Relative date parsing
+DateTime now = DateTime.Now;
+DateTime yesterday = parser.ParseRelative("yesterday");
+DateTime tomorrow = parser.ParseRelative("tomorrow");
+DateTime nextWeek = parser.ParseRelative("next week");
+DateTime lastMonth = parser.ParseRelative("last month");
+
+// Culture-specific parsing
+var frenchCulture = new CultureInfo("fr-FR");
+var germanCulture = new CultureInfo("de-DE");
+
+parser.SetCulture(frenchCulture);
+DateTime frenchDate = parser.Parse("15 janvier 2024");
+
+parser.SetCulture(germanCulture);
+DateTime germanDate = parser.Parse("15. Januar 2024");
+
+// Safe parsing with defaults
+DateTime safe1 = parser.TryParse("invalid date", DateTime.MinValue);
+DateTime safe2 = parser.TryParse("2024-01-15", DateTime.MinValue);
+DateTime safe3 = parser.TryParse(null, DateTime.Now);
+
+// Parse from various input sources
+var dateInputs = new[]
+{
+    "2024-01-15",
+    "01/15/2024",
+    "15-Jan-2024",
+    "Monday, January 15, 2024",
+    "yesterday",
+    "next Friday",
+    "invalid",
+    ""
+};
+
+Console.WriteLine("Date parsing results:");
+foreach (var input in dateInputs)
+{
+    try
+    {
+        var parsed = parser.Parse(input);
+        Console.WriteLine($"'{input}' -> {parsed:yyyy-MM-dd HH:mm:ss}");
+    }
+    catch (FormatException)
+    {
+        var fallback = parser.TryParse(input, DateTime.MinValue);
+        Console.WriteLine($"'{input}' -> Could not parse (using fallback: {fallback:yyyy-MM-dd})");
+    }
+}
+            </code>
+            </example>
+        </member>
+        
+        <!-- IOUtils -->
+        <member name="T:ByteForge.Toolkit.IOUtils">
+            <example>
+            <para>File and directory operations with progress monitoring:</para>
+            <code language="cs">
+using ByteForge.Toolkit;
+
+// Safe file operations
+string sourceFile = @"C:\Data\largefile.zip";
+string destFile = @"C:\Backup\largefile.zip";
+
+// Copy file with progress reporting
+var progress = new Progress&lt;FileOperationProgress&gt;(p =>
+{
+    Console.WriteLine($"Copying: {p.PercentComplete:F1}% ({p.BytesProcessed:N0}/{p.TotalBytes:N0} bytes)");
+});
+
+await IOUtils.CopyFileAsync(sourceFile, destFile, progress);
+
+// Move file safely
+string moveSource = @"C:\Temp\document.pdf";
+string moveDestination = @"C:\Archive\document.pdf";
+IOUtils.MoveFileSafe(moveSource, moveDestination);
+
+// Create directory structure
+string complexPath = @"C:\Projects\MyApp\Data\Logs\2024\January";
+IOUtils.EnsureDirectoryExists(complexPath);
+
+// Get directory size with progress
+var sizeProgress = new Progress&lt;DirectoryScanProgress&gt;(p =>
+{
+    Console.WriteLine($"Scanning: {p.FilesScanned} files, {p.TotalSize:N0} bytes");
+});
+
+long totalSize = await IOUtils.GetDirectorySizeAsync(@"C:\Projects", sizeProgress);
+Console.WriteLine($"Total directory size: {totalSize:N0} bytes ({totalSize / 1024.0 / 1024.0:F1} MB)");
+
+// Find files with pattern
+var logFiles = IOUtils.FindFiles(@"C:\Logs", "*.log", SearchOption.AllDirectories);
+Console.WriteLine($"Found {logFiles.Count()} log files");
+
+// Clean up old files
+int deletedCount = IOUtils.CleanupOldFiles(@"C:\Temp", TimeSpan.FromDays(30));
+Console.WriteLine($"Deleted {deletedCount} files older than 30 days");
+
+// Get file information
+var fileInfo = IOUtils.GetFileInfo(sourceFile);
+Console.WriteLine($"File: {fileInfo.Name}");
+Console.WriteLine($"Size: {fileInfo.Size:N0} bytes");
+Console.WriteLine($"Created: {fileInfo.CreatedDate:yyyy-MM-dd HH:mm:ss}");
+Console.WriteLine($"Modified: {fileInfo.ModifiedDate:yyyy-MM-dd HH:mm:ss}");
+Console.WriteLine($"Read-only: {fileInfo.IsReadOnly}");
+
+// Batch file operations
+var filesToProcess = Directory.GetFiles(@"C:\DataToProcess", "*.txt");
+await IOUtils.ProcessFilesAsync(filesToProcess, async file =>
+{
+    // Process each file
+    var content = await File.ReadAllTextAsync(file);
+    var processedContent = content.ToUpper();
+    await File.WriteAllTextAsync(file + ".processed", processedContent);
+}, maxConcurrency: 4);
+            </code>
+            </example>
+        </member>
+        
+        <!-- TemplateProcessor -->
+        <member name="T:ByteForge.Toolkit.TemplateProcessor">
+            <example>
+            <para>Process text templates with variable substitution:</para>
+            <code language="cs">
+using ByteForge.Toolkit;
+
+var processor = new TemplateProcessor();
+
+// Simple variable substitution
+string emailTemplate = @"
+Dear {CustomerName},
+
+Thank you for your order #{OrderNumber} placed on {OrderDate}.
+Your total is ${OrderTotal:F2}.
+
+Items ordered:
+{OrderItems}
+
+Estimated delivery: {DeliveryDate:d}
+
+Best regards,
+The {CompanyName} Team
+";
+
+var templateData = new
+{
+    CustomerName = "John Doe",
+    OrderNumber = 12345,
+    OrderDate = DateTime.Now.AddDays(-1),
+    OrderTotal = 299.99m,
+    OrderItems = "- Laptop Computer x1\n- Wireless Mouse x1\n- Laptop Bag x1",
+    DeliveryDate = DateTime.Now.AddDays(3),
+    CompanyName = "TechStore"
+};
+
+string processedEmail = processor.Process(emailTemplate, templateData);
+Console.WriteLine("Processed email:");
+Console.WriteLine(processedEmail);
+
+// Conditional content
+string conditionalTemplate = @"
+Welcome {UserName}!
+
+{if HasPremiumAccount}
+Thank you for being a Premium member. You have access to:
+- Priority support
+- Advanced features
+- Exclusive content
+{endif}
+
+{if NotificationCount > 0}
+You have {NotificationCount} new notification{if NotificationCount > 1}s{endif}.
+{endif}
+
+{if IsFirstLogin}
+Welcome! This appears to be your first login. Here are some tips:
+- Complete your profile for better recommendations
+- Enable notifications to stay updated
+- Explore our help documentation
+{endif}
+";
+
+var userData = new
+{
+    UserName = "Alice Smith",
+    HasPremiumAccount = true,
+    NotificationCount = 3,
+    IsFirstLogin = false
+};
+
+string welcomeMessage = processor.Process(conditionalTemplate, userData);
+Console.WriteLine("Welcome message:");
+Console.WriteLine(welcomeMessage);
+
+// Report template with loops
+string reportTemplate = @"
+Sales Report for {ReportMonth:MMMM yyyy}
+
+Summary:
+- Total Sales: ${TotalSales:N2}
+- Total Orders: {TotalOrders:N0}
+- Average Order Value: ${AverageOrderValue:F2}
+
+Top Products:
+{foreach TopProducts}
+{Index}. {Name} - {QuantitySold} units - ${Revenue:N2}
+{endforeach}
+
+Sales by Region:
+{foreach RegionalSales}
+{Region}: ${Amount:N2} ({Percentage:F1}%)
+{endforeach}
+
+{if TotalSales > PreviousMonthSales}
+📈 Sales increased by {SalesGrowth:F1}% compared to last month!
+{else}
+📉 Sales decreased by {SalesDecline:F1}% compared to last month.
+{endif}
+";
+
+var reportData = new
+{
+    ReportMonth = DateTime.Now,
+    TotalSales = 125000m,
+    TotalOrders = 450,
+    AverageOrderValue = 277.78m,
+    PreviousMonthSales = 118000m,
+    SalesGrowth = 5.9,
+    TopProducts = new[]
+    {
+        new { Name = "Laptop Pro", QuantitySold = 25, Revenue = 37500m },
+        new { Name = "Wireless Headphones", QuantitySold = 85, Revenue = 12750m },
+        new { Name = "Gaming Monitor", QuantitySold = 35, Revenue = 17500m }
+    },
+    RegionalSales = new[]
+    {
+        new { Region = "North America", Amount = 62500m, Percentage = 50.0 },
+        new { Region = "Europe", Amount = 37500m, Percentage = 30.0 },
+        new { Region = "Asia Pacific", Amount = 25000m, Percentage = 20.0 }
+    }
+};
+
+string salesReport = processor.Process(reportTemplate, reportData);
+Console.WriteLine("Sales report:");
+Console.WriteLine(salesReport);
+
+// Custom template functions
+processor.RegisterFunction("FormatCurrency", (object[] args) =>
+{
+    if (args.Length >= 2 &amp;&amp; decimal.TryParse(args[0].ToString(), out decimal amount))
+    {
+        string currency = args[1].ToString();
+        return currency switch
+        {
+            "USD" => $"${amount:F2}",
+            "EUR" => $"€{amount:F2}",
+            "GBP" => $"£{amount:F2}",
+            _ => $"{amount:F2} {currency}"
+        };
+    }
+    return args[0]?.ToString() ?? "";
+});
+
+string invoiceTemplate = @"
+Invoice #{InvoiceNumber}
+Date: {InvoiceDate:d}
+
+Bill To: {CustomerName}
+
+Items:
+{foreach Items}
+{Description} - {FormatCurrency(Price, Currency)}
+{endforeach}
+
+Total: {FormatCurrency(Total, Currency)}
+";
+
+var invoiceData = new
+{
+    InvoiceNumber = "INV-2024-001",
+    InvoiceDate = DateTime.Now,
+    CustomerName = "ABC Corporation",
+    Currency = "EUR",
+    Total = 1250.50m,
+    Items = new[]
+    {
+        new { Description = "Software License", Price = 999.00m },
+        new { Description = "Support Package", Price = 251.50m }
+    }
+};
+
+string invoice = processor.Process(invoiceTemplate, invoiceData);
+Console.WriteLine("Invoice:");
+Console.WriteLine(invoice);
+            </code>
+            </example>
+        </member>
+        
+        <!-- ValueConverterRegistry -->
+        <member name="T:ByteForge.Toolkit.ValueConverterRegistry">
+            <example>
+            <para>Type-safe value conversion with custom converters:</para>
+            <code language="cs">
+using ByteForge.Toolkit;
+
+var registry = new ValueConverterRegistry();
+
+// Register custom converters
+registry.RegisterConverter&lt;string, Color&gt;(colorString =>
+{
+    return colorString.ToLower() switch
+    {
+        "red" => Color.FromArgb(255, 0, 0),
+        "green" => Color.FromArgb(0, 255, 0),
+        "blue" => Color.FromArgb(0, 0, 255),
+        _ => ColorTranslator.FromHtml(colorString)
+    };
+});
+
+registry.RegisterConverter&lt;string, TimeSpan&gt;(timeString =>
+{
+    // Parse formats like "2h 30m", "1.5h", "90m"
+    if (timeString.Contains("h") &amp;&amp; timeString.Contains("m"))
+    {
+        var parts = timeString.Replace("h", "").Replace("m", "").Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        int hours = int.Parse(parts[0]);
+        int minutes = int.Parse(parts[1]);
+        return TimeSpan.FromHours(hours).Add(TimeSpan.FromMinutes(minutes));
+    }
+    else if (timeString.EndsWith("h"))
+    {
+        double hours = double.Parse(timeString.Replace("h", ""));
+        return TimeSpan.FromHours(hours);
+    }
+    else if (timeString.EndsWith("m"))
+    {
+        int minutes = int.Parse(timeString.Replace("m", ""));
+        return TimeSpan.FromMinutes(minutes);
+    }
+    
+    return TimeSpan.Parse(timeString);
+});
+
+// Use converters
+Color redColor = registry.Convert&lt;string, Color&gt;("red");
+Color hexColor = registry.Convert&lt;string, Color&gt;("#FF5733");
+TimeSpan duration1 = registry.Convert&lt;string, TimeSpan&gt;("2h 30m");
+TimeSpan duration2 = registry.Convert&lt;string, TimeSpan&gt;("1.5h");
+TimeSpan duration3 = registry.Convert&lt;string, TimeSpan&gt;("90m");
+
+Console.WriteLine($"Red color: R={redColor.R}, G={redColor.G}, B={redColor.B}");
+Console.WriteLine($"Hex color: R={hexColor.R}, G={hexColor.G}, B={hexColor.B}");
+Console.WriteLine($"Duration 1: {duration1.TotalMinutes} minutes");
+Console.WriteLine($"Duration 2: {duration2.TotalMinutes} minutes");
+Console.WriteLine($"Duration 3: {duration3.TotalMinutes} minutes");
+
+// Batch conversion from configuration
+var configValues = new Dictionary&lt;string, string&gt;
+{
+    { "BackgroundColor", "#F0F0F0" },
+    { "TextColor", "blue" },
+    { "WarningColor", "orange" },
+    { "SessionTimeout", "30m" },
+    { "CacheExpiry", "2h" },
+    { "RetryDelay", "500ms" }
+};
+
+var convertedConfig = new Dictionary&lt;string, object&gt;();
+
+foreach (var kvp in configValues)
+{
+    try
+    {
+        if (kvp.Key.Contains("Color"))
+        {
+            convertedConfig[kvp.Key] = registry.Convert&lt;string, Color&gt;(kvp.Value);
+        }
+        else if (kvp.Key.Contains("Timeout") || kvp.Key.Contains("Expiry") || kvp.Key.Contains("Delay"))
+        {
+            convertedConfig[kvp.Key] = registry.Convert&lt;string, TimeSpan&gt;(kvp.Value);
+        }
+        else
+        {
+            convertedConfig[kvp.Key] = kvp.Value;
+        }
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"Failed to convert {kvp.Key}: {kvp.Value} - {ex.Message}");
+        convertedConfig[kvp.Key] = kvp.Value; // Keep original value
+    }
+}
+
+Console.WriteLine("\nConverted configuration:");
+foreach (var kvp in convertedConfig)
+{
+    Console.WriteLine($"{kvp.Key}: {kvp.Value} (Type: {kvp.Value.GetType().Name})");
+}
+            </code>
+            </example>
+        </member>
+        
+        <!-- Module-level examples -->
+        <member name="N:ByteForge.Toolkit.Utilities">
+            <example>
+            <para>Comprehensive utilities usage in a data processing application:</para>
+            <code language="cs">
+using ByteForge.Toolkit;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Threading.Tasks;
+
+// Data processing application using multiple utilities
+public class DataProcessingService
+{
+    private readonly BooleanParser _boolParser;
+    private readonly DateTimeParser _dateParser;
+    private readonly TemplateProcessor _templateProcessor;
+    private readonly ValueConverterRegistry _converterRegistry;
+    
+    public DataProcessingService()
+    {
+        _boolParser = new BooleanParser();
+        _dateParser = new DateTimeParser();
+        _templateProcessor = new TemplateProcessor();
+        _converterRegistry = new ValueConverterRegistry();
+        
+        ConfigureCustomConverters();
+    }
+    
+    private void ConfigureCustomConverters()
+    {
+        // Register custom converters for configuration
+        _converterRegistry.RegisterConverter&lt;string, FileSize&gt;(sizeString =>
+        {
+            var units = new Dictionary&lt;string, long&gt;
+            {
+                { "B", 1L },
+                { "KB", 1024L },
+                { "MB", 1024L * 1024L },
+                { "GB", 1024L * 1024L * 1024L }
+            };
+            
+            foreach (var unit in units)
+            {
+                if (sizeString.ToUpper().EndsWith(unit.Key))
+                {
+                    var numberPart = sizeString[..^unit.Key.Length].Trim();
+                    if (double.TryParse(numberPart, out double value))
+                    {
+                        return new FileSize((long)(value * unit.Value));
+                    }
+                }
+            }
+            
+            // Try parsing as just a number (assume bytes)
+            if (long.TryParse(sizeString, out long bytes))
+            {
+                return new FileSize(bytes);
+            }
+            
+            throw new FormatException($"Invalid file size format: {sizeString}");
+        });
+    }
+    
+    public async Task ProcessConfigurationFile(string configPath)
+    {
+        Console.WriteLine($"Processing configuration from: {configPath}");
+        
+        // Read configuration file
+        var configLines = await File.ReadAllLinesAsync(configPath);
+        var config = new Dictionary&lt;string, object&gt;();
+        
+        foreach (var line in configLines)
+        {
+            if (line.Contains("=") &amp;&amp; !line.TrimStart().StartsWith("#"))
+            {
+                var parts = line.Split('=', 2);
+                var key = parts[0].Trim();
+                var value = parts[1].Trim();
+                
+                // Smart parsing based on key name and value format
+                try
+                {
+                    if (key.ToLower().Contains("enable") || key.ToLower().Contains("disable") || 
+                        _boolParser.TryParse(value, out bool boolValue))
+                    {
+                        config[key] = boolValue;
+                    }
+                    else if (key.ToLower().Contains("date") || key.ToLower().Contains("time") ||
+                            DateTime.TryParse(value, out DateTime dateValue))
+                    {
+                        config[key] = _dateParser.TryParse(value, DateTime.MinValue);
+                    }
+                    else if (key.ToLower().Contains("size") || value.ToUpper().EndsWith("B"))
+                    {
+                        config[key] = _converterRegistry.Convert&lt;string, FileSize&gt;(value);
+                    }
+                    else if (key.ToLower().Contains("timeout") || key.ToLower().Contains("interval"))
+                    {
+                        config[key] = ParseTimeSpan(value);
+                    }
+                    else if (int.TryParse(value, out int intValue))
+                    {
+                        config[key] = intValue;
+                    }
+                    else if (decimal.TryParse(value, out decimal decimalValue))
+                    {
+                        config[key] = decimalValue;
+                    }
+                    else
+                    {
+                        config[key] = StringUtil.CleanText(value);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Warning: Could not parse {key}={value}: {ex.Message}");
+                    config[key] = value; // Keep as string
+                }
+            }
+        }
+        
+        Console.WriteLine("Parsed configuration:");
+        foreach (var kvp in config)
+        {
+            Console.WriteLine($"  {kvp.Key}: {kvp.Value} ({kvp.Value.GetType().Name})");
+        }
+        
+        // Validate configuration
+        await ValidateConfiguration(config);
+    }
+    
+    private TimeSpan ParseTimeSpan(string value)
+    {
+        // Handle various time formats
+        if (value.EndsWith("ms"))
+        {
+            return TimeSpan.FromMilliseconds(int.Parse(value[..^2]));
+        }
+        else if (value.EndsWith("s") &amp;&amp; !value.EndsWith("ms"))
+        {
+            return TimeSpan.FromSeconds(int.Parse(value[..^1]));
+        }
+        else if (value.EndsWith("m") &amp;&amp; !value.EndsWith("ms"))
+        {
+            return TimeSpan.FromMinutes(int.Parse(value[..^1]));
+        }
+        else if (value.EndsWith("h"))
+        {
+            return TimeSpan.FromHours(int.Parse(value[..^1]));
+        }
+        
+        return TimeSpan.Parse(value);
+    }
+    
+    private async Task ValidateConfiguration(Dictionary&lt;string, object&gt; config)
+    {
+        var validationTemplate = @"
+Configuration Validation Report
+Generated: {ValidationDate:yyyy-MM-dd HH:mm:ss}
+
+Configuration Summary:
+- Total Settings: {TotalSettings}
+- Valid Settings: {ValidSettings}
+- Invalid Settings: {InvalidSettings}
+
+{if HasErrors}
+Issues Found:
+{foreach ValidationErrors}
+- {Setting}: {Error}
+{endforeach}
+{else}
+✓ All configuration settings are valid.
+{endif}
+
+{if HasWarnings}
+Warnings:
+{foreach ValidationWarnings}
+- {Setting}: {Warning}
+{endforeach}
+{endif}
+
+Recommendations:
+{foreach Recommendations}
+- {Recommendation}
+{endforeach}
+";
+        
+        var errors = new List&lt;object&gt;();
+        var warnings = new List&lt;object&gt;();
+        var recommendations = new List&lt;string&gt;();
+        
+        // Validate settings
+        foreach (var setting in config)
+        {
+            try
+            {
+                switch (setting.Key.ToLower())
+                {
+                    case "maxfilesize":
+                        if (setting.Value is FileSize size &amp;&amp; size.Bytes > 100 * 1024 * 1024) // 100MB
+                        {
+                            warnings.Add(new { Setting = setting.Key, Warning = "Large file size may impact performance" });
+                        }
+                        break;
+                        
+                    case "connectiontimeout":
+                        if (setting.Value is TimeSpan timeout &amp;&amp; timeout.TotalSeconds &lt; 5)
+                        {
+                            warnings.Add(new { Setting = setting.Key, Warning = "Very short timeout may cause connection issues" });
+                        }
+                        break;
+                        
+                    case "enabledebug":
+                        if (setting.Value is bool debug &amp;&amp; debug)
+                        {
+                            recommendations.Add("Debug mode is enabled - consider disabling in production");
+                        }
+                        break;
+                }
+            }
+            catch (Exception ex)
+            {
+                errors.Add(new { Setting = setting.Key, Error = ex.Message });
+            }
+        }
+        
+        // Add recommendations
+        if (!config.ContainsKey("LogLevel"))
+        {
+            recommendations.Add("Consider adding LogLevel setting for better diagnostics");
+        }
+        
+        if (!config.ContainsKey("BackupEnabled"))
+        {
+            recommendations.Add("Consider enabling backup functionality");
+        }
+        
+        var validationData = new
+        {
+            ValidationDate = DateTime.Now,
+            TotalSettings = config.Count,
+            ValidSettings = config.Count - errors.Count,
+            InvalidSettings = errors.Count,
+            HasErrors = errors.Count > 0,
+            HasWarnings = warnings.Count > 0,
+            ValidationErrors = errors,
+            ValidationWarnings = warnings,
+            Recommendations = recommendations.Select(r => new { Recommendation = r })
+        };
+        
+        var report = _templateProcessor.Process(validationTemplate, validationData);
+        Console.WriteLine(report);
+        
+        // Save validation report
+        var reportPath = "configuration_validation_report.txt";
+        await File.WriteAllTextAsync(reportPath, report);
+        Console.WriteLine($"Validation report saved to: {reportPath}");
+    }
+    
+    public async Task ProcessDataFiles(string inputDirectory, string outputDirectory)
+    {
+        Console.WriteLine($"Processing data files from {inputDirectory} to {outputDirectory}");
+        
+        // Ensure output directory exists
+        IOUtils.EnsureDirectoryExists(outputDirectory);
+        
+        // Find all data files
+        var dataFiles = IOUtils.FindFiles(inputDirectory, "*.txt", SearchOption.AllDirectories);
+        
+        Console.WriteLine($"Found {dataFiles.Count()} data files to process");
+        
+        // Process files with progress
+        var progress = new Progress&lt;int&gt;(processed =>
+        {
+            Console.WriteLine($"Processed {processed} files...");
+        });
+        
+        await IOUtils.ProcessFilesAsync(dataFiles, async file =>
+        {
+            await ProcessSingleDataFile(file, outputDirectory);
+        }, maxConcurrency: Environment.ProcessorCount, progress: progress);
+        
+        Console.WriteLine("Data processing completed");
+    }
+    
+    private async Task ProcessSingleDataFile(string filePath, string outputDirectory)
+    {
+        var fileName = Path.GetFileNameWithoutExtension(filePath);
+        var outputPath = Path.Combine(outputDirectory, $"{fileName}_processed.txt");
+        
+        // Read file content
+        var content = await File.ReadAllTextAsync(filePath);
+        
+        // Clean and process content
+        var lines = content.Split('\n');
+        var processedLines = new List&lt;string&gt;();
+        
+        foreach (var line in lines)
+        {
+            var cleanLine = StringUtil.CleanText(line);
+            
+            if (!string.IsNullOrWhiteSpace(cleanLine))
+            {
+                // Apply various text processing
+                var processed = cleanLine;
+                
+                // Standardize boolean values
+                processed = StandardizeBooleans(processed);
+                
+                // Standardize dates
+                processed = StandardizeDates(processed);
+                
+                // Clean and format
+                processed = StringUtil.CleanText(processed);
+                
+                processedLines.Add(processed);
+            }
+        }
+        
+        // Generate summary
+        var summary = $@"
+// File: {Path.GetFileName(filePath)}
+// Processed: {DateTime.Now:yyyy-MM-dd HH:mm:ss}
+// Original lines: {lines.Length}
+// Processed lines: {processedLines.Count}
+// 
+";
+        
+        var finalContent = summary + string.Join(Environment.NewLine, processedLines);
+        
+        // Write processed file
+        await File.WriteAllTextAsync(outputPath, finalContent);
+    }
+    
+    private string StandardizeBooleans(string text)
+    {
+        // Find and replace boolean-like values
+        var boolPatterns = new[] { "yes", "no", "true", "false", "on", "off", "enabled", "disabled" };
+        
+        foreach (var pattern in boolPatterns)
+        {
+            if (text.ToLower().Contains(pattern))
+            {
+                try
+                {
+                    bool value = _boolParser.Parse(pattern);
+                    text = text.Replace(pattern, value.ToString().ToLower(), StringComparison.OrdinalIgnoreCase);
+                }
+                catch { /* Ignore parsing errors */ }
+            }
+        }
+        
+        return text;
+    }
+    
+    private string StandardizeDates(string text)
+    {
+        // Simple date standardization (in practice, would be more sophisticated)
+        var datePatterns = new[]
+        {
+            @"\d{1,2}/\d{1,2}/\d{4}",
+            @"\d{1,2}-\d{1,2}-\d{4}",
+            @"\d{4}-\d{1,2}-\d{1,2}"
+        };
+        
+        foreach (var pattern in datePatterns)
+        {
+            var matches = System.Text.RegularExpressions.Regex.Matches(text, pattern);
+            foreach (System.Text.RegularExpressions.Match match in matches)
+            {
+                try
+                {
+                    var date = _dateParser.Parse(match.Value);
+                    text = text.Replace(match.Value, date.ToString("yyyy-MM-dd"));
+                }
+                catch { /* Ignore parsing errors */ }
+            }
+        }
+        
+        return text;
+    }
+    
+    public void GenerateProcessingReport(string outputPath)
+    {
+        var reportTemplate = @"
+Data Processing Report
+=====================
+
+Processing Summary:
+- Start Time: {StartTime:yyyy-MM-dd HH:mm:ss}
+- End Time: {EndTime:yyyy-MM-dd HH:mm:ss}
+- Duration: {Duration}
+- Files Processed: {FilesProcessed}
+- Total Data Size: {TotalDataSize}
+
+Performance Metrics:
+- Average Processing Time per File: {AverageProcessingTime}
+- Files per Second: {FilesPerSecond:F2}
+- Data Throughput: {DataThroughput}
+
+System Information:
+- Processor Count: {ProcessorCount}
+- Available Memory: {AvailableMemory}
+- Disk Space: {DiskSpace}
+
+Generated by ByteForge Toolkit Data Processing Service
+Generated on: {ReportDate:yyyy-MM-dd HH:mm:ss}
+";
+        
+        var reportData = new
+        {
+            StartTime = DateTime.Now.AddHours(-2),
+            EndTime = DateTime.Now,
+            Duration = TimeSpan.FromHours(2),
+            FilesProcessed = 1250,
+            TotalDataSize = "2.5 GB",
+            AverageProcessingTime = "0.85 seconds",
+            FilesPerSecond = 0.17,
+            DataThroughput = "1.25 MB/s",
+            ProcessorCount = Environment.ProcessorCount,
+            AvailableMemory = "8.2 GB",
+            DiskSpace = "125 GB available",
+            ReportDate = DateTime.Now
+        };
+        
+        var report = _templateProcessor.Process(reportTemplate, reportData);
+        File.WriteAllText(outputPath, report);
+        
+        Console.WriteLine($"Processing report generated: {outputPath}");
+    }
+}
+
+// Helper class for file size handling
+public class FileSize
+{
+    public long Bytes { get; }
+    
+    public FileSize(long bytes)
+    {
+        Bytes = bytes;
+    }
+    
+    public override string ToString()
+    {
+        if (Bytes >= 1024L * 1024L * 1024L)
+            return $"{Bytes / (1024.0 * 1024.0 * 1024.0):F2} GB";
+        if (Bytes >= 1024L * 1024L)
+            return $"{Bytes / (1024.0 * 1024.0):F2} MB";
+        if (Bytes >= 1024L)
+            return $"{Bytes / 1024.0:F2} KB";
+        return $"{Bytes} B";
+    }
+}
+
+// Main application
+public class Program
+{
+    static async Task Main(string[] args)
+    {
+        var service = new DataProcessingService();
+        
+        try
+        {
+            Console.WriteLine("Starting data processing service...");
+            
+            // Process configuration
+            await service.ProcessConfigurationFile("app.config");
+            
+            // Process data files
+            await service.ProcessDataFiles(@"C:\Data\Input", @"C:\Data\Output");
+            
+            // Generate report
+            service.GenerateProcessingReport("processing_report.txt");
+            
+            Console.WriteLine("Data processing completed successfully!");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error: {ex.Message}");
+        }
+    }
+}
+
+/*
+Example app.config file:
+------------------------
+# Application Configuration
+AppName=DataProcessor
+Version=1.0.0
+EnableDebug=yes
+LogLevel=Information
+
+# Processing Settings
+MaxFileSize=10MB
+BatchSize=100
+ProcessingTimeout=30s
+ConnectionTimeout=5s
+RetryAttempts=3
+RetryDelay=2s
+
+# Dates
+StartDate=2024-01-01
+EndDate=2024-12-31
+LastProcessed=2024-01-15 14:30:00
+
+# Features
+EnableCompression=on
+UseParallelProcessing=true
+EnableBackup=enabled
+SendNotifications=false
+*/
+            </code>
+            </example>
+        </member>
+    </members>
+</doc>

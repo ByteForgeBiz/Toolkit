@@ -7,7 +7,7 @@
     <LangVersion>12</LangVersion>
     <RootNamespace>ByteForge.Toolkit</RootNamespace>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <DocumentationFile>$(OutputPath)$(AssemblyName).xml</DocumentationFile>
+    <DocumentationFile>$(MSBuildThisFileDirectory)bin\$(AssemblyName).xml</DocumentationFile>
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
   </PropertyGroup>
 

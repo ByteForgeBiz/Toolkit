@@ -1,0 +1,1438 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>ByteForge.Toolkit.Modern</name>
+    </assembly>
+    <members>
+        <!-- Net Module Examples -->
+        
+        <!-- FileTransferClient -->
+        <member name="T:ByteForge.Toolkit.FileTransferClient">
+            <example>
+            <para>Basic file upload and download operations:</para>
+            <code language="cs">
+using ByteForge.Toolkit;
+
+// Configure file transfer connection
+var config = new FileTransferConfig
+{
+    Protocol = TransferProtocol.SFTP,
+    HostName = "ftp.example.com",
+    UserName = "user123",
+    Password = "password123",
+    Port = 22,
+    Timeout = TimeSpan.FromSeconds(30),
+    EnableCompression = true,
+    TransferMode = TransferMode.Binary
+};
+
+var client = new FileTransferClient();
+
+// Subscribe to progress events
+client.ProgressChanged += (sender, progress) =>
+{
+    Console.WriteLine($"Progress: {progress.FileName}");
+    Console.WriteLine($"  {progress.PercentComplete:P1} complete");
+    Console.WriteLine($"  {progress.TransferredBytes:N0}/{progress.TotalBytes:N0} bytes");
+    Console.WriteLine($"  Speed: {progress.Speed:N0} B/s");
+    
+    if (progress.EstimatedTimeRemaining > TimeSpan.Zero)
+    {
+        Console.WriteLine($"  ETA: {progress.EstimatedTimeRemaining:hh\\:mm\\:ss}");
+    }
+    Console.WriteLine();
+};
+
+client.TransferCompleted += (sender, result) =>
+{
+    if (result.IsSuccess)
+    {
+        Console.WriteLine($"✓ Transfer completed in {result.Duration.TotalSeconds:F1}s");
+        Console.WriteLine($"  Files transferred: {result.TransferedFiles.Count}");
+    }
+    else
+    {
+        Console.WriteLine($"✗ Transfer failed: {result.ErrorMessage}");
+        Console.WriteLine($"  Failed files: {result.FailedFiles.Count}");
+    }
+};
+
+try
+{
+    // Connect to remote server
+    Console.WriteLine("Connecting to remote server...");
+    client.Connect(config);
+    Console.WriteLine($"Connected: {client.IsConnected}");
+    
+    // Upload a single file
+    Console.WriteLine("Uploading file...");
+    var uploadResult = await client.UploadAsync(
+        localPath: @"C:\Data\report.pdf",
+        remotePath: "/uploads/reports/"
+    );
+    
+    if (uploadResult.IsSuccess)
+    {
+        Console.WriteLine("Upload successful!");
+        
+        foreach (var file in uploadResult.TransferedFiles)
+        {
+            Console.WriteLine($"  Uploaded: {file.FileName} ({file.FileSize:N0} bytes)");
+        }
+    }
+    
+    // Download a file
+    Console.WriteLine("Downloading file...");
+    var downloadResult = await client.DownloadAsync(
+        remotePath: "/exports/data.csv",
+        localPath: @"C:\Downloads\"
+    );
+    
+    if (downloadResult.IsSuccess)
+    {
+        Console.WriteLine("Download successful!");
+        
+        foreach (var file in downloadResult.TransferedFiles)
+        {
+            Console.WriteLine($"  Downloaded: {file.FileName} to {file.DestinationPath}");
+        }
+    }
+    else
+    {
+        Console.WriteLine($"Download failed: {downloadResult.ErrorMessage}");
+    }
+}
+catch (FileTransferException ex)
+{
+    Console.WriteLine($"Transfer error: {ex.Message} (Code: {ex.ErrorCode})");
+}
+catch (Exception ex)
+{
+    Console.WriteLine($"Unexpected error: {ex.Message}");
+}
+finally
+{
+    if (client.IsConnected)
+    {
+        client.Disconnect();
+        Console.WriteLine("Disconnected from server");
+    }
+}
+            </code>
+            </example>
+            
+            <example>
+            <para>Batch file transfer operations:</para>
+            <code language="cs">
+// Batch upload multiple files
+var client = new FileTransferClient();
+var config = new FileTransferConfig
+{
+    Protocol = TransferProtocol.SFTP,
+    HostName = "server.example.com",
+    UserName = "batchuser",
+    Password = "batchpass",
+    EnableCompression = true
+};
+
+try
+{
+    client.Connect(config);
+    
+    // Prepare batch upload items
+    var uploadItems = new List&lt;FileTransferItem&gt;
+    {
+        new FileTransferItem
+        {
+            SourcePath = @"C:\Data\file1.csv",
+            DestinationPath = "/uploads/batch/",
+            Overwrite = true
+        },
+        new FileTransferItem
+        {
+            SourcePath = @"C:\Data\file2.xlsx",
+            DestinationPath = "/uploads/batch/",
+            Overwrite = false
+        },
+        new FileTransferItem
+        {
+            SourcePath = @"C:\Data\archive.zip",
+            DestinationPath = "/uploads/archives/",
+            Overwrite = true
+        }
+    };
+    
+    Console.WriteLine($"Starting batch upload of {uploadItems.Count} files...");
+    
+    // Track overall progress
+    int completedFiles = 0;
+    client.ProgressChanged += (sender, progress) =>
+    {
+        // Update progress for current file
+        Console.Write($"\r[{completedFiles + 1}/{uploadItems.Count}] {progress.FileName}: {progress.PercentComplete:P0}");
+    };
+    
+    client.TransferCompleted += (sender, result) =>
+    {
+        completedFiles++;
+        Console.WriteLine(); // New line after progress
+    };
+    
+    var batchResult = await client.UploadBatchAsync(uploadItems);
+    
+    Console.WriteLine("\nBatch Upload Summary:");
+    Console.WriteLine($"  Total files: {uploadItems.Count}");
+    Console.WriteLine($"  Successful: {batchResult.TransferedFiles.Count}");
+    Console.WriteLine($"  Failed: {batchResult.FailedFiles.Count}");
+    Console.WriteLine($"  Duration: {batchResult.Duration.TotalMinutes:F1} minutes");
+    
+    if (batchResult.FailedFiles.Any())
+    {
+        Console.WriteLine("\nFailed files:");
+        foreach (var failed in batchResult.FailedFiles)
+        {
+            Console.WriteLine($"  ✗ {failed.FileName}: {batchResult.ErrorMessage}");
+        }
+    }
+    
+    if (batchResult.TransferedFiles.Any())
+    {
+        Console.WriteLine("\nSuccessful transfers:");
+        foreach (var success in batchResult.TransferedFiles)
+        {
+            Console.WriteLine($"  ✓ {success.FileName} -> {success.DestinationPath}");
+        }
+    }
+    
+    // Batch download example
+    var downloadItems = new List&lt;FileTransferItem&gt;
+    {
+        new FileTransferItem
+        {
+            SourcePath = "/exports/daily_report.pdf",
+            DestinationPath = @"C:\Downloads\Reports\",
+            Overwrite = true
+        },
+        new FileTransferItem
+        {
+            SourcePath = "/exports/weekly_stats.xlsx",
+            DestinationPath = @"C:\Downloads\Reports\",
+            Overwrite = true
+        }
+    };
+    
+    Console.WriteLine($"\nStarting batch download of {downloadItems.Count} files...");
+    var downloadResult = await client.DownloadBatchAsync(downloadItems);
+    
+    Console.WriteLine("Batch Download Summary:");
+    Console.WriteLine($"  Successful: {downloadResult.TransferedFiles.Count}");
+    Console.WriteLine($"  Failed: {downloadResult.FailedFiles.Count}");
+    
+    // Calculate total bytes transferred
+    long totalBytes = downloadResult.TransferedFiles.Sum(f => f.FileSize);
+    Console.WriteLine($"  Total downloaded: {totalBytes:N0} bytes ({totalBytes / 1024.0 / 1024.0:F1} MB)");
+}
+finally
+{
+    client.Disconnect();
+}
+            </code>
+            </example>
+            
+            <example>
+            <para>Remote directory listing and file management:</para>
+            <code language="cs">
+// Advanced file transfer operations with directory management
+var client = new FileTransferClient();
+var config = new FileTransferConfig
+{
+    Protocol = TransferProtocol.SFTP,
+    HostName = "fileserver.company.com",
+    UserName = "admin",
+    Password = "adminpass123"
+};
+
+try
+{
+    client.Connect(config);
+    
+    // List remote directory contents
+    Console.WriteLine("Listing remote directory contents...");
+    var remoteDir = await client.ListDirectoryAsync("/data/uploads/");
+    
+    Console.WriteLine($"Directory: {remoteDir.FullPath}");
+    Console.WriteLine($"Last modified: {remoteDir.LastModified:yyyy-MM-dd HH:mm:ss}");
+    Console.WriteLine();
+    
+    // Display subdirectories
+    if (remoteDir.SubDirectories.Any())
+    {
+        Console.WriteLine("Subdirectories:");
+        foreach (var subDir in remoteDir.SubDirectories)
+        {
+            Console.WriteLine($"  📁 {subDir.DirectoryName}/ ({subDir.LastModified:yyyy-MM-dd})");
+        }
+        Console.WriteLine();
+    }
+    
+    // Display files
+    if (remoteDir.Files.Any())
+    {
+        Console.WriteLine("Files:");
+        foreach (var file in remoteDir.Files.OrderByDescending(f => f.LastModified))
+        {
+            string sizeDisplay = FormatFileSize(file.FileSize);
+            string typeIcon = GetFileTypeIcon(file.FileName);
+            
+            Console.WriteLine($"  {typeIcon} {file.FileName}");
+            Console.WriteLine($"    Size: {sizeDisplay}");
+            Console.WriteLine($"    Modified: {file.LastModified:yyyy-MM-dd HH:mm:ss}");
+            Console.WriteLine($"    Permissions: {file.Permissions}");
+            
+            if (file.IsSymLink)
+            {
+                Console.WriteLine($"    → Symbolic link");
+            }
+            Console.WriteLine();
+        }
+    }
+    
+    // Download files modified in the last 7 days
+    var recentFiles = remoteDir.Files
+        .Where(f => f.LastModified > DateTime.Now.AddDays(-7))
+        .ToList();
+    
+    if (recentFiles.Any())
+    {
+        Console.WriteLine($"Found {recentFiles.Count} files modified in the last 7 days");
+        
+        var downloadItems = recentFiles.Select(f => new FileTransferItem
+        {
+            SourcePath = f.FullPath,
+            DestinationPath = @"C:\Downloads\Recent\",
+            FileName = f.FileName,
+            FileSize = f.FileSize,
+            LastModified = f.LastModified,
+            Overwrite = false
+        }).ToList();
+        
+        // Create local directory if it doesn't exist
+        Directory.CreateDirectory(@"C:\Downloads\Recent");
+        
+        var downloadResult = await client.DownloadBatchAsync(downloadItems);
+        
+        Console.WriteLine($"Downloaded {downloadResult.TransferedFiles.Count} recent files");
+    }
+    
+    // Check for large files (> 100 MB)
+    var largeFiles = remoteDir.Files
+        .Where(f => f.FileSize > 100 * 1024 * 1024)
+        .OrderByDescending(f => f.FileSize)
+        .ToList();
+    
+    if (largeFiles.Any())
+    {
+        Console.WriteLine("Large files detected (> 100 MB):");
+        foreach (var file in largeFiles)
+        {
+            Console.WriteLine($"  ⚠ {file.FileName}: {FormatFileSize(file.FileSize)}");
+        }
+    }
+    
+    // Recursive directory listing
+    await ListDirectoryRecursive(client, "/data/", maxDepth: 3);
+}
+finally
+{
+    client.Disconnect();
+}
+
+async Task ListDirectoryRecursive(FileTransferClient client, string path, int maxDepth, int currentDepth = 0)
+{
+    if (currentDepth >= maxDepth) return;
+    
+    try
+    {
+        var dir = await client.ListDirectoryAsync(path);
+        string indent = new string(' ', currentDepth * 2);
+        
+        Console.WriteLine($"{indent}📁 {dir.DirectoryName}/");
+        
+        // List files in current directory
+        foreach (var file in dir.Files.Take(5)) // Limit to first 5 files
+        {
+            Console.WriteLine($"{indent}  📄 {file.FileName} ({FormatFileSize(file.FileSize)})");
+        }
+        
+        if (dir.Files.Count > 5)
+        {
+            Console.WriteLine($"{indent}  ... and {dir.Files.Count - 5} more files");
+        }
+        
+        // Recurse into subdirectories
+        foreach (var subDir in dir.SubDirectories.Take(3)) // Limit recursion
+        {
+            await ListDirectoryRecursive(client, subDir.FullPath, maxDepth, currentDepth + 1);
+        }
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"{new string(' ', currentDepth * 2)}❌ Error listing {path}: {ex.Message}");
+    }
+}
+
+string FormatFileSize(long bytes)
+{
+    string[] suffixes = { "B", "KB", "MB", "GB", "TB" };
+    int counter = 0;
+    decimal number = bytes;
+    
+    while (Math.Round(number / 1024) >= 1)
+    {
+        number /= 1024;
+        counter++;
+    }
+    
+    return $"{number:N1} {suffixes[counter]}";
+}
+
+string GetFileTypeIcon(string fileName)
+{
+    string extension = Path.GetExtension(fileName).ToLower();
+    
+    return extension switch
+    {
+        ".pdf" => "📄",
+        ".doc" or ".docx" => "📝",
+        ".xls" or ".xlsx" => "📊",
+        ".txt" => "📋",
+        ".csv" => "📈",
+        ".zip" or ".rar" or ".7z" => "📦",
+        ".jpg" or ".png" or ".gif" => "🖼️",
+        ".mp4" or ".avi" or ".mov" => "🎥",
+        ".mp3" or ".wav" or ".flac" => "🎵",
+        ".exe" or ".msi" => "⚙️",
+        ".sql" => "🗃️",
+        _ => "📄"
+    };
+}
+            </code>
+            </example>
+        </member>
+        
+        <!-- FileTransferConfig -->
+        <member name="T:ByteForge.Toolkit.FileTransferConfig">
+            <example>
+            <para>Configure various transfer protocols and settings:</para>
+            <code language="cs">
+using ByteForge.Toolkit;
+
+// SFTP Configuration (recommended for security)
+var sftpConfig = new FileTransferConfig
+{
+    Protocol = TransferProtocol.SFTP,
+    HostName = "secure.example.com",
+    Port = 22,  // Standard SFTP port
+    UserName = "secureuser",
+    Password = "securepassword",
+    Timeout = TimeSpan.FromMinutes(5),
+    EnableCompression = true,
+    TransferMode = TransferMode.Binary,
+    
+    // Advanced SFTP settings
+    EnableResume = true,  // Resume interrupted transfers
+    VerifyHostKey = true, // Verify server host key
+    CompressionLevel = 6  // 1-9, higher = more compression but slower
+};
+
+// FTP Configuration (legacy support)
+var ftpConfig = new FileTransferConfig
+{
+    Protocol = TransferProtocol.FTP,
+    HostName = "ftp.legacy-system.com",
+    Port = 21,  // Standard FTP port
+    UserName = "ftpuser",
+    Password = "ftppassword",
+    Timeout = TimeSpan.FromSeconds(30),
+    TransferMode = TransferMode.Binary,
+    PassiveMode = true  // Use passive FTP mode (recommended for firewalls)
+};
+
+// FTPS Configuration (FTP over SSL)
+var ftpsConfig = new FileTransferConfig
+{
+    Protocol = TransferProtocol.FTPS,
+    HostName = "ftps.secure-host.com",
+    Port = 990,  // Implicit FTPS port (explicit FTPS uses 21)
+    UserName = "ssluser",
+    Password = "sslpassword",
+    Timeout = TimeSpan.FromMinutes(2),
+    TransferMode = TransferMode.Binary,
+    
+    // SSL/TLS settings
+    SslMode = FtpSslMode.Implicit,  // or Explicit
+    ValidateCertificate = true,
+    ClientCertificatePath = @"C:\Certs\client.pfx",
+    ClientCertificatePassword = "certpass"
+};
+
+// SCP Configuration (secure copy)
+var scpConfig = new FileTransferConfig
+{
+    Protocol = TransferProtocol.SCP,
+    HostName = "scp-server.example.com",
+    Port = 22,
+    UserName = "scpuser",
+    Password = "scppassword",
+    Timeout = TimeSpan.FromMinutes(10),  // Longer timeout for large files
+    EnableCompression = true
+};
+
+// WebDAV Configuration
+var webdavConfig = new FileTransferConfig
+{
+    Protocol = TransferProtocol.WebDAV,
+    HostName = "webdav.cloud-provider.com",
+    Port = 443,  // HTTPS port
+    UserName = "clouduser",
+    Password = "cloudtoken",
+    Timeout = TimeSpan.FromMinutes(15),
+    UseHttps = true,
+    
+    // WebDAV specific settings
+    BaseUrl = "/webdav/",
+    ChunkSize = 1024 * 1024 * 5,  // 5 MB chunks for large files
+    MaxRetries = 3
+};
+
+// Configuration with key-based authentication (SFTP/SCP)
+var keyAuthConfig = new FileTransferConfig
+{
+    Protocol = TransferProtocol.SFTP,
+    HostName = "key-auth-server.com",
+    UserName = "keyuser",
+    
+    // Use private key instead of password
+    PrivateKeyPath = @"C:\SSH\private_key.openssh",
+    PrivateKeyPassword = "keypassphrase",  // If key is password-protected
+    
+    Timeout = TimeSpan.FromMinutes(3),
+    EnableCompression = true
+};
+
+// Test different configurations
+var configurations = new Dictionary&lt;string, FileTransferConfig&gt;
+{
+    { "SFTP", sftpConfig },
+    { "FTP", ftpConfig },
+    { "FTPS", ftpsConfig },
+    { "SCP", scpConfig },
+    { "WebDAV", webdavConfig },
+    { "Key-Auth", keyAuthConfig }
+};
+
+foreach (var configPair in configurations)
+{
+    string name = configPair.Key;
+    var config = configPair.Value;
+    
+    Console.WriteLine($"Testing {name} configuration:");
+    Console.WriteLine($"  Protocol: {config.Protocol}");
+    Console.WriteLine($"  Host: {config.HostName}:{config.Port}");
+    Console.WriteLine($"  User: {config.UserName}");
+    Console.WriteLine($"  Timeout: {config.Timeout.TotalSeconds}s");
+    Console.WriteLine($"  Compression: {config.EnableCompression}");
+    
+    var client = new FileTransferClient();
+    
+    try
+    {
+        // Test connection
+        using (var timeoutCts = new CancellationTokenSource(config.Timeout))
+        {
+            client.Connect(config);
+            
+            if (client.IsConnected)
+            {
+                Console.WriteLine($"  ✓ Connection successful");
+                
+                // Test a simple operation (list root directory)
+                try
+                {
+                    var rootDir = await client.ListDirectoryAsync("/");
+                    Console.WriteLine($"  ✓ Directory listing successful ({rootDir.Files.Count + rootDir.SubDirectories.Count} items)");
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"  ⚠ Directory listing failed: {ex.Message}");
+                }
+            }
+            else
+            {
+                Console.WriteLine($"  ✗ Connection failed");
+            }
+        }
+    }
+    catch (FileTransferException ex)
+    {
+        Console.WriteLine($"  ✗ Connection error: {ex.Message} (Code: {ex.ErrorCode})");
+    }
+    catch (TimeoutException)
+    {
+        Console.WriteLine($"  ✗ Connection timeout after {config.Timeout.TotalSeconds}s");
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"  ✗ Unexpected error: {ex.Message}");
+    }
+    finally
+    {
+        if (client.IsConnected)
+        {
+            client.Disconnect();
+        }
+    }
+    
+    Console.WriteLine();
+}
+
+// Save configurations to file for reuse
+SaveConfigurationsToFile(configurations);
+
+void SaveConfigurationsToFile(Dictionary&lt;string, FileTransferConfig&gt; configs)
+{
+    var configData = new
+    {
+        Configurations = configs.Select(kvp => new
+        {
+            Name = kvp.Key,
+            Protocol = kvp.Value.Protocol.ToString(),
+            HostName = kvp.Value.HostName,
+            Port = kvp.Value.Port,
+            UserName = kvp.Value.UserName,
+            // Don't save passwords in plain text in real applications
+            TimeoutSeconds = kvp.Value.Timeout.TotalSeconds,
+            EnableCompression = kvp.Value.EnableCompression,
+            TransferMode = kvp.Value.TransferMode.ToString()
+        }).ToList(),
+        CreatedAt = DateTime.Now
+    };
+    
+    string json = System.Text.Json.JsonSerializer.Serialize(configData, new JsonSerializerOptions 
+    { 
+        WriteIndented = true 
+    });
+    
+    File.WriteAllText("transfer_configs.json", json);
+    Console.WriteLine("Configurations saved to transfer_configs.json");
+}
+            </code>
+            </example>
+        </member>
+        
+        <!-- FileTransferProgress -->
+        <member name="T:ByteForge.Toolkit.FileTransferProgress">
+            <example>
+            <para>Advanced progress tracking and monitoring:</para>
+            <code language="cs">
+// Advanced progress tracking with statistics and UI updates
+public class TransferProgressMonitor
+{
+    private readonly List&lt;ProgressSnapshot&gt; _progressHistory;
+    private readonly Timer _statsTimer;
+    private DateTime _transferStartTime;
+    private long _lastBytesTransferred;
+    private DateTime _lastUpdateTime;
+    
+    public TransferProgressMonitor()
+    {
+        _progressHistory = new List&lt;ProgressSnapshot&gt;();
+        _statsTimer = new Timer(DisplayStatistics, null, Timeout.Infinite, Timeout.Infinite);
+    }
+    
+    public void StartMonitoring(FileTransferClient client)
+    {
+        _transferStartTime = DateTime.Now;
+        _lastUpdateTime = _transferStartTime;
+        _progressHistory.Clear();
+        
+        client.ProgressChanged += OnProgressChanged;
+        client.TransferCompleted += OnTransferCompleted;
+        
+        // Update statistics every 2 seconds
+        _statsTimer.Change(TimeSpan.FromSeconds(2), TimeSpan.FromSeconds(2));
+    }
+    
+    private void OnProgressChanged(object sender, FileTransferProgress progress)
+    {
+        // Record progress snapshot
+        var snapshot = new ProgressSnapshot
+        {
+            Timestamp = DateTime.Now,
+            FileName = progress.FileName,
+            TotalBytes = progress.TotalBytes,
+            TransferredBytes = progress.TransferredBytes,
+            PercentComplete = progress.PercentComplete,
+            Speed = progress.Speed,
+            ElapsedTime = progress.ElapsedTime,
+            EstimatedTimeRemaining = progress.EstimatedTimeRemaining
+        };
+        
+        _progressHistory.Add(snapshot);
+        
+        // Keep only last 100 snapshots to manage memory
+        if (_progressHistory.Count > 100)
+        {
+            _progressHistory.RemoveAt(0);
+        }
+        
+        // Calculate instantaneous speed
+        var now = DateTime.Now;
+        var timeDiff = (now - _lastUpdateTime).TotalSeconds;
+        
+        if (timeDiff >= 1.0) // Update every second
+        {
+            var bytesDiff = progress.TransferredBytes - _lastBytesTransferred;
+            var instantSpeed = timeDiff > 0 ? bytesDiff / timeDiff : 0;
+            
+            // Display progress with enhanced information
+            Console.Clear();
+            Console.WriteLine("=== File Transfer Progress ===");
+            Console.WriteLine($"File: {progress.FileName}");
+            Console.WriteLine($"Progress: {progress.PercentComplete:P1}");
+            Console.WriteLine($"Size: {FormatBytes(progress.TransferredBytes)} / {FormatBytes(progress.TotalBytes)}");
+            Console.WriteLine($"Current Speed: {FormatBytes((long)instantSpeed)}/s");
+            Console.WriteLine($"Average Speed: {FormatBytes((long)progress.Speed)}/s");
+            Console.WriteLine($"Elapsed: {FormatTime(progress.ElapsedTime)}");
+            Console.WriteLine($"Remaining: {FormatTime(progress.EstimatedTimeRemaining)}");
+            Console.WriteLine();
+            
+            // Draw progress bar
+            DrawProgressBar(progress.PercentComplete, 50);
+            Console.WriteLine();
+            
+            // Show speed graph (last 10 data points)
+            ShowSpeedGraph();
+            
+            _lastBytesTransferred = progress.TransferredBytes;
+            _lastUpdateTime = now;
+        }
+    }
+    
+    private void OnTransferCompleted(object sender, FileTransferResult result)
+    {
+        _statsTimer.Change(Timeout.Infinite, Timeout.Infinite);
+        
+        Console.Clear();
+        Console.WriteLine("=== Transfer Complete ===");
+        
+        if (result.IsSuccess)
+        {
+            var duration = result.Duration;
+            var totalBytes = result.TransferedFiles.Sum(f => f.FileSize);
+            var averageSpeed = totalBytes / duration.TotalSeconds;
+            
+            Console.WriteLine($"✓ Transfer successful!");
+            Console.WriteLine($"Files transferred: {result.TransferedFiles.Count}");
+            Console.WriteLine($"Total size: {FormatBytes(totalBytes)}");
+            Console.WriteLine($"Duration: {FormatTime(duration)}");
+            Console.WriteLine($"Average speed: {FormatBytes((long)averageSpeed)}/s");
+            
+            // Show final statistics
+            ShowFinalStatistics();
+        }
+        else
+        {
+            Console.WriteLine($"✗ Transfer failed: {result.ErrorMessage}");
+            Console.WriteLine($"Failed files: {result.FailedFiles.Count}");
+        }
+    }
+    
+    private void DrawProgressBar(double percentage, int width)
+    {
+        int completed = (int)(percentage * width);
+        int remaining = width - completed;
+        
+        Console.Write("[");
+        Console.Write(new string('█', completed));
+        Console.Write(new string('░', remaining));
+        Console.Write($"] {percentage:P1}");
+    }
+    
+    private void ShowSpeedGraph()
+    {
+        if (_progressHistory.Count &lt; 2) return;
+        
+        var recentSpeeds = _progressHistory
+            .TakeLast(10)
+            .Select(s => s.Speed)
+            .ToList();
+        
+        if (!recentSpeeds.Any()) return;
+        
+        var maxSpeed = recentSpeeds.Max();
+        var minSpeed = recentSpeeds.Min();
+        
+        Console.WriteLine("Speed History (last 10 samples):");
+        
+        for (int i = 0; i &lt; recentSpeeds.Count; i++)
+        {
+            var speed = recentSpeeds[i];
+            var percentage = maxSpeed > 0 ? speed / maxSpeed : 0;
+            var barLength = (int)(percentage * 20);
+            
+            Console.WriteLine($"  {i + 1:D2}: {new string('▓', barLength),-20} {FormatBytes((long)speed)}/s");
+        }
+    }
+    
+    private void ShowFinalStatistics()
+    {
+        if (!_progressHistory.Any()) return;
+        
+        var speeds = _progressHistory.Select(s => s.Speed).ToList();
+        var avgSpeed = speeds.Average();
+        var maxSpeed = speeds.Max();
+        var minSpeed = speeds.Where(s => s > 0).DefaultIfEmpty(0).Min();
+        
+        Console.WriteLine();
+        Console.WriteLine("Transfer Statistics:");
+        Console.WriteLine($"  Average Speed: {FormatBytes((long)avgSpeed)}/s");
+        Console.WriteLine($"  Peak Speed: {FormatBytes((long)maxSpeed)}/s");
+        Console.WriteLine($"  Minimum Speed: {FormatBytes((long)minSpeed)}/s");
+        Console.WriteLine($"  Speed Variation: {(maxSpeed - minSpeed) / avgSpeed * 100:F1}%");
+        Console.WriteLine($"  Samples Recorded: {_progressHistory.Count}");
+    }
+    
+    private void DisplayStatistics(object state)
+    {
+        // This would update a separate statistics window or log
+        if (_progressHistory.Any())
+        {
+            var latest = _progressHistory.Last();
+            var logMessage = $"[{latest.Timestamp:HH:mm:ss}] {latest.FileName}: " +
+                           $"{latest.PercentComplete:P1} at {FormatBytes((long)latest.Speed)}/s";
+            
+            // Log to file or send to monitoring system
+            File.AppendAllText("transfer_log.txt", logMessage + Environment.NewLine);
+        }
+    }
+    
+    private string FormatBytes(long bytes)
+    {
+        string[] suffixes = { "B", "KB", "MB", "GB", "TB" };
+        int counter = 0;
+        decimal number = bytes;
+        
+        while (Math.Round(number / 1024) >= 1)
+        {
+            number /= 1024;
+            counter++;
+        }
+        
+        return $"{number:N1} {suffixes[counter]}";
+    }
+    
+    private string FormatTime(TimeSpan time)
+    {
+        if (time.TotalDays >= 1)
+            return $"{time.Days}d {time.Hours:D2}:{time.Minutes:D2}:{time.Seconds:D2}";
+        else if (time.TotalHours >= 1)
+            return $"{time.Hours:D2}:{time.Minutes:D2}:{time.Seconds:D2}";
+        else
+            return $"{time.Minutes:D2}:{time.Seconds:D2}";
+    }
+}
+
+public class ProgressSnapshot
+{
+    public DateTime Timestamp { get; set; }
+    public string FileName { get; set; }
+    public long TotalBytes { get; set; }
+    public long TransferredBytes { get; set; }
+    public double PercentComplete { get; set; }
+    public double Speed { get; set; }
+    public TimeSpan ElapsedTime { get; set; }
+    public TimeSpan EstimatedTimeRemaining { get; set; }
+}
+
+// Usage example
+var monitor = new TransferProgressMonitor();
+var client = new FileTransferClient();
+var config = new FileTransferConfig
+{
+    Protocol = TransferProtocol.SFTP,
+    HostName = "server.example.com",
+    UserName = "user",
+    Password = "pass"
+};
+
+try
+{
+    client.Connect(config);
+    monitor.StartMonitoring(client);
+    
+    // Transfer a large file to see progress tracking
+    var result = await client.UploadAsync(
+        @"C:\LargeFiles\video.mp4",
+        "/uploads/"
+    );
+}
+finally
+{
+    client.Disconnect();
+}
+            </code>
+            </example>
+        </member>
+        
+        <!-- Module-level examples -->
+        <member name="N:ByteForge.Toolkit.Net">
+            <example>
+            <para>Complete enterprise file transfer service:</para>
+            <code language="cs">
+using ByteForge.Toolkit;
+using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+
+// Enterprise file transfer service with queue management and monitoring
+public class EnterpriseFileTransferService
+{
+    private readonly ConcurrentQueue&lt;TransferJob&gt; _transferQueue;
+    private readonly ConcurrentDictionary&lt;string, FileTransferClient&gt; _activeClients;
+    private readonly List&lt;TransferJobResult&gt; _transferHistory;
+    private readonly SemaphoreSlim _concurrencyLimiter;
+    private readonly ILogger _logger;
+    private readonly FileTransferServiceConfig _config;
+    private readonly CancellationTokenSource _cancellationTokenSource;
+    private readonly Task _processingTask;
+    
+    public EnterpriseFileTransferService(ILogger logger, FileTransferServiceConfig config)
+    {
+        _logger = logger;
+        _config = config;
+        _transferQueue = new ConcurrentQueue&lt;TransferJob&gt;();
+        _activeClients = new ConcurrentDictionary&lt;string, FileTransferClient&gt;();
+        _transferHistory = new List&lt;TransferJobResult&gt;();
+        _concurrencyLimiter = new SemaphoreSlim(config.MaxConcurrentTransfers, config.MaxConcurrentTransfers);
+        _cancellationTokenSource = new CancellationTokenSource();
+        
+        // Start background processing
+        _processingTask = Task.Run(ProcessTransferQueue, _cancellationTokenSource.Token);
+        
+        _logger.Info($"Enterprise File Transfer Service started with {config.MaxConcurrentTransfers} concurrent transfers");
+    }
+    
+    public string QueueTransfer(TransferJob job)
+    {
+        job.Id = Guid.NewGuid().ToString();
+        job.QueuedAt = DateTime.UtcNow;
+        job.Status = TransferJobStatus.Queued;
+        
+        _transferQueue.Enqueue(job);
+        _logger.Info($"Transfer job queued: {job.Id} - {job.Description}");
+        
+        return job.Id;
+    }
+    
+    public string QueueBatchUpload(string description, Dictionary&lt;string, string&gt; fileMapping, FileTransferConfig config)
+    {
+        var items = fileMapping.Select(kvp => new FileTransferItem
+        {
+            SourcePath = kvp.Key,
+            DestinationPath = kvp.Value,
+            FileName = Path.GetFileName(kvp.Key),
+            Overwrite = true
+        }).ToList();
+        
+        var job = new TransferJob
+        {
+            Description = description,
+            Type = TransferJobType.BatchUpload,
+            Config = config,
+            Items = items,
+            Priority = TransferPriority.Normal
+        };
+        
+        return QueueTransfer(job);
+    }
+    
+    public string QueueBatchDownload(string description, Dictionary&lt;string, string&gt; fileMapping, FileTransferConfig config)
+    {
+        var items = fileMapping.Select(kvp => new FileTransferItem
+        {
+            SourcePath = kvp.Key,
+            DestinationPath = kvp.Value,
+            FileName = Path.GetFileName(kvp.Key),
+            Overwrite = true
+        }).ToList();
+        
+        var job = new TransferJob
+        {
+            Description = description,
+            Type = TransferJobType.BatchDownload,
+            Config = config,
+            Items = items,
+            Priority = TransferPriority.Normal
+        };
+        
+        return QueueTransfer(job);
+    }
+    
+    private async Task ProcessTransferQueue()
+    {
+        _logger.Info("Transfer queue processing started");
+        
+        while (!_cancellationTokenSource.Token.IsCancellationRequested)
+        {
+            try
+            {
+                if (_transferQueue.TryDequeue(out var job))
+                {
+                    await _concurrencyLimiter.WaitAsync(_cancellationTokenSource.Token);
+                    
+                    _ = Task.Run(async () =>
+                    {
+                        try
+                        {
+                            await ProcessTransferJob(job);
+                        }
+                        finally
+                        {
+                            _concurrencyLimiter.Release();
+                        }
+                    }, _cancellationTokenSource.Token);
+                }
+                else
+                {
+                    // No jobs in queue, wait a bit
+                    await Task.Delay(1000, _cancellationTokenSource.Token);
+                }
+            }
+            catch (OperationCanceledException)
+            {
+                break;
+            }
+            catch (Exception ex)
+            {
+                _logger.Error("Error in transfer queue processing", ex);
+                await Task.Delay(5000, _cancellationTokenSource.Token); // Wait before retrying
+            }
+        }
+        
+        _logger.Info("Transfer queue processing stopped");
+    }
+    
+    private async Task ProcessTransferJob(TransferJob job)
+    {
+        var result = new TransferJobResult
+        {
+            JobId = job.Id,
+            Description = job.Description,
+            StartTime = DateTime.UtcNow,
+            Status = TransferJobStatus.InProgress
+        };
+        
+        job.Status = TransferJobStatus.InProgress;
+        job.StartedAt = result.StartTime;
+        
+        _logger.Info($"Starting transfer job: {job.Id} - {job.Description}");
+        
+        var clientKey = $"{job.Config.Protocol}_{job.Config.HostName}_{job.Config.UserName}";
+        var client = _activeClients.GetOrAdd(clientKey, _ => new FileTransferClient());
+        
+        try
+        {
+            // Connect if not already connected
+            if (!client.IsConnected)
+            {
+                _logger.Debug($"Connecting to {job.Config.HostName} via {job.Config.Protocol}");
+                client.Connect(job.Config);
+            }
+            
+            // Set up progress tracking
+            var progressTracker = new JobProgressTracker(job, _logger);
+            client.ProgressChanged += progressTracker.OnProgressChanged;
+            
+            FileTransferResult transferResult;
+            
+            switch (job.Type)
+            {
+                case TransferJobType.Upload:
+                    transferResult = await client.UploadAsync(
+                        job.Items.First().SourcePath,
+                        job.Items.First().DestinationPath
+                    );
+                    break;
+                    
+                case TransferJobType.Download:
+                    transferResult = await client.DownloadAsync(
+                        job.Items.First().SourcePath,
+                        job.Items.First().DestinationPath
+                    );
+                    break;
+                    
+                case TransferJobType.BatchUpload:
+                    transferResult = await client.UploadBatchAsync(job.Items);
+                    break;
+                    
+                case TransferJobType.BatchDownload:
+                    transferResult = await client.DownloadBatchAsync(job.Items);
+                    break;
+                    
+                default:
+                    throw new InvalidOperationException($"Unknown transfer job type: {job.Type}");
+            }
+            
+            // Process result
+            result.Success = transferResult.IsSuccess;
+            result.ErrorMessage = transferResult.ErrorMessage;
+            result.TransferredFiles = transferResult.TransferedFiles?.Count ?? 0;
+            result.FailedFiles = transferResult.FailedFiles?.Count ?? 0;
+            result.TotalBytes = transferResult.TransferedFiles?.Sum(f => f.FileSize) ?? 0;
+            
+            if (transferResult.IsSuccess)
+            {
+                job.Status = TransferJobStatus.Completed;
+                result.Status = TransferJobStatus.Completed;
+                _logger.Info($"Transfer job completed successfully: {job.Id}");
+            }
+            else
+            {
+                job.Status = TransferJobStatus.Failed;
+                result.Status = TransferJobStatus.Failed;
+                _logger.Error($"Transfer job failed: {job.Id} - {transferResult.ErrorMessage}");
+            }
+        }
+        catch (Exception ex)
+        {
+            job.Status = TransferJobStatus.Failed;
+            result.Success = false;
+            result.Status = TransferJobStatus.Failed;
+            result.ErrorMessage = ex.Message;
+            
+            _logger.Error($"Transfer job exception: {job.Id}", ex);
+            
+            // Remove failed client from active clients
+            if (_activeClients.TryRemove(clientKey, out var failedClient))
+            {
+                try
+                {
+                    failedClient.Disconnect();
+                    failedClient.Dispose();
+                }
+                catch { /* Ignore cleanup errors */ }
+            }
+        }
+        finally
+        {
+            result.EndTime = DateTime.UtcNow;
+            result.Duration = result.EndTime - result.StartTime;
+            job.CompletedAt = result.EndTime;
+            
+            // Store result in history
+            lock (_transferHistory)
+            {
+                _transferHistory.Add(result);
+                
+                // Keep only last 1000 results
+                if (_transferHistory.Count > 1000)
+                {
+                    _transferHistory.RemoveRange(0, 100);
+                }
+            }
+            
+            // Notify completion
+            OnJobCompleted?.Invoke(job, result);
+        }
+    }
+    
+    public TransferServiceStatistics GetStatistics()
+    {
+        lock (_transferHistory)
+        {
+            var now = DateTime.UtcNow;
+            var last24Hours = _transferHistory.Where(r => r.StartTime > now.AddHours(-24)).ToList();
+            var successful = last24Hours.Where(r => r.Success).ToList();
+            var failed = last24Hours.Where(r => !r.Success).ToList();
+            
+            return new TransferServiceStatistics
+            {
+                QueueLength = _transferQueue.Count,
+                ActiveTransfers = _config.MaxConcurrentTransfers - _concurrencyLimiter.CurrentCount,
+                ActiveClients = _activeClients.Count,
+                TotalJobsLast24Hours = last24Hours.Count,
+                SuccessfulJobsLast24Hours = successful.Count,
+                FailedJobsLast24Hours = failed.Count,
+                SuccessRate = last24Hours.Any() ? (double)successful.Count / last24Hours.Count : 0,
+                TotalBytesTransferred = successful.Sum(r => r.TotalBytes),
+                AverageJobDuration = successful.Any() ? successful.Average(r => r.Duration.TotalSeconds) : 0,
+                LastJobTime = _transferHistory.LastOrDefault()?.StartTime
+            };
+        }
+    }
+    
+    public List&lt;TransferJobResult&gt; GetRecentJobs(int count = 50)
+    {
+        lock (_transferHistory)
+        {
+            return _transferHistory
+                .OrderByDescending(r => r.StartTime)
+                .Take(count)
+                .ToList();
+        }
+    }
+    
+    public void Dispose()
+    {
+        _logger.Info("Shutting down Enterprise File Transfer Service");
+        
+        _cancellationTokenSource.Cancel();
+        
+        try
+        {
+            _processingTask.Wait(TimeSpan.FromSeconds(10));
+        }
+        catch (Exception ex)
+        {
+            _logger.Warning($"Error waiting for processing task to complete: {ex.Message}");
+        }
+        
+        // Disconnect all active clients
+        foreach (var client in _activeClients.Values)
+        {
+            try
+            {
+                if (client.IsConnected)
+                {
+                    client.Disconnect();
+                }
+                client.Dispose();
+            }
+            catch (Exception ex)
+            {
+                _logger.Warning($"Error disconnecting client: {ex.Message}");
+            }
+        }
+        
+        _activeClients.Clear();
+        _concurrencyLimiter.Dispose();
+        _cancellationTokenSource.Dispose();
+        
+        _logger.Info("Enterprise File Transfer Service shutdown complete");
+    }
+    
+    public event Action&lt;TransferJob, TransferJobResult&gt; OnJobCompleted;
+}
+
+// Supporting classes
+public class FileTransferServiceConfig
+{
+    public int MaxConcurrentTransfers { get; set; } = 5;
+    public TimeSpan ClientTimeout { get; set; } = TimeSpan.FromMinutes(5);
+    public bool EnableProgressLogging { get; set; } = true;
+}
+
+public class TransferJob
+{
+    public string Id { get; set; }
+    public string Description { get; set; }
+    public TransferJobType Type { get; set; }
+    public List&lt;FileTransferItem&gt; Items { get; set; } = new();
+    public FileTransferConfig Config { get; set; }
+    public TransferPriority Priority { get; set; } = TransferPriority.Normal;
+    public TransferJobStatus Status { get; set; }
+    public DateTime QueuedAt { get; set; }
+    public DateTime StartedAt { get; set; }
+    public DateTime CompletedAt { get; set; }
+}
+
+public class TransferJobResult
+{
+    public string JobId { get; set; }
+    public string Description { get; set; }
+    public DateTime StartTime { get; set; }
+    public DateTime EndTime { get; set; }
+    public TimeSpan Duration { get; set; }
+    public bool Success { get; set; }
+    public TransferJobStatus Status { get; set; }
+    public string ErrorMessage { get; set; }
+    public int TransferredFiles { get; set; }
+    public int FailedFiles { get; set; }
+    public long TotalBytes { get; set; }
+}
+
+public enum TransferJobType
+{
+    Upload,
+    Download,
+    BatchUpload,
+    BatchDownload
+}
+
+public enum TransferPriority
+{
+    Low,
+    Normal,
+    High,
+    Critical
+}
+
+public enum TransferJobStatus
+{
+    Queued,
+    InProgress,
+    Completed,
+    Failed,
+    Cancelled
+}
+
+public class TransferServiceStatistics
+{
+    public int QueueLength { get; set; }
+    public int ActiveTransfers { get; set; }
+    public int ActiveClients { get; set; }
+    public int TotalJobsLast24Hours { get; set; }
+    public int SuccessfulJobsLast24Hours { get; set; }
+    public int FailedJobsLast24Hours { get; set; }
+    public double SuccessRate { get; set; }
+    public long TotalBytesTransferred { get; set; }
+    public double AverageJobDuration { get; set; }
+    public DateTime? LastJobTime { get; set; }
+}
+
+public class JobProgressTracker
+{
+    private readonly TransferJob _job;
+    private readonly ILogger _logger;
+    private DateTime _lastLogTime;
+    
+    public JobProgressTracker(TransferJob job, ILogger logger)
+    {
+        _job = job;
+        _logger = logger;
+        _lastLogTime = DateTime.UtcNow;
+    }
+    
+    public void OnProgressChanged(object sender, FileTransferProgress progress)
+    {
+        var now = DateTime.UtcNow;
+        
+        // Log progress every 10 seconds
+        if ((now - _lastLogTime).TotalSeconds >= 10)
+        {
+            _logger.Info($"Job {_job.Id}: {progress.FileName} - {progress.PercentComplete:P1} " +
+                        $"({FormatBytes(progress.TransferredBytes)}/{FormatBytes(progress.TotalBytes)} " +
+                        $"at {FormatBytes((long)progress.Speed)}/s)");
+            
+            _lastLogTime = now;
+        }
+    }
+    
+    private string FormatBytes(long bytes)
+    {
+        string[] suffixes = { "B", "KB", "MB", "GB", "TB" };
+        int counter = 0;
+        decimal number = bytes;
+        
+        while (Math.Round(number / 1024) >= 1)
+        {
+            number /= 1024;
+            counter++;
+        }
+        
+        return $"{number:N1} {suffixes[counter]}";
+    }
+}
+
+// Demo application
+public class Program
+{
+    static async Task Main(string[] args)
+    {
+        var logger = new ConsoleLogger();
+        var config = new FileTransferServiceConfig
+        {
+            MaxConcurrentTransfers = 3,
+            EnableProgressLogging = true
+        };
+        
+        var service = new EnterpriseFileTransferService(logger, config);
+        
+        // Subscribe to job completion events
+        service.OnJobCompleted += (job, result) =>
+        {
+            if (result.Success)
+            {
+                logger.Info($"✓ Job completed: {job.Description} in {result.Duration.TotalSeconds:F1}s");
+            }
+            else
+            {
+                logger.Error($"✗ Job failed: {job.Description} - {result.ErrorMessage}");
+            }
+        };
+        
+        try
+        {
+            // Configure transfer settings
+            var transferConfig = new FileTransferConfig
+            {
+                Protocol = TransferProtocol.SFTP,
+                HostName = "demo-server.com",
+                UserName = "demouser",
+                Password = "demopass"
+            };
+            
+            // Queue some jobs
+            var uploadFiles = new Dictionary&lt;string, string&gt;
+            {
+                { @"C:\Data\report1.pdf", "/uploads/reports/" },
+                { @"C:\Data\report2.pdf", "/uploads/reports/" },
+                { @"C:\Data\data.csv", "/uploads/data/" }
+            };
+            
+            var uploadJobId = service.QueueBatchUpload("Daily Reports Upload", uploadFiles, transferConfig);
+            logger.Info($"Queued upload job: {uploadJobId}");
+            
+            // Monitor service for a while
+            for (int i = 0; i &lt; 30; i++)
+            {
+                await Task.Delay(5000);
+                
+                var stats = service.GetStatistics();
+                logger.Info($"Queue: {stats.QueueLength}, Active: {stats.ActiveTransfers}, " +
+                           $"Success Rate: {stats.SuccessRate:P1}");
+            }
+        }
+        finally
+        {
+            service.Dispose();
+        }
+    }
+}
+
+// Simple logger implementation
+public interface ILogger
+{
+    void Debug(string message);
+    void Info(string message);
+    void Warning(string message);
+    void Error(string message, Exception ex = null);
+}
+
+public class ConsoleLogger : ILogger
+{
+    public void Debug(string message) => Console.WriteLine($"[DEBUG] {message}");
+    public void Info(string message) => Console.WriteLine($"[INFO] {message}");
+    public void Warning(string message) => Console.WriteLine($"[WARN] {message}");
+    public void Error(string message, Exception ex = null) => Console.WriteLine($"[ERROR] {message}" + (ex != null ? $" - {ex.Message}" : ""));
+}
+            </code>
+            </example>
+        </member>
+    </members>
+</doc>
