@@ -33,6 +33,7 @@ $tempBat = $null
 $stashCreated = $false
 $stashRef = $null
 $stashName = $null
+$exitCode = 0
 
 git -C $repoRoot rev-parse --show-toplevel | Out-Null
 Assert-GitSuccess "This script must be run from inside a git repository."
@@ -79,21 +80,17 @@ if ($statusOutput.Count -gt 0) {
     git -C $repoRoot stash push --all --message $stashName | Out-Null
     Assert-GitSuccess "Unable to stash local changes before switching branches."
 
-    $stashRef = (git -C $repoRoot stash list --format="%gd%x09%gs" |
-        Where-Object { $_ -match "^(stash@\{\d+\})\t" -and $_.EndsWith($stashName) } |
-        Select-Object -First 1)
+    $stashRef = (git -C $repoRoot stash list -1 --format="%gd").Trim()
     Assert-GitSuccess "Unable to inspect the created stash."
 
     if ([string]::IsNullOrWhiteSpace($stashRef)) {
         throw "A stash was created, but the script could not identify it for restoration."
     }
 
-    $stashRef = $stashRef.Split("`t")[0]
     $stashCreated = $true
 }
 
 $tempBat = Join-Path ([System.IO.Path]::GetTempPath()) ("update-from-master-{0}.bat" -f ([guid]::NewGuid().ToString('N')))
-$tempBatEscaped = $tempBat.Replace('"', '""')
 $repoRootEscaped = $repoRoot.Replace('"', '""')
 $currentBranchEscaped = $currentBranch.Replace('"', '""')
 
@@ -109,8 +106,8 @@ cd /d "%REPO_ROOT%"
 if errorlevel 1 exit /b 1
 
 echo.
-echo ^> git checkout master
-git checkout master
+echo ^> git switch master
+git switch master
 if errorlevel 1 exit /b 1
 
 echo.
@@ -119,8 +116,13 @@ git pull --ff-only origin master
 if errorlevel 1 exit /b 1
 
 echo.
-echo ^> git checkout "%ORIGINAL_BRANCH%"
-git checkout "%ORIGINAL_BRANCH%"
+echo ^> git fetch origin "%ORIGINAL_BRANCH%"
+git fetch origin "%ORIGINAL_BRANCH%"
+if errorlevel 1 exit /b 1
+
+echo.
+echo ^> git checkout "refs/heads/%ORIGINAL_BRANCH%"
+git checkout "refs/heads/%ORIGINAL_BRANCH%"
 if errorlevel 1 exit /b 1
 
 echo.
@@ -134,8 +136,13 @@ if /i "%MODE%"=="rebase" (
 if errorlevel 1 exit /b 1
 
 echo.
-echo ^> git push --force-with-lease origin "%ORIGINAL_BRANCH%"
-git push --force-with-lease origin "%ORIGINAL_BRANCH%"
+if /i "%MODE%"=="rebase" (
+    echo ^> git push --force-with-lease origin "%ORIGINAL_BRANCH%"
+    git push --force-with-lease origin "%ORIGINAL_BRANCH%"
+) else (
+    echo ^> git push origin "%ORIGINAL_BRANCH%"
+    git push origin "%ORIGINAL_BRANCH%"
+)
 if errorlevel 1 exit /b 1
 
 echo.
@@ -143,7 +150,7 @@ echo Done.
 exit /b 0
 "@
 
-Set-Content -LiteralPath $tempBat -Value $batchContent -Encoding ASCII
+Set-Content -LiteralPath $tempBat -Value $batchContent -Encoding Default
 
 Write-Host "Original branch: $currentBranch"
 Write-Host "Integration mode: $Mode"
@@ -173,7 +180,7 @@ finally {
         }
 
         if (-not $hasGitState) {
-            git -C $repoRoot checkout $currentBranch | Out-Null
+            git -C $repoRoot checkout ("refs/heads/{0}" -f $currentBranch) | Out-Null
         }
     }
 
