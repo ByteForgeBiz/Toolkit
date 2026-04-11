@@ -119,15 +119,6 @@ echo Failed while running git commands.
 set "RESULT=1"
 
 :cleanup
-"@
-
-if (-not $KeepTempFile) {
-    $batchContent += @"
-del "%tempBatEscaped%" >nul 2>&1
-"@
-}
-
-$batchContent += @"
 exit /b %RESULT%
 "@
 
@@ -142,6 +133,9 @@ $exitCode = $LASTEXITCODE
 
 if ($KeepTempFile) {
     Write-Host "Temporary batch file kept at: $tempBat"
+} else {
+    Remove-Item -LiteralPath $tempBat -ErrorAction SilentlyContinue
+    Write-Host "Temporary batch file removed."
 }
 
 exit $exitCode
