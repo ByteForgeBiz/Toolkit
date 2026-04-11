@@ -152,7 +152,7 @@ namespace ByteForge.Toolkit.Tests.Unit.Data.Database
             var result = property.ToString();
 
             // Assert
-            result.Should().Be("Description = ‘Test Description’ (on dbo.TestTable.TestColumn)");
+            result.Should().Be("Description = â€˜Test Descriptionâ€™ (on dbo.TestTable.TestColumn)");
         }
 
         /// <summary>
@@ -174,7 +174,7 @@ namespace ByteForge.Toolkit.Tests.Unit.Data.Database
             var result = property.ToString();
 
             // Assert
-            result.Should().Be("Description = ‘Test Description’ (on dbo.TestTable)");
+            result.Should().Be("Description = â€˜Test Descriptionâ€™ (on dbo.TestTable)");
         }
 
         #endregion
