@@ -1,8 +1,0 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Topics>
-  <Topic id="86b7b543-ec9d-4b58-b504-e168962068df" visible="True" isDefault="true" isSelected="true" title="Welcome to the ByteForge Toolkit">
-    <HelpKeywords>
-      <HelpKeyword index="K" term="Welcome" />
-    </HelpKeywords>
-  </Topic>
-</Topics>
