@@ -81,6 +81,19 @@ namespace ByteForge.Toolkit.Tests.Models
     }
 
     /// <summary>
+    /// Configuration model for testing encrypted properties and dictionaries.
+    /// </summary>
+    public class EncryptedConfig
+    {
+        [Encrypted]
+        public string ApiKey { get; set; }
+
+        [Dictionary("Secrets")]
+        [Encrypted]
+        public Dictionary<string, string> SecretMap { get; set; } = [];
+    }
+
+    /// <summary>
     /// Globalization settings configuration for culture testing.
     /// </summary>
     public class GlobalizationConfig

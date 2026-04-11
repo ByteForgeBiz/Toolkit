@@ -1,5 +1,6 @@
 using ByteForge.Toolkit.Logging;
 using System.Data;
+using System.Data.SqlClient;
 
 namespace ByteForge.Toolkit.Data;
 
@@ -321,24 +322,64 @@ public partial class DBAccess
     /// <returns>The result of type <typeparamref name="T"/> returned by the execution delegate, or the default value of <typeparamref name="T"/> if an exception occurs.</returns>
     private T? ExecuteCommand<T>(string query, Func<IDbCommand, T?> execute, params object?[]? arguments)
     {
-        try
+        var maxAttempts = Options.RetryEnabled ? Math.Max(1, Options.RetryMaxAttempts) : 1;
+
+        for (var attempt = 1; attempt <= maxAttempts; attempt++)
         {
-            using var dbConn = CreateConnection();
-            dbConn.Open();
-            var cmd = CreateCommand(dbConn, query, arguments);
-            RecordsAffected = -1;
-            LastException = null;
-            return TimeFunc(() => execute(cmd));
-        }
-        catch (Exception ex)
-        {
-            LastException = ex;
+            try
+            {
+                using var dbConn = CreateConnection();
+                dbConn.Open();
+                var cmd = CreateCommand(dbConn, query, arguments);
+                RecordsAffected = -1;
+                LastException = null;
+                return TimeFunc(() => execute(cmd));
+            }
+            catch (Exception ex)
+            {
+                if (attempt < maxAttempts && IsTransientException(ex))
+                {
+                    var delay = (int)(Options.RetryDelayMs * Math.Pow(2, attempt - 1));
+                    Log.Warning($"Transient database error on attempt {attempt} of {maxAttempts}. Retrying in {delay}ms... ({ex.Message})");
+                    Thread.Sleep(delay);
+                    continue;
+                }
+
+                ex.Data["Query"] = query;
+                ex.Data["Arguments"] = arguments != null ? string.Join(", ", arguments.Select(a => a?.ToString() ?? "null")) : "none";
+                ex.Data["StackTrace"] = ex.StackTrace;
+                LastException = ex;
 #if NETFRAMEWORK
-            RollbackTransaction();
+                RollbackTransaction();
 #endif
-            LogQueryError(ex, query, arguments);
-            return default;
+                LogQueryError(ex, query, arguments);
+                break;
+            }
         }
+
+        return default;
+    }
+
+    /// <summary>
+    /// Determines whether an exception represents a transient database error that may succeed on retry.
+    /// </summary>
+    /// <param name="ex">The exception to evaluate.</param>
+    /// <returns><see langword="true"/> if the exception is a transient error; otherwise, <see langword="false"/>.</returns>
+    private static bool IsTransientException(Exception ex)
+    {
+        while (ex != null)
+        {
+            if (ex is SqlException sqlEx &&
+                (sqlEx.Number == (int)SqlErrorNumber.CommandTimeout ||
+                 sqlEx.Number == (int)SqlErrorNumber.TransportError))
+            {
+                return true;
+            }
+
+            ex = ex.InnerException!;
+        }
+
+        return false;
     }
 
     /// <summary>

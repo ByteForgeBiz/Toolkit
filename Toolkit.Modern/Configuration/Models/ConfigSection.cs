@@ -1,4 +1,5 @@
 using ByteForge.Toolkit.Utilities;
+using ByteForge.Toolkit.Security;
 using Microsoft.Extensions.Configuration;
 using System.Collections;
 using System.Reflection;
@@ -312,6 +313,18 @@ internal class ConfigSection<T> : IConfigSection<T> where T : class, new()
         if (TryLoadArrayProperty(prop, name, value!)) return;
         if (TryLoadDictionaryProperty(prop, name, value!)) return;
         if (TryLoadDefaultValue(prop, value!)) return;
+
+        if (value != null && prop.GetCustomAttribute<EncryptedAttribute>() != null)
+        {
+            try
+            {
+                value = Encryptor.Default.Decrypt(value);
+            }
+            catch (Exception ex)
+            {
+                throw new FormatException($"Failed to decrypt value for property '{prop.Name}'.", ex);
+            }
+        }
         
         // Load standard property value
         LoadStandardProperty(prop, propType, value!);
@@ -350,6 +363,13 @@ internal class ConfigSection<T> : IConfigSection<T> where T : class, new()
         if (TrySaveArrayProperty(prop, name, propValue)) return;
         if (TrySaveDictionaryProperty(prop, name, propValue)) return;
         if (TrySaveDefaultProperty(prop, name, propValue)) return;
+
+        if (propValue is string plainText &&
+            !string.IsNullOrEmpty(plainText) &&
+            prop.GetCustomAttribute<EncryptedAttribute>() != null)
+        {
+            propValue = Encryptor.Default.Encrypt(plainText);
+        }
         
         // Save standard property value
         SaveStandardProperty(name, propValue);
@@ -544,13 +564,14 @@ internal class ConfigSection<T> : IConfigSection<T> where T : class, new()
 
         var dictionary = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         var dictSection = _root.GetSection(dictName);
+        var encryptDict = prop.GetCustomAttribute<EncryptedAttribute>() != null;
 
         // Create defensive copy to avoid "Collection was modified during enumeration" in concurrent scenarios
         // Note: Read lock is already held by the calling LoadFromConfiguration method
         var children = dictSection?.GetChildren()?.ToArray() ?? Array.Empty<IConfigurationSection>();
         foreach (var child in children)
             if (!string.IsNullOrWhiteSpace(child.Key) && !string.IsNullOrWhiteSpace(child.Value))
-                dictionary[child.Key] = child.Value!;
+                dictionary[child.Key] = encryptDict ? Encryptor.Default.Decrypt(child.Value!) : child.Value!;
 
         SetDictionaryValue(prop, dictionary);
         return true;
@@ -609,6 +630,7 @@ internal class ConfigSection<T> : IConfigSection<T> where T : class, new()
 
         // Clear existing dictionary entries
         ClearSection(dictionarySectionName);
+        var encryptDict = prop.GetCustomAttribute<EncryptedAttribute>() != null;
 
         if (propValue is IDictionary<string, string> dictionary)
         {
@@ -616,7 +638,7 @@ internal class ConfigSection<T> : IConfigSection<T> where T : class, new()
             {
                 if (!string.IsNullOrWhiteSpace(kvp.Key) && kvp.Value != null)
                 {
-                    _root[$"{dictionarySectionName}:{kvp.Key}"] = kvp.Value;
+                    _root[$"{dictionarySectionName}:{kvp.Key}"] = encryptDict ? Encryptor.Default.Encrypt(kvp.Value) : kvp.Value;
                 }
             }
         }
@@ -626,7 +648,7 @@ internal class ConfigSection<T> : IConfigSection<T> where T : class, new()
             {
                 if (!string.IsNullOrWhiteSpace(kvp.Key) && kvp.Value != null)
                 {
-                    _root[$"{dictionarySectionName}:{kvp.Key}"] = kvp.Value;
+                    _root[$"{dictionarySectionName}:{kvp.Key}"] = encryptDict ? Encryptor.Default.Encrypt(kvp.Value) : kvp.Value;
                 }
             }
         }

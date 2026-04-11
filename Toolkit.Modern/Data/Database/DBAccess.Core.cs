@@ -55,6 +55,27 @@ public partial class DBAccess
     }
 
     /// <summary>
+    /// Well-known <see cref="System.Data.SqlClient.SqlException.Number"/> values returned by SQL Server.
+    /// </summary>
+    /// <remarks>
+    /// These codes are used by <see cref="DBAccess"/> to classify exceptions as transient (retryable)
+    /// or permanent. Only transient exceptions are eligible for the retry policy configured in
+    /// <see cref="DatabaseOptions"/>.
+    /// </remarks>
+    public enum SqlErrorNumber
+    {
+        /// <summary>
+        /// The command timeout expired before the server returned a response.
+        /// </summary>
+        CommandTimeout = -2,
+
+        /// <summary>
+        /// A transport-level error occurred while receiving results from the server.
+        /// </summary>
+        TransportError = -1,
+    }
+
+    /// <summary>
     /// Initializes a new instance of the <see cref="DBAccess"/> class using the selected database from the configuration.
     /// </summary>
     public DBAccess() : this("") { }

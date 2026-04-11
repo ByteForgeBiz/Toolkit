@@ -129,6 +129,24 @@ namespace ByteForge.Toolkit.Tests.Unit.Data.Database
         }
 
         /// <summary>
+        /// Tests that retry-related database options are available and configurable.
+        /// </summary>
+        [TestMethod]
+        public void Options_RetrySettings_ShouldBeConfigurable()
+        {
+            var options = DatabaseTestHelper.CreateTestDatabaseOptions();
+            options.RetryEnabled = true;
+            options.RetryMaxAttempts = 4;
+            options.RetryDelayMs = 250;
+
+            var dbAccess = new DBAccess(options);
+
+            dbAccess.Options.RetryEnabled.Should().BeTrue();
+            dbAccess.Options.RetryMaxAttempts.Should().Be(4);
+            dbAccess.Options.RetryDelayMs.Should().Be(250);
+        }
+
+        /// <summary>
         /// Tests that the DbType property returns the correct database type.
         /// </summary>
         /// <remarks>

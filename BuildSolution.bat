@@ -85,6 +85,29 @@ if "%PROJECT_FILE%"=="" (
 
 echo Searching for MSBuild...
 
+:: Prefer vswhere when available - it handles newer Visual Studio layouts like 18/2026
+set VSWHERE_PATH=
+for /f "delims=" %%i in ('where vswhere 2^>nul') do (
+    if not defined VSWHERE_PATH set "VSWHERE_PATH=%%i"
+)
+
+if defined VSWHERE_PATH (
+    echo Found vswhere: !VSWHERE_PATH!
+    for /f "usebackq delims=" %%i in (`"!VSWHERE_PATH!" -latest -products * -requires Microsoft.Component.MSBuild -find MSBuild\**\Bin\MSBuild.exe`) do (
+        if not defined MSBUILD_PATH set MSBUILD_PATH=%%i
+    )
+    if defined MSBUILD_PATH goto :found_msbuild
+)
+
+:: Try to find Visual Studio 2026 installation
+set VS2026_PATH=
+for %%e in (Enterprise Professional Community) do (
+    if exist "C:\Program Files\Microsoft Visual Studio\18\%%e\MSBuild\Current\Bin\MSBuild.exe" (
+        set VS2026_PATH=C:\Program Files\Microsoft Visual Studio\18\%%e\MSBuild\Current\Bin\MSBuild.exe
+        goto :found_msbuild
+    )
+)
+
 :: Try to find Visual Studio 2022 installation
 set VS2022_PATH=
 for %%e in (Enterprise Professional Community) do (
@@ -132,7 +155,12 @@ echo ERROR: MSBuild not found. Please install Visual Studio or .NET Framework SD
 exit /b 1
 
 :found_msbuild
-if defined VS2022_PATH (
+if defined MSBUILD_PATH (
+    echo Found MSBuild via vswhere
+) else if defined VS2026_PATH (
+    echo Found MSBuild from Visual Studio 2026
+    set MSBUILD_PATH=!VS2026_PATH!
+) else if defined VS2022_PATH (
     echo Found MSBuild from Visual Studio 2022
     set MSBUILD_PATH=!VS2022_PATH!
 ) else if defined VS2019_PATH (
@@ -149,13 +177,21 @@ if defined VS2022_PATH (
 )
 
 echo Using MSBuild: !MSBUILD_PATH!
+set "MSBUILD_EXE=!MSBUILD_PATH!"
+set "MSBUILD_CONFIGURATION=!cfg!"
 
 echo Running NuGet restore...
-"!MSBUILD_PATH!" "%PROJECT_FILE%" /t:Restore /p:Configuration=!cfg! /p:Platform="Any CPU" /p:RuntimeIdentifiers=win
+set "MSBUILD_MODE=Restore"
+call :RunMSBuild
+if !ERRORLEVEL! neq 0 (
+    echo Restore failed.
+    exit /b !ERRORLEVEL!
+)
 
 echo.
 echo Building AnyCPU version...
-"!MSBUILD_PATH!" "%PROJECT_FILE%" /p:Configuration=!cfg! /p:Platform="Any CPU" /p:RuntimeIdentifiers=win /v:m
+set "MSBUILD_MODE=Build"
+call :RunMSBuild
 if %ERRORLEVEL% neq 0 (
     echo Build failed for AnyCPU.
     exit /b %ERRORLEVEL%
@@ -164,3 +200,8 @@ if %ERRORLEVEL% neq 0 (
 echo.
 echo Build complete successfully.
 exit /b 0
+
+:RunMSBuild
+powershell -NoProfile -ExecutionPolicy Bypass -Command ^
+  "$msbuild = $env:MSBUILD_EXE; $project = $env:PROJECT_FILE; $cfg = $env:MSBUILD_CONFIGURATION; $mode = $env:MSBUILD_MODE; $args = New-Object System.Collections.Generic.List[string]; $args.Add(('\"{0}\"' -f $project)); if ($mode -eq 'Restore') { $args.Add('/t:Restore') }; $args.Add('/p:Configuration=' + $cfg); $args.Add('/p:Platform=\"Any CPU\"'); $args.Add('/p:RuntimeIdentifiers=win'); if ($mode -eq 'Build') { $args.Add('/v:m') }; $psi = New-Object System.Diagnostics.ProcessStartInfo; $psi.FileName = $msbuild; $psi.Arguments = [string]::Join(' ', $args); $psi.UseShellExecute = $false; $envVars = $psi.EnvironmentVariables; foreach ($key in @($envVars.Keys)) { if ($key -ieq 'PATH') { $envVars.Remove($key) } }; $pathValue = [System.Environment]::GetEnvironmentVariable('PATH'); if (-not $pathValue) { $pathValue = [System.Environment]::GetEnvironmentVariable('Path') }; if ($pathValue) { $envVars['PATH'] = $pathValue }; $process = [System.Diagnostics.Process]::Start($psi); $process.WaitForExit(); exit $process.ExitCode"
+exit /b %ERRORLEVEL%

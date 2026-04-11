@@ -48,6 +48,9 @@ public class DatabaseOptions
     private const bool DefaultUseTrustedConnection = false;
     private const bool DefaultAutoTrimStrings = true;
     private const bool DefaultAllowNullStrings = false;
+    private const bool DefaultRetryEnabled = false;
+    private const int DefaultRetryMaxAttempts = 3;
+    private const int DefaultRetryDelayMs = 1000;
 
     /// <summary>
     /// Gets or sets the type of database (SQLServer or ODBC).
@@ -226,6 +229,49 @@ public class DatabaseOptions
     [DefaultValue(DefaultAllowNullStrings)]
     [ConfigName("bAllowNullStrings")]
     public bool AllowNullStrings { get; set; } = DefaultAllowNullStrings;
+
+    /// <summary>
+    /// Gets or sets a value indicating whether the retry policy is enabled.
+    /// </summary>
+    /// <value>
+    /// <see langword="true"/> if the retry policy is enabled; otherwise, <see langword="false"/>. Defaults to <see langword="false"/>.
+    /// </value>
+    /// <remarks>
+    /// When enabled, transient database errors such as query timeouts will be retried
+    /// up to <see cref="RetryMaxAttempts"/> times, with a delay of <see cref="RetryDelayMs"/>
+    /// milliseconds between each attempt.
+    /// </remarks>
+    [DefaultValue(DefaultRetryEnabled)]
+    [ConfigName("bRetryEnabled")]
+    public bool RetryEnabled { get; set; } = DefaultRetryEnabled;
+
+    /// <summary>
+    /// Gets or sets the maximum number of retry attempts for transient database errors.
+    /// </summary>
+    /// <value>
+    /// The maximum number of attempts. Defaults to 3.
+    /// </value>
+    /// <remarks>
+    /// This value is only used when <see cref="RetryEnabled"/> is <see langword="true"/>.
+    /// The first execution counts as attempt 1, so a value of 3 allows two retries.
+    /// </remarks>
+    [DefaultValue(DefaultRetryMaxAttempts)]
+    [ConfigName("iRetryMaxAttempts")]
+    public int RetryMaxAttempts { get; set; } = DefaultRetryMaxAttempts;
+
+    /// <summary>
+    /// Gets or sets the base delay in milliseconds used to compute the wait time before each retry attempt.
+    /// </summary>
+    /// <value>
+    /// The base delay in milliseconds. Defaults to 1000 ms (1 second).
+    /// </value>
+    /// <remarks>
+    /// This value is only used when <see cref="RetryEnabled"/> is <see langword="true"/>.
+    /// The actual wait time before each retry grows exponentially: <c>RetryDelayMs × 2^(attempt - 1)</c>.
+    /// </remarks>
+    [DefaultValue(DefaultRetryDelayMs)]
+    [ConfigName("iRetryDelayMs")]
+    public int RetryDelayMs { get; set; } = DefaultRetryDelayMs;
 
     /// <summary>
     /// Gets or sets the database user name in a clear format.

@@ -2,6 +2,17 @@ using Microsoft.Extensions.Configuration;
 using System.Collections.Concurrent;
 using System.Reflection;
 #if NETFRAMEWORK
+using ByteForge.Toolkit.Security;
+using ByteForge.Toolkit.Utilities;
+using ByteForge.Toolkit.Data;
+
+#endif
+#if !NETFRAMEWORK
+using ByteForge.Toolkit.Data;
+using ByteForge.Toolkit.Security;
+using ByteForge.Toolkit.Utilities;
+#endif
+#if NETFRAMEWORK
 using System.Web;
 #endif
 
@@ -92,6 +103,87 @@ public class Configuration : IConfigurationManager
     => DefaultInstance.Initialize();
 
     /// <summary>
+    /// Gets a string value from the specified section and key.
+    /// </summary>
+    /// <param name="section">The section name.</param>
+    /// <param name="key">The key name.</param>
+    /// <param name="defaultValue">The default value to return if the key is not found.</param>
+    /// <returns>The string value, or the default value if not found.</returns>
+    public static string? GetString(string section, string key, string? defaultValue = null)
+    => DefaultInstance.GetString(section, key, defaultValue);
+
+    /// <summary>
+    /// Sets a string value in the specified section and key.
+    /// </summary>
+    /// <param name="section">The section name.</param>
+    /// <param name="key">The key name.</param>
+    /// <param name="value">The value to set.</param>
+    public static void SetString(string section, string key, string? value)
+    => DefaultInstance.SetString(section, key, value);
+
+    /// <summary>
+    /// Gets an integer value from the specified section and key.
+    /// </summary>
+    /// <param name="section">The section name.</param>
+    /// <param name="key">The key name.</param>
+    /// <param name="defaultValue">The default value to return if the key is not found.</param>
+    /// <returns>The integer value, or the default value if not found.</returns>
+    public static int GetInt(string section, string key, int defaultValue = 0)
+    => DefaultInstance.GetInt(section, key, defaultValue);
+
+    /// <summary>
+    /// Gets a boolean value from the specified section and key.
+    /// </summary>
+    /// <param name="section">The section name.</param>
+    /// <param name="key">The key name.</param>
+    /// <param name="defaultValue">The default value to return if the key is not found.</param>
+    /// <returns>The boolean value, or the default value if not found.</returns>
+    public static bool GetBool(string section, string key, bool defaultValue = false)
+    => DefaultInstance.GetBool(section, key, defaultValue);
+
+    /// <summary>
+    /// Retrieves the value associated with the specified section and key, or returns a default value if the key is not found.
+    /// </summary>
+    /// <typeparam name="T">The type of the value to retrieve.</typeparam>
+    /// <param name="section">The name of the section containing the key.</param>
+    /// <param name="key">The key whose value to retrieve.</param>
+    /// <param name="defaultValue">The value to return if the specified key does not exist.</param>
+    /// <returns>The value associated with the specified section and key if found; otherwise, the specified default value.</returns>
+    public static T GetValue<T>(string section, string key, T defaultValue = default!)
+    => DefaultInstance.GetValue(section, key, defaultValue);
+
+    /// <summary>
+    /// Registers a key as encrypted so that <see cref="GetString"/>, <see cref="SetString"/>,
+    /// and <see cref="GetSectionValues"/> automatically decrypt and encrypt its value.
+    /// </summary>
+    /// <param name="section">The section name.</param>
+    /// <param name="key">The key name within the section.</param>
+    public static void RegisterEncrypted(string section, string key)
+    => DefaultInstance.RegisterEncrypted(section, key);
+
+    /// <summary>
+    /// Registers a key as encrypted so that <see cref="GetString"/>, <see cref="SetString"/>,
+    /// and <see cref="GetSectionValues"/> automatically decrypt and encrypt its value.
+    /// </summary>
+    /// <param name="sectionKey">The fully qualified key in <c>Section:Key</c> format.</param>
+    public static void RegisterEncrypted(string sectionKey)
+    => DefaultInstance.RegisterEncrypted(sectionKey);
+
+    /// <summary>
+    /// Returns the names of all sections present in the INI file.
+    /// Internal storage sections used by array and dictionary properties are excluded.
+    /// </summary>
+    public static IEnumerable<string> GetSectionNames()
+    => DefaultInstance.GetSectionNames();
+
+    /// <summary>
+    /// Returns all key-value pairs in the specified INI section as raw strings.
+    /// </summary>
+    /// <param name="sectionName">The section name.</param>
+    public static IReadOnlyDictionary<string, string> GetSectionValues(string sectionName)
+    => DefaultInstance.GetSectionValues(sectionName);
+
+    /// <summary>
     /// Saves the current configuration settings to the INI file.
     /// </summary>
     public static void Save() 
@@ -162,6 +254,13 @@ public class Configuration : IConfigurationManager
     /// Multiple readers can access concurrently, but writers require exclusive access.
     /// </summary>
     private readonly ReaderWriterLockSlim _configLock = new ReaderWriterLockSlim();
+
+    /// <summary>
+    /// Set of fully-qualified keys (<c>Section:Key</c>) explicitly registered as encrypted.
+    /// A <see cref="ConcurrentDictionary{TKey,TValue}"/> is used as a thread-safe set.
+    /// </summary>
+    private readonly ConcurrentDictionary<string, byte> _encryptedKeys =
+                 new ConcurrentDictionary<string, byte>(StringComparer.OrdinalIgnoreCase);
 
     /// <summary>
     /// Gets the configuration lock for coordinating access between readers and writers.
@@ -249,6 +348,32 @@ public class Configuration : IConfigurationManager
         // So we use a fallback chain to get the most appropriate assembly
         var exeName = Path.GetFileNameWithoutExtension(assembly.Location);
         return $"{exeName}.ini";
+    }
+
+    /// <summary>
+    /// Returns <see langword="true"/> if the given key was explicitly registered as encrypted.
+    /// </summary>
+    private bool IsEncryptedKey(string section, string key)
+        => _encryptedKeys.ContainsKey($"{section}:{key}");
+
+    /// <summary>
+    /// Decrypts <paramref name="value"/> if the key is recognised as encrypted.
+    /// Returns the raw value if decryption fails, so non-encrypted values that share the
+    /// <c>es</c> prefix are not broken.
+    /// </summary>
+    private string? DecryptIfEncrypted(string section, string key, string? value)
+    {
+        if (value == null || !IsEncryptedKey(section, key))
+            return value;
+
+        try
+        {
+            return Encryptor.Default.Decrypt(value);
+        }
+        catch
+        {
+            return value;
+        }
     }
 
     // ===========================
@@ -404,6 +529,195 @@ public class Configuration : IConfigurationManager
 
             // Section doesn't exist yet - add it now
             return ((IConfigurationManager)this).AddSection<T>(sectionName);
+        }
+    }
+
+    /// <summary>
+    /// Gets a string value from the specified section and key.
+    /// </summary>
+    /// <param name="section">The section name.</param>
+    /// <param name="key">The key name.</param>
+    /// <param name="defaultValue">The default value to return if the key is not found.</param>
+    /// <returns>The string value, or the default value if not found.</returns>
+    string? IConfigurationManager.GetString(string section, string key, string? defaultValue)
+    {
+        if (!_isInitialized)
+            return defaultValue;
+
+        try
+        {
+            _configLock.EnterReadLock();
+            var configKey = $"{section}:{key}";
+            var value = _root?.GetSection(configKey)?.Value ?? defaultValue;
+            return DecryptIfEncrypted(section, key, value);
+        }
+        finally
+        {
+            _configLock.ExitReadLock();
+        }
+    }
+
+    /// <summary>
+    /// Sets a string value in the specified section and key.
+    /// </summary>
+    /// <param name="section">The section name.</param>
+    /// <param name="key">The key name.</param>
+    /// <param name="value">The value to set.</param>
+    void IConfigurationManager.SetString(string section, string key, string? value)
+    {
+        if (!_isInitialized)
+            throw new InvalidOperationException("Configuration must be initialized before setting values.");
+
+        try
+        {
+            _configLock.EnterWriteLock();
+            if (!string.IsNullOrEmpty(value) && IsEncryptedKey(section, key))
+                value = Encryptor.Default.Encrypt(value);
+
+            var configKey = $"{section}:{key}";
+            _root![configKey] = value;
+        }
+        finally
+        {
+            _configLock.ExitWriteLock();
+        }
+
+        ReloadSection(section);
+    }
+
+    /// <summary>
+    /// Reloads all registered typed sections for a section name so their POCOs stay in sync with the root configuration.
+    /// </summary>
+    /// <param name="sectionName">The section name to reload.</param>
+    private void ReloadSection(string sectionName)
+    {
+        if (_sections.TryGetValue(sectionName, out var typeSections))
+            foreach (var configSection in typeSections.Values.OfType<IConfigSection>())
+                configSection.LoadFromConfiguration();
+    }
+
+    /// <summary>
+    /// Gets an integer value from the specified section and key.
+    /// </summary>
+    /// <param name="section">The section name.</param>
+    /// <param name="key">The key name.</param>
+    /// <param name="defaultValue">The default value to return if the key is not found.</param>
+    /// <returns>The integer value, or the default value if not found.</returns>
+    int IConfigurationManager.GetInt(string section, string key, int defaultValue)
+    {
+        var stringValue = ((IConfigurationManager)this).GetString(section, key);
+        return int.TryParse(stringValue, out var result) ? result : defaultValue;
+    }
+
+    /// <summary>
+    /// Gets a boolean value from the specified section and key.
+    /// </summary>
+    /// <param name="section">The section name.</param>
+    /// <param name="key">The key name.</param>
+    /// <param name="defaultValue">The default value to return if the key is not found.</param>
+    /// <returns>The boolean value, or the default value if not found.</returns>
+    bool IConfigurationManager.GetBool(string section, string key, bool defaultValue)
+    {
+        var stringValue = ((IConfigurationManager)this).GetString(section, key);
+        if (string.IsNullOrWhiteSpace(stringValue))
+            return defaultValue;
+
+        return BooleanParser.Parse(stringValue);
+    }
+
+    /// <summary>
+    /// Retrieves a configuration value of the specified type from the given section and key, or returns a default value if the key is not found or cannot be converted.
+    /// </summary>
+    /// <typeparam name="T">The type of the value to retrieve from the configuration.</typeparam>
+    /// <param name="section">The name of the configuration section containing the key.</param>
+    /// <param name="key">The key within the specified section whose value is to be retrieved.</param>
+    /// <param name="defaultValue">The value to return if the key is not found or cannot be converted to the specified type.</param>
+    /// <returns>The value associated with the specified section and key, converted to type T, or the specified default value if the key is not found or conversion fails.</returns>
+    T IConfigurationManager.GetValue<T>(string section, string key, T defaultValue)
+    {
+        var stringValue = ((IConfigurationManager)this).GetString(section, key);
+        if (string.IsNullOrWhiteSpace(stringValue))
+            return defaultValue;
+
+        try
+        {
+            return TypeConverter.ConvertTo<T>(stringValue);
+        }
+        catch
+        {
+            return defaultValue;
+        }
+    }
+
+    /// <summary>
+    /// Registers a key as encrypted, identified by section and key name.
+    /// </summary>
+    void IConfigurationManager.RegisterEncrypted(string section, string key)
+    {
+        if (string.IsNullOrEmpty(section))
+            throw new ArgumentNullException(nameof(section));
+        if (string.IsNullOrEmpty(key))
+            throw new ArgumentNullException(nameof(key));
+
+        _encryptedKeys.TryAdd($"{section}:{key}", 0);
+    }
+
+    /// <summary>
+    /// Registers a key as encrypted, identified by a fully-qualified <c>Section:Key</c> string.
+    /// </summary>
+    void IConfigurationManager.RegisterEncrypted(string sectionKey)
+    {
+        if (string.IsNullOrEmpty(sectionKey))
+            throw new ArgumentNullException(nameof(sectionKey));
+
+        _encryptedKeys.TryAdd(sectionKey, 0);
+    }
+
+    /// <summary>
+    /// Returns the names of all sections present in the INI file.
+    /// Internal storage sections (array/dictionary properties) are excluded.
+    /// Returns an empty sequence if the configuration has not been initialized.
+    /// </summary>
+    IEnumerable<string> IConfigurationManager.GetSectionNames()
+    {
+        if (!_isInitialized)
+            return Enumerable.Empty<string>();
+
+        try
+        {
+            _configLock.EnterReadLock();
+            return _root!.GetChildren()
+                .Select(s => s.Key)
+                .Where(name => !_arraySectionNames.Contains(name) && !_dictionarySectionNames.Contains(name))
+                .ToList();
+        }
+        finally
+        {
+            _configLock.ExitReadLock();
+        }
+    }
+
+    /// <summary>
+    /// Returns all key-value pairs in the specified section as raw strings.
+    /// Returns an empty dictionary if the section does not exist or the configuration has not been initialized.
+    /// </summary>
+    /// <param name="sectionName">The section name (case-insensitive).</param>
+    IReadOnlyDictionary<string, string> IConfigurationManager.GetSectionValues(string sectionName)
+    {
+        if (!_isInitialized || string.IsNullOrEmpty(sectionName))
+            return new Dictionary<string, string>();
+
+        try
+        {
+            _configLock.EnterReadLock();
+            return _root!.GetSection(sectionName)
+                .GetChildren()
+                .Where(c => c.Value != null)
+                .ToDictionary(c => c.Key, c => DecryptIfEncrypted(sectionName, c.Key, c.Value) ?? string.Empty, StringComparer.OrdinalIgnoreCase);
+        }
+        finally
+        {
+            _configLock.ExitReadLock();
         }
     }
 
