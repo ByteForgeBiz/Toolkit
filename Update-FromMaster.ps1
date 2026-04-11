@@ -29,6 +29,10 @@ function Test-GitStateFile {
 }
 
 $repoRoot = (Resolve-Path $PSScriptRoot).Path
+$tempBat = $null
+$stashCreated = $false
+$stashRef = $null
+$stashName = $null
 
 git -C $repoRoot rev-parse --show-toplevel | Out-Null
 Assert-GitSuccess "This script must be run from inside a git repository."
@@ -51,12 +55,8 @@ if (-not [System.IO.Path]::IsPathRooted($gitDir)) {
     $gitDir = Join-Path $repoRoot $gitDir
 }
 
-$statusOutput = @(git -C $repoRoot status --porcelain --untracked-files=normal)
+$statusOutput = @(git -C $repoRoot status --porcelain=v1 --untracked-files=all --ignored=matching)
 Assert-GitSuccess "Unable to inspect the worktree state."
-
-if ($statusOutput.Count -gt 0) {
-    throw "Working tree is not clean. Commit, stash, or remove local changes before switching branches."
-}
 
 $stateFiles = @(
     'MERGE_HEAD',
@@ -73,6 +73,25 @@ foreach ($stateFile in $stateFiles) {
     }
 }
 
+if ($statusOutput.Count -gt 0) {
+    $stashName = "{0} {1}" -f $Mode, (Get-Date -Format 'yyyy-MM-dd HH:mm')
+
+    git -C $repoRoot stash push --all --message $stashName | Out-Null
+    Assert-GitSuccess "Unable to stash local changes before switching branches."
+
+    $stashRef = (git -C $repoRoot stash list --format="%gd%x09%gs" |
+        Where-Object { $_ -match "^(stash@\{\d+\})\t" -and $_.EndsWith($stashName) } |
+        Select-Object -First 1)
+    Assert-GitSuccess "Unable to inspect the created stash."
+
+    if ([string]::IsNullOrWhiteSpace($stashRef)) {
+        throw "A stash was created, but the script could not identify it for restoration."
+    }
+
+    $stashRef = $stashRef.Split("`t")[0]
+    $stashCreated = $true
+}
+
 $tempBat = Join-Path ([System.IO.Path]::GetTempPath()) ("update-from-master-{0}.bat" -f ([guid]::NewGuid().ToString('N')))
 $tempBatEscaped = $tempBat.Replace('"', '""')
 $repoRootEscaped = $repoRoot.Replace('"', '""')
@@ -87,39 +106,41 @@ set "ORIGINAL_BRANCH=$currentBranchEscaped"
 set "MODE=$Mode"
 
 cd /d "%REPO_ROOT%"
-if errorlevel 1 goto :fail
+if errorlevel 1 exit /b 1
 
-call :run git checkout master
-call :run git pull --ff-only origin master
-call :run git checkout "%ORIGINAL_BRANCH%"
+echo.
+echo ^> git checkout master
+git checkout master
+if errorlevel 1 exit /b 1
 
+echo.
+echo ^> git pull --ff-only origin master
+git pull --ff-only origin master
+if errorlevel 1 exit /b 1
+
+echo.
+echo ^> git checkout "%ORIGINAL_BRANCH%"
+git checkout "%ORIGINAL_BRANCH%"
+if errorlevel 1 exit /b 1
+
+echo.
 if /i "%MODE%"=="rebase" (
-    call :run git rebase master
+    echo ^> git rebase master
+    git rebase master
 ) else (
-    call :run git merge master
+    echo ^> git merge master
+    git merge master
 )
+if errorlevel 1 exit /b 1
 
-call :run git push --force-with-lease origin "%ORIGINAL_BRANCH%"
+echo.
+echo ^> git push --force-with-lease origin "%ORIGINAL_BRANCH%"
+git push --force-with-lease origin "%ORIGINAL_BRANCH%"
+if errorlevel 1 exit /b 1
 
 echo.
 echo Done.
-set "RESULT=0"
-goto :cleanup
-
-:run
-echo.
-echo ^> %*
-call %*
-if errorlevel 1 goto :fail
 exit /b 0
-
-:fail
-echo.
-echo Failed while running git commands.
-set "RESULT=1"
-
-:cleanup
-exit /b %RESULT%
 "@
 
 Set-Content -LiteralPath $tempBat -Value $batchContent -Encoding ASCII
@@ -128,14 +149,62 @@ Write-Host "Original branch: $currentBranch"
 Write-Host "Integration mode: $Mode"
 Write-Host "Temporary runner: $tempBat"
 
-& $tempBat
-$exitCode = $LASTEXITCODE
-
-if ($KeepTempFile) {
-    Write-Host "Temporary batch file kept at: $tempBat"
+if ($stashCreated) {
+    Write-Host "Stashed current worktree as: $stashName ($stashRef)"
 } else {
-    Remove-Item -LiteralPath $tempBat -ErrorAction SilentlyContinue
-    Write-Host "Temporary batch file removed."
+    Write-Host "Worktree was already clean. No stash created."
+}
+
+try {
+    & $tempBat
+    $exitCode = $LASTEXITCODE
+}
+finally {
+    $branchAfterRun = (git -C $repoRoot branch --show-current).Trim()
+
+    if (-not [string]::IsNullOrWhiteSpace($branchAfterRun) -and $branchAfterRun -ne $currentBranch) {
+        $hasGitState = $false
+
+        foreach ($stateFile in $stateFiles) {
+            if (Test-GitStateFile $stateFile) {
+                $hasGitState = $true
+                break
+            }
+        }
+
+        if (-not $hasGitState) {
+            git -C $repoRoot checkout $currentBranch | Out-Null
+        }
+    }
+
+    if ($stashCreated -and -not [string]::IsNullOrWhiteSpace($stashRef)) {
+        git -C $repoRoot stash apply --index $stashRef | Out-Null
+
+        if ($LASTEXITCODE -eq 0) {
+            git -C $repoRoot stash drop $stashRef | Out-Null
+
+            if ($LASTEXITCODE -eq 0) {
+                Write-Host "Restored stashed worktree from: $stashName"
+            } else {
+                Write-Warning "The stashed worktree was applied, but dropping '$stashRef' failed."
+            }
+        } else {
+            Write-Warning "Failed to restore stashed worktree from '$stashRef'. The stash was kept."
+        }
+    }
+
+    if ($KeepTempFile) {
+        Write-Host "Temporary batch file kept at: $tempBat"
+    } else {
+        Remove-Item -LiteralPath $tempBat -ErrorAction SilentlyContinue
+        Write-Host "Temporary batch file removed."
+    }
+}
+
+if ($stashCreated) {
+    Write-Host "Summary: stashed dirty worktree as '$stashName', updated from master using '$Mode', and attempted to restore the stash."
+} else {
+    Write-Host "Summary: worktree was clean, updated from master using '$Mode', and no stash was needed."
 }
 
 exit $exitCode
