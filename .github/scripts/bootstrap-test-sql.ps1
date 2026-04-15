@@ -24,7 +24,7 @@ function Invoke-LocalDbSqlCmd {
     )
 
     $sqlcmdPath = Get-SqlCmdPath
-    & $sqlcmdPath -S "(localdb)\$InstanceName" -E @Arguments
+    & $sqlcmdPath -S "(localdb)\$InstanceName" -E -I @Arguments
     if ($LASTEXITCODE -ne 0) { throw "sqlcmd failed with exit code $LASTEXITCODE." }
 }
 

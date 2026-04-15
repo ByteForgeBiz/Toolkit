@@ -19,6 +19,18 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ByteForge.Toolkit.Modern.Te
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestBed", "TestBed\TestBed.csproj", "{2DC6B5A9-22D1-45B9-9848-B996FADF2656}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".github", ".github", "{8B4117F3-6468-4DFB-B718-990A21FC545F}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "scripts", "scripts", "{4D4D756C-AC2B-4E60-9A21-0746FADF116A}"
+	ProjectSection(SolutionItems) = preProject
+		.github\scripts\bootstrap-test-sql.ps1 = .github\scripts\bootstrap-test-sql.ps1
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "workflows", "workflows", "{F3422C9B-0261-4BF9-9304-CF9529C10798}"
+	ProjectSection(SolutionItems) = preProject
+		.github\workflows\ci.yml = .github\workflows\ci.yml
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -80,6 +92,11 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{8B4117F3-6468-4DFB-B718-990A21FC545F} = {8EC462FD-D22E-90A8-E5CE-7E832BA40C5D}
+		{4D4D756C-AC2B-4E60-9A21-0746FADF116A} = {8B4117F3-6468-4DFB-B718-990A21FC545F}
+		{F3422C9B-0261-4BF9-9304-CF9529C10798} = {8B4117F3-6468-4DFB-B718-990A21FC545F}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {922F34C5-2289-4FE7-9A8E-F4F311516D5E}
