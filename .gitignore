@@ -364,8 +364,13 @@ FodyWeavers.xsd
 
 # Ignore the auto-generated file
 SHFB/Help/
+version.txt
 
 # Ignore AI Tool Files
 .claude/
 CLAUDE.md
 AGENTS.md
+_artifact_inspect*/
+
+# Ignore extraneous files
+analyze_namespaces.ps1

@@ -15,20 +15,15 @@ BEGIN
 END
 GO
 
+-- Drop the login if it exists so the script can be rerun cleanly
+IF EXISTS (SELECT 1 FROM sys.server_principals WHERE name = N'ByteForgeTestUser')
+BEGIN
+    DROP LOGIN ByteForgeTestUser;
+END
+GO
+
 -- Create the test database
-CREATE DATABASE TestUnitDB
-ON 
-( NAME = 'TestUnitDB_Data',
-  FILENAME = 'E:\Program Files\Microsoft SQL Server\MSSQL16.MSSQLSERVER\MSSQL\DATA\TestUnitDB_Data.mdf',
-  SIZE = 100MB,
-  MAXSIZE = 500MB,
-  FILEGROWTH = 10MB )
-LOG ON 
-( NAME = 'TestUnitDB_Log',
-  FILENAME = 'E:\Program Files\Microsoft SQL Server\MSSQL16.MSSQLSERVER\MSSQL\DATA\TestUnitDB_Log.ldf',
-  SIZE = 10MB,
-  MAXSIZE = 50MB,
-  FILEGROWTH = 5MB );
+CREATE DATABASE TestUnitDB;
 GO
 
 USE TestUnitDB;

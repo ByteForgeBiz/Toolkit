@@ -36,6 +36,41 @@ namespace ByteForge.Toolkit.Tests.Helpers
         /// </summary>
         public const int TestCommandTimeout = 300;
 
+        /// <summary>
+        /// Environment variable containing the SQL Server host used by CI test runs.
+        /// </summary>
+        public const string TestSqlServerEnvVar = "BYTEFORGE_TEST_SQL_SERVER";
+
+        /// <summary>
+        /// Environment variable containing the SQL Server port used by CI test runs.
+        /// </summary>
+        public const string TestSqlPortEnvVar = "BYTEFORGE_TEST_SQL_PORT";
+
+        /// <summary>
+        /// Environment variable containing the SQL Server user used by CI test runs.
+        /// </summary>
+        public const string TestSqlUserEnvVar = "BYTEFORGE_TEST_SQL_USER";
+
+        /// <summary>
+        /// Environment variable containing the SQL Server password used by CI test runs.
+        /// </summary>
+        public const string TestSqlPasswordEnvVar = "BYTEFORGE_TEST_SQL_PASSWORD";
+
+        /// <summary>
+        /// Environment variable containing a full SQL Server connection string used by CI test runs.
+        /// </summary>
+        public const string TestSqlConnectionStringEnvVar = "BYTEFORGE_TEST_SQL_CONNECTION_STRING";
+
+        /// <summary>
+        /// Environment variable containing the SQL Server database name used by CI test runs.
+        /// </summary>
+        public const string TestSqlDatabaseEnvVar = "BYTEFORGE_TEST_SQL_DATABASE";
+
+        /// <summary>
+        /// Environment variable containing the Access database format to use for test runs.
+        /// </summary>
+        public const string TestAccessFormatEnvVar = "BYTEFORGE_TEST_ACCESS_FORMAT";
+        
         #endregion
 
         #region Database Configuration Factory Methods
@@ -46,18 +81,7 @@ namespace ByteForge.Toolkit.Tests.Helpers
         /// <returns>A configured <see cref="DatabaseOptions"/> instance for testing.</returns>
         public static DatabaseOptions CreateTestDatabaseOptions()
         {
-            return new DatabaseOptions
-            {
-                DatabaseType = DBAccess.DataBaseType.SQLServer,
-                Server = TestServerName,
-                DatabaseName = TestDatabaseName,
-                UseTrustedConnection = true,
-                UseEncryption = false,
-                ConnectionTimeout = TestConnectionTimeout,
-                CommandTimeout = TestCommandTimeout,
-                AutoTrimStrings = true,
-                AllowNullStrings = true
-            };
+            return CreateSqlServerTestOptions(TestDatabaseName, TestConnectionTimeout, TestCommandTimeout, autoTrimStrings: true, allowNullStrings: true);
         }
 
         /// <summary>
@@ -72,17 +96,7 @@ namespace ByteForge.Toolkit.Tests.Helpers
             int commandTimeout, 
             bool autoTrimStrings = true)
         {
-            return new DatabaseOptions
-            {
-                DatabaseType = DBAccess.DataBaseType.SQLServer,
-                Server = TestServerName,
-                DatabaseName = TestDatabaseName,
-                UseTrustedConnection = true,
-                UseEncryption = false,
-                ConnectionTimeout = connectionTimeout,
-                CommandTimeout = commandTimeout,
-                AutoTrimStrings = autoTrimStrings
-            };
+            return CreateSqlServerTestOptions(TestDatabaseName, connectionTimeout, commandTimeout, autoTrimStrings, allowNullStrings: false);
         }
 
         /// <summary>
@@ -91,17 +105,7 @@ namespace ByteForge.Toolkit.Tests.Helpers
         /// <returns>A <see cref="DatabaseOptions"/> instance with invalid settings.</returns>
         public static DatabaseOptions CreateInvalidDatabaseOptions()
         {
-            return new DatabaseOptions
-            {
-                DatabaseType = DBAccess.DataBaseType.SQLServer,
-                Server = TestServerName,
-                DatabaseName = "NonExistentDatabase",
-                UseTrustedConnection = true,
-                UseEncryption = false,
-                ConnectionTimeout = 5,
-                CommandTimeout = 30,
-                AutoTrimStrings = true
-            };
+            return CreateSqlServerTestOptions("NonExistentDatabase", 5, 30, autoTrimStrings: true, allowNullStrings: false);
         }
 
         /// <summary>
@@ -113,6 +117,135 @@ namespace ByteForge.Toolkit.Tests.Helpers
             return new DBAccess(CreateTestDatabaseOptions());
         }
 
+        /// <summary>
+        /// Creates SQL Server test options using CI environment variables when available, otherwise local defaults.
+        /// </summary>
+        /// <param name="databaseName">The target database name.</param>
+        /// <param name="connectionTimeout">The connection timeout in seconds.</param>
+        /// <param name="commandTimeout">The command timeout in seconds.</param>
+        /// <param name="autoTrimStrings">Whether to trim strings automatically.</param>
+        /// <param name="allowNullStrings">Whether null strings are allowed.</param>
+        /// <returns>A configured <see cref="DatabaseOptions"/> instance.</returns>
+        private static DatabaseOptions CreateSqlServerTestOptions(
+            string databaseName,
+            int connectionTimeout,
+            int commandTimeout,
+            bool autoTrimStrings,
+            bool allowNullStrings)
+        {
+            var ciOptions = TryCreateCiSqlServerOptions(databaseName, connectionTimeout, commandTimeout, autoTrimStrings, allowNullStrings);
+            if (ciOptions != null)
+                return ciOptions;
+
+            return new DatabaseOptions
+            {
+                DatabaseType = DBAccess.DataBaseType.SQLServer,
+                Server = TestServerName,
+                DatabaseName = databaseName,
+                UseTrustedConnection = true,
+                UseEncryption = false,
+                ConnectionTimeout = connectionTimeout,
+                CommandTimeout = commandTimeout,
+                AutoTrimStrings = autoTrimStrings,
+                AllowNullStrings = allowNullStrings
+            };
+        }
+
+        /// <summary>
+        /// Creates SQL Server test options from CI environment variables, or returns null when CI overrides are absent.
+        /// </summary>
+        private static DatabaseOptions? TryCreateCiSqlServerOptions(
+            string databaseName,
+            int connectionTimeout,
+            int commandTimeout,
+            bool autoTrimStrings,
+            bool allowNullStrings)
+        {
+            var explicitConnectionString = Environment.GetEnvironmentVariable(TestSqlConnectionStringEnvVar);
+            if (!string.IsNullOrWhiteSpace(explicitConnectionString))
+            {
+                return new DatabaseOptions
+                {
+                    DatabaseType = DBAccess.DataBaseType.SQLServer,
+                    Server = Environment.GetEnvironmentVariable(TestSqlServerEnvVar) ?? TestServerName,
+                    DatabaseName = Environment.GetEnvironmentVariable(TestSqlDatabaseEnvVar) ?? databaseName,
+                    ConnectionString = explicitConnectionString,
+                    UseTrustedConnection = explicitConnectionString.Contains("Trusted_Connection=true", StringComparison.OrdinalIgnoreCase) ||
+                                           explicitConnectionString.Contains("Integrated Security=true", StringComparison.OrdinalIgnoreCase),
+                    UseEncryption = explicitConnectionString.Contains("Encrypt=True", StringComparison.OrdinalIgnoreCase) ||
+                                    explicitConnectionString.Contains("Encrypt=Optional", StringComparison.OrdinalIgnoreCase),
+                    ConnectionTimeout = connectionTimeout,
+                    CommandTimeout = commandTimeout,
+                    AutoTrimStrings = autoTrimStrings,
+                    AllowNullStrings = allowNullStrings
+                };
+            }
+
+            var server = Environment.GetEnvironmentVariable(TestSqlServerEnvVar);
+            var user = Environment.GetEnvironmentVariable(TestSqlUserEnvVar);
+            var password = Environment.GetEnvironmentVariable(TestSqlPasswordEnvVar);
+            var configuredDatabaseName = Environment.GetEnvironmentVariable(TestSqlDatabaseEnvVar);
+            if (!string.IsNullOrWhiteSpace(configuredDatabaseName))
+                databaseName = configuredDatabaseName == TestDatabaseName ? databaseName : configuredDatabaseName;
+
+            if (!string.IsNullOrWhiteSpace(server) &&
+                string.IsNullOrWhiteSpace(user) &&
+                string.IsNullOrWhiteSpace(password))
+            {
+                var trustedConnectionString =
+                    $"Server={server};" +
+                    $"Database={databaseName};" +
+                    "Trusted_Connection=true;" +
+                    $"Connection Timeout={connectionTimeout}";
+
+                return new DatabaseOptions
+                {
+                    DatabaseType = DBAccess.DataBaseType.SQLServer,
+                    Server = server,
+                    DatabaseName = databaseName,
+                    ConnectionString = trustedConnectionString,
+                    UseTrustedConnection = true,
+                    UseEncryption = false,
+                    ConnectionTimeout = connectionTimeout,
+                    CommandTimeout = commandTimeout,
+                    AutoTrimStrings = autoTrimStrings,
+                    AllowNullStrings = allowNullStrings
+                };
+            }
+
+            if (string.IsNullOrWhiteSpace(server) ||
+                string.IsNullOrWhiteSpace(user) ||
+                string.IsNullOrWhiteSpace(password))
+            {
+                return null;
+            }
+
+            var port = Environment.GetEnvironmentVariable(TestSqlPortEnvVar);
+            var serverAddress = string.IsNullOrWhiteSpace(port) ? server : $"{server},{port}";
+            var connectionString =
+                $"Server={serverAddress};" +
+                $"Database={databaseName};" +
+                $"User ID={user};" +
+                $"Password={password};" +
+                $"Encrypt=True;" +
+                $"TrustServerCertificate=True;" +
+                $"Connection Timeout={connectionTimeout}";
+
+            return new DatabaseOptions
+            {
+                DatabaseType = DBAccess.DataBaseType.SQLServer,
+                Server = server,
+                DatabaseName = databaseName,
+                ConnectionString = connectionString,
+                UseTrustedConnection = false,
+                UseEncryption = true,
+                ConnectionTimeout = connectionTimeout,
+                CommandTimeout = commandTimeout,
+                AutoTrimStrings = autoTrimStrings,
+                AllowNullStrings = allowNullStrings
+            };
+        }
+
         #endregion
 
         #region Access Database Configuration Factory Methods
@@ -121,6 +254,11 @@ namespace ByteForge.Toolkit.Tests.Helpers
         /// The name of the test Access database file.
         /// </summary>
         public const string TestAccessDatabaseName = "TestUnitDB.accdb";
+
+        /// <summary>
+        /// The name of the legacy MDB test Access database file.
+        /// </summary>
+        public const string TestAccessLegacyDatabaseName = "TestUnitDB.mdb";
         
         /// <summary>
         /// The ODBC Data Source Name for the test Access database.
@@ -135,18 +273,25 @@ namespace ByteForge.Toolkit.Tests.Helpers
                                   "TestData", TestAccessDatabaseName);
 
         /// <summary>
+        /// The full path to the legacy MDB test Access database file.
+        /// </summary>
+        public static readonly string TestAccessLegacyDatabasePath =
+            System.IO.Path.Combine(System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location),
+                                  "TestData", TestAccessLegacyDatabaseName);
+
+        /// <summary>
         /// Creates a standard test Access database configuration using direct file path (recommended).
         /// </summary>
         /// <returns>A configured <see cref="DatabaseOptions"/> instance for Access testing.</returns>
         public static DatabaseOptions CreateTestAccessDatabaseOptions()
         {
-            var fullPath = System.IO.Path.GetFullPath(TestAccessDatabasePath);
+            var accessFixture = ResolveAccessTestFixture();
             return new DatabaseOptions
             {
                 DatabaseType = DBAccess.DataBaseType.ODBC,
                 Server = "", // Not used for ODBC file connections
                 DatabaseName = "", // Not used for ODBC file connections
-                ConnectionString = $"Driver={{Microsoft Access Driver (*.mdb, *.accdb)}};Dbq={fullPath};",
+                ConnectionString = accessFixture.ConnectionString,
                 UseTrustedConnection = false,
                 UseEncryption = false,
                 ConnectionTimeout = TestConnectionTimeout,
@@ -187,13 +332,13 @@ namespace ByteForge.Toolkit.Tests.Helpers
             int commandTimeout, 
             bool autoTrimStrings = true)
         {
-            var fullPath = System.IO.Path.GetFullPath(TestAccessDatabasePath);
+            var accessFixture = ResolveAccessTestFixture();
             return new DatabaseOptions
             {
                 DatabaseType = DBAccess.DataBaseType.ODBC,
                 Server = "",
                 DatabaseName = "",
-                ConnectionString = $"Driver={{Microsoft Access Driver (*.mdb, *.accdb)}};Dbq={fullPath};",
+                ConnectionString = accessFixture.ConnectionString,
                 UseTrustedConnection = false,
                 UseEncryption = false,
                 ConnectionTimeout = connectionTimeout,
@@ -306,7 +451,7 @@ namespace ByteForge.Toolkit.Tests.Helpers
         public static void AssertAccessDatabaseSetup(DBAccess dbAccess)
         {
             VerifyAccessDatabaseSetup(dbAccess).Should().BeTrue(
-                $"test Access database should be properly set up with required tables and data. Expected database path: {TestAccessDatabasePath}");
+                $"test Access database should be properly set up with required tables and data. Expected database path: {ResolveAccessTestFixture().FullPath}");
         }
 
         /// <summary>
@@ -315,8 +460,64 @@ namespace ByteForge.Toolkit.Tests.Helpers
         /// <returns>True if the database file exists; otherwise, false.</returns>
         public static bool VerifyAccessDatabaseFileExists()
         {
+            return System.IO.File.Exists(ResolveAccessTestFixture().FullPath);
+        }
+
+        /// <summary>
+        /// Resolves the Access test fixture path and ODBC driver pairing to use in the current environment.
+        /// </summary>
+        /// <returns>The resolved Access fixture information.</returns>
+        private static AccessTestFixture ResolveAccessTestFixture()
+        {
+            var requestedFormat = Environment.GetEnvironmentVariable(TestAccessFormatEnvVar)?.Trim().ToLowerInvariant();
+            if (requestedFormat == "mdb")
+                return CreateMdbFixture();
+            if (requestedFormat == "accdb")
+                return CreateAccdbFixture();
+
+            var accdbPath = System.IO.Path.GetFullPath(TestAccessDatabasePath);
+            if (System.IO.File.Exists(accdbPath))
+                return CreateAccdbFixture();
+
+            return CreateMdbFixture();
+        }
+
+        /// <summary>
+        /// Creates Access fixture information for the ACCDB test database.
+        /// </summary>
+        private static AccessTestFixture CreateAccdbFixture()
+        {
             var fullPath = System.IO.Path.GetFullPath(TestAccessDatabasePath);
-            return System.IO.File.Exists(fullPath);
+            return new AccessTestFixture(
+                fullPath,
+                $"Driver={{Microsoft Access Driver (*.mdb, *.accdb)}};Dbq={fullPath};");
+        }
+
+        /// <summary>
+        /// Creates Access fixture information for the MDB test database.
+        /// </summary>
+        private static AccessTestFixture CreateMdbFixture()
+        {
+            var fullPath = System.IO.Path.GetFullPath(TestAccessLegacyDatabasePath);
+            return new AccessTestFixture(
+                fullPath,
+                $"Driver={{Microsoft Access Driver (*.mdb)}};Dbq={fullPath};");
+        }
+
+        /// <summary>
+        /// Encapsulates the selected Access fixture path and connection string.
+        /// </summary>
+        private sealed class AccessTestFixture
+        {
+            public AccessTestFixture(string fullPath, string connectionString)
+            {
+                FullPath = fullPath;
+                ConnectionString = connectionString;
+            }
+
+            public string FullPath { get; }
+
+            public string ConnectionString { get; }
         }
 
         #endregion

@@ -18,6 +18,7 @@ public class Log : CompositeLogger
 {
     private LogLevel? _PreviousConsoleLoggerLevel = LogLevel.Verbose;
     private readonly FileLogger fileLogger;
+    private readonly DatabaseLogger? databaseLogger;
     private readonly ConsoleLogger consoleLogger = new ConsoleLogger()
     {
         Name = "Console",
@@ -67,6 +68,25 @@ public class Log : CompositeLogger
             AddLogger(consoleLogger);
 
         AddLogger(fileLogger);
+
+        if (Settings.UseDatabaseLogging)
+        {
+            DatabaseLoggerOptions databaseLoggerOptions;
+            if (!Configuration.Configuration.IsInitialized)
+                databaseLoggerOptions = new DatabaseLoggerOptions();
+            else
+                databaseLoggerOptions = Configuration.Configuration.GetSection<DatabaseLoggerOptions>("DatabaseLogger");
+
+            if (databaseLoggerOptions.Enabled)
+            {
+                databaseLogger = new DatabaseLogger(databaseLoggerOptions)
+                {
+                    Name = "Database",
+                    MinLogLevel = databaseLoggerOptions.MinLogLevel,
+                };
+                AddLogger(databaseLogger);
+            }
+        }
 
         if (Settings.ClearLogOnStartup && !Settings.UseSessionLogging)
             fileLogger.Clear();
@@ -165,6 +185,17 @@ public class Log : CompositeLogger
     /// The <see cref="ConsoleLogger"/> instance used for console logging.
     /// </value>
     public static ConsoleLogger Console => (ConsoleLogger)Instance.consoleLogger;
+
+    /// <summary>
+    /// Gets a value indicating whether the static logger is currently suppressed for the active async flow.
+    /// </summary>
+    internal static bool IsSuppressed => LoggingScopeContext.IsSuppressed;
+
+    /// <summary>
+    /// Begins a suppression scope for the static logger in the current async flow.
+    /// </summary>
+    /// <returns>A disposable scope token.</returns>
+    internal static IDisposable BeginSuppressedScope() => LoggingScopeContext.Suppress();
 
     /// <summary>
     /// Gets the logging configuration options.
@@ -285,7 +316,7 @@ public class Log : CompositeLogger
     /// 
     private static void WriteToLog(LogLevel level, string message, Exception? ex)
     {
-        if (string.IsNullOrEmpty(message))
+        if (IsSuppressed || string.IsNullOrEmpty(message))
             return;
         Instance.WriteToLog(level, message.Split(Utilities.Utils.arrCRLF, StringSplitOptions.RemoveEmptyEntries), ex);
     }

@@ -271,8 +271,17 @@ namespace ByteForge.Toolkit.Tests.Unit.CLI
             // Assert
             styles.Length.Should().BeGreaterThan(0, "Styles should not be empty");
             var names = styles.Cast<object>().Select(o => o.ToString()).ToList();
+#if NET20_OR_GREATER
+            /*
+             * For some reason, .NET48 compiles enums with aliases, like Default = ASCII 
+             * or Dots = Braille, by using the alias as name in `enum.ToString()`.
+             */
+            names.Should().Contain(nameof(SpinnerStyle.Default));
+            names.Should().Contain(nameof(SpinnerStyle.Dots));
+#elif NET5_0_OR_GREATER
             names.Should().Contain(nameof(SpinnerStyle.ASCII));
             names.Should().Contain(nameof(SpinnerStyle.Braille));
+#endif
             names.Should().Contain(nameof(SpinnerStyle.Arrows));
         }
 
@@ -290,7 +299,7 @@ namespace ByteForge.Toolkit.Tests.Unit.CLI
             }
         }
 
-        #endregion
+#endregion
 
         #region Thread Safety Tests
 
