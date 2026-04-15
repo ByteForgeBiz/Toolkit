@@ -6,7 +6,7 @@ on:
 
 jobs:
   build-test:
-    runs-on: windows-latest
+    runs-on: windows-2022
     env:
       CONFIGURATION: Release
       BYTEFORGE_TEST_SQL_INSTANCE: MSSQLLocalDB
@@ -37,6 +37,29 @@ jobs:
           New-Item -ItemType Directory -Force -Path "$PWD\TestResults\net9.0" | Out-Null
           New-Item -ItemType Directory -Force -Path "$PWD\TestResults\net48" | Out-Null
 
+      - name: Detect Access ODBC driver
+        id: odbc_probe
+        shell: pwsh
+        run: |
+          $driverLogPath = Join-Path $env:BYTEFORGE_TEST_LOG_DIR 'odbc-drivers.txt'
+          $drivers = @(Get-OdbcDriver | Sort-Object Name)
+          if ($drivers.Count -gt 0) {
+            $drivers | Format-Table Name, Platform, Attribute -AutoSize | Out-String | Set-Content -Path $driverLogPath
+          }
+          else {
+            'No ODBC drivers reported by Get-OdbcDriver.' | Set-Content -Path $driverLogPath
+          }
+
+          $hasAccessDriver = $drivers.Name -contains 'Microsoft Access Driver (*.mdb, *.accdb)'
+          "access_odbc_available=$($hasAccessDriver.ToString().ToLowerInvariant())" >> $env:GITHUB_OUTPUT
+
+          if ($hasAccessDriver) {
+            Write-Host 'Microsoft Access ODBC driver detected.'
+          }
+          else {
+            Write-Warning 'Microsoft Access ODBC driver was not found. ODBC-tagged tests will be skipped.'
+          }
+
       - name: Bootstrap TestUnitDB
         shell: pwsh
         run: |
@@ -54,11 +77,45 @@ jobs:
 
       - name: Test net9.0
         shell: pwsh
-        run: dotnet test .\Toolkit.Modern.Tests\ByteForge.Toolkit.Modern.Tests.csproj --configuration $env:CONFIGURATION --framework net9.0 --no-build --results-directory .\TestResults\net9.0 --logger "trx;LogFileName=net9.0.trx"
+        env:
+          ACCESS_ODBC_AVAILABLE: ${{ steps.odbc_probe.outputs.access_odbc_available }}
+        run: |
+          $args = @(
+            'test',
+            '.\Toolkit.Modern.Tests\ByteForge.Toolkit.Modern.Tests.csproj',
+            '--configuration', $env:CONFIGURATION,
+            '--framework', 'net9.0',
+            '--no-build',
+            '--results-directory', '.\TestResults\net9.0',
+            '--logger', 'trx;LogFileName=net9.0.trx'
+          )
+
+          if ($env:ACCESS_ODBC_AVAILABLE -ne 'true') {
+            $args += @('--filter', 'TestCategory!=ODBC')
+          }
+
+          & dotnet @args
 
       - name: Test net48
         shell: pwsh
-        run: dotnet test .\Toolkit.Modern.Tests\ByteForge.Toolkit.Modern.Tests.csproj --configuration $env:CONFIGURATION --framework net48 --no-build --results-directory .\TestResults\net48 --logger "trx;LogFileName=net48.trx"
+        env:
+          ACCESS_ODBC_AVAILABLE: ${{ steps.odbc_probe.outputs.access_odbc_available }}
+        run: |
+          $args = @(
+            'test',
+            '.\Toolkit.Modern.Tests\ByteForge.Toolkit.Modern.Tests.csproj',
+            '--configuration', $env:CONFIGURATION,
+            '--framework', 'net48',
+            '--no-build',
+            '--results-directory', '.\TestResults\net48',
+            '--logger', 'trx;LogFileName=net48.trx'
+          )
+
+          if ($env:ACCESS_ODBC_AVAILABLE -ne 'true') {
+            $args += @('--filter', 'TestCategory!=ODBC')
+          }
+
+          & dotnet @args
 
       - name: Upload test artifacts
         if: always()
