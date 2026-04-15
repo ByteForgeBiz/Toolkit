@@ -57,6 +57,11 @@ namespace ByteForge.Toolkit.Tests.Helpers
         public const string TestSqlPasswordEnvVar = "BYTEFORGE_TEST_SQL_PASSWORD";
 
         /// <summary>
+        /// Environment variable containing a full SQL Server connection string used by CI test runs.
+        /// </summary>
+        public const string TestSqlConnectionStringEnvVar = "BYTEFORGE_TEST_SQL_CONNECTION_STRING";
+
+        /// <summary>
         /// Environment variable containing the SQL Server database name used by CI test runs.
         /// </summary>
         public const string TestSqlDatabaseEnvVar = "BYTEFORGE_TEST_SQL_DATABASE";
@@ -151,9 +156,57 @@ namespace ByteForge.Toolkit.Tests.Helpers
             bool autoTrimStrings,
             bool allowNullStrings)
         {
+            var explicitConnectionString = Environment.GetEnvironmentVariable(TestSqlConnectionStringEnvVar);
+            if (!string.IsNullOrWhiteSpace(explicitConnectionString))
+            {
+                return new DatabaseOptions
+                {
+                    DatabaseType = DBAccess.DataBaseType.SQLServer,
+                    Server = Environment.GetEnvironmentVariable(TestSqlServerEnvVar) ?? TestServerName,
+                    DatabaseName = Environment.GetEnvironmentVariable(TestSqlDatabaseEnvVar) ?? databaseName,
+                    ConnectionString = explicitConnectionString,
+                    UseTrustedConnection = explicitConnectionString.Contains("Trusted_Connection=true", StringComparison.OrdinalIgnoreCase) ||
+                                           explicitConnectionString.Contains("Integrated Security=true", StringComparison.OrdinalIgnoreCase),
+                    UseEncryption = explicitConnectionString.Contains("Encrypt=True", StringComparison.OrdinalIgnoreCase) ||
+                                    explicitConnectionString.Contains("Encrypt=Optional", StringComparison.OrdinalIgnoreCase),
+                    ConnectionTimeout = connectionTimeout,
+                    CommandTimeout = commandTimeout,
+                    AutoTrimStrings = autoTrimStrings,
+                    AllowNullStrings = allowNullStrings
+                };
+            }
+
             var server = Environment.GetEnvironmentVariable(TestSqlServerEnvVar);
             var user = Environment.GetEnvironmentVariable(TestSqlUserEnvVar);
             var password = Environment.GetEnvironmentVariable(TestSqlPasswordEnvVar);
+            var configuredDatabaseName = Environment.GetEnvironmentVariable(TestSqlDatabaseEnvVar);
+            if (!string.IsNullOrWhiteSpace(configuredDatabaseName))
+                databaseName = configuredDatabaseName == TestDatabaseName ? databaseName : configuredDatabaseName;
+
+            if (!string.IsNullOrWhiteSpace(server) &&
+                string.IsNullOrWhiteSpace(user) &&
+                string.IsNullOrWhiteSpace(password))
+            {
+                var trustedConnectionString =
+                    $"Server={server};" +
+                    $"Database={databaseName};" +
+                    "Trusted_Connection=true;" +
+                    $"Connection Timeout={connectionTimeout}";
+
+                return new DatabaseOptions
+                {
+                    DatabaseType = DBAccess.DataBaseType.SQLServer,
+                    Server = server,
+                    DatabaseName = databaseName,
+                    ConnectionString = trustedConnectionString,
+                    UseTrustedConnection = true,
+                    UseEncryption = false,
+                    ConnectionTimeout = connectionTimeout,
+                    CommandTimeout = commandTimeout,
+                    AutoTrimStrings = autoTrimStrings,
+                    AllowNullStrings = allowNullStrings
+                };
+            }
 
             if (string.IsNullOrWhiteSpace(server) ||
                 string.IsNullOrWhiteSpace(user) ||
@@ -161,10 +214,6 @@ namespace ByteForge.Toolkit.Tests.Helpers
             {
                 return null;
             }
-
-            var configuredDatabaseName = Environment.GetEnvironmentVariable(TestSqlDatabaseEnvVar);
-            if (!string.IsNullOrWhiteSpace(configuredDatabaseName))
-                databaseName = configuredDatabaseName == TestDatabaseName ? databaseName : configuredDatabaseName;
 
             var port = Environment.GetEnvironmentVariable(TestSqlPortEnvVar);
             var serverAddress = string.IsNullOrWhiteSpace(port) ? server : $"{server},{port}";
