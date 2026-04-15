@@ -36,6 +36,31 @@ namespace ByteForge.Toolkit.Tests.Helpers
         /// </summary>
         public const int TestCommandTimeout = 300;
 
+        /// <summary>
+        /// Environment variable containing the SQL Server host used by CI test runs.
+        /// </summary>
+        public const string TestSqlServerEnvVar = "BYTEFORGE_TEST_SQL_SERVER";
+
+        /// <summary>
+        /// Environment variable containing the SQL Server port used by CI test runs.
+        /// </summary>
+        public const string TestSqlPortEnvVar = "BYTEFORGE_TEST_SQL_PORT";
+
+        /// <summary>
+        /// Environment variable containing the SQL Server user used by CI test runs.
+        /// </summary>
+        public const string TestSqlUserEnvVar = "BYTEFORGE_TEST_SQL_USER";
+
+        /// <summary>
+        /// Environment variable containing the SQL Server password used by CI test runs.
+        /// </summary>
+        public const string TestSqlPasswordEnvVar = "BYTEFORGE_TEST_SQL_PASSWORD";
+
+        /// <summary>
+        /// Environment variable containing the SQL Server database name used by CI test runs.
+        /// </summary>
+        public const string TestSqlDatabaseEnvVar = "BYTEFORGE_TEST_SQL_DATABASE";
+        
         #endregion
 
         #region Database Configuration Factory Methods
@@ -46,18 +71,7 @@ namespace ByteForge.Toolkit.Tests.Helpers
         /// <returns>A configured <see cref="DatabaseOptions"/> instance for testing.</returns>
         public static DatabaseOptions CreateTestDatabaseOptions()
         {
-            return new DatabaseOptions
-            {
-                DatabaseType = DBAccess.DataBaseType.SQLServer,
-                Server = TestServerName,
-                DatabaseName = TestDatabaseName,
-                UseTrustedConnection = true,
-                UseEncryption = false,
-                ConnectionTimeout = TestConnectionTimeout,
-                CommandTimeout = TestCommandTimeout,
-                AutoTrimStrings = true,
-                AllowNullStrings = true
-            };
+            return CreateSqlServerTestOptions(TestDatabaseName, TestConnectionTimeout, TestCommandTimeout, autoTrimStrings: true, allowNullStrings: true);
         }
 
         /// <summary>
@@ -72,17 +86,7 @@ namespace ByteForge.Toolkit.Tests.Helpers
             int commandTimeout, 
             bool autoTrimStrings = true)
         {
-            return new DatabaseOptions
-            {
-                DatabaseType = DBAccess.DataBaseType.SQLServer,
-                Server = TestServerName,
-                DatabaseName = TestDatabaseName,
-                UseTrustedConnection = true,
-                UseEncryption = false,
-                ConnectionTimeout = connectionTimeout,
-                CommandTimeout = commandTimeout,
-                AutoTrimStrings = autoTrimStrings
-            };
+            return CreateSqlServerTestOptions(TestDatabaseName, connectionTimeout, commandTimeout, autoTrimStrings, allowNullStrings: false);
         }
 
         /// <summary>
@@ -91,17 +95,7 @@ namespace ByteForge.Toolkit.Tests.Helpers
         /// <returns>A <see cref="DatabaseOptions"/> instance with invalid settings.</returns>
         public static DatabaseOptions CreateInvalidDatabaseOptions()
         {
-            return new DatabaseOptions
-            {
-                DatabaseType = DBAccess.DataBaseType.SQLServer,
-                Server = TestServerName,
-                DatabaseName = "NonExistentDatabase",
-                UseTrustedConnection = true,
-                UseEncryption = false,
-                ConnectionTimeout = 5,
-                CommandTimeout = 30,
-                AutoTrimStrings = true
-            };
+            return CreateSqlServerTestOptions("NonExistentDatabase", 5, 30, autoTrimStrings: true, allowNullStrings: false);
         }
 
         /// <summary>
@@ -111,6 +105,91 @@ namespace ByteForge.Toolkit.Tests.Helpers
         public static DBAccess CreateTestDBAccess()
         {
             return new DBAccess(CreateTestDatabaseOptions());
+        }
+
+        /// <summary>
+        /// Creates SQL Server test options using CI environment variables when available, otherwise local defaults.
+        /// </summary>
+        /// <param name="databaseName">The target database name.</param>
+        /// <param name="connectionTimeout">The connection timeout in seconds.</param>
+        /// <param name="commandTimeout">The command timeout in seconds.</param>
+        /// <param name="autoTrimStrings">Whether to trim strings automatically.</param>
+        /// <param name="allowNullStrings">Whether null strings are allowed.</param>
+        /// <returns>A configured <see cref="DatabaseOptions"/> instance.</returns>
+        private static DatabaseOptions CreateSqlServerTestOptions(
+            string databaseName,
+            int connectionTimeout,
+            int commandTimeout,
+            bool autoTrimStrings,
+            bool allowNullStrings)
+        {
+            var ciOptions = TryCreateCiSqlServerOptions(databaseName, connectionTimeout, commandTimeout, autoTrimStrings, allowNullStrings);
+            if (ciOptions != null)
+                return ciOptions;
+
+            return new DatabaseOptions
+            {
+                DatabaseType = DBAccess.DataBaseType.SQLServer,
+                Server = TestServerName,
+                DatabaseName = databaseName,
+                UseTrustedConnection = true,
+                UseEncryption = false,
+                ConnectionTimeout = connectionTimeout,
+                CommandTimeout = commandTimeout,
+                AutoTrimStrings = autoTrimStrings,
+                AllowNullStrings = allowNullStrings
+            };
+        }
+
+        /// <summary>
+        /// Creates SQL Server test options from CI environment variables, or returns null when CI overrides are absent.
+        /// </summary>
+        private static DatabaseOptions? TryCreateCiSqlServerOptions(
+            string databaseName,
+            int connectionTimeout,
+            int commandTimeout,
+            bool autoTrimStrings,
+            bool allowNullStrings)
+        {
+            var server = Environment.GetEnvironmentVariable(TestSqlServerEnvVar);
+            var user = Environment.GetEnvironmentVariable(TestSqlUserEnvVar);
+            var password = Environment.GetEnvironmentVariable(TestSqlPasswordEnvVar);
+
+            if (string.IsNullOrWhiteSpace(server) ||
+                string.IsNullOrWhiteSpace(user) ||
+                string.IsNullOrWhiteSpace(password))
+            {
+                return null;
+            }
+
+            var configuredDatabaseName = Environment.GetEnvironmentVariable(TestSqlDatabaseEnvVar);
+            if (!string.IsNullOrWhiteSpace(configuredDatabaseName))
+                databaseName = configuredDatabaseName == TestDatabaseName ? databaseName : configuredDatabaseName;
+
+            var port = Environment.GetEnvironmentVariable(TestSqlPortEnvVar);
+            var serverAddress = string.IsNullOrWhiteSpace(port) ? server : $"{server},{port}";
+            var connectionString =
+                $"Server={serverAddress};" +
+                $"Database={databaseName};" +
+                $"User ID={user};" +
+                $"Password={password};" +
+                $"Encrypt=True;" +
+                $"TrustServerCertificate=True;" +
+                $"Connection Timeout={connectionTimeout}";
+
+            return new DatabaseOptions
+            {
+                DatabaseType = DBAccess.DataBaseType.SQLServer,
+                Server = server,
+                DatabaseName = databaseName,
+                ConnectionString = connectionString,
+                UseTrustedConnection = false,
+                UseEncryption = true,
+                ConnectionTimeout = connectionTimeout,
+                CommandTimeout = commandTimeout,
+                AutoTrimStrings = autoTrimStrings,
+                AllowNullStrings = allowNullStrings
+            };
         }
 
         #endregion
