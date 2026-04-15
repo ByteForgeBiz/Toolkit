@@ -143,4 +143,19 @@ public static class StringUtil
 
         return string.Join(" ", words);
     }
+
+#if NET20_OR_GREATER
+    /// <summary>
+    /// Determines whether the specified string contains a specified substring using the specified string comparison option.
+    /// </summary>
+    /// <remarks>This method extends the string type to provide a Contains overload that accepts a
+    /// <see cref="StringComparison"/> parameter, enabling culture-sensitive or case-insensitive searches. If <paramref name="value"/> is an empty string, the method returns true.</remarks>
+    /// <param name="text">The string to search within.</param>
+    /// <param name="value">The substring to seek within the text parameter.</param>
+    /// <param name="comparison">One of the enumeration values that specifies the rules for the search, such as case or culture sensitivity.</param>
+    /// <returns>true if the value parameter occurs within the text parameter; otherwise, false.</returns>
+    public static bool Contains(this string? text, string value, StringComparison comparison)
+       => text?.IndexOf(value, comparison) >= 0;
+#elif NET5_0_OR_GREATER
+#endif
 }

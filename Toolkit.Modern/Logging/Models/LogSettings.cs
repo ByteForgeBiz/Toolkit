@@ -45,6 +45,7 @@ public class LogSettings
     private const LogLevel DefaultTraceLogLevel = LogLevel.All;
     private const bool DefaultClearLogOnStartup = false;
     private const bool DefaultUseSessionLogging = false;
+    private const bool DefaultUseDatabaseLogging = false;
     /// <summary>
     /// Gets or sets the path to the log file.
     /// </summary>
@@ -116,6 +117,13 @@ public class LogSettings
     [DefaultValue(DefaultUseSessionLogging)]
     [ConfigName("bUseSessionLogging")]
     public bool UseSessionLogging { get; set; } = DefaultUseSessionLogging;
+
+    /// <summary>
+    /// Gets or sets a value indicating whether database logging should be enabled.
+    /// </summary>
+    [DefaultValue(DefaultUseDatabaseLogging)]
+    [ConfigName("bUseDatabaseLogging")]
+    public bool UseDatabaseLogging { get; set; } = DefaultUseDatabaseLogging;
 
     /// <summary>
     /// Gets the default log file path.
