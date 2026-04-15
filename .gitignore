@@ -370,7 +370,7 @@ version.txt
 .claude/
 CLAUDE.md
 AGENTS.md
-_artifact_inspect/
+_artifact_inspect*/
 
 # Ignore extraneous files
 analyze_namespaces.ps1

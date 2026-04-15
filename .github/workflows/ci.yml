@@ -124,16 +124,13 @@ jobs:
             '--logger', 'trx;LogFileName=net9.0.trx'
           )
 
-          if ($env:ACCESS_ODBC_AVAILABLE -ne 'true') {
-            $args += @('--filter', 'TestCategory!=ODBC')
-          }
+          $args += @('--filter', 'TestCategory!=ODBC')
 
           & dotnet @args
 
       - name: Test net48
         shell: pwsh
         env:
-          ACCESS_ODBC_AVAILABLE: ${{ steps.odbc_probe.outputs.access_odbc_available }}
           BYTEFORGE_TEST_ACCESS_FORMAT: ${{ steps.odbc_probe.outputs.access_format }}
         run: |
           $args = @(
@@ -143,12 +140,30 @@ jobs:
             '--framework', 'net48',
             '--no-build',
             '--results-directory', '.\TestResults\net48',
-            '--logger', 'trx;LogFileName=net48.trx'
+            '--logger', 'trx;LogFileName=net48.trx',
+            '--filter', 'TestCategory!=ODBC'
           )
 
-          if ($env:ACCESS_ODBC_AVAILABLE -ne 'true') {
-            $args += @('--filter', 'TestCategory!=ODBC')
-          }
+          & dotnet @args
+
+      - name: Test net48 ODBC (x86)
+        if: steps.odbc_probe.outputs.access_odbc_available == 'true'
+        shell: pwsh
+        env:
+          BYTEFORGE_TEST_ACCESS_FORMAT: ${{ steps.odbc_probe.outputs.access_format }}
+        run: |
+          $args = @(
+            'test',
+            '.\Toolkit.Modern.Tests\ByteForge.Toolkit.Modern.Tests.csproj',
+            '--configuration', $env:CONFIGURATION,
+            '--framework', 'net48',
+            '--no-build',
+            '--results-directory', '.\TestResults\net48-odbc',
+            '--logger', 'trx;LogFileName=net48-odbc.trx',
+            '--filter', 'TestCategory=ODBC',
+            '--',
+            'RunConfiguration.TargetPlatform=x86'
+          )
 
           & dotnet @args
 
