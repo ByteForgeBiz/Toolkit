@@ -50,14 +50,30 @@ jobs:
             'No ODBC drivers reported by Get-OdbcDriver.' | Set-Content -Path $driverLogPath
           }
 
-          $hasAccessDriver = $drivers.Name -contains 'Microsoft Access Driver (*.mdb, *.accdb)'
-          "access_odbc_available=$($hasAccessDriver.ToString().ToLowerInvariant())" >> $env:GITHUB_OUTPUT
+          $accessCapableDrivers = @(
+            $drivers | Where-Object {
+              $_.Name -match 'Access' -and
+              ($_.Name -match '\.accdb' -or $_.Name -match 'ACE')
+            }
+          )
 
-          if ($hasAccessDriver) {
-            Write-Host 'Microsoft Access ODBC driver detected.'
+          $hasAccdbDriver = $accessCapableDrivers.Count -gt 0
+          Add-Content -Path $driverLogPath -Value ''
+          if ($hasAccdbDriver) {
+            Add-Content -Path $driverLogPath -Value 'Detected .accdb-capable Access drivers:'
+            $accessCapableDrivers | Format-Table Name, Platform, Attribute -AutoSize | Out-String | Add-Content -Path $driverLogPath
           }
           else {
-            Write-Warning 'Microsoft Access ODBC driver was not found. ODBC-tagged tests will be skipped.'
+            Add-Content -Path $driverLogPath -Value 'No .accdb-capable Access ODBC driver detected.'
+          }
+
+          "access_odbc_available=$($hasAccdbDriver.ToString().ToLowerInvariant())" >> $env:GITHUB_OUTPUT
+
+          if ($hasAccdbDriver) {
+            Write-Host 'Access ODBC driver with .accdb support detected.'
+          }
+          else {
+            Write-Warning 'No Access ODBC driver with .accdb support was found. ODBC-tagged tests will be skipped.'
           }
 
       - name: Bootstrap TestUnitDB

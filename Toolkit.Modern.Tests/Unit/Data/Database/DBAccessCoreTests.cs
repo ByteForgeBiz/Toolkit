@@ -183,14 +183,18 @@ namespace ByteForge.Toolkit.Tests.Unit.Data.Database
             // Arrange
             var options = DatabaseTestHelper.CreateTestDatabaseOptions();
             var dbAccess = new DBAccess(options);
+            var expectedServer = Environment.GetEnvironmentVariable(DatabaseTestHelper.TestSqlServerEnvVar)
+                                 ?? DatabaseTestHelper.TestServerName;
+            var expectedDatabase = Environment.GetEnvironmentVariable(DatabaseTestHelper.TestSqlDatabaseEnvVar)
+                                   ?? DatabaseTestHelper.TestDatabaseName;
 
             // Act
             var connectionString = dbAccess.ConnectionString;
 
             // Assert
             connectionString.Should().NotBeNull()
-                           .And.Contain(DatabaseTestHelper.TestServerName, "connection string should contain server name")
-                           .And.Contain(DatabaseTestHelper.TestDatabaseName, "connection string should contain database name")
+                           .And.Contain(expectedServer, "connection string should contain the configured server name")
+                           .And.Contain(expectedDatabase, "connection string should contain the configured database name")
                            .And.SatisfyAny(
                                because: "connection string should contain integrated security setting",
                                cs => cs.Contains("Integrated Security=true"),
