@@ -28,6 +28,40 @@ function Test-GitStateFile {
     return Test-Path (Join-Path $gitDir $Name)
 }
 
+function Get-StatusPath {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$StatusLine
+    )
+
+    if ($StatusLine.Length -lt 4) {
+        return $null
+    }
+
+    $pathPortion = $StatusLine.Substring(3)
+    $renameParts = $pathPortion -split ' -> ', 2
+    return $renameParts[-1].Trim()
+}
+
+function Test-IgnoredDotFolderStatus {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$StatusLine
+    )
+
+    if (-not $StatusLine.StartsWith('!! ')) {
+        return $false
+    }
+
+    $path = Get-StatusPath $StatusLine
+    if ([string]::IsNullOrWhiteSpace($path)) {
+        return $false
+    }
+
+    $normalizedPath = $path.Replace('\', '/')
+    return $normalizedPath -match '^\.[^/]+/'
+}
+
 $repoRoot = (Resolve-Path $PSScriptRoot).Path
 $tempBat = $null
 $stashCreated = $false
@@ -59,6 +93,8 @@ if (-not [System.IO.Path]::IsPathRooted($gitDir)) {
 $statusOutput = @(git -C $repoRoot status --porcelain=v1 --untracked-files=all --ignored=matching)
 Assert-GitSuccess "Unable to inspect the worktree state."
 
+$stashRelevantStatus = @($statusOutput | Where-Object { -not (Test-IgnoredDotFolderStatus $_) })
+
 $stateFiles = @(
     'MERGE_HEAD',
     'CHERRY_PICK_HEAD',
@@ -74,10 +110,10 @@ foreach ($stateFile in $stateFiles) {
     }
 }
 
-if ($statusOutput.Count -gt 0) {
+if ($stashRelevantStatus.Count -gt 0) {
     $stashName = "{0} {1}" -f $Mode, (Get-Date -Format 'yyyy-MM-dd HH:mm')
 
-    git -C $repoRoot stash push --all --message $stashName | Out-Null
+    git -C $repoRoot stash push --all --message $stashName -- . ":(top,glob,exclude).*/**" | Out-Null
     Assert-GitSuccess "Unable to stash local changes before switching branches."
 
     $stashRef = (git -C $repoRoot stash list -1 --format="%gd").Trim()
@@ -91,7 +127,7 @@ if ($statusOutput.Count -gt 0) {
 }
 
 $tempBat = Join-Path ([System.IO.Path]::GetTempPath()) ("update-from-master-{0}.bat" -f ([guid]::NewGuid().ToString('N')))
-$repoRootEscaped = $repoRoot.Replace('"', '""')
+$repoRootEscaped = $repoRoot.Replace('%', '%%').Replace('"', '""')
 $currentBranchEscaped = $currentBranch.Replace('"', '""')
 
 $batchContent = @"
@@ -113,11 +149,6 @@ if errorlevel 1 exit /b 1
 echo.
 echo ^> git pull --ff-only origin master
 git pull --ff-only origin master
-if errorlevel 1 exit /b 1
-
-echo.
-echo ^> git fetch origin "%ORIGINAL_BRANCH%"
-git fetch origin "%ORIGINAL_BRANCH%"
 if errorlevel 1 exit /b 1
 
 echo.
@@ -159,7 +190,7 @@ Write-Host "Temporary runner: $tempBat"
 if ($stashCreated) {
     Write-Host "Stashed current worktree as: $stashName ($stashRef)"
 } else {
-    Write-Host "Worktree was already clean. No stash created."
+    Write-Host "Worktree had no stash-worthy changes outside ignored dot folders. No stash created."
 }
 
 try {
@@ -211,7 +242,7 @@ finally {
 if ($stashCreated) {
     Write-Host "Summary: stashed dirty worktree as '$stashName', updated from master using '$Mode', and attempted to restore the stash."
 } else {
-    Write-Host "Summary: worktree was clean, updated from master using '$Mode', and no stash was needed."
+    Write-Host "Summary: no stash-worthy changes outside ignored dot folders were found, updated from master using '$Mode', and no stash was needed."
 }
 
 exit $exitCode
