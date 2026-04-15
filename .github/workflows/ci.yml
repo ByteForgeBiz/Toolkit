@@ -50,27 +50,44 @@ jobs:
             'No ODBC drivers reported by Get-OdbcDriver.' | Set-Content -Path $driverLogPath
           }
 
+          $selectedAccessFormat = 'none'
           $accessCapableDrivers = @(
             $drivers | Where-Object {
               $_.Name -match 'Access' -and
               ($_.Name -match '\.accdb' -or $_.Name -match 'ACE')
             }
           )
+          $mdbCapableDrivers = @(
+            $drivers | Where-Object {
+              $_.Name -match 'Access' -and $_.Name -match '\.mdb'
+            }
+          )
 
           $hasAccdbDriver = $accessCapableDrivers.Count -gt 0
+          $hasMdbDriver = $mdbCapableDrivers.Count -gt 0
           Add-Content -Path $driverLogPath -Value ''
           if ($hasAccdbDriver) {
+            $selectedAccessFormat = 'accdb'
             Add-Content -Path $driverLogPath -Value 'Detected .accdb-capable Access drivers:'
             $accessCapableDrivers | Format-Table Name, Platform, Attribute -AutoSize | Out-String | Add-Content -Path $driverLogPath
+          }
+          elseif ($hasMdbDriver) {
+            $selectedAccessFormat = 'mdb'
+            Add-Content -Path $driverLogPath -Value 'Detected .mdb-capable Access drivers:'
+            $mdbCapableDrivers | Format-Table Name, Platform, Attribute -AutoSize | Out-String | Add-Content -Path $driverLogPath
           }
           else {
             Add-Content -Path $driverLogPath -Value 'No .accdb-capable Access ODBC driver detected.'
           }
 
-          "access_odbc_available=$($hasAccdbDriver.ToString().ToLowerInvariant())" >> $env:GITHUB_OUTPUT
+          "access_odbc_available=$(($selectedAccessFormat -ne 'none').ToString().ToLowerInvariant())" >> $env:GITHUB_OUTPUT
+          "access_format=$selectedAccessFormat" >> $env:GITHUB_OUTPUT
 
           if ($hasAccdbDriver) {
             Write-Host 'Access ODBC driver with .accdb support detected.'
+          }
+          elseif ($hasMdbDriver) {
+            Write-Warning 'Only legacy .mdb Access ODBC support was found. Tests will run against TestUnitDB.mdb.'
           }
           else {
             Write-Warning 'No Access ODBC driver with .accdb support was found. ODBC-tagged tests will be skipped.'
@@ -95,6 +112,7 @@ jobs:
         shell: pwsh
         env:
           ACCESS_ODBC_AVAILABLE: ${{ steps.odbc_probe.outputs.access_odbc_available }}
+          BYTEFORGE_TEST_ACCESS_FORMAT: ${{ steps.odbc_probe.outputs.access_format }}
         run: |
           $args = @(
             'test',
@@ -116,6 +134,7 @@ jobs:
         shell: pwsh
         env:
           ACCESS_ODBC_AVAILABLE: ${{ steps.odbc_probe.outputs.access_odbc_available }}
+          BYTEFORGE_TEST_ACCESS_FORMAT: ${{ steps.odbc_probe.outputs.access_format }}
         run: |
           $args = @(
             'test',

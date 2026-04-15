@@ -65,6 +65,11 @@ namespace ByteForge.Toolkit.Tests.Helpers
         /// Environment variable containing the SQL Server database name used by CI test runs.
         /// </summary>
         public const string TestSqlDatabaseEnvVar = "BYTEFORGE_TEST_SQL_DATABASE";
+
+        /// <summary>
+        /// Environment variable containing the Access database format to use for test runs.
+        /// </summary>
+        public const string TestAccessFormatEnvVar = "BYTEFORGE_TEST_ACCESS_FORMAT";
         
         #endregion
 
@@ -249,6 +254,11 @@ namespace ByteForge.Toolkit.Tests.Helpers
         /// The name of the test Access database file.
         /// </summary>
         public const string TestAccessDatabaseName = "TestUnitDB.accdb";
+
+        /// <summary>
+        /// The name of the legacy MDB test Access database file.
+        /// </summary>
+        public const string TestAccessLegacyDatabaseName = "TestUnitDB.mdb";
         
         /// <summary>
         /// The ODBC Data Source Name for the test Access database.
@@ -263,18 +273,25 @@ namespace ByteForge.Toolkit.Tests.Helpers
                                   "TestData", TestAccessDatabaseName);
 
         /// <summary>
+        /// The full path to the legacy MDB test Access database file.
+        /// </summary>
+        public static readonly string TestAccessLegacyDatabasePath =
+            System.IO.Path.Combine(System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location),
+                                  "TestData", TestAccessLegacyDatabaseName);
+
+        /// <summary>
         /// Creates a standard test Access database configuration using direct file path (recommended).
         /// </summary>
         /// <returns>A configured <see cref="DatabaseOptions"/> instance for Access testing.</returns>
         public static DatabaseOptions CreateTestAccessDatabaseOptions()
         {
-            var fullPath = System.IO.Path.GetFullPath(TestAccessDatabasePath);
+            var accessFixture = ResolveAccessTestFixture();
             return new DatabaseOptions
             {
                 DatabaseType = DBAccess.DataBaseType.ODBC,
                 Server = "", // Not used for ODBC file connections
                 DatabaseName = "", // Not used for ODBC file connections
-                ConnectionString = $"Driver={{Microsoft Access Driver (*.mdb, *.accdb)}};Dbq={fullPath};",
+                ConnectionString = accessFixture.ConnectionString,
                 UseTrustedConnection = false,
                 UseEncryption = false,
                 ConnectionTimeout = TestConnectionTimeout,
@@ -315,13 +332,13 @@ namespace ByteForge.Toolkit.Tests.Helpers
             int commandTimeout, 
             bool autoTrimStrings = true)
         {
-            var fullPath = System.IO.Path.GetFullPath(TestAccessDatabasePath);
+            var accessFixture = ResolveAccessTestFixture();
             return new DatabaseOptions
             {
                 DatabaseType = DBAccess.DataBaseType.ODBC,
                 Server = "",
                 DatabaseName = "",
-                ConnectionString = $"Driver={{Microsoft Access Driver (*.mdb, *.accdb)}};Dbq={fullPath};",
+                ConnectionString = accessFixture.ConnectionString,
                 UseTrustedConnection = false,
                 UseEncryption = false,
                 ConnectionTimeout = connectionTimeout,
@@ -434,7 +451,7 @@ namespace ByteForge.Toolkit.Tests.Helpers
         public static void AssertAccessDatabaseSetup(DBAccess dbAccess)
         {
             VerifyAccessDatabaseSetup(dbAccess).Should().BeTrue(
-                $"test Access database should be properly set up with required tables and data. Expected database path: {TestAccessDatabasePath}");
+                $"test Access database should be properly set up with required tables and data. Expected database path: {ResolveAccessTestFixture().FullPath}");
         }
 
         /// <summary>
@@ -443,8 +460,64 @@ namespace ByteForge.Toolkit.Tests.Helpers
         /// <returns>True if the database file exists; otherwise, false.</returns>
         public static bool VerifyAccessDatabaseFileExists()
         {
+            return System.IO.File.Exists(ResolveAccessTestFixture().FullPath);
+        }
+
+        /// <summary>
+        /// Resolves the Access test fixture path and ODBC driver pairing to use in the current environment.
+        /// </summary>
+        /// <returns>The resolved Access fixture information.</returns>
+        private static AccessTestFixture ResolveAccessTestFixture()
+        {
+            var requestedFormat = Environment.GetEnvironmentVariable(TestAccessFormatEnvVar)?.Trim().ToLowerInvariant();
+            if (requestedFormat == "mdb")
+                return CreateMdbFixture();
+            if (requestedFormat == "accdb")
+                return CreateAccdbFixture();
+
+            var accdbPath = System.IO.Path.GetFullPath(TestAccessDatabasePath);
+            if (System.IO.File.Exists(accdbPath))
+                return CreateAccdbFixture();
+
+            return CreateMdbFixture();
+        }
+
+        /// <summary>
+        /// Creates Access fixture information for the ACCDB test database.
+        /// </summary>
+        private static AccessTestFixture CreateAccdbFixture()
+        {
             var fullPath = System.IO.Path.GetFullPath(TestAccessDatabasePath);
-            return System.IO.File.Exists(fullPath);
+            return new AccessTestFixture(
+                fullPath,
+                $"Driver={{Microsoft Access Driver (*.mdb, *.accdb)}};Dbq={fullPath};");
+        }
+
+        /// <summary>
+        /// Creates Access fixture information for the MDB test database.
+        /// </summary>
+        private static AccessTestFixture CreateMdbFixture()
+        {
+            var fullPath = System.IO.Path.GetFullPath(TestAccessLegacyDatabasePath);
+            return new AccessTestFixture(
+                fullPath,
+                $"Driver={{Microsoft Access Driver (*.mdb)}};Dbq={fullPath};");
+        }
+
+        /// <summary>
+        /// Encapsulates the selected Access fixture path and connection string.
+        /// </summary>
+        private sealed class AccessTestFixture
+        {
+            public AccessTestFixture(string fullPath, string connectionString)
+            {
+                FullPath = fullPath;
+                ConnectionString = connectionString;
+            }
+
+            public string FullPath { get; }
+
+            public string ConnectionString { get; }
         }
 
         #endregion
