@@ -364,6 +364,7 @@ FodyWeavers.xsd
 
 # Ignore the auto-generated file
 SHFB/Help/
+version.txt
 
 # Ignore AI Tool Files
 .claude/
