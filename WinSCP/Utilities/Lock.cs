@@ -8,8 +8,15 @@ namespace ByteForge.WinSCP;
 /// </summary>
 public class Lock
 {
+	/// <summary>
+	/// The underlying monitor object used for mutual exclusion.
+	/// </summary>
 	private readonly object _lock = new object();
 
+	/// <summary>
+	/// Indicates whether the lock is currently held, used to detect and reject recursive
+	/// lock attempts.
+	/// </summary>
 	private bool _locked;
 
 	/// <summary>

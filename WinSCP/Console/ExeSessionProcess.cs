@@ -49,56 +49,88 @@ internal class ExeSessionProcess : IDisposable
 		}
 	}
 
+	/// <summary>Maximum number of attempts to find a unique console instance name.</summary>
 	private const int MaxAttempts = 10;
 
+	/// <summary>Base name of the shared-memory file-mapping object used for console communication.</summary>
 	private const string ConsoleMapping = "WinSCPConsoleMapping";
 
+	/// <summary>Base name of the event object signalled by the WinSCP process when a console request is ready.</summary>
 	private const string ConsoleEventRequest = "WinSCPConsoleEventRequest";
 
+	/// <summary>Base name of the event object signalled by the .NET wrapper when a console response has been written.</summary>
 	private const string ConsoleEventResponse = "WinSCPConsoleEventResponse";
 
+	/// <summary>Base name of the event object used to cancel a pending console request.</summary>
 	private const string ConsoleEventCancel = "WinSCPConsoleEventCancel";
 
+	/// <summary>Base name of the Windows Job object used to guard the WinSCP child process.</summary>
 	private const string ConsoleJob = "WinSCPConsoleJob";
 
+	/// <summary>File name of the WinSCP executable.</summary>
 	private const string ExeExecutableFileName = "winscp.exe";
 
+	/// <summary>The managed <see cref="Process"/> object for the WinSCP child process.</summary>
 	private Process _process;
 
+	/// <summary>Lock object that serialises access to process-lifecycle fields.</summary>
 	private readonly object _lock = new object();
 
+	/// <summary>The diagnostic logger used to record internal events.</summary>
 	private readonly Logger _logger;
 
+	/// <summary>The WinSCP session that owns this process.</summary>
 	private readonly Session _session;
 
+	/// <summary>Event signalled by the WinSCP process to notify the .NET wrapper of a pending console request.</summary>
 	private EventWaitHandle _requestEvent;
 
+	/// <summary>Event signalled by the .NET wrapper after it has processed a console request.</summary>
 	private EventWaitHandle _responseEvent;
 
+	/// <summary>Event that can be signalled to cancel a pending console operation.</summary>
 	private EventWaitHandle _cancelEvent;
 
+	/// <summary>Safe handle to the shared-memory file mapping used for console communication.</summary>
 	private SafeFileHandle _fileMapping;
 
+	/// <summary>The unique suffix appended to all named kernel objects for this process instance.</summary>
 	private string _instanceName;
 
+	/// <summary>Background thread that pumps console events from the WinSCP process.</summary>
 	private Thread _thread;
 
+	/// <summary>When <see langword="true"/>, signals the event-pump thread to stop processing.</summary>
 	private bool _abort;
 
+	/// <summary>
+	/// The most recent "from-beginning" message that is buffered pending a newline
+	/// so that progress-style overwrite lines are handled correctly.
+	/// </summary>
 	private string _lastFromBeginning;
 
+	/// <summary>Accumulates characters that have been received but do not yet form a complete line.</summary>
 	private string _incompleteLine;
 
+	/// <summary>Queue of command strings waiting to be fed to the WinSCP process via stdin.</summary>
 	private readonly List<string> _input = new List<string>();
 
+	/// <summary>Queue of log messages corresponding to each entry in <see cref="_input"/>.</summary>
 	private readonly List<string> _log = new List<string>();
 
+	/// <summary>Event set whenever a new entry is added to <see cref="_input"/> so the event-pump thread wakes up.</summary>
 	private AutoResetEvent _inputEvent = new AutoResetEvent(initialState: false);
 
+	/// <summary>Windows Job object that keeps the WinSCP child process alive only as long as the current process.</summary>
 	private Job _job;
 
+	/// <summary>When <see langword="true"/>, the next progress event will signal cancellation to the WinSCP process.</summary>
 	private bool _cancel;
 
+	/// <summary>
+	/// Cache mapping (executable path, last-write timestamp) pairs to their
+	/// <see cref="FileVersionInfo"/> to avoid repeated version checks for the same binary.
+	/// </summary>
 	private static readonly Dictionary<Tuple<string, DateTime>, FileVersionInfo> _versionInfoCache = new Dictionary<Tuple<string, DateTime>, FileVersionInfo>();
 
 	/// <summary>
@@ -152,6 +184,24 @@ internal class ExeSessionProcess : IDisposable
 		return new ExeSessionProcess(session, useXmlLog: false, additionalArguments);
 	}
 
+	/// <summary>
+	/// Initializes a new instance of <see cref="ExeSessionProcess"/>, resolves the WinSCP
+	/// executable path, validates its version, and prepares the <see cref="Process"/>
+	/// start information.
+	/// </summary>
+	/// <param name="session">The WinSCP session that owns this process.</param>
+	/// <param name="useXmlLog">
+	/// When <see langword="true"/>, passes <c>/xmllog</c> arguments so that WinSCP writes
+	/// a structured XML log that the .NET wrapper reads back. Set to <see langword="false"/>
+	/// for console-only sessions.
+	/// </param>
+	/// <param name="additionalArguments">
+	/// Any extra command-line arguments to append, or <see langword="null"/> for none.
+	/// </param>
+	/// <exception cref="SessionLocalException">
+	/// Thrown when the WinSCP executable cannot be found or its version does not match
+	/// this assembly.
+	/// </exception>
 	private ExeSessionProcess(Session session, bool useXmlLog, string additionalArguments)
 	{
 		_session = session;
@@ -197,6 +247,13 @@ internal class ExeSessionProcess : IDisposable
 		}
 	}
 
+	/// <summary>
+	/// Escapes a file path for use as a WinSCP command-line argument by quoting it
+	/// and doubling any exclamation marks to prevent them being interpreted as history
+	/// expansions.
+	/// </summary>
+	/// <param name="path">The file-system path to escape.</param>
+	/// <returns>The escaped path string suitable for embedding in a command-line argument.</returns>
 	private static string LogPathEscape(string path)
 	{
 		return Tools.ArgumentEscape(path).Replace("!", "!!");
@@ -231,6 +288,14 @@ internal class ExeSessionProcess : IDisposable
 		}
 	}
 
+	/// <summary>
+	/// Appends the console instance arguments to the process start information, optionally
+	/// grants the configured user access to the window station and desktop, starts the
+	/// WinSCP child process, and launches the background event-pump thread.
+	/// </summary>
+	/// <exception cref="SessionLocalException">
+	/// Thrown when granting access to the window station or desktop fails.
+	/// </exception>
 	private void InitializeChild()
 	{
 		using (_logger.CreateCallstack())
@@ -274,6 +339,12 @@ internal class ExeSessionProcess : IDisposable
 		}
 	}
 
+	/// <summary>
+	/// Grants the configured executable process user the specified access rights on a
+	/// window-station or desktop kernel object.
+	/// </summary>
+	/// <param name="handle">A raw handle to the window-station or desktop object.</param>
+	/// <param name="accessMask">The access rights to grant, as a Win32 access-mask integer.</param>
 	private void GrantAccess(IntPtr handle, int accessMask)
 	{
 		using SafeHandle safeHandle = new NoopSafeHandle(handle);
@@ -282,11 +353,23 @@ internal class ExeSessionProcess : IDisposable
 		genericSecurity.Persist(safeHandle, AccessControlSections.Access);
 	}
 
+	/// <summary>
+	/// Handles the <see cref="Process.Exited"/> event by logging the process exit code.
+	/// </summary>
+	/// <param name="sender">The source of the event.</param>
+	/// <param name="e">An <see cref="EventArgs"/> that contains no event data.</param>
 	private void ProcessExited(object sender, EventArgs e)
 	{
 		_logger.WriteLine("Process {0} exited with exit code {1}", _process.Id, _process.ExitCode);
 	}
 
+	/// <summary>
+	/// Returns <see langword="true"/> if the event-pump should stop, either because
+	/// <see cref="_abort"/> was set or because the WinSCP child process has exited.
+	/// </summary>
+	/// <returns>
+	/// <see langword="true"/> if processing should stop; <see langword="false"/> otherwise.
+	/// </returns>
 	private bool AbortedOrExited()
 	{
 		if (_abort)
@@ -302,6 +385,10 @@ internal class ExeSessionProcess : IDisposable
 		return false;
 	}
 
+	/// <summary>
+	/// Entry point for the background event-pump thread. Waits for the request event and
+	/// dispatches each console event until the process exits or <see cref="_abort"/> is set.
+	/// </summary>
 	private void ProcessEvents()
 	{
 		using (_logger.CreateCallstack())
@@ -332,6 +419,11 @@ internal class ExeSessionProcess : IDisposable
 		}
 	}
 
+	/// <summary>
+	/// Acquires the shared-memory communication structure, determines the current event type,
+	/// dispatches it to the appropriate handler, and signals the response event.
+	/// </summary>
+	/// <exception cref="NotImplementedException">Thrown when an unknown event type is encountered.</exception>
 	private void ProcessEvent()
 	{
 		using (_logger.CreateCallstack())
@@ -373,6 +465,11 @@ internal class ExeSessionProcess : IDisposable
 		}
 	}
 
+	/// <summary>
+	/// Handles a <see cref="ConsoleEvent.Choice"/> event by raising the session's query
+	/// handler and writing the selected result back into the event structure.
+	/// </summary>
+	/// <param name="e">The choice-event structure to read options from and write the result to.</param>
 	private void ProcessChoiceEvent(ConsoleChoiceEventStruct e)
 	{
 		using (_logger.CreateCallstack())
@@ -415,6 +512,11 @@ internal class ExeSessionProcess : IDisposable
 		}
 	}
 
+	/// <summary>
+	/// Handles a <see cref="ConsoleEvent.Title"/> event by logging the requested title.
+	/// Title changes are not applied to the current console window.
+	/// </summary>
+	/// <param name="e">The title-event structure containing the requested window title.</param>
 	private void ProcessTitleEvent(ConsoleTitleEventStruct e)
 	{
 		using (_logger.CreateCallstack())
@@ -423,6 +525,12 @@ internal class ExeSessionProcess : IDisposable
 		}
 	}
 
+	/// <summary>
+	/// Handles a <see cref="ConsoleEvent.Input"/> event by dequeuing the next pending input
+	/// string and writing it into the event structure, blocking until one is available or
+	/// the process exits.
+	/// </summary>
+	/// <param name="e">The input-event structure to populate with the next input line.</param>
 	private void ProcessInputEvent(ConsoleInputEventStruct e)
 	{
 		using (_logger.CreateCallstack())
@@ -446,6 +554,19 @@ internal class ExeSessionProcess : IDisposable
 		}
 	}
 
+	/// <summary>
+	/// Processes a raw message from the WinSCP process and forwards complete lines to
+	/// <see cref="OutputDataReceived"/> subscribers, buffering "from-beginning"
+	/// (carriage-return style) messages until a newline is received.
+	/// </summary>
+	/// <param name="fromBeginning">
+	/// When <see langword="true"/>, the message should overwrite the current output line
+	/// rather than being appended.
+	/// </param>
+	/// <param name="error">
+	/// When <see langword="true"/>, the message is error output.
+	/// </param>
+	/// <param name="message">The raw text received from the WinSCP process.</param>
 	private void Print(bool fromBeginning, bool error, string message)
 	{
 		if (fromBeginning && (message.Length == 0 || message[0] != '\n'))
@@ -472,6 +593,13 @@ internal class ExeSessionProcess : IDisposable
 		}
 	}
 
+	/// <summary>
+	/// Splits <paramref name="message"/> into lines, raises <see cref="OutputDataReceived"/>
+	/// for each complete line, and stores any trailing partial line in
+	/// <see cref="_incompleteLine"/> for the next call.
+	/// </summary>
+	/// <param name="message">The text to append to the current output, may span multiple lines.</param>
+	/// <param name="error">When <see langword="true"/>, the lines are tagged as error output.</param>
 	private void AddToOutput(string message, bool error)
 	{
 		string[] array = (_incompleteLine + message).Split('\n');
@@ -482,12 +610,26 @@ internal class ExeSessionProcess : IDisposable
 		}
 	}
 
+	/// <summary>
+	/// Handles a <see cref="ConsoleEvent.Print"/> event by forwarding the message to
+	/// <see cref="Print"/>.
+	/// </summary>
+	/// <param name="e">The print-event structure containing the message and output flags.</param>
 	private void ProcessPrintEvent(ConsolePrintEventStruct e)
 	{
 		_logger.WriteLineLevel(1, string.Format(CultureInfo.CurrentCulture, "Print: {0}", new object[1] { e.Message }));
 		Print(e.FromBeginning, e.Error, e.Message);
 	}
 
+	/// <summary>
+	/// Handles a <see cref="ConsoleEvent.Init"/> event by verifying the expected console
+	/// interface options and writing the negotiated I/O type and progress preference back
+	/// into the event structure.
+	/// </summary>
+	/// <param name="e">The init-event structure to read from and write negotiated settings to.</param>
+	/// <exception cref="InvalidOperationException">
+	/// Thrown when the WinSCP process reports unexpected console interface options.
+	/// </exception>
 	private void ProcessInitEvent(ConsoleInitEventStruct e)
 	{
 		using (_logger.CreateCallstack())
@@ -502,6 +644,15 @@ internal class ExeSessionProcess : IDisposable
 		}
 	}
 
+	/// <summary>
+	/// Handles a <see cref="ConsoleEvent.Progress"/> event by translating the native
+	/// progress data into a <see cref="FileTransferProgressEventArgs"/> and raising it
+	/// through the session, then writing any cancellation request back into the structure.
+	/// </summary>
+	/// <param name="e">The progress-event structure to read from and write cancellation state to.</param>
+	/// <exception cref="ArgumentOutOfRangeException">
+	/// Thrown when the event contains an unknown operation or progress-side value.
+	/// </exception>
 	private void ProcessProgressEvent(ConsoleProgressEventStruct e)
 	{
 		using (_logger.CreateCallstack())
@@ -541,6 +692,15 @@ internal class ExeSessionProcess : IDisposable
 		}
 	}
 
+	/// <summary>
+	/// Handles a <see cref="ConsoleEvent.TransferOut"/> event by writing the received data
+	/// chunk to <see cref="StdOut"/>, or closing the write end of the pipe when the chunk
+	/// length is zero (end-of-stream signal).
+	/// </summary>
+	/// <param name="e">The transfer-event structure containing the data buffer and length.</param>
+	/// <exception cref="InvalidOperationException">
+	/// Thrown when data is received but <see cref="StdOut"/> has not been configured.
+	/// </exception>
 	private void ProcessTransferOutEvent(ConsoleTransferEventStruct e)
 	{
 		using (_logger.CreateCallstack())
@@ -564,6 +724,18 @@ internal class ExeSessionProcess : IDisposable
 		}
 	}
 
+	/// <summary>
+	/// Handles a <see cref="ConsoleEvent.TransferIn"/> event by reading up to
+	/// <c>e.Len</c> bytes from <see cref="StdIn"/> and writing them back into the event
+	/// structure, or marking the structure as failed on I/O error.
+	/// </summary>
+	/// <param name="e">
+	/// The transfer-event structure specifying the requested read length and used to return
+	/// the data and actual bytes read.
+	/// </param>
+	/// <exception cref="InvalidOperationException">
+	/// Thrown when data is requested but <see cref="StdIn"/> has not been configured.
+	/// </exception>
 	private void ProcessTransferInEvent(ConsoleTransferEventStruct e)
 	{
 		using (_logger.CreateCallstack())
@@ -589,6 +761,15 @@ internal class ExeSessionProcess : IDisposable
 		}
 	}
 
+	/// <summary>
+	/// Creates all named kernel objects required for console communication (request event,
+	/// response event, cancel event, file mapping, and optionally a Job object), retrying
+	/// with different random suffixes until a unique instance name is found.
+	/// </summary>
+	/// <exception cref="SessionLocalException">
+	/// Thrown when a unique instance name cannot be found within <see cref="MaxAttempts"/>
+	/// attempts, or when the file-mapping object cannot be created.
+	/// </exception>
 	private void InitializeConsole()
 	{
 		using (_logger.CreateCallstack())
@@ -647,6 +828,13 @@ internal class ExeSessionProcess : IDisposable
 		}
 	}
 
+	/// <summary>
+	/// Creates a named shared-memory file-mapping object of the size required by
+	/// <see cref="ConsoleCommStruct.Size"/>, applying a DACL for the configured
+	/// executable process user when one is set.
+	/// </summary>
+	/// <param name="fileMappingName">The system-wide name for the file-mapping object.</param>
+	/// <returns>A <see cref="SafeFileHandle"/> wrapping the created file-mapping handle.</returns>
 	private unsafe SafeFileHandle CreateFileMapping(string fileMappingName)
 	{
 		IntPtr intPtr = IntPtr.Zero;
@@ -668,11 +856,28 @@ internal class ExeSessionProcess : IDisposable
 		return UnsafeNativeMethods.CreateFileMapping(new SafeFileHandle(new IntPtr(-1), ownsHandle: true), intPtr, FileMapProtection.PageReadWrite, 0, ConsoleCommStruct.Size, fileMappingName);
 	}
 
+	/// <summary>
+	/// Maps the shared-memory file into the current process and returns a new
+	/// <see cref="ConsoleCommStruct"/> that provides typed access to its contents.
+	/// </summary>
+	/// <returns>A new <see cref="ConsoleCommStruct"/> backed by the shared-memory region.</returns>
 	private ConsoleCommStruct AcquireCommStruct()
 	{
 		return new ConsoleCommStruct(_session, _fileMapping);
 	}
 
+	/// <summary>
+	/// Attempts to create a named auto-reset <see cref="EventWaitHandle"/>, applying a
+	/// DACL for the configured executable process user when one is set.
+	/// </summary>
+	/// <param name="name">The system-wide name for the event object.</param>
+	/// <param name="ev">
+	/// When this method returns, contains the newly created (or existing) event handle.
+	/// </param>
+	/// <returns>
+	/// <see langword="true"/> if the event was newly created;
+	/// <see langword="false"/> if an event with that name already existed.
+	/// </returns>
 	private bool TryCreateEvent(string name, out EventWaitHandle ev)
 	{
 		_logger.WriteLine("Creating event {0}", name);
@@ -683,6 +888,20 @@ internal class ExeSessionProcess : IDisposable
 		return createdNew;
 	}
 
+	/// <summary>
+	/// Builds an <see cref="EventWaitHandleSecurity"/> DACL that grants the configured
+	/// executable process user the specified rights, or returns <see langword="null"/>
+	/// when no process user name is configured.
+	/// </summary>
+	/// <param name="eventRights">The access rights to grant to the configured user.</param>
+	/// <returns>
+	/// A populated <see cref="EventWaitHandleSecurity"/> instance, or
+	/// <see langword="null"/> when no user name is configured.
+	/// </returns>
+	/// <exception cref="SessionLocalException">
+	/// Thrown when the configured user account name cannot be resolved to an
+	/// <see cref="System.Security.Principal.IdentityReference"/>.
+	/// </exception>
 	private EventWaitHandleSecurity CreateSecurity(EventWaitHandleRights eventRights)
 	{
 		EventWaitHandleSecurity eventWaitHandleSecurity = null;
@@ -704,6 +923,14 @@ internal class ExeSessionProcess : IDisposable
 		return eventWaitHandleSecurity;
 	}
 
+	/// <summary>
+	/// Creates a new named auto-reset event, throwing if the name is already in use.
+	/// </summary>
+	/// <param name="name">The system-wide name for the event object.</param>
+	/// <returns>The newly created <see cref="EventWaitHandle"/>.</returns>
+	/// <exception cref="SessionLocalException">
+	/// Thrown when an event with the given name already exists.
+	/// </exception>
 	private EventWaitHandle CreateEvent(string name)
 	{
 		if (!TryCreateEvent(name, out var ev))
@@ -713,6 +940,12 @@ internal class ExeSessionProcess : IDisposable
 		return ev;
 	}
 
+	/// <summary>
+	/// When handle-close testing is enabled on the session, verifies that the named event
+	/// object has been closed by trying to create it exclusively and logging a warning if
+	/// it still exists.
+	/// </summary>
+	/// <param name="name">The system-wide name of the event object to test.</param>
 	private void TestEventClosed(string name)
 	{
 		if (_session.TestHandlesClosedInternal)
@@ -727,6 +960,20 @@ internal class ExeSessionProcess : IDisposable
 		}
 	}
 
+	/// <summary>
+	/// Validates that <paramref name="str"/> fits within the
+	/// <see cref="ConsoleInputEventStruct.Str"/> field size limit, then enqueues the
+	/// string and its log counterpart and signals the input-available event.
+	/// </summary>
+	/// <param name="str">The command string to send to the WinSCP process.</param>
+	/// <param name="log">The log-safe representation of the command (may differ from <paramref name="str"/> for sensitive data).</param>
+	/// <exception cref="InvalidOperationException">
+	/// Thrown when the <see cref="MarshalAsAttribute"/> on <c>ConsoleInputEventStruct.Str</c>
+	/// cannot be found.
+	/// </exception>
+	/// <exception cref="SessionLocalException">
+	/// Thrown when <paramref name="str"/> exceeds the maximum allowed input length.
+	/// </exception>
 	private void AddInput(string str, string log)
 	{
 		object[] customAttributes = typeof(ConsoleInputEventStruct).GetField("Str").GetCustomAttributes(typeof(MarshalAsAttribute), inherit: false);
@@ -778,6 +1025,15 @@ internal class ExeSessionProcess : IDisposable
 		}
 	}
 
+    /// <summary>
+    /// Resolves the full path to the WinSCP executable, either from the explicit
+    /// <see cref="Session.ExecutablePath"/> setting or by searching well-known locations.
+    /// </summary>
+    /// <returns>The absolute path to <c>winscp.exe</c>.</returns>
+    /// <exception cref="SessionLocalException">
+    /// Thrown when an explicit path is configured but the file does not exist, or when
+    /// automatic search fails to locate the executable.
+    /// </exception>
     private string GetExecutablePath()
     {
         using (_logger.CreateCallstack())
@@ -795,6 +1051,15 @@ internal class ExeSessionProcess : IDisposable
         }
     }
 
+    /// <summary>
+    /// Searches a prioritised list of candidate directories for <c>winscp.exe</c> and
+    /// returns the first path where it is found.
+    /// </summary>
+    /// <param name="session">The session whose logger and configuration are used during the search.</param>
+    /// <returns>The absolute path to the located <c>winscp.exe</c> file.</returns>
+    /// <exception cref="SessionLocalException">
+    /// Thrown when the executable cannot be found in any of the inspected locations.
+    /// </exception>
     internal static string FindExecutable(Session session)
     {
         Logger logger = session.Logger;
@@ -811,12 +1076,27 @@ internal class ExeSessionProcess : IDisposable
         return result;
     }
 
+    /// <summary>
+    /// Returns the default WinSCP installation directory based on the current process
+    /// bitness (<c>%ProgramFiles(x86)%\WinSCP</c> for 64-bit, <c>%ProgramFiles%\WinSCP</c>
+    /// for 32-bit).
+    /// </summary>
+    /// <returns>The expected default installation directory path.</returns>
     private static string GetDefaultInstallationPath()
     {
         string path = ((IntPtr.Size != 8) ? Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles) : Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86));
         return Path.Combine(path, "WinSCP");
     }
 
+    /// <summary>
+    /// Reads the WinSCP installation path from the Windows registry under the specified hive.
+    /// </summary>
+    /// <param name="hive">The registry hive (<see cref="RegistryHive.CurrentUser"/> or
+    /// <see cref="RegistryHive.LocalMachine"/>) to search.</param>
+    /// <returns>
+    /// The installation directory recorded in the Inno Setup uninstall key, or
+    /// <see langword="null"/> when the key is absent.
+    /// </returns>
     private static string GetInstallationPath(RegistryHive hive)
     {
         RegistryKey registryKey = RegistryKey.OpenBaseKey(hive, RegistryView.Registry32).OpenSubKey("Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\winscp3_is1");
@@ -827,6 +1107,21 @@ internal class ExeSessionProcess : IDisposable
         return (string)registryKey.GetValue("Inno Setup: App Path");
     }
 
+    /// <summary>
+    /// Checks whether <c>winscp.exe</c> exists in the given directory, adding the directory
+    /// to <paramref name="paths"/> to avoid searching it again.
+    /// </summary>
+    /// <param name="logger">The logger used to record search progress.</param>
+    /// <param name="paths">The list of directories already searched; updated by this call.</param>
+    /// <param name="path">The directory to search, or <see langword="null"/> to skip.</param>
+    /// <param name="result">
+    /// When this method returns <see langword="true"/>, the full path to <c>winscp.exe</c>;
+    /// otherwise <see langword="null"/>.
+    /// </param>
+    /// <returns>
+    /// <see langword="true"/> if <c>winscp.exe</c> was found in <paramref name="path"/>;
+    /// otherwise <see langword="false"/>.
+    /// </returns>
     private static bool TryFindExecutableInPath(Logger logger, List<string> paths, string path, out string result)
     {
         if (string.IsNullOrEmpty(path))
@@ -856,16 +1151,44 @@ internal class ExeSessionProcess : IDisposable
         return result != null;
     }
 
+    /// <summary>
+    /// Returns the directory containing the WinSCP .NET wrapper assembly, as determined
+    /// by the logger's assembly file path.
+    /// </summary>
+    /// <param name="logger">The logger whose assembly path is queried.</param>
+    /// <returns>
+    /// The directory of the wrapper assembly, or <see langword="null"/> when the path
+    /// cannot be determined.
+    /// </returns>
     private static string GetAssemblyPath(Logger logger)
     {
         return DoGetAssemblyPath(logger.GetAssemblyFilePath());
     }
 
+    /// <summary>
+    /// Returns the directory containing the application entry-point assembly, as determined
+    /// by the logger's entry-assembly file path.
+    /// </summary>
+    /// <param name="logger">The logger whose entry-assembly path is queried.</param>
+    /// <returns>
+    /// The directory of the entry-point assembly, or <see langword="null"/> when the path
+    /// cannot be determined.
+    /// </returns>
     private static string GetEntryAssemblyPath(Logger logger)
     {
         return DoGetAssemblyPath(logger.GetEntryAssemblyFilePath());
     }
 
+    /// <summary>
+    /// Extracts the directory component from a code-base file path.
+    /// </summary>
+    /// <param name="codeBasePath">
+    /// The full path to an assembly file, or <see langword="null"/> / empty.
+    /// </param>
+    /// <returns>
+    /// The directory containing the assembly, or <see langword="null"/> when
+    /// <paramref name="codeBasePath"/> is null or empty.
+    /// </returns>
     private static string DoGetAssemblyPath(string codeBasePath)
     {
         string result = null;
@@ -876,27 +1199,78 @@ internal class ExeSessionProcess : IDisposable
         return result;
     }
 
+    /// <summary>
+    /// Retrieves the size, in bytes, of the version-information resource for the specified file.
+    /// </summary>
+    /// <param name="lptstrFilename">The path to the file whose version-info size is queried.</param>
+    /// <param name="handle">Receives a handle used by <c>GetFileVersionInfo</c>; can be ignored.</param>
+    /// <returns>The size of the version-information resource, or zero on failure.</returns>
     [DllImport("version.dll", BestFitMapping = false, CharSet = CharSet.Auto, SetLastError = true)]
     public static extern int GetFileVersionInfoSize(string lptstrFilename, out int handle);
 
+    /// <summary>
+    /// Loads the specified module into the address space of the calling process with extended options.
+    /// </summary>
+    /// <param name="lpFileName">The name of the module to load.</param>
+    /// <param name="hReservedNull">Reserved; must be <see cref="IntPtr.Zero"/>.</param>
+    /// <param name="dwFlags">Action to take when loading the module.</param>
+    /// <returns>A handle to the loaded module, or <see cref="IntPtr.Zero"/> on failure.</returns>
     [DllImport("kernel32.dll", SetLastError = true)]
     private static extern IntPtr LoadLibraryEx(string lpFileName, IntPtr hReservedNull, uint dwFlags);
 
+    /// <summary>
+    /// Decrements the reference count of a loaded module and unloads it when the count reaches zero.
+    /// </summary>
+    /// <param name="hModule">A handle to the loaded module.</param>
+    /// <returns><see langword="true"/> if the function succeeds; otherwise <see langword="false"/>.</returns>
     [DllImport("kernel32.dll", SetLastError = true)]
     [return: MarshalAs(UnmanagedType.Bool)]
     private static extern bool FreeLibrary(IntPtr hModule);
 
+    /// <summary>
+    /// Determines the location of a resource with the specified type and name in the specified module.
+    /// </summary>
+    /// <param name="hModule">A handle to the module whose portable executable image is to be searched.</param>
+    /// <param name="lpName">The name of the resource.</param>
+    /// <param name="lpType">The resource type.</param>
+    /// <returns>A handle to the specified resource's information block, or <see cref="IntPtr.Zero"/> on failure.</returns>
     [DllImport("kernel32.dll", SetLastError = true)]
     private static extern IntPtr FindResource(IntPtr hModule, string lpName, string lpType);
 
+    /// <summary>
+    /// Returns the size, in bytes, of the specified resource.
+    /// </summary>
+    /// <param name="hModule">A handle to the module whose portable executable image contains the resource.</param>
+    /// <param name="hResInfo">A handle to the resource information block whose size is to be returned.</param>
+    /// <returns>The number of bytes in the resource, or zero on failure.</returns>
     [DllImport("kernel32.dll", SetLastError = true)]
     private static extern uint SizeofResource(IntPtr hModule, IntPtr hResInfo);
 
+    /// <summary>
+    /// Formats a <see cref="FileVersionInfo"/> into a human-readable string that includes
+    /// the file version and product name and version, for use in log and exception messages.
+    /// </summary>
+    /// <param name="version">The version info to format.</param>
+    /// <returns>A formatted version string.</returns>
     private string GetVersionStr(FileVersionInfo version)
     {
         return version.FileVersion + ", product " + version.ProductName + " version is " + version.ProductVersion;
     }
 
+    /// <summary>
+    /// Verifies that the product version of the WinSCP executable at
+    /// <paramref name="exePath"/> matches the product version of the .NET wrapper
+    /// assembly, caching the result to avoid redundant checks.
+    /// </summary>
+    /// <param name="exePath">The full path to the WinSCP executable to check.</param>
+    /// <param name="assemblyVersion">
+    /// The version information for the .NET wrapper assembly, or <see langword="null"/>
+    /// when the assembly version is not available.
+    /// </param>
+    /// <exception cref="SessionLocalException">
+    /// Thrown when the executable version does not match the assembly version and version
+    /// checking has not been disabled via <see cref="Session.DisableVersionCheck"/>.
+    /// </exception>
     private void CheckVersion(string exePath, FileVersionInfo assemblyVersion)
     {
         using (_logger.CreateCallstack())

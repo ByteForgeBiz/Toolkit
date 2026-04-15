@@ -58,6 +58,11 @@ public sealed class SessionRemoteException : SessionException
 		return ReadMessages(reader);
 	}
 
+	/// <summary>
+	/// Reads all message elements from the log reader and constructs a <see cref="SessionRemoteException"/> with the combined messages.
+	/// </summary>
+	/// <param name="areader">The log reader positioned at a result or failure element.</param>
+	/// <returns>A new <see cref="SessionRemoteException"/> containing all messages joined by newlines.</returns>
 	private static SessionRemoteException ReadMessages(CustomLogReader areader)
 	{
 		using ElementLogReader elementLogReader = new ElementLogReader(areader);

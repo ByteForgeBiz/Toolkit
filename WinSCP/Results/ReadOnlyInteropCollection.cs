@@ -10,6 +10,9 @@ namespace ByteForge.WinSCP;
 /// <typeparam name="T">The type of elements in the collection.</typeparam>
 public class ReadOnlyInteropCollection<T> : ICollection<T>, IEnumerable<T>, IEnumerable
 {
+	/// <summary>
+	/// The internal list that stores the collection elements.
+	/// </summary>
 	private readonly List<T> _list = new List<T>();
 
 	/// <summary>

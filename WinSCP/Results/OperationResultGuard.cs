@@ -7,8 +7,14 @@ namespace ByteForge.WinSCP;
 /// </summary>
 internal class OperationResultGuard : IDisposable
 {
+	/// <summary>
+	/// The session that owns and manages the guarded operation result.
+	/// </summary>
 	private readonly Session _session;
 
+	/// <summary>
+	/// The operation result being guarded, which will be unregistered on disposal.
+	/// </summary>
 	private readonly OperationResultBase _operationResult;
 
 	/// <summary>
