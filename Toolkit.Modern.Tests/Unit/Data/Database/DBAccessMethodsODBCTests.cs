@@ -15,6 +15,8 @@ namespace ByteForge.Toolkit.Tests.Unit.Data.Database
     /// via ODBC to ensure proper integration and data handling for ODBC connections.
     /// </remarks>
     [TestClass]
+    [TestCategory("Unit")]
+    [TestCategory("ODBC")]
     public class DBAccessMethodsODBCTests
     {
         #region Test Fields and Setup
