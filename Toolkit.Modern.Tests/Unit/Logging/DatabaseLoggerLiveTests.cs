@@ -28,6 +28,7 @@ namespace ByteForge.Toolkit.Tests.Unit.Logging
         public void TestInitialize()
         {
             DatabaseLoggerLiveTestHelper.ResetLogAndConfiguration();
+            DatabaseLoggerLiveTestHelper.InitializeDiagnosticLogging(nameof(DatabaseLoggerSqlServerLiveTests));
             _dbAccess = DatabaseTestHelper.CreateTestDBAccess();
             DatabaseLoggerLiveTestHelper.DropSqlServerTable(_dbAccess, SqlTableName);
         }
@@ -143,6 +144,7 @@ namespace ByteForge.Toolkit.Tests.Unit.Logging
         public void TestInitialize()
         {
             DatabaseLoggerLiveTestHelper.ResetLogAndConfiguration();
+            DatabaseLoggerLiveTestHelper.InitializeDiagnosticLogging(nameof(DatabaseLoggerOdbcLiveTests));
             _dbAccess = DatabaseTestHelper.CreateTestAccessDBAccess();
             DatabaseLoggerLiveTestHelper.DropAccessTable(_dbAccess, OdbcTableName);
         }
@@ -216,6 +218,8 @@ namespace ByteForge.Toolkit.Tests.Unit.Logging
 
     internal static class DatabaseLoggerLiveTestHelper
     {
+        private const string DiagnosticLogDirectoryEnvVar = "BYTEFORGE_TEST_LOG_DIR";
+
         internal static void ResetLogAndConfiguration()
         {
             var configurationField = typeof(Config)
@@ -229,10 +233,37 @@ namespace ByteForge.Toolkit.Tests.Unit.Logging
             logField?.SetValue(null, null);
         }
 
+        internal static void InitializeDiagnosticLogging(string scopeName)
+        {
+            var diagnosticLogDirectory = Environment.GetEnvironmentVariable(DiagnosticLogDirectoryEnvVar);
+            if (string.IsNullOrWhiteSpace(diagnosticLogDirectory))
+                return;
+
+            Directory.CreateDirectory(diagnosticLogDirectory);
+
+            var safeScopeName = string.Concat(scopeName.Select(ch => char.IsLetterOrDigit(ch) ? ch : '_'));
+            var filePrefix = $"{safeScopeName}_{DateTime.UtcNow:yyyyMMdd_HHmmss}_{Guid.NewGuid():N}";
+            var iniPath = Path.Combine(diagnosticLogDirectory, $"{filePrefix}.ini");
+            var logFilePath = Path.Combine(diagnosticLogDirectory, $"{filePrefix}.log");
+
+            var iniContent = $"""
+                [Logging]
+                sLogFile={logFilePath}
+                eLogLevel=All
+                bUseDatabaseLogging=False
+                """;
+
+            File.WriteAllText(iniPath, iniContent);
+            Config.Initialize(iniPath);
+        }
+
         internal static string CreateDatabaseLoggerConfig(string tableName, string databaseSectionName, DatabaseOptions databaseOptions)
         {
             ResetLogAndConfiguration();
-            var logFilePath = TempFileHelper.GetTempFilePath(".log");
+            var diagnosticLogDirectory = Environment.GetEnvironmentVariable(DiagnosticLogDirectoryEnvVar);
+            var logFilePath = string.IsNullOrWhiteSpace(diagnosticLogDirectory)
+                ? TempFileHelper.GetTempFilePath(".log")
+                : CreateDiagnosticFilePath(diagnosticLogDirectory, $"{tableName}_StaticDatabaseLogger", ".log");
             var iniContent = $"""
                 [Logging]
                 sLogFile={logFilePath}
@@ -249,7 +280,19 @@ namespace ByteForge.Toolkit.Tests.Unit.Logging
                 sConnectionString={databaseOptions.GetConnectionString()}
                 """;
 
-            return TempFileHelper.CreateTempIniFile(iniContent);
+            if (string.IsNullOrWhiteSpace(diagnosticLogDirectory))
+                return TempFileHelper.CreateTempIniFile(iniContent);
+
+            var iniPath = CreateDiagnosticFilePath(diagnosticLogDirectory, $"{tableName}_StaticDatabaseLogger", ".ini");
+            File.WriteAllText(iniPath, iniContent);
+            return iniPath;
+        }
+
+        private static string CreateDiagnosticFilePath(string directory, string prefix, string extension)
+        {
+            Directory.CreateDirectory(directory);
+            var safePrefix = string.Concat(prefix.Select(ch => char.IsLetterOrDigit(ch) ? ch : '_'));
+            return Path.Combine(directory, $"{safePrefix}_{DateTime.UtcNow:yyyyMMdd_HHmmss}_{Guid.NewGuid():N}{extension}");
         }
 
         internal static void DropSqlServerTable(DBAccess dbAccess, string tableName)

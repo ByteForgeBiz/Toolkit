@@ -12,6 +12,7 @@ jobs:
       BYTEFORGE_TEST_SQL_INSTANCE: MSSQLLocalDB
       BYTEFORGE_TEST_SQL_SERVER: (localdb)\MSSQLLocalDB
       BYTEFORGE_TEST_SQL_DATABASE: TestUnitDB
+      BYTEFORGE_TEST_LOG_DIR: ${{ github.workspace }}\artifacts\logs
 
     steps:
       - name: Checkout
@@ -28,6 +29,13 @@ jobs:
         run: |
           sqllocaldb info
           Get-Command sqlcmd
+
+      - name: Create artifact directories
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path "$env:BYTEFORGE_TEST_LOG_DIR" | Out-Null
+          New-Item -ItemType Directory -Force -Path "$PWD\TestResults\net9.0" | Out-Null
+          New-Item -ItemType Directory -Force -Path "$PWD\TestResults\net48" | Out-Null
 
       - name: Bootstrap TestUnitDB
         shell: pwsh
@@ -46,8 +54,18 @@ jobs:
 
       - name: Test net9.0
         shell: pwsh
-        run: dotnet test .\Toolkit.Modern.Tests\ByteForge.Toolkit.Modern.Tests.csproj --configuration $env:CONFIGURATION --framework net9.0 --no-build
+        run: dotnet test .\Toolkit.Modern.Tests\ByteForge.Toolkit.Modern.Tests.csproj --configuration $env:CONFIGURATION --framework net9.0 --no-build --results-directory .\TestResults\net9.0 --logger "trx;LogFileName=net9.0.trx"
 
       - name: Test net48
         shell: pwsh
-        run: dotnet test .\Toolkit.Modern.Tests\ByteForge.Toolkit.Modern.Tests.csproj --configuration $env:CONFIGURATION --framework net48 --no-build
+        run: dotnet test .\Toolkit.Modern.Tests\ByteForge.Toolkit.Modern.Tests.csproj --configuration $env:CONFIGURATION --framework net48 --no-build --results-directory .\TestResults\net48 --logger "trx;LogFileName=net48.trx"
+
+      - name: Upload test artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-artifacts
+          if-no-files-found: warn
+          path: |
+            ${{ github.workspace }}\TestResults
+            ${{ github.workspace }}\artifacts\logs
