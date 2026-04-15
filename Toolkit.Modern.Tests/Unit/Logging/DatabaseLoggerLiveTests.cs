@@ -281,7 +281,8 @@ namespace ByteForge.Toolkit.Tests.Unit.Logging
 
         internal static bool AccessTableExists(DBAccess dbAccess, string tableName)
         {
-            return dbAccess.ExecuteQuery($"SELECT * FROM [{tableName}] WHERE 1 = 0");
+            dbAccess.GetRecord($"SELECT TOP 1 * FROM [{tableName}]");
+            return dbAccess.LastException == null;
         }
 
         internal static System.Data.DataRow GetLatestLogEntry(DBAccess dbAccess, string tableName, string message)
