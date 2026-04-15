@@ -1,0 +1,80 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  build-test:
+    runs-on: windows-latest
+    env:
+      CONFIGURATION: Release
+      SQL_CONTAINER_NAME: byteforge-test-sql
+      SQL_IMAGE: mcr.microsoft.com/mssql/server:2022-latest
+      MSSQL_SA_PASSWORD: ByteForge_Strong_Passw0rd!
+      BYTEFORGE_TEST_SQL_SERVER: localhost
+      BYTEFORGE_TEST_SQL_PORT: '1433'
+      BYTEFORGE_TEST_SQL_USER: sa
+      BYTEFORGE_TEST_SQL_PASSWORD: ByteForge_Strong_Passw0rd!
+      BYTEFORGE_TEST_SQL_DATABASE: TestUnitDB
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: |
+            9.0.x
+
+      - name: Show Docker version
+        shell: pwsh
+        run: docker version
+
+      - name: Start SQL Server container
+        shell: pwsh
+        run: |
+          docker rm -f $env:SQL_CONTAINER_NAME 2>$null
+          docker pull $env:SQL_IMAGE
+          docker run --detach `
+            --name $env:SQL_CONTAINER_NAME `
+            --platform linux/amd64 `
+            --publish 1433:1433 `
+            --env ACCEPT_EULA=Y `
+            --env MSSQL_SA_PASSWORD=$env:MSSQL_SA_PASSWORD `
+            $env:SQL_IMAGE
+
+      - name: Bootstrap TestUnitDB
+        shell: pwsh
+        run: |
+          .\.github\scripts\bootstrap-test-sql.ps1 `
+            -ContainerName $env:SQL_CONTAINER_NAME `
+            -SaPassword $env:MSSQL_SA_PASSWORD `
+            -RepoRoot $PWD.Path
+
+      - name: Restore solution
+        shell: pwsh
+        run: dotnet restore .\ByteForge.Toolkit.sln
+
+      - name: Build solution
+        shell: pwsh
+        run: dotnet build .\ByteForge.Toolkit.sln --configuration $env:CONFIGURATION --no-restore
+
+      - name: Test net9.0
+        shell: pwsh
+        run: dotnet test .\Toolkit.Modern.Tests\ByteForge.Toolkit.Modern.Tests.csproj --configuration $env:CONFIGURATION --framework net9.0 --no-build
+
+      - name: Test net48
+        shell: pwsh
+        run: dotnet test .\Toolkit.Modern.Tests\ByteForge.Toolkit.Modern.Tests.csproj --configuration $env:CONFIGURATION --framework net48 --no-build
+
+      - name: Dump SQL Server container logs on failure
+        if: failure()
+        shell: pwsh
+        run: docker logs $env:SQL_CONTAINER_NAME
+
+      - name: Stop SQL Server container
+        if: always()
+        shell: pwsh
+        run: docker rm -f $env:SQL_CONTAINER_NAME
