@@ -370,3 +370,6 @@ version.txt
 .claude/
 CLAUDE.md
 AGENTS.md
+
+# Ignore extraneous files
+analyze_namespaces.ps1
