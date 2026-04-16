@@ -87,6 +87,71 @@ function Get-IgnoredDotFolder {
     return $pathParts[0]
 }
 
+function Get-TrimmedGitOutput {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string[]]$Arguments
+    )
+
+    $output = git -C $repoRoot @Arguments
+    Assert-GitSuccess "Git command failed: git -C `"$repoRoot`" $($Arguments -join ' ')"
+
+    if ($null -eq $output) {
+        return ''
+    }
+
+    return ([string]$output).Trim()
+}
+
+function Test-BuildArtifactStatus {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$StatusLine
+    )
+
+    if (-not ($StatusLine.StartsWith('?? ') -or $StatusLine.StartsWith('!! '))) {
+        return $false
+    }
+
+    $path = Get-StatusPath $StatusLine
+    if ([string]::IsNullOrWhiteSpace($path)) {
+        return $false
+    }
+
+    $normalizedPath = $path.Replace('\', '/')
+    return $normalizedPath -match '(^|/)(bin|obj)(/|$)'
+}
+
+function Get-BuildArtifactDirectory {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$StatusLine
+    )
+
+    if (-not (Test-BuildArtifactStatus $StatusLine)) {
+        return $null
+    }
+
+    $path = Get-StatusPath $StatusLine
+    if ([string]::IsNullOrWhiteSpace($path)) {
+        return $null
+    }
+
+    $normalizedPath = $path.Replace('\', '/')
+    $match = [regex]::Match($normalizedPath, '^(.*?)(?:^|/)(bin|obj)(?:/.*)?$')
+    if (-not $match.Success) {
+        return $null
+    }
+
+    $prefix = $match.Groups[1].Value.TrimEnd('/')
+    $folderName = $match.Groups[2].Value
+    if ([string]::IsNullOrWhiteSpace($prefix)) {
+        return $folderName
+    }
+
+    return "$prefix/$folderName"
+}
+
 $repoRoot = (Resolve-Path $PSScriptRoot).Path
 $tempBat = $null
 $stashCreated = $false
@@ -97,8 +162,7 @@ $exitCode = 0
 git -C $repoRoot rev-parse --show-toplevel | Out-Null
 Assert-GitSuccess "This script must be run from inside a git repository."
 
-$currentBranch = (git -C $repoRoot branch --show-current).Trim()
-Assert-GitSuccess "Unable to determine the current branch."
+$currentBranch = Get-TrimmedGitOutput @('branch', '--show-current')
 
 if ([string]::IsNullOrWhiteSpace($currentBranch)) {
     throw "Detached HEAD is not supported. Check out a branch first."
@@ -115,11 +179,6 @@ if (-not [System.IO.Path]::IsPathRooted($gitDir)) {
     $gitDir = Join-Path $repoRoot $gitDir
 }
 
-$statusOutput = @(git -C $repoRoot status --porcelain=v1 --untracked-files=all --ignored=matching)
-Assert-GitSuccess "Unable to inspect the worktree state."
-
-$stashRelevantStatus = @($statusOutput | Where-Object { -not (Test-IgnoredDotFolderStatus $_) })
-
 $stateFiles = @(
     'MERGE_HEAD',
     'CHERRY_PICK_HEAD',
@@ -134,6 +193,38 @@ foreach ($stateFile in $stateFiles) {
         throw "Repository has an in-progress git operation ('$stateFile'). Finish or abort it before running this script."
     }
 }
+
+$statusOutput = @(git -C $repoRoot status --porcelain=v1 --untracked-files=all --ignored=matching)
+Assert-GitSuccess "Unable to inspect the worktree state."
+
+$buildArtifactDirectories = @(
+    $statusOutput |
+        ForEach-Object { Get-BuildArtifactDirectory $_ } |
+        Where-Object { -not [string]::IsNullOrWhiteSpace($_) } |
+        Sort-Object -Unique
+)
+
+foreach ($buildArtifactDirectory in $buildArtifactDirectories) {
+    $candidateBuildArtifactPath = Join-Path $repoRoot ($buildArtifactDirectory.Replace('/', [System.IO.Path]::DirectorySeparatorChar))
+    $fullBuildArtifactPath = [System.IO.Path]::GetFullPath($candidateBuildArtifactPath)
+    $repoRootWithSeparator = $repoRoot.TrimEnd('\', '/') + [System.IO.Path]::DirectorySeparatorChar
+
+    if (-not $fullBuildArtifactPath.StartsWith($repoRootWithSeparator, [System.StringComparison]::OrdinalIgnoreCase)) {
+        throw "Refusing to remove build artifacts outside the repository root: $buildArtifactDirectory"
+    }
+
+    if (Test-Path -LiteralPath $fullBuildArtifactPath) {
+        Remove-Item -LiteralPath $fullBuildArtifactPath -Recurse -Force
+        Write-Host "Removed generated build artifacts: $buildArtifactDirectory"
+    }
+}
+
+if ($buildArtifactDirectories.Count -gt 0) {
+    $statusOutput = @(git -C $repoRoot status --porcelain=v1 --untracked-files=all --ignored=matching)
+    Assert-GitSuccess "Unable to inspect the worktree state after cleaning build artifacts."
+}
+
+$stashRelevantStatus = @($statusOutput | Where-Object { -not (Test-IgnoredDotFolderStatus $_) })
 
 if ($stashRelevantStatus.Count -gt 0) {
     $stashName = "{0} {1}" -f $Mode, (Get-Date -Format 'yyyy-MM-dd HH:mm')
@@ -188,8 +279,8 @@ git pull --ff-only origin master
 if errorlevel 1 exit /b 1
 
 echo.
-echo ^> git checkout "refs/heads/%ORIGINAL_BRANCH%"
-git checkout "refs/heads/%ORIGINAL_BRANCH%"
+echo ^> git switch "%ORIGINAL_BRANCH%"
+git switch "%ORIGINAL_BRANCH%"
 if errorlevel 1 exit /b 1
 
 echo.
@@ -234,7 +325,7 @@ try {
     $exitCode = $LASTEXITCODE
 }
 finally {
-    $branchAfterRun = (git -C $repoRoot branch --show-current).Trim()
+    $branchAfterRun = Get-TrimmedGitOutput @('branch', '--show-current')
 
     if (-not [string]::IsNullOrWhiteSpace($branchAfterRun) -and $branchAfterRun -ne $currentBranch) {
         $hasGitState = $false
@@ -247,7 +338,7 @@ finally {
         }
 
         if (-not $hasGitState) {
-            git -C $repoRoot checkout ("refs/heads/{0}" -f $currentBranch) | Out-Null
+            git -C $repoRoot switch $currentBranch | Out-Null
         }
     }
 
