@@ -172,7 +172,7 @@ The bidirectional sync uses a custom inline Roslyn task (`BidirectionalSyncTask`
 | `RestSharp` | 112.1.0 | HTTP client |
 | `System.CommandLine` | 2.0.0-beta4 | CLI parsing (net8.0/net9.0 only) |
 | `System.CommandLine.NamingConventionBinder` | 2.0.0-beta4 | CLI option binding |
-| `System.Data.SqlClient` | 4.9.0 | SQL Server connectivity |
+| `Microsoft.Data.SqlClient` | 6.0.1 | SQL Server connectivity |
 | `System.Data.Odbc` | 9.0.10 | ODBC connectivity |
 | `System.Text.Json` | 9.0.10 | High-performance JSON |
 | Various BCL back-ports | — | `System.Memory`, `System.Buffers`, `System.IO.Pipelines`, `System.ValueTuple`, etc. |
