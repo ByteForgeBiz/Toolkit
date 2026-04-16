@@ -606,10 +606,60 @@ public class GlobalizationInfo
     private string ApplyOffset(DateTimeOffset? value, string format, string nullValue)
     {
         if (value is null) return nullValue;
-        var result = value.Value.ToString(format, CultureInfo);
+
         if (UseZuluTime && value.Value.Offset == TimeSpan.Zero)
-            result = result.Replace("+00:00", "Z");
-        return result;
+            return value.Value.ToString(GetZuluFormat(format), CultureInfo);
+
+        return value.Value.ToString(format, CultureInfo);
+    }
+
+    /// <summary>
+    /// Returns a copy of <paramref name="format"/> with the first unquoted <c>zzz</c> specifier
+    /// replaced by the literal <c>'Z'</c>, so that <see cref="DateTimeOffset.ToString(string, IFormatProvider)"/>
+    /// emits a literal <c>Z</c> rather than <c>+00:00</c> for UTC values.
+    /// Single-quoted literals and backslash-escaped characters in the format string are skipped correctly.
+    /// </summary>
+    private static string GetZuluFormat(string format)
+    {
+        var zzzIndex = -1;
+        var inSingleQuote = false;
+
+        for (var i = 0; i < format.Length; i++)
+        {
+            var c = format[i];
+
+            if (c == '\'')
+            {
+                // Escaped single-quote: '' → literal apostrophe; skip the second quote and stay in current mode.
+                if (i + 1 < format.Length && format[i + 1] == '\'')
+                {
+                    i++;
+                    continue;
+                }
+
+                inSingleQuote = !inSingleQuote;
+                continue;
+            }
+
+            if (inSingleQuote)
+                continue;
+
+            if (c == '\\')
+            {
+                i++; // skip the escaped character
+                continue;
+            }
+
+            if (i + 2 < format.Length && format[i] == 'z' && format[i + 1] == 'z' && format[i + 2] == 'z')
+            {
+                zzzIndex = i;
+                break;
+            }
+        }
+
+        return zzzIndex >= 0
+            ? format.Substring(0, zzzIndex) + "'Z'" + format.Substring(zzzIndex + 3)
+            : format;
     }
 
     private static CultureInfo GetDefaultCultureInfo() => CultureInfo.InvariantCulture;

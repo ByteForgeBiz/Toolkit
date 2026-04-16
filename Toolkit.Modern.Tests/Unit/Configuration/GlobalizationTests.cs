@@ -847,6 +847,30 @@ LongTimeFormat=HH:mm:ss.fff";
         }
 
         /// <summary>
+        /// Verifies that <see cref="GlobalizationInfo.UseZuluTime"/> is bound from the INI configuration.
+        /// </summary>
+        /// <remarks>
+        /// This test ensures that <c>UseZuluTime</c> is loadable via the <c>[Globalization]</c> INI section,
+        /// confirming it participates in the same configuration-binding path as all other <see cref="GlobalizationInfo"/> properties.
+        /// </remarks>
+        [TestMethod]
+        public void GlobalizationInfo_UseZuluTime_ConfigBinding_ShouldSetTrue()
+        {
+            // Arrange
+            var configContent = @"[Globalization]
+UseZuluTime=true";
+            IConfigurationManager config = new ByteForge.Toolkit.Configuration.Configuration();
+            _tempConfigPath = TestConfigurationHelper.CreateTempConfigFile(configContent);
+            config.Initialize(_tempConfigPath);
+
+            // Act
+            var globalization = config.Globalization;
+
+            // Assert
+            globalization.UseZuluTime.Should().BeTrue("UseZuluTime should be bound from configuration when set to true");
+        }
+
+        /// <summary>
         /// Verifies that a non-UTC offset is rendered as <c>+/-HH:mm</c> regardless of <see cref="GlobalizationInfo.UseZuluTime"/>.
         /// </summary>
         [TestMethod]
