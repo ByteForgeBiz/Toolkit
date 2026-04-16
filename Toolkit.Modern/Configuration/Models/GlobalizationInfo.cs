@@ -46,8 +46,20 @@ public class GlobalizationInfo
     [DefaultValueProvider(typeof(GlobalizationInfo), nameof(GetDefaultCultureInfo))]
     public CultureInfo CultureInfo { get; set; } = CultureInfo.InvariantCulture;
 
+    /// <summary>
+    /// Gets or sets a value indicating whether UTC offsets are rendered as <c>Z</c>
+    /// instead of <c>+00:00</c> in offset-aware formatting methods.
+    /// </summary>
+    /// <remarks>
+    /// When <c>true</c>, any <see cref="DateTimeOffset"/> value whose offset is zero
+    /// is formatted with a trailing <c>Z</c> rather than <c>+00:00</c>.<br/>
+    /// Non-UTC offsets are always rendered as <c>+HH:mm</c> / <c>-HH:mm</c> regardless of this setting.
+    /// </remarks>
+    [DefaultValue(false)]
+    public bool UseZuluTime { get; set; } = false;
+
     /*
-     *  ___       _           ___                   _      
+     *  ___       _           ___                   _
      * |   \ __ _| |_ ___    | __|__ _ _ _ __  __ _| |_ ___
      * | |) / _` |  _/ -_)   | _/ _ \ '_| '  \/ _` |  _(_-<
      * |___/\__,_|\__\___|   |_|\___/_| |_|_|_\__,_|\__/__/
@@ -103,7 +115,48 @@ public class GlobalizationInfo
     public string LongDateTime12Format => LongDateFormat + " " + LongTime12Format;
 
     /*
-     *  _____ _               ___                   _           _____ _ _          _                   __  
+     *  ___       _      _____ _            ___   __  __         _       ___                   _      
+     * |   \ __ _| |_ __|_   _(_)_ __  ___ / _ \ / _|/ _|___ ___| |_    | __|__ _ _ _ __  __ _| |_ ___
+     * | |) / _` |  _/ -_)| | | | '  \/ -_) (_) |  _|  _(_-</ -_)  _|   | _/ _ \ '_| '  \/ _` |  _(_-<
+     * |___/\__,_|\__\___||_| |_|_|_|_\___|\___/|_| |_| /__/\___|\__|   |_|\___/_| |_|_|_\__,_|\__/__/
+     *                                                                                                
+     */
+
+    /// <summary>Gets the 24-hour time format string with UTC offset (e.g. <c>14:30:45 -03:00</c>).</summary>
+    public string TimeOffsetFormat => TimeFormat + " zzz";
+
+    /// <summary>Gets the short 24-hour time format string with UTC offset (e.g. <c>14:30 -03:00</c>).</summary>
+    public string ShortTimeOffsetFormat => ShortTimeFormat + " zzz";
+
+    /// <summary>Gets the long 24-hour time format string with UTC offset (e.g. <c>14:30:45.123 -03:00</c>).</summary>
+    public string LongTimeOffsetFormat => LongTimeFormat + " zzz";
+
+    /// <summary>Gets the 12-hour time format string with UTC offset (e.g. <c>02:30:45 PM -03:00</c>).</summary>
+    public string Time12OffsetFormat => Time12Format + " zzz";
+
+    /// <summary>Gets the short 12-hour time format string with UTC offset (e.g. <c>2:30 PM -03:00</c>).</summary>
+    public string ShortTime12OffsetFormat => ShortTime12Format + " zzz";
+
+    /// <summary>Gets the long 12-hour time format string with UTC offset (e.g. <c>02:30:45.123 PM -03:00</c>).</summary>
+    public string LongTime12OffsetFormat => LongTime12Format + " zzz";
+
+    /// <summary>Gets the combined date and 24-hour time with offset format string (e.g. <c>03/09/2023 14:30:45 -03:00</c>).</summary>
+    public string DateTimeOffsetFormat => DateFormat + " " + TimeOffsetFormat;
+
+    /// <summary>Gets the combined date and short 24-hour time with offset format string (e.g. <c>03/09/2023 14:30 -03:00</c>).</summary>
+    public string ShortDateTimeOffsetFormat => DateFormat + " " + ShortTimeOffsetFormat;
+
+    /// <summary>Gets the combined long date and long 24-hour time with offset format string (e.g. <c>Thursday, March 9, 2023 14:30:45.123 -03:00</c>).</summary>
+    public string LongDateTimeOffsetFormat => LongDateFormat + " " + LongTimeOffsetFormat;
+
+    /// <summary>Gets the combined date and short 12-hour time with offset format string (e.g. <c>03/09/2023 2:30 PM -03:00</c>).</summary>
+    public string ShortDateTime12OffsetFormat => DateFormat + " " + ShortTime12OffsetFormat;
+
+    /// <summary>Gets the combined long date and long 12-hour time with offset format string (e.g. <c>Thursday, March 9, 2023 02:30:45.123 PM -03:00</c>).</summary>
+    public string LongDateTime12OffsetFormat => LongDateFormat + " " + LongTime12OffsetFormat;
+
+    /*
+     *  _____ _               ___                   _           _____ _ _          _                   __
      * |_   _(_)_ __  ___    | __|__ _ _ _ __  __ _| |_ ___    / /_  ) | |   ___  | |_  ___ _  _ _ _ __\ \ 
      *   | | | | '  \/ -/)   | _/ _ \ '_| '  \/ _` |  _(_-<   | | / /|_  _| |___| | ' \/ _ \ || | '_(_-<| |
      *   |_| |_|_|_|_\___|   |_|\___/_| |_|_|_\__,_|\__/__/   | |/___| |_|        |_||_\___/\_,_|_| /__/| |
@@ -449,6 +502,115 @@ public class GlobalizationInfo
     /// <param name="nullValue">The value to return if <paramref name="value"/> is <c>null</c>. Defaults to <c>null</c>.</param>
     /// <returns>A string representation of the value formatted as a currency, or <paramref name="nullValue"/> if <paramref name="value"/> is <c>null</c>.</returns>
     public string FormatCurrency(decimal? value, string nullValue  = "") => value?.ToString(CurrencyFormat, CultureInfo) ?? nullValue;
+
+    /*
+     *  ___       _      _____ _            ___   __  __         _       ___                   _   _   _               __  __     _   _            _    
+     * |   \ __ _| |_ __|_   _(_)_ __  ___ / _ \ / _|/ _|___ ___| |_    | __|__ _ _ _ __  __ _| |_| |_(_)_ _  __ _    |  \/  |___| |_| |_  ___  __| |___
+     * | |) / _` |  _/ -_)| | | | '  \/ -_) (_) |  _|  _(_-</ -_)  _|   | _/ _ \ '_| '  \/ _` |  _|  _| | ' \/ _` |   | |\/| / -_)  _| ' \/ _ \/ _` (_-<
+     * |___/\__,_|\__\___||_| |_|_|_|_\___|\___/|_| |_| /__/\___|\__|   |_|\___/_| |_|_|_\__,_|\__|\__|_|_||_\__, |   |_|  |_\___|\__|_||_\___/\__,_/__/
+     *                                                                                                       |___/                                      
+     */
+    
+    /// <summary>
+    /// Formats the specified nullable <see cref="DateTimeOffset"/> value as a time with UTC offset using <see cref="TimeOffsetFormat"/> and <see cref="CultureInfo"/>.
+    /// </summary>
+    /// <param name="value">The nullable value to format.</param>
+    /// <param name="nullValue">The value to return if <paramref name="value"/> is <c>null</c>. Defaults to <c>""</c>.</param>
+    /// <returns>A formatted string such as <c>14:30:45 -03:00</c>, or <paramref name="nullValue"/> if <paramref name="value"/> is <c>null</c>.</returns>
+    public string FormatTimeOffset(DateTimeOffset? value, string nullValue = "") => ApplyOffset(value, TimeOffsetFormat, nullValue);
+
+    /// <summary>
+    /// Formats the specified nullable <see cref="DateTimeOffset"/> value as a short time with UTC offset using <see cref="ShortTimeOffsetFormat"/> and <see cref="CultureInfo"/>.
+    /// </summary>
+    /// <param name="value">The nullable value to format.</param>
+    /// <param name="nullValue">The value to return if <paramref name="value"/> is <c>null</c>. Defaults to <c>""</c>.</param>
+    /// <returns>A formatted string such as <c>14:30 -03:00</c>, or <paramref name="nullValue"/> if <paramref name="value"/> is <c>null</c>.</returns>
+    public string FormatShortTimeOffset(DateTimeOffset? value, string nullValue = "") => ApplyOffset(value, ShortTimeOffsetFormat, nullValue);
+
+    /// <summary>
+    /// Formats the specified nullable <see cref="DateTimeOffset"/> value as a long time with UTC offset using <see cref="LongTimeOffsetFormat"/> and <see cref="CultureInfo"/>.
+    /// </summary>
+    /// <param name="value">The nullable value to format.</param>
+    /// <param name="nullValue">The value to return if <paramref name="value"/> is <c>null</c>. Defaults to <c>""</c>.</param>
+    /// <returns>A formatted string such as <c>14:30:45.123 -03:00</c>, or <paramref name="nullValue"/> if <paramref name="value"/> is <c>null</c>.</returns>
+    public string FormatLongTimeOffset(DateTimeOffset? value, string nullValue = "") => ApplyOffset(value, LongTimeOffsetFormat, nullValue);
+
+    /// <summary>
+    /// Formats the specified nullable <see cref="DateTimeOffset"/> value as a 12-hour time with UTC offset using <see cref="Time12OffsetFormat"/> and <see cref="CultureInfo"/>.
+    /// </summary>
+    /// <param name="value">The nullable value to format.</param>
+    /// <param name="nullValue">The value to return if <paramref name="value"/> is <c>null</c>. Defaults to <c>""</c>.</param>
+    /// <returns>A formatted string such as <c>02:30:45 PM -03:00</c>, or <paramref name="nullValue"/> if <paramref name="value"/> is <c>null</c>.</returns>
+    public string FormatTime12Offset(DateTimeOffset? value, string nullValue = "") => ApplyOffset(value, Time12OffsetFormat, nullValue);
+
+    /// <summary>
+    /// Formats the specified nullable <see cref="DateTimeOffset"/> value as a short 12-hour time with UTC offset using <see cref="ShortTime12OffsetFormat"/> and <see cref="CultureInfo"/>.
+    /// </summary>
+    /// <param name="value">The nullable value to format.</param>
+    /// <param name="nullValue">The value to return if <paramref name="value"/> is <c>null</c>. Defaults to <c>""</c>.</param>
+    /// <returns>A formatted string such as <c>2:30 PM -03:00</c>, or <paramref name="nullValue"/> if <paramref name="value"/> is <c>null</c>.</returns>
+    public string FormatShortTime12Offset(DateTimeOffset? value, string nullValue = "") => ApplyOffset(value, ShortTime12OffsetFormat, nullValue);
+
+    /// <summary>
+    /// Formats the specified nullable <see cref="DateTimeOffset"/> value as a long 12-hour time with UTC offset using <see cref="LongTime12OffsetFormat"/> and <see cref="CultureInfo"/>.
+    /// </summary>
+    /// <param name="value">The nullable value to format.</param>
+    /// <param name="nullValue">The value to return if <paramref name="value"/> is <c>null</c>. Defaults to <c>""</c>.</param>
+    /// <returns>A formatted string such as <c>02:30:45.123 PM -03:00</c>, or <paramref name="nullValue"/> if <paramref name="value"/> is <c>null</c>.</returns>
+    public string FormatLongTime12Offset(DateTimeOffset? value, string nullValue = "") => ApplyOffset(value, LongTime12OffsetFormat, nullValue);
+
+    /// <summary>
+    /// Formats the specified nullable <see cref="DateTimeOffset"/> value as a date and 24-hour time with UTC offset using <see cref="DateTimeOffsetFormat"/> and <see cref="CultureInfo"/>.
+    /// </summary>
+    /// <param name="value">The nullable value to format.</param>
+    /// <param name="nullValue">The value to return if <paramref name="value"/> is <c>null</c>. Defaults to <c>""</c>.</param>
+    /// <returns>A formatted string such as <c>03/09/2023 14:30:45 -03:00</c>, or <paramref name="nullValue"/> if <paramref name="value"/> is <c>null</c>.</returns>
+    public string FormatDateTimeOffset(DateTimeOffset? value, string nullValue = "") => ApplyOffset(value, DateTimeOffsetFormat, nullValue);
+
+    /// <summary>
+    /// Formats the specified nullable <see cref="DateTimeOffset"/> value as a date and short 24-hour time with UTC offset using <see cref="ShortDateTimeOffsetFormat"/> and <see cref="CultureInfo"/>.
+    /// </summary>
+    /// <param name="value">The nullable value to format.</param>
+    /// <param name="nullValue">The value to return if <paramref name="value"/> is <c>null</c>. Defaults to <c>""</c>.</param>
+    /// <returns>A formatted string such as <c>03/09/2023 14:30 -03:00</c>, or <paramref name="nullValue"/> if <paramref name="value"/> is <c>null</c>.</returns>
+    public string FormatShortDateTimeOffset(DateTimeOffset? value, string nullValue = "") => ApplyOffset(value, ShortDateTimeOffsetFormat, nullValue);
+
+    /// <summary>
+    /// Formats the specified nullable <see cref="DateTimeOffset"/> value as a long date and long 24-hour time with UTC offset using <see cref="LongDateTimeOffsetFormat"/> and <see cref="CultureInfo"/>.
+    /// </summary>
+    /// <param name="value">The nullable value to format.</param>
+    /// <param name="nullValue">The value to return if <paramref name="value"/> is <c>null</c>. Defaults to <c>""</c>.</param>
+    /// <returns>A formatted string such as <c>Thursday, March 9, 2023 14:30:45.123 -03:00</c>, or <paramref name="nullValue"/> if <paramref name="value"/> is <c>null</c>.</returns>
+    public string FormatLongDateTimeOffset(DateTimeOffset? value, string nullValue = "") => ApplyOffset(value, LongDateTimeOffsetFormat, nullValue);
+
+    /// <summary>
+    /// Formats the specified nullable <see cref="DateTimeOffset"/> value as a date and short 12-hour time with UTC offset using <see cref="ShortDateTime12OffsetFormat"/> and <see cref="CultureInfo"/>.
+    /// </summary>
+    /// <param name="value">The nullable value to format.</param>
+    /// <param name="nullValue">The value to return if <paramref name="value"/> is <c>null</c>. Defaults to <c>""</c>.</param>
+    /// <returns>A formatted string such as <c>03/09/2023 2:30 PM -03:00</c>, or <paramref name="nullValue"/> if <paramref name="value"/> is <c>null</c>.</returns>
+    public string FormatShortDateTime12Offset(DateTimeOffset? value, string nullValue = "") => ApplyOffset(value, ShortDateTime12OffsetFormat, nullValue);
+
+    /// <summary>
+    /// Formats the specified nullable <see cref="DateTimeOffset"/> value as a long date and long 12-hour time with UTC offset using <see cref="LongDateTime12OffsetFormat"/> and <see cref="CultureInfo"/>.
+    /// </summary>
+    /// <param name="value">The nullable value to format.</param>
+    /// <param name="nullValue">The value to return if <paramref name="value"/> is <c>null</c>. Defaults to <c>""</c>.</param>
+    /// <returns>A formatted string such as <c>Thursday, March 9, 2023 02:30:45.123 PM -03:00</c>, or <paramref name="nullValue"/> if <paramref name="value"/> is <c>null</c>.</returns>
+    public string FormatLongDateTime12Offset(DateTimeOffset? value, string nullValue = "") => ApplyOffset(value, LongDateTime12OffsetFormat, nullValue);
+
+    /// <summary>
+    /// Formats a <see cref="DateTimeOffset"/> using the given format string and applies the
+    /// Zulu-time substitution when <see cref="UseZuluTime"/> is <c>true</c>.
+    /// </summary>
+    private string ApplyOffset(DateTimeOffset? value, string format, string nullValue)
+    {
+        if (value is null) return nullValue;
+        var result = value.Value.ToString(format, CultureInfo);
+        if (UseZuluTime && value.Value.Offset == TimeSpan.Zero)
+            result = result.Replace("+00:00", "Z");
+        return result;
+    }
 
     private static CultureInfo GetDefaultCultureInfo() => CultureInfo.InvariantCulture;
 }

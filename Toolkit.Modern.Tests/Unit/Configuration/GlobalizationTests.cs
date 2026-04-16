@@ -825,6 +825,377 @@ LongTimeFormat=HH:mm:ss.fff";
 
         #endregion
 
+        #region DateTimeOffset Formatting Tests
+
+        /// <summary>
+        /// Verifies that <see cref="GlobalizationInfo.UseZuluTime"/> defaults to <c>false</c>.
+        /// </summary>
+        [TestMethod]
+        public void GlobalizationInfo_UseZuluTime_DefaultsToFalse()
+        {
+            // Arrange
+            var configContent = @"[Globalization]";
+            IConfigurationManager config = new ByteForge.Toolkit.Configuration.Configuration();
+            _tempConfigPath = TestConfigurationHelper.CreateTempConfigFile(configContent);
+            config.Initialize(_tempConfigPath);
+
+            // Act
+            var globalization = config.Globalization;
+
+            // Assert
+            globalization.UseZuluTime.Should().BeFalse("UseZuluTime should default to false");
+        }
+
+        /// <summary>
+        /// Verifies that a non-UTC offset is rendered as <c>+/-HH:mm</c> regardless of <see cref="GlobalizationInfo.UseZuluTime"/>.
+        /// </summary>
+        [TestMethod]
+        public void GlobalizationInfo_FormatTimeOffset_NonUtcOffset_ShouldRenderOffset()
+        {
+            // Arrange
+            var configContent = @"[Globalization]
+TimeFormat=HH:mm:ss";
+            IConfigurationManager config = new ByteForge.Toolkit.Configuration.Configuration();
+            _tempConfigPath = TestConfigurationHelper.CreateTempConfigFile(configContent);
+            config.Initialize(_tempConfigPath);
+            var globalization = config.Globalization;
+            var dto = new DateTimeOffset(2023, 3, 9, 14, 30, 45, TimeSpan.FromHours(-3));
+
+            // Act
+            var formatted = globalization.FormatTimeOffset(dto);
+
+            // Assert
+            formatted.Should().Be("14:30:45 -03:00", "non-UTC offset should be rendered as -03:00");
+        }
+
+        /// <summary>
+        /// Verifies that a UTC offset is rendered as <c>+00:00</c> when <see cref="GlobalizationInfo.UseZuluTime"/> is <c>false</c>.
+        /// </summary>
+        [TestMethod]
+        public void GlobalizationInfo_FormatTimeOffset_UtcOffset_UseZuluFalse_ShouldRenderPlusZero()
+        {
+            // Arrange
+            var configContent = @"[Globalization]
+TimeFormat=HH:mm:ss";
+            IConfigurationManager config = new ByteForge.Toolkit.Configuration.Configuration();
+            _tempConfigPath = TestConfigurationHelper.CreateTempConfigFile(configContent);
+            config.Initialize(_tempConfigPath);
+            var globalization = config.Globalization;
+            globalization.UseZuluTime = false;
+            var utcDto = new DateTimeOffset(2023, 3, 9, 14, 30, 45, TimeSpan.Zero);
+
+            // Act
+            var formatted = globalization.FormatTimeOffset(utcDto);
+
+            // Assert
+            formatted.Should().Be("14:30:45 +00:00", "UTC offset with UseZuluTime=false should render as +00:00");
+        }
+
+        /// <summary>
+        /// Verifies that a UTC offset is rendered as <c>Z</c> when <see cref="GlobalizationInfo.UseZuluTime"/> is <c>true</c>.
+        /// </summary>
+        [TestMethod]
+        public void GlobalizationInfo_FormatTimeOffset_UtcOffset_UseZuluTrue_ShouldRenderZ()
+        {
+            // Arrange
+            var configContent = @"[Globalization]
+TimeFormat=HH:mm:ss";
+            IConfigurationManager config = new ByteForge.Toolkit.Configuration.Configuration();
+            _tempConfigPath = TestConfigurationHelper.CreateTempConfigFile(configContent);
+            config.Initialize(_tempConfigPath);
+            var globalization = config.Globalization;
+            globalization.UseZuluTime = true;
+            var utcDto = new DateTimeOffset(2023, 3, 9, 14, 30, 45, TimeSpan.Zero);
+
+            // Act
+            var formatted = globalization.FormatTimeOffset(utcDto);
+
+            // Assert
+            formatted.Should().Be("14:30:45 Z", "UTC offset with UseZuluTime=true should render as Z");
+        }
+
+        /// <summary>
+        /// Verifies that <c>null</c> input returns the specified null-value string.
+        /// </summary>
+        [TestMethod]
+        public void GlobalizationInfo_FormatTimeOffset_Null_ShouldReturnNullValue()
+        {
+            // Arrange
+            var configContent = @"[Globalization]";
+            IConfigurationManager config = new ByteForge.Toolkit.Configuration.Configuration();
+            _tempConfigPath = TestConfigurationHelper.CreateTempConfigFile(configContent);
+            config.Initialize(_tempConfigPath);
+            var globalization = config.Globalization;
+
+            // Act
+            var formatted = globalization.FormatTimeOffset(null, "N/A");
+
+            // Assert
+            formatted.Should().Be("N/A", "null DateTimeOffset should return specified null value");
+        }
+
+        /// <summary>
+        /// Verifies that short time offset formatting excludes seconds.
+        /// </summary>
+        [TestMethod]
+        public void GlobalizationInfo_FormatShortTimeOffset_ShouldUseShortFormat()
+        {
+            // Arrange
+            var configContent = @"[Globalization]
+ShortTimeFormat=HH:mm";
+            IConfigurationManager config = new ByteForge.Toolkit.Configuration.Configuration();
+            _tempConfigPath = TestConfigurationHelper.CreateTempConfigFile(configContent);
+            config.Initialize(_tempConfigPath);
+            var globalization = config.Globalization;
+            var dto = new DateTimeOffset(2023, 3, 9, 14, 30, 45, TimeSpan.FromHours(-3));
+
+            // Act
+            var formatted = globalization.FormatShortTimeOffset(dto);
+
+            // Assert
+            formatted.Should().Be("14:30 -03:00", "short time offset should exclude seconds");
+        }
+
+        /// <summary>
+        /// Verifies that long time offset formatting includes milliseconds.
+        /// </summary>
+        [TestMethod]
+        public void GlobalizationInfo_FormatLongTimeOffset_ShouldIncludeMilliseconds()
+        {
+            // Arrange
+            var configContent = @"[Globalization]
+LongTimeFormat=HH:mm:ss.fff";
+            IConfigurationManager config = new ByteForge.Toolkit.Configuration.Configuration();
+            _tempConfigPath = TestConfigurationHelper.CreateTempConfigFile(configContent);
+            config.Initialize(_tempConfigPath);
+            var globalization = config.Globalization;
+            var dto = new DateTimeOffset(2023, 3, 9, 14, 30, 45, 123, TimeSpan.FromHours(-3));
+
+            // Act
+            var formatted = globalization.FormatLongTimeOffset(dto);
+
+            // Assert
+            formatted.Should().Be("14:30:45.123 -03:00", "long time offset should include milliseconds");
+        }
+
+        /// <summary>
+        /// Verifies that <see cref="GlobalizationInfo.FormatDateTimeOffset"/> combines date and 24-hour time with offset.
+        /// </summary>
+        [TestMethod]
+        public void GlobalizationInfo_FormatDateTimeOffset_ShouldCombineDateAndTime()
+        {
+            // Arrange
+            var configContent = @"[Globalization]
+DateFormat=yyyy-MM-dd
+TimeFormat=HH:mm:ss";
+            IConfigurationManager config = new ByteForge.Toolkit.Configuration.Configuration();
+            _tempConfigPath = TestConfigurationHelper.CreateTempConfigFile(configContent);
+            config.Initialize(_tempConfigPath);
+            var globalization = config.Globalization;
+            var dto = new DateTimeOffset(2023, 3, 9, 14, 30, 45, TimeSpan.FromHours(-3));
+
+            // Act
+            var formatted = globalization.FormatDateTimeOffset(dto);
+
+            // Assert
+            formatted.Should().Be("2023-03-09 14:30:45 -03:00", "date-time offset should combine date and time with offset");
+        }
+
+        /// <summary>
+        /// Verifies that <see cref="GlobalizationInfo.FormatShortDateTimeOffset"/> uses date and short time with offset.
+        /// </summary>
+        [TestMethod]
+        public void GlobalizationInfo_FormatShortDateTimeOffset_ShouldUseCombinedFormat()
+        {
+            // Arrange
+            var configContent = @"[Globalization]
+DateFormat=yyyy-MM-dd
+ShortTimeFormat=HH:mm";
+            IConfigurationManager config = new ByteForge.Toolkit.Configuration.Configuration();
+            _tempConfigPath = TestConfigurationHelper.CreateTempConfigFile(configContent);
+            config.Initialize(_tempConfigPath);
+            var globalization = config.Globalization;
+            var dto = new DateTimeOffset(2023, 3, 9, 14, 30, 45, TimeSpan.FromHours(-3));
+
+            // Act
+            var formatted = globalization.FormatShortDateTimeOffset(dto);
+
+            // Assert
+            formatted.Should().Be("2023-03-09 14:30 -03:00", "short date-time offset should combine date and short time with offset");
+        }
+
+        /// <summary>
+        /// Verifies that <see cref="GlobalizationInfo.FormatLongDateTimeOffset"/> uses long date and long time with offset.
+        /// </summary>
+        [TestMethod]
+        public void GlobalizationInfo_FormatLongDateTimeOffset_ShouldUseLongFormats()
+        {
+            // Arrange
+            var configContent = @"[Globalization]
+LongDateFormat=dddd, MMMM d, yyyy
+LongTimeFormat=HH:mm:ss.fff";
+            IConfigurationManager config = new ByteForge.Toolkit.Configuration.Configuration();
+            _tempConfigPath = TestConfigurationHelper.CreateTempConfigFile(configContent);
+            config.Initialize(_tempConfigPath);
+            var globalization = config.Globalization;
+            var dto = new DateTimeOffset(2023, 3, 9, 14, 30, 45, 123, TimeSpan.FromHours(-3));
+
+            // Act
+            var formatted = globalization.FormatLongDateTimeOffset(dto);
+
+            // Assert
+            formatted.Should().Be("Thursday, March 9, 2023 14:30:45.123 -03:00", "long date-time offset should combine long date and long time with offset");
+        }
+
+        /// <summary>
+        /// Verifies that <see cref="GlobalizationInfo.FormatTime12Offset"/> uses 12-hour format with offset.
+        /// </summary>
+        [TestMethod]
+        public void GlobalizationInfo_FormatTime12Offset_ShouldUse12HourFormat()
+        {
+            // Arrange
+            var configContent = @"[Globalization]
+Time12Format=hh:mm:ss tt";
+            IConfigurationManager config = new ByteForge.Toolkit.Configuration.Configuration();
+            _tempConfigPath = TestConfigurationHelper.CreateTempConfigFile(configContent);
+            config.Initialize(_tempConfigPath);
+            var globalization = config.Globalization;
+            var dto = new DateTimeOffset(2023, 3, 9, 14, 30, 45, TimeSpan.FromHours(-3));
+
+            // Act
+            var formatted = globalization.FormatTime12Offset(dto);
+
+            // Assert
+            formatted.Should().Be("02:30:45 PM -03:00", "12-hour time offset should include AM/PM indicator and offset");
+        }
+
+        /// <summary>
+        /// Verifies that <see cref="GlobalizationInfo.FormatShortTime12Offset"/> uses short 12-hour format with offset.
+        /// </summary>
+        [TestMethod]
+        public void GlobalizationInfo_FormatShortTime12Offset_ShouldUseShortFormat()
+        {
+            // Arrange
+            var configContent = @"[Globalization]
+ShortTime12Format=h:mm tt";
+            IConfigurationManager config = new ByteForge.Toolkit.Configuration.Configuration();
+            _tempConfigPath = TestConfigurationHelper.CreateTempConfigFile(configContent);
+            config.Initialize(_tempConfigPath);
+            var globalization = config.Globalization;
+            var dto = new DateTimeOffset(2023, 3, 9, 14, 30, 45, TimeSpan.FromHours(-3));
+
+            // Act
+            var formatted = globalization.FormatShortTime12Offset(dto);
+
+            // Assert
+            formatted.Should().Be("2:30 PM -03:00", "short 12-hour time offset should exclude seconds");
+        }
+
+        /// <summary>
+        /// Verifies that <see cref="GlobalizationInfo.FormatLongTime12Offset"/> includes milliseconds with 12-hour format and offset.
+        /// </summary>
+        [TestMethod]
+        public void GlobalizationInfo_FormatLongTime12Offset_ShouldIncludeMilliseconds()
+        {
+            // Arrange
+            var configContent = @"[Globalization]
+LongTime12Format=hh:mm:ss.fff tt";
+            IConfigurationManager config = new ByteForge.Toolkit.Configuration.Configuration();
+            _tempConfigPath = TestConfigurationHelper.CreateTempConfigFile(configContent);
+            config.Initialize(_tempConfigPath);
+            var globalization = config.Globalization;
+            var dto = new DateTimeOffset(2023, 3, 9, 14, 30, 45, 123, TimeSpan.FromHours(-3));
+
+            // Act
+            var formatted = globalization.FormatLongTime12Offset(dto);
+
+            // Assert
+            formatted.Should().Be("02:30:45.123 PM -03:00", "long 12-hour time offset should include milliseconds");
+        }
+
+        /// <summary>
+        /// Verifies that <see cref="GlobalizationInfo.FormatShortDateTime12Offset"/> combines date and short 12-hour time with offset.
+        /// </summary>
+        [TestMethod]
+        public void GlobalizationInfo_FormatShortDateTime12Offset_ShouldCombineCorrectly()
+        {
+            // Arrange
+            var configContent = @"[Globalization]
+DateFormat=yyyy-MM-dd
+ShortTime12Format=h:mm tt";
+            IConfigurationManager config = new ByteForge.Toolkit.Configuration.Configuration();
+            _tempConfigPath = TestConfigurationHelper.CreateTempConfigFile(configContent);
+            config.Initialize(_tempConfigPath);
+            var globalization = config.Globalization;
+            var dto = new DateTimeOffset(2023, 3, 9, 14, 30, 45, TimeSpan.FromHours(-3));
+
+            // Act
+            var formatted = globalization.FormatShortDateTime12Offset(dto);
+
+            // Assert
+            formatted.Should().Be("2023-03-09 2:30 PM -03:00", "short 12-hour date-time offset should combine date and short 12-hour time with offset");
+        }
+
+        /// <summary>
+        /// Verifies that <see cref="GlobalizationInfo.FormatLongDateTime12Offset"/> combines long date and long 12-hour time with offset.
+        /// </summary>
+        [TestMethod]
+        public void GlobalizationInfo_FormatLongDateTime12Offset_ShouldCombineCorrectly()
+        {
+            // Arrange
+            var configContent = @"[Globalization]
+LongDateFormat=dddd, MMMM d, yyyy
+LongTime12Format=hh:mm:ss.fff tt";
+            IConfigurationManager config = new ByteForge.Toolkit.Configuration.Configuration();
+            _tempConfigPath = TestConfigurationHelper.CreateTempConfigFile(configContent);
+            config.Initialize(_tempConfigPath);
+            var globalization = config.Globalization;
+            var dto = new DateTimeOffset(2023, 3, 9, 14, 30, 45, 123, TimeSpan.FromHours(-3));
+
+            // Act
+            var formatted = globalization.FormatLongDateTime12Offset(dto);
+
+            // Assert
+            formatted.Should().Be("Thursday, March 9, 2023 02:30:45.123 PM -03:00", "long 12-hour date-time offset should combine long date and long 12-hour time with offset");
+        }
+
+        /// <summary>
+        /// Verifies that all computed offset format properties compose their constituent formats correctly.
+        /// </summary>
+        [TestMethod]
+        public void GlobalizationInfo_OffsetCombinedFormats_ShouldBuildCorrectly()
+        {
+            // Arrange
+            var configContent = @"[Globalization]
+DateFormat=yyyy-MM-dd
+TimeFormat=HH:mm:ss
+LongDateFormat=dddd, MMMM d, yyyy
+LongTimeFormat=HH:mm:ss.fff
+ShortTimeFormat=HH:mm
+Time12Format=hh:mm:ss tt
+ShortTime12Format=h:mm tt
+LongTime12Format=hh:mm:ss.fff tt";
+            IConfigurationManager config = new ByteForge.Toolkit.Configuration.Configuration();
+            _tempConfigPath = TestConfigurationHelper.CreateTempConfigFile(configContent);
+            config.Initialize(_tempConfigPath);
+            var globalization = config.Globalization;
+
+            // Act & Assert
+            globalization.TimeOffsetFormat.Should().Be("HH:mm:ss zzz",                           "TimeOffsetFormat should append zzz to TimeFormat");
+            globalization.ShortTimeOffsetFormat.Should().Be("HH:mm zzz",                         "ShortTimeOffsetFormat should append zzz to ShortTimeFormat");
+            globalization.LongTimeOffsetFormat.Should().Be("HH:mm:ss.fff zzz",                   "LongTimeOffsetFormat should append zzz to LongTimeFormat");
+            globalization.Time12OffsetFormat.Should().Be("hh:mm:ss tt zzz",                      "Time12OffsetFormat should append zzz to Time12Format");
+            globalization.ShortTime12OffsetFormat.Should().Be("h:mm tt zzz",                     "ShortTime12OffsetFormat should append zzz to ShortTime12Format");
+            globalization.LongTime12OffsetFormat.Should().Be("hh:mm:ss.fff tt zzz",              "LongTime12OffsetFormat should append zzz to LongTime12Format");
+            globalization.DateTimeOffsetFormat.Should().Be("yyyy-MM-dd HH:mm:ss zzz",            "DateTimeOffsetFormat should combine DateFormat and TimeOffsetFormat");
+            globalization.ShortDateTimeOffsetFormat.Should().Be("yyyy-MM-dd HH:mm zzz",          "ShortDateTimeOffsetFormat should combine DateFormat and ShortTimeOffsetFormat");
+            globalization.LongDateTimeOffsetFormat.Should().Be("dddd, MMMM d, yyyy HH:mm:ss.fff zzz", "LongDateTimeOffsetFormat should combine LongDateFormat and LongTimeOffsetFormat");
+            globalization.ShortDateTime12OffsetFormat.Should().Be("yyyy-MM-dd h:mm tt zzz",      "ShortDateTime12OffsetFormat should combine DateFormat and ShortTime12OffsetFormat");
+            globalization.LongDateTime12OffsetFormat.Should().Be("dddd, MMMM d, yyyy hh:mm:ss.fff tt zzz", "LongDateTime12OffsetFormat should combine LongDateFormat and LongTime12OffsetFormat");
+        }
+
+        #endregion
+
         #region Helper Methods
 
         private void ResetConfiguration()
