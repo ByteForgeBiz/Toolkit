@@ -101,3 +101,32 @@ using (var session = new Session())
 | **[Data](../Toolkit.Modern/Data/readme.md)** | Database and file processing |
 | **[Net](../Toolkit.Modern/Net/readme.md)** | Network file transfers |
 | **[Security](../Toolkit.Modern/Security/readme.md)** | Encryption and security |
+
+---
+
+## Attribution & License
+
+`WinSCPnet` is based on the official .NET assembly library for WinSCP **version 6.5.3**,
+originally authored by **[Martin Prikryl](https://winscp.net/)**.
+
+The original library is available at:
+- **WinSCP .NET Assembly:** https://winscp.net/eng/docs/library
+- **Source repository:** https://sourceforge.net/p/winscp/code/HEAD/tree/dotnet/
+
+### Modifications from the original
+
+This fork introduces only non-behavioural changes relative to WinSCPnet 6.5.3:
+
+- Added XML documentation comments to public and internal members
+- Added `#pragma warning` suppressions for P/Invoke struct layout fields (CS0649, CA1416, SYSLIB0012)
+
+No intentional changes were made to logic, algorithms, protocols, or public API contracts.
+
+### License
+
+This derivative work is distributed under the terms of the
+**[Mozilla Public License 2.0](LICENSE)** (MPL-2.0), consistent with the license of the
+original work.
+
+> **Note:** Per the MPL-2.0, modifications to MPL-licensed files remain under the MPL.
+> See the [`LICENSE`](LICENSE) file in this folder for the full license text.

@@ -1,5 +1,9 @@
 namespace ByteForge.WinSCP;
 
+// Fields mirror the Win32 IO_COUNTERS struct layout for P/Invoke marshalling.
+// All fields exist to preserve the correct struct size embedded in JOBOBJECT_EXTENDED_LIMIT_INFORMATION;
+// none are read back because SetInformationJobObject is used only to write limits, not query them.
+#pragma warning disable CS0649 // Field is never assigned to and will always have its default value
 /// <summary>
 /// Represents I/O operation and transfer counters.
 /// </summary>
@@ -35,3 +39,4 @@ internal struct IOCounters
     /// </summary>
     public ulong OtherTransferCount;
 }
+#pragma warning restore CS0649

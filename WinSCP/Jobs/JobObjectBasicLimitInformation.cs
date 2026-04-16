@@ -2,6 +2,9 @@ using System;
 
 namespace ByteForge.WinSCP;
 
+// Fields mirror the Win32 JOBOBJECT_BASIC_LIMIT_INFORMATION struct layout for P/Invoke marshalling.
+// Most fields exist solely to preserve correct offsets and struct size; only LimitFlags is set.
+#pragma warning disable CS0649 // Field is never assigned to and will always have its default value
 /// <summary>
 /// Contains basic limit information for a Windows Job object, corresponding to the
 /// <c>JOBOBJECT_BASIC_LIMIT_INFORMATION</c> native structure.
@@ -61,3 +64,4 @@ internal struct JobObjectBasicLimitInformation
 	/// </summary>
 	public uint SchedulingClass;
 }
+#pragma warning restore CS0649

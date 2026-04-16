@@ -2,6 +2,9 @@ using System;
 
 namespace ByteForge.WinSCP;
 
+// Fields mirror the Win32 JOBOBJECT_EXTENDED_LIMIT_INFORMATION struct layout for P/Invoke marshalling.
+// Fields beyond BasicLimitInformation exist to preserve correct struct size; only BasicLimitInformation is written.
+#pragma warning disable CS0649 // Field is never assigned to and will always have its default value
 /// <summary>
 /// Contains extended limit information for a Windows Job object, corresponding to the
 /// <c>JOBOBJECT_EXTENDED_LIMIT_INFORMATION</c> native structure.
@@ -40,3 +43,4 @@ internal struct JobObjectExtendedLimitInformation
 	/// </summary>
 	public UIntPtr PeakJobMemoryUsed;
 }
+#pragma warning restore CS0649

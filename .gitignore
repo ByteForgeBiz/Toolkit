@@ -374,3 +374,4 @@ _artifact_inspect*/
 
 # Ignore extraneous files
 analyze_namespaces.ps1
+CompileWarnings.xlsx

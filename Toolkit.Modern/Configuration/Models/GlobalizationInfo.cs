@@ -657,9 +657,15 @@ public class GlobalizationInfo
             }
         }
 
+#if NET5_0_OR_GREATER
+        return zzzIndex >= 0
+            ? string.Concat(format.AsSpan(0, zzzIndex), "'Z'", format.AsSpan(zzzIndex + 3))
+            : format;
+#else
         return zzzIndex >= 0
             ? format.Substring(0, zzzIndex) + "'Z'" + format.Substring(zzzIndex + 3)
             : format;
+#endif
     }
 
     private static CultureInfo GetDefaultCultureInfo() => CultureInfo.InvariantCulture;

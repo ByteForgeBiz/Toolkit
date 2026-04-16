@@ -5,6 +5,8 @@
     <TargetFramework>net9.0-windows</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <!-- TestBed is a demo/scratch project; suppress variable and nullable warnings that are intentional in demo code -->
+    <NoWarn>$(NoWarn);CS0219;CS8600;CS8601;CS8602;CS8603;CS8604;CS8618;CS8625</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
