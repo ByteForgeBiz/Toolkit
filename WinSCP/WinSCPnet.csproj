@@ -7,6 +7,9 @@
   <PropertyGroup>
     <LangVersion>12.0</LangVersion>
     <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
+    <!-- CA1416: entire library targets Windows-only platforms; platform guards are not needed.
+         SYSLIB0012: Assembly.CodeBase is used intentionally with a NotSupportedException guard for .NET Framework compat. -->
+    <NoWarn>$(NoWarn);CA1416;SYSLIB0012</NoWarn>
   </PropertyGroup>
   <PropertyGroup />
   <ItemGroup>

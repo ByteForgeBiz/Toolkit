@@ -358,10 +358,12 @@ namespace TestBed
     // Main application setup
     public class Application
     {
+#pragma warning disable CS0649 // Fields are assigned via commented-out Configuration calls; they are null-guarded throughout
         private CompleteDatabaseConfig? _databaseConfig;
         private CompleteEmailConfig? _emailConfig;
         private CompleteLoggingConfig? _loggingConfig;
         private FeatureConfig? _featureConfig;
+#pragma warning restore CS0649
 
         public void Initialize(string configPath = "appsettings.ini")
         {
