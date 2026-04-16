@@ -4,6 +4,14 @@ on:
   push:
   pull_request:
 
+# Cancel any in-progress run for the same branch when a new run is triggered.
+# For push events:        github.head_ref is empty → falls back to github.ref_name (branch name).
+# For pull_request events: github.head_ref is the source branch name.
+# Both resolve to the same key, so opening a PR cancels the redundant push run.
+concurrency:
+  group: ci-${{ github.head_ref || github.ref_name }}
+  cancel-in-progress: true
+
 jobs:
   build-test:
     runs-on: windows-2022
