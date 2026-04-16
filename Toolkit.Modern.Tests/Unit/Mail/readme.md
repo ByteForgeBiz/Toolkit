@@ -1,52 +1,59 @@
-# Mail Tests
+# Mail Unit Tests
 
-This directory contains unit tests for the ByteForge.Toolkit Mail module, which provides functionality for email operations and attachment handling.
+Tests for `ByteForge.Toolkit.Mail`.
 
-## Overview
+**Test class:** `EmailAttachmentHandlerTests`
+**Test categories:** `Unit`, `Mail`
+**Source module:** `Toolkit.Modern/Mail/`
 
-The Mail module offers tools for sending emails and managing email attachments efficiently. These tests ensure that email functionality works correctly under various scenarios.
-
-## Test Classes
+## Test Class
 
 ### EmailAttachmentHandlerTests
 
-Tests for the EmailAttachmentHandler class, which manages email attachments:
+Validates `EmailAttachmentHandler`, which manages the lifecycle and processing of email attachments.
 
-- Attachment creation and management
-- Temporary file handling
-- Attachment compression
-- Multi-part attachment processing
-- Attachment size limitation
-- File type filtering
-- Resource cleanup
-- Error handling during attachment processing
-- Performance with large attachments
+`[TestInitialize]` creates a fresh `EmailAttachmentHandler` instance and a dedicated temp directory under `Path.GetTempPath()`. Three test files are created:
 
-## Testing Strategy
+| File | Size | Purpose |
+|------|------|---------|
+| `small.txt` | 1 KB | Small attachment tests |
+| `medium.txt` | 100 KB | Medium attachment tests |
+| `large.txt` | 1 MB+ | Large/performance tests |
 
-The Mail tests follow a comprehensive approach that covers:
+`[TestCleanup]` recursively deletes the temp directory.
 
-1. **Core functionality**: Basic attachment handling operations
-2. **Resource management**: Proper creation and cleanup of temporary files
-3. **Performance**: Efficient handling of large or numerous attachments
-4. **Error scenarios**: Proper response to invalid inputs or error conditions
-5. **Edge cases**: Handling unusual scenarios like empty attachments or size limits
+| Test area | Coverage |
+|-----------|---------|
+| Attachment creation | Creating attachments from file paths via `System.Net.Mail.Attachment` |
+| Temporary file management | `EmailAttachmentHandler` creates and tracks temp files; they are removed on dispose |
+| Attachment processing | Applying processing logic (compression, format conversion) |
+| Multi-part attachments | Handling multiple attachments in a single batch |
+| Size limits | Attachments exceeding configured size limits are rejected or flagged |
+| File type filtering | Accepted and rejected MIME types or extensions |
+| Resource cleanup | `Dispose()` releases file handles and removes temp files |
+| Error handling | Non-existent files, access-denied paths, zero-byte files |
+| Performance | Large attachment processing completes within acceptable time |
 
-## Test Helpers
+## Prerequisites
 
-These tests utilize helper classes:
+No network or SMTP server required. Tests operate entirely on the local file system using temp directories.
 
-- **TempFileHelper**: Manages temporary files for testing attachment operations
-- **AssertionHelpers**: Contains custom assertions for attachment validation
+## Running These Tests
 
-## Notes
+```powershell
+# All Mail tests
+dotnet test --filter "TestCategory=Mail"
 
-The Mail module focuses on robust email attachment handling, with particular attention to:
+# By class name
+dotnet test --filter "FullyQualifiedName~EmailAttachmentHandlerTests"
+```
 
-1. **Security**: Safe handling of attachments and temporary files
-2. **Performance**: Efficient processing of attachments, especially large ones
-3. **Resource management**: Proper cleanup of temporary files
-4. **Flexibility**: Support for various attachment processing methods
+---
 
-While actual email sending is part of the Mail module, the tests focus primarily on attachment handling to avoid sending test emails during automated testing.
+## Documentation Links
 
+| Location | Description | Documentation |
+|----------|-------------|---------------|
+| **Tests root** | Test project overview | [../../README.md](../../README.md) |
+| **Unit overview** | Unit test organization | [../readme.md](../readme.md) |
+| **Helpers** | Test helper classes | [../../Helpers/README.md](../../Helpers/README.md) |

@@ -1,465 +1,549 @@
 # ByteForge.Toolkit.Modern
 
-**The core multi-targeting .NET library providing comprehensive enterprise utilities and tools.**
+The primary library of the ByteForge Toolkit solution. It provides a comprehensive set of enterprise-grade utilities organised into focused modules, all compiled from a single codebase that targets .NET Framework 4.8, .NET 8.0, and .NET 9.0.
 
 ---
 
-## 🎯 Overview
+## Target Frameworks and Namespace
 
-ByteForge.Toolkit.Modern is the consolidated, primary library of the ByteForge Toolkit solution. It combines enterprise-grade reliability with modern .NET performance, targeting multiple frameworks for maximum compatibility while maintaining a single, clean codebase.
+| Framework | TFM | Root namespace |
+|-----------|-----|----------------|
+| .NET Framework 4.8 | `net48` | `ByteForge.Toolkit` |
+| .NET 8.0 | `net8.0` | `ByteForge.Toolkit` |
+| .NET 9.0 | `net9.0` | `ByteForge.Toolkit` |
 
-### Target Frameworks
-- **.NET Framework 4.8** - Enterprise and legacy system compatibility
-- **.NET 8.0** - Current LTS version with performance optimizations  
-- **.NET 9.0** - Latest stable version with cutting-edge features
+The project file is `ByteForge.Toolkit.Modern.csproj`. Assembly and documentation XML are emitted to `bin\ByteForge.Toolkit.Modern.xml`.
 
-### Architecture Philosophy
-The library follows a **modular, enterprise-first design** with:
-- **Clean separation of concerns** across functional modules
-- **Attribute-based programming** for declarative configuration
-- **Thread-safe operations** for concurrent environments
-- **Comprehensive error handling** with detailed diagnostics
-- **Performance optimization** for large-scale data processing
+Conditional compilation uses `#if NETFRAMEWORK` for framework-specific code paths (e.g. `System.Web`, legacy data providers).
 
 ---
 
-## 📦 Module Architecture
+## Module Breakdown
 
-The library is organized into cohesive, focused modules, each with comprehensive documentation:
+### CommandLine (`ByteForge.Toolkit.CommandLine`)
 
-### 🖥️ **CLI** (`ByteForge.Toolkit.CommandLine`)
-**Attribute-based command-line parsing and execution**
-- Declarative command definitions using `[Command]` and `[Option]` attributes
-- Automatic type conversion and validation
-- Built-in help generation and error handling
-- Support for subcommands and complex hierarchies
+Attribute-driven command-line parsing built on top of `System.CommandLine` (available on net8.0/net9.0; the naming convention binder is available on all targets).
 
-*Key Classes: `CommandParser`, `CommandBuilder`, `ParseResult`, `ConsoleSpinner`*
+**Key files:**
 
-### ⚙️ **Configuration** (`ByteForge.Toolkit`)
-**INI-based configuration with strong typing and advanced features**
-- Strongly-typed configuration sections with automatic mapping
-- Array and dictionary support via dedicated sections
-- Encrypted credential storage for sensitive data
-- Globalization and culture-specific formatting
-- Thread-safe access with singleton pattern
+| File | Purpose |
+|------|---------|
+| `CommandParser.cs` | Parses `string[]` args into commands and options |
+| `CommandBuilder.cs` | Fluent builder for wiring up commands |
+| `RootCommandBuilder.cs` | Entry point — builds the root `System.CommandLine` command |
+| `ParseResult.cs` | Encapsulates the outcome of a parse operation |
+| `GlobalOption.cs` | Defines options available across all commands |
+| `ConsoleSpinner.cs` / `ProgressSpinner.cs` | Console progress indicators |
+| `Attributes/CommandAttribute.cs` | Marks a class as a command |
+| `Attributes/OptionAttribute.cs` | Declares a command option with name, alias, description, and defaults |
 
-*Key Classes: `Configuration`, `ConfigSection<T>`, `GlobalizationInfo`*
+**Pattern:**
 
-### 🗄️ **Database** (`ByteForge.Toolkit`)
-**Multi-database access layer with enterprise features**
-- Support for SQL Server, ODBC, and multiple database engines
-- High-performance bulk operations with `BulkDbProcessor<T>`
-- Parameterized queries with automatic SQL injection prevention
-- Transaction support with rollback capabilities
-- Async/await support with cancellation tokens
-
-*Key Classes: `DBAccess` (partial classes), `BulkDbProcessor<T>`, `TypeConverter`*
-
-### 📊 **CSV** (`ByteForge.Toolkit`)
-**High-performance CSV processing with flexible formatting**
-- Automatic format detection and intelligent parsing
-- Progress reporting for large file operations
-- Configurable quoting, delimiters, and encoding
-- Attribute-based entity mapping with `[CSVColumn]`
-- Memory-efficient streaming for large datasets
-
-*Key Classes: `CSVReader`, `CSVWriter`, `CSVFormat`, `CSVRecord`*
-
-### 📁 **Data Structures** (`ByteForge.Toolkit`)
-**Specialized collections and data utilities**
-- Binary search trees for sorted collections
-- URL utilities for path and query string manipulation
-- Performance-optimized data structures for specific use cases
-
-*Key Classes: `BinarySearchTree<T>`, `Url`*
-
-### 🔐 **Security** (`ByteForge.Toolkit`)
-**Encryption and security utilities**
-- AES encryption with secure key management
-- Password hashing and validation utilities
-- Secure configuration storage for credentials
-- Support for various encryption algorithms
-
-*Key Classes: `AESEncryption`, `Encryptor`, `VBMath`*
-
-### 📝 **Logging** (`ByteForge.Toolkit.Logging`)
-**Thread-safe, structured logging with multiple outputs**
-- Multiple logger implementations (Console, File, Session, Composite)
-- Structured logging with correlation contexts
-- Async logging options for performance
-- Configurable log levels and formatting
-
-*Key Classes: `Log`, `FileLogger`, `ConsoleLogger`, `CompositeLogger`*
-
-### 📧 **Mail** (`ByteForge.Toolkit`)
-**Email processing with attachment handling**
-- MIME message parsing and processing
-- Attachment extraction and management
-- Support for various email formats and encodings
-- Progress reporting for bulk operations
-
-*Key Classes: `EmailAttachmentHandler`, `MailUtil`, `TempFileAttachment`*
-
-### 🌐 **Net** (`ByteForge.Toolkit`)
-**Network file transfer operations**
-- File transfer progress monitoring
-- Support for multiple protocols via WinSCP integration
-- Batch operation support with error handling
-- Configurable retry logic and timeouts
-
-*Key Classes: `FileTransferClient`, `FileTransferResult`, `RemoteFileInfo`*
-
-### 🔧 **Utils** (`ByteForge.Toolkit`)
-**Comprehensive utility collection**
-- **Parsing**: Type-safe parsers for booleans, dates, enums, and custom types
-- **String Manipulation**: Advanced string utilities, templates, and formatting
-- **I/O Operations**: File and directory utilities with progress monitoring
-- **Type Conversion**: Registry-based value converters for flexible data handling
-- **Console Utilities**: Enhanced console operations and user interaction
-
-*Key Classes: `BooleanParser`, `DateTimeParser`, `StringUtil`, `IOUtils`, `TemplateProcessor`*
-
-### 📋 **JSON** (`ByteForge.Toolkit`)
-**Delta serialization and advanced JSON processing**
-- Delta contract resolution for efficient data exchange
-- Customizable JSON serialization with change tracking
-- Performance-optimized for large object graphs
-
-*Key Classes: `JsonDeltaSerializer`, `DeltaContractResolver`*
-
----
-
-## 🏗️ Technical Architecture
-
-### Partial Class Design
-Large, complex classes are split into focused partial classes for maintainability:
-
-- **`DBAccess`**: Split into Core, Factory, Methods, ScriptExecution, TypeConverter, Logging, and Parameters
-- **`BulkDbProcessor<T>`**: Split into Core, Operations, TableManagement, and SqlGeneration
-- Each partial class handles a specific functional area
-
-### Attribute-Based Configuration
-Extensive use of attributes for declarative programming:
-
-- **CLI commands**: `[Command]` and `[Option]` attributes for command-line parsing
-- **Database entities**: `[DBColumn]` attributes for ORM mapping
-- **CSV mapping**: `[CSVColumn]` attributes for file processing
-- **Configuration sections**: Various attributes for behavior control
-
-### Dependency Management
-- **Costura.Fody** for embedding dependencies into single assemblies
-- **Microsoft.Extensions.Configuration** for robust configuration abstractions
-- **System.CommandLine** for enterprise-grade CLI functionality
-- **Embedded Resources** including WinSCP.exe for file transfer operations
-
-### Performance Optimizations
-- **Memory-efficient streaming** for large file operations
-- **Async/await patterns** throughout for non-blocking operations
-- **Thread-safe collections** and concurrent access patterns
-- **Bulk operation support** for high-throughput scenarios
-
----
-
-## 🚀 Usage Patterns
-
-### Configuration Management
 ```csharp
-// Initialize configuration system
+[Command("export", "Export records to CSV")]
+public class ExportCommand
+{
+    [Option("output", "o", "Output file path", required: true)]
+    public string OutputPath { get; set; } = "";
+
+    [Option("limit", "l", "Maximum rows", defaultValue: 1000)]
+    public int Limit { get; set; }
+}
+```
+
+---
+
+### Configuration (`ByteForge.Toolkit.Configuration`)
+
+INI-based configuration management backed by `Microsoft.Extensions.Configuration.Ini`. The main class `Configuration` implements `IConfigurationManager` and provides both a singleton default instance and constructable instances for multi-config scenarios.
+
+**Key files:**
+
+| File | Purpose |
+|------|---------|
+| `Configuration.cs` | Main class — loads, reads, and saves INI files |
+| `ConfigSection.cs` | Base class for strongly-typed section models |
+| `Interfaces/IConfigSection.cs` | Section interface |
+| `Interfaces/IConfigurationManager.cs` | Manager interface |
+| `Models/GlobalizationInfo.cs` | Culture and formatting settings |
+| `Helpers/ParsingHelper.cs` / `IParsingHelper.cs` | INI value parsing |
+| `Helpers/DefaultValueHelper.cs` | Resolves attribute-declared default values |
+| `Attributes/ArrayAttribute.cs` | Maps a property to a repeating section for array support |
+| `Attributes/DictionaryAttribute.cs` | Maps a property to key/value sections |
+| `Attributes/ConfigNameAttribute.cs` | Overrides the INI key name for a property |
+| `Attributes/DoNotPersistAttribute.cs` | Excludes a property from being written back |
+| `Attributes/DefaultValueProviderAttribute.cs` | Points to a provider class for complex defaults |
+| `AssemblyException.cs` | Thrown when an attribute references a type not found in the assembly |
+
+**Example INI:**
+
+```ini
+[Data Source]
+SelectedDB=Production
+
+[Production]
+sType=SQLServer
+sServer=PRODSERVER\INSTANCE1
+sDatabaseName=MyApp
+esUser=[encrypted_user]
+esPass=[encrypted_password]
+```
+
+**Usage:**
+
+```csharp
+// Singleton access
 Configuration.Initialize("appsettings.ini");
+var section = Configuration.GetSection<DatabaseOptions>("Production");
 
-// Access strongly-typed sections
-var dbConfig = Configuration.GetSection<DatabaseOptions>("Database");
-var connString = dbConfig.ConnectionString;
-
-// Save configuration changes
-Configuration.Save();
-```
-
-### Command-Line Applications
-```csharp
-[Command("process-data", "Process input data files")]
-public class ProcessDataCommand
-{
-    [Option("input", "i", "Input file path", required: true)]
-    public string InputPath { get; set; }
-    
-    [Option("output", "o", "Output directory", defaultValue: "output")]
-    public string OutputDir { get; set; }
-    
-    [Option("batch-size", "b", "Processing batch size", defaultValue: 1000)]
-    public int BatchSize { get; set; }
-    
-    public async Task ExecuteAsync()
-    {
-        var processor = new DataProcessor();
-        await processor.ProcessFileAsync(InputPath, OutputDir, BatchSize);
-    }
-}
-```
-
-### Database Operations
-```csharp
-// Initialize database access
-var db = new DBAccess(connectionString);
-
-// Execute parameterized queries
-var activeUsers = db.GetDataTable(
-    "SELECT * FROM Users WHERE Active = @active AND Created > @date",
-    new { active = true, date = DateTime.Now.AddDays(-30) }
-);
-
-// Bulk operations with progress reporting
-var processor = new BulkDbProcessor<User>(db);
-processor.ProgressReported += (sender, e) => 
-    Console.WriteLine($"Processed {e.ProcessedCount}/{e.TotalCount} records");
-
-await processor.BulkInsertAsync(users);
-```
-
-### CSV Processing
-```csharp
-// Read CSV with automatic format detection
-var reader = new CSVReader();
-reader.ProgressReported += (sender, e) => 
-    Console.WriteLine($"Reading: {e.PercentComplete:F1}%");
-
-reader.ReadFile("data.csv");
-
-// Process records
-foreach (var record in reader.Records)
-{
-    var user = new User
-    {
-        Name = record["Name"],
-        Email = record["Email"],
-        CreatedDate = DateTime.Parse(record["Created"])
-    };
-    
-    ProcessUser(user);
-}
+// Instance access
+var cfg = new Configuration("custom.ini");
+cfg.Save();
 ```
 
 ---
 
-## 📁 Directory Structure
+### Core (`ByteForge.Toolkit`)
+
+Low-level bootstrap utilities.
+
+| File | Purpose |
+|------|---------|
+| `Core.cs` | Foundational helpers shared across modules |
+| `Core.WinScpResourceManager.cs` | Extracts the embedded `WinSCP.exe` resource to a temp path for runtime use |
+
+---
+
+### Data
+
+The Data module is split into three sub-areas:
+
+#### Data.CSV (`ByteForge.Toolkit.Data`)
+
+High-performance CSV reading and writing with format auto-detection.
+
+| File | Purpose |
+|------|---------|
+| `CSVReader.cs` | Reads CSV files; supports progress reporting |
+| `CSVWriter.cs` | Writes CSV files with configurable quoting and delimiters |
+| `CSVRecord.cs` / `ICSVRecord.cs` | Record representation and interface |
+| `CSVFormat.cs` | Format definitions (delimiter, quote char, encoding, etc.) |
+| `BufferedReader.cs` | Low-level buffered file reader |
+| `ConversionException.cs` | Thrown on type conversion failures |
+| `DataProcessingException.cs` | General processing errors |
+| `ValidationErrors.cs` | Accumulated validation error collection |
+
+Attributes for entity mapping live in `Data/Attributes/CSVColumnAttribute.cs`.
+
+#### Data.Database (`ByteForge.Toolkit.Data`)
+
+Multi-database access layer with SQL Server and ODBC support. The two main classes (`DBAccess` and `BulkDbProcessor<T>`) are each split into focused partial classes.
+
+**DBAccess partial classes:**
+
+| File | Responsibility |
+|------|----------------|
+| `DBAccess.Core.cs` | Class declaration, configuration schema documentation |
+| `DBAccess.Factory.cs` | Connection factory — SQL Server vs ODBC |
+| `DBAccess.Methods.cs` | Query execution: `GetDataTable`, `ExecuteNonQuery`, scalar reads, etc. |
+| `DBAccess.Parameters.cs` | Parameter building and SQL injection prevention |
+| `DBAccess.Transactions.cs` | `BeginTransaction`, `Commit`, `Rollback`, `DBTransaction` wrapper |
+| `DBAccess.ScriptExecution.cs` | Executes multi-statement SQL scripts with `GO` parsing |
+| `DBAccess.Logging.cs` | Query timing and diagnostic logging |
+| `DBAccess.Properties.cs` | Public properties: `LastException`, connection state, options |
+
+**BulkDbProcessor<T> partial classes:**
+
+| File | Responsibility |
+|------|----------------|
+| `BulkDbProcessor.Core.cs` | Core setup and configuration |
+| `BulkDbProcessor.Operations.cs` | Bulk insert, update, delete with cancellation token support |
+| `BulkDbProcessor.TableManagement.cs` | Temp table creation and management |
+| `BulkDbProcessor.SqlGeneration.cs` | Generates INSERT/UPDATE/MERGE SQL from entity reflection |
+| `BulkDbProcessor.Events.cs` | `ProgressReported` event and event args |
+
+**Supporting types:**
+
+| File | Purpose |
+|------|---------|
+| `DBOptions.cs` | Connection configuration (server, database, credentials, timeouts) |
+| `DBTransaction.cs` | Lightweight transaction wrapper |
+| `TypeConverter.cs` | Maps .NET types to database types and back |
+| `ScriptExecutionResult.cs` | Result of a multi-statement script execution |
+
+**DBAccess configuration keys** (loaded from INI sections):
+
+| Key | Property | Description |
+|-----|----------|-------------|
+| `sType` | `DatabaseType` | `SQLServer` or `ODBC` |
+| `sServer` | `Server` | Server name or IP |
+| `sServerDSN` | `ServerDSN` | ODBC DSN |
+| `sDatabaseName` | `DatabaseName` | Database name |
+| `esUser` | `EncryptedUser` | AES-encrypted username |
+| `esPass` | `EncryptedPassword` | AES-encrypted password |
+| `sConnectionString` | `ConnectionString` | Direct connection string (overrides other settings) |
+| `bEncrypt` | `UseEncryption` | Enable connection encryption |
+| `iConnectionTimeout` | `ConnectionTimeout` | Seconds (default 60) |
+| `iCommandTimeout` | `CommandTimeout` | Seconds (default 240) |
+| `bTrustedConnection` | `UseTrustedConnection` | Windows auth (default false) |
+
+#### Data.Audio (`ByteForge.Toolkit.Data`)
+
+| File | Purpose |
+|------|---------|
+| `AudioFormatDetector.cs` | Detects audio file formats from byte signatures |
+
+#### Data.Attributes
+
+| File | Purpose |
+|------|---------|
+| `DBColumnAttribute.cs` | Maps a class property to a database column name and type |
+| `CSVColumnAttribute.cs` | Maps a class property to a CSV column header |
+
+---
+
+### DataStructures (`ByteForge.Toolkit`)
+
+| File | Purpose |
+|------|---------|
+| `BinarySearchTree.cs` | Generic binary search tree with in-order traversal |
+| `Url.cs` | URL construction, path manipulation, and query string helpers |
+
+---
+
+### Json (`ByteForge.Toolkit`)
+
+Delta-aware JSON serialization using `Newtonsoft.Json`.
+
+| File | Purpose |
+|------|---------|
+| `JsonDeltaSerializer.cs` | Serializes only changed properties between two object snapshots |
+| `DeltaContractResolver.cs` | Custom `IContractResolver` that drives the delta comparison |
+
+---
+
+### Logging (`ByteForge.Toolkit.Logging`)
+
+Thread-safe, multi-target logging system. All modules use the static `Log` facade or inject `ILogger`.
+
+**Logger implementations:**
+
+| Class | Output |
+|-------|--------|
+| `BaseLogger` | Abstract base — manages level filtering and async dispatch |
+| `CompositeLogger` | Fans out to multiple `ILogger` instances simultaneously |
+| `ConsoleLogger` | Writes to stdout with optional colour |
+| `FileLogger` | Appends to a log file with configurable rotation |
+| `SessionFileLogger` | Creates a new dated file per session |
+| `NullLogger` | Discards all output (useful in tests) |
+| `StaticLoggerAdapter` | Bridges an `ILogger` instance to the static `Log` API |
+
+**`Log` class** (`Log.cs`) extends `CompositeLogger` and pre-wires a `ConsoleLogger`, a `FileLogger`, and an optional `DatabaseLogger`. It is the default entry point for application-level logging.
+
+**`LoggingScopeContext`** (`LoggingScopeContext.cs`) — internal `AsyncLocal`-based suppression scope, prevents recursive logging during log writes.
+
+**Models:**
+
+| Class | Purpose |
+|-------|---------|
+| `LogEntry` | A single log record: timestamp, level, message, exception |
+| `LogLevel` | Enum: `Verbose`, `Debug`, `Info`, `Warning`, `Error`, `Fatal` |
+| `LogSettings` | Configuration model loaded from INI — path, level, clear-on-start |
+| `FileLoggerOptions` | File logger settings: path, max size, rotation policy |
+| `SessionFileLoggerOptions` | Per-session file settings |
+| `AsyncOptions` | Controls async dispatch queue size and overflow behaviour |
+| `CorrelationContext` | Ambient correlation ID for request tracing |
+
+---
+
+### Mail (`ByteForge.Toolkit`)
+
+Email and MIME attachment processing.
+
+| File | Purpose |
+|------|---------|
+| `EmailAttachmentHandler.cs` | Extracts attachments from raw MIME messages |
+| `MailUtil.cs` | Email validation and address utilities |
+| `TempFileAttachment.cs` | Manages a decoded attachment written to a temp file |
+| `AttachmentProcessResult.cs` | Result of an attachment extraction operation |
+| `PartInfo.cs` | Metadata for a single MIME part |
+| `ProcessingMethod.cs` | Enum: how an attachment was handled (saved, skipped, error) |
+| `SkippedFile.cs` | Records an attachment that was intentionally skipped |
+
+---
+
+### Net (`ByteForge.Toolkit`)
+
+File transfer client built on top of `WinSCPnet`.
+
+| File | Purpose |
+|------|---------|
+| `FileTransferClient.cs` | Main client — connect, upload, download, list remote files |
+| `FileTransferConfig.cs` | Connection configuration: protocol, host, credentials, timeout |
+| `TransferProtocol.cs` | Enum: `SFTP`, `FTP`, `FTPS`, `SCP` |
+| `FileTransferItem.cs` | Describes a file to transfer (source, destination, metadata) |
+| `FileTransferResult.cs` | Overall result of a transfer batch |
+| `FileOperationResult.cs` | Result for a single file operation |
+| `FileTransferProgress.cs` / `FileOperationProgress.cs` | Progress reporting models |
+| `RemoteFileInfo.cs` | Metadata about a file on the remote server |
+| `FileTransferException.cs` | Thrown on unrecoverable transfer errors |
+
+---
+
+### Security (`ByteForge.Toolkit`)
+
+| File | Purpose |
+|------|---------|
+| `AESEncryption.cs` | AES-256 encrypt/decrypt with configurable key and IV |
+| `Encryptor.cs` | Higher-level wrapper — used by `Configuration` and `DBAccess` to store encrypted credentials |
+| `VBMath.cs` | Port of VBA `Rnd`/`Randomize` for compatibility with legacy encrypted data |
+
+---
+
+### Utilities (`ByteForge.Toolkit.Utilities`)
+
+General-purpose helpers.
+
+| File | Key capabilities |
+|------|-----------------|
+| `BooleanParser.cs` | Parses strings to `bool`: handles `yes/no`, `1/0`, `true/false`, locale variants |
+| `DateTimeParser.cs` | Flexible date/time parsing with format lists and culture awareness |
+| `DateTimeUtil.cs` | Date arithmetic, quarter/week calculations, formatting helpers |
+| `StringUtil.cs` | Padding, truncation, similarity scoring, casing utilities |
+| `IOUtils.cs` | Safe file copy, directory creation, progress-reporting stream wrappers |
+| `TemplateProcessor.cs` | Token-substitution templating (`{{token}}` replacement) |
+| `ConsoleUtil.cs` | Prompting, table rendering, colour helpers |
+| `NameUtil.cs` | Name normalisation and display formatting |
+| `HtmlUtil.cs` | HTML entity encoding/decoding and tag stripping |
+| `EnumExtensions.cs` | `GetDescription()`, `Parse<T>()`, flag utilities |
+| `TypeHelper.cs` | Reflection utilities for type comparison and generic constraints |
+| `ValueConverterRegistry.cs` | Registry of `Func<string, T>` converters for dynamic type resolution |
+| `Parser.cs` / `IParser.cs` | Generic parse interface and base implementation |
+| `TimingUtil.cs` | `Stopwatch`-based block timing with optional log output |
+| `Utils.cs` | Miscellaneous helpers that do not fit a dedicated class |
+
+---
+
+## Architectural Patterns
+
+### Partial classes
+
+Large classes are divided into partial class files by concern so each file remains focused and easy to navigate:
+
+- `DBAccess` — 8 partials (Core, Factory, Methods, Parameters, Transactions, ScriptExecution, Logging, Properties)
+- `BulkDbProcessor<T>` — 5 partials (Core, Operations, TableManagement, SqlGeneration, Events)
+
+### Attribute-based programming
+
+Configuration, CSV mapping, database ORM, and CLI definitions all use custom attributes for declarative, compile-time-checked configuration rather than convention strings.
+
+### Costura.Fody dependency embedding
+
+The `FodyWeavers.xml` configuration applies Costura.Fody to the build, embedding all referenced assemblies (including `WinSCPnet`) directly into the output DLL. This produces a single-file deployment artefact. The `Documentation` build configuration disables Fody so that Sandcastle Help File Builder (SHFB) can resolve dependencies normally.
+
+### Thread safety
+
+- `Configuration` uses a thread-safe singleton pattern with `ConcurrentDictionary` for section caching.
+- All `BaseLogger` subclasses marshal writes through a lock or async queue.
+- `LoggingScopeContext` uses `AsyncLocal<int>` for per-async-flow suppression depth.
+- `BulkDbProcessor<T>` accepts `CancellationToken` on all long-running operations.
+
+### `InternalsVisibleTo`
+
+Internal APIs are accessible to both `ByteForge.Toolkit.Tests` and `ByteForge.Toolkit.Modern.Tests` so that test projects can exercise non-public behaviour without making those APIs public.
+
+---
+
+## Dependencies
+
+| Package | Version | Condition |
+|---------|---------|-----------|
+| `Costura.Fody` | 6.0.0 | Build-time only |
+| `Fody` | 6.9.3 | Build-time only |
+| `Microsoft.Extensions.Configuration` | 9.0.10 | All targets |
+| `Microsoft.Extensions.Configuration.Ini` | 9.0.10 | All targets |
+| `Newtonsoft.Json` | 13.0.4 | All targets |
+| `RestSharp` | 112.1.0 | All targets |
+| `System.CommandLine` | 2.0.0-beta4 | net8.0, net9.0 only |
+| `System.CommandLine.NamingConventionBinder` | 2.0.0-beta4 | All targets |
+| `System.Data.SqlClient` | 4.9.0 | All targets |
+| `System.Data.Odbc` | 9.0.10 | All targets |
+| `System.Text.Json` | 9.0.10 | All targets |
+| `System.IO.Pipelines` | 9.0.10 | All targets |
+| `System.Memory` / `System.Buffers` | 4.6.x | All targets |
+| `Microsoft.Bcl.AsyncInterfaces` | 9.0.10 | All targets |
+| `System.ValueTuple` | 4.6.1 | All targets |
+| `System.IO.Compression` | (framework ref) | net48 only |
+| `System.Transactions` | (framework ref) | net48 only |
+
+Project reference: `WinSCP\WinSCPnet.csproj`
+
+---
+
+## Directory Structure
 
 ```
 Toolkit.Modern/
-├── 📁 Attributes/                     # Cross-cutting attributes
-│   ├── CSVColumnAttribute.cs          # CSV entity mapping
-│   ├── DBColumnAttribute.cs           # Database entity mapping
-│   └── readme.md                      # Attribute documentation
-├── 📁 CLI/                           # Command-line interface
-│   ├── 📁 Attributes/                # CLI-specific attributes
-│   │   ├── CommandAttribute.cs       # Command definition
-│   │   └── OptionAttribute.cs        # Option definition
-│   ├── CommandBuilder.cs             # Fluent command builder
-│   ├── CommandParser.cs              # Argument parser
-│   ├── ConsoleSpinner.cs             # Progress indicators
-│   ├── GlobalOption.cs               # Global options
-│   ├── ParseResult.cs                # Parse results
-│   ├── ProgressSpinner.cs            # Progress reporting
-│   ├── RootCommandBuilder.cs         # Root command builder
-│   └── readme.md                     # CLI documentation
-├── 📁 Configuration/                 # Configuration management
-│   ├── 📁 Attributes/                # Configuration attributes
-│   │   ├── ArrayAttribute.cs         # Array section mapping
-│   │   ├── ConfigNameAttribute.cs    # Custom name mapping
-│   │   ├── DefaultValueProviderAttribute.cs  # Default value providers
-│   │   ├── DictionaryAttribute.cs    # Dictionary section mapping
-│   │   └── DoNotPersistAttribute.cs  # Persistence control
-│   ├── 📁 Helpers/                   # Configuration helpers
-│   │   ├── DefaultValueHelper.cs     # Default value resolution
-│   │   ├── IParsingHelper.cs         # Parsing interface
-│   │   └── ParsingHelper.cs          # Parsing implementation
-│   ├── 📁 Interfaces/                # Configuration interfaces
-│   │   ├── IConfigSection.cs         # Section interface
-│   │   └── IConfigurationManager.cs  # Manager interface
-│   ├── 📁 Models/                    # Configuration models
-│   │   ├── ConfigSection.cs          # Base section class
-│   │   └── GlobalizationInfo.cs      # Culture settings
-│   ├── AssemblyException.cs          # Assembly-related exceptions
-│   ├── Configuration.cs              # Main configuration manager
-│   └── readme.md                     # Configuration documentation
-├── 📁 Core/                          # Core utilities
-│   ├── Core.cs                       # Core functionality
-│   ├── Core.WinScpResourceManager.cs # WinSCP resource management
-│   └── readme.md                     # Core documentation
-├── 📁 Data/                          # Data processing
-│   ├── 📁 Audio/                     # Audio format detection
-│   │   └── AudioFormatDetector.cs    # Audio format utilities
-│   ├── 📁 CSV/                       # CSV processing
-│   │   ├── BufferedReader.cs         # Buffered file reading
-│   │   ├── CSVFormat.cs              # Format definitions
-│   │   ├── CSVReader.cs              # CSV file reader
-│   │   ├── CSVRecord.cs              # CSV record representation
-│   │   ├── CSVWriter.cs              # CSV file writer
-│   │   ├── ConversionException.cs    # Conversion errors
-│   │   ├── DataProcessingException.cs # Processing errors
-│   │   ├── ICSVRecord.cs             # Record interface
-│   │   └── ValidationErrors.cs       # Validation error handling
-│   ├── 📁 Database/                  # Database access
-│   │   ├── BulkDbProcessor.Core.cs   # Bulk processor core
-│   │   ├── BulkDbProcessor.Events.cs # Bulk processor events
-│   │   ├── BulkDbProcessor.Operations.cs # Bulk operations
-│   │   ├── BulkDbProcessor.SqlGeneration.cs # SQL generation
-│   │   ├── BulkDbProcessor.TableManagement.cs # Table management
-│   │   ├── DBAccess.Core.cs          # Database access core
-│   │   ├── DBAccess.Factory.cs       # Connection factory
-│   │   ├── DBAccess.Logging.cs       # Database logging
-│   │   ├── DBAccess.Methods.cs       # Database methods
-│   │   ├── DBAccess.Parameters.cs    # Parameter handling
-│   │   ├── DBAccess.Properties.cs    # Database properties
-│   │   ├── DBAccess.ScriptExecution.cs # Script execution
-│   │   ├── DBAccess.Transactions.cs  # Transaction support
-│   │   ├── DBOptions.cs              # Database options
-│   │   ├── DBTransaction.cs          # Transaction wrapper
-│   │   ├── ScriptExecutionResult.cs  # Script results
-│   │   └── TypeConverter.cs          # Type conversion
-│   ├── 📁 Exceptions/                # Data exceptions
-│   │   └── ParamArgumentsMismatchException.cs # Parameter errors
-│   └── readme.md                     # Data documentation
-├── 📁 DataStructures/                # Data structures
-│   ├── BinarySearchTree.cs           # Binary search tree
-│   ├── Url.cs                        # URL utilities
-│   └── readme.md                     # DataStructures documentation
-├── 📁 Dependencies/                  # Embedded dependencies
-│   └── WinSCP.exe                    # Embedded WinSCP executable
-├── 📁 Json/                          # JSON processing
-│   ├── DeltaContractResolver.cs      # Delta contract resolution
-│   ├── JsonDeltaSerializer.cs        # Delta serialization
-│   └── readme.md                     # JSON documentation
-├── 📁 Logging/                       # Logging system
-│   ├── 📁 Implementations/           # Logger implementations
-│   │   ├── BaseLogger.cs             # Base logger class
-│   │   ├── CompositeLogger.cs        # Multi-target logger
-│   │   ├── ConsoleLogger.cs          # Console output
-│   │   ├── FileLogger.cs             # File output
-│   │   ├── NullLogger.cs             # No-op logger
-│   │   ├── SessionFileLogger.cs      # Session-specific files
-│   │   └── StaticLoggerAdapter.cs    # Static access adapter
-│   ├── 📁 Interfaces/                # Logging interfaces
-│   │   └── ILogger.cs                # Logger interface
-│   ├── 📁 Models/                    # Logging models
-│   │   ├── AsyncOptions.cs           # Async configuration
-│   │   ├── CorrelationContext.cs     # Correlation tracking
-│   │   ├── FileLoggerOptions.cs      # File logger options
-│   │   ├── LogEntry.cs               # Log entry model
-│   │   ├── LogLevel.cs               # Log levels
-│   │   ├── LogSettings.cs            # Logging settings
-│   │   └── SessionFileLoggerOptions.cs # Session logger options
-│   ├── Log.cs                        # Static logging facade
-│   └── readme.md                     # Logging documentation
-├── 📁 Mail/                          # Email processing
-│   ├── AttachmentProcessResult.cs    # Attachment results
-│   ├── EmailAttachmentHandler.cs     # Attachment processing
-│   ├── MailUtil.cs                   # Mail utilities
-│   ├── PartInfo.cs                   # MIME part information
-│   ├── ProcessingMethod.cs           # Processing methods
-│   ├── SkippedFile.cs                # Skipped file tracking
-│   ├── TempFileAttachment.cs         # Temporary attachments
-│   └── readme.md                     # Mail documentation
-├── 📁 Net/                           # Network operations
-│   ├── FileOperationProgress.cs      # Operation progress
-│   ├── FileOperationResult.cs        # Operation results
-│   ├── FileTransferClient.cs         # Transfer client
-│   ├── FileTransferConfig.cs         # Transfer configuration
-│   ├── FileTransferException.cs      # Transfer exceptions
-│   ├── FileTransferItem.cs           # Transfer items
-│   ├── FileTransferProgress.cs       # Transfer progress
-│   ├── FileTransferResult.cs         # Transfer results
-│   ├── RemoteFileInfo.cs             # Remote file information
-│   ├── TransferProtocol.cs           # Protocol definitions
-│   └── readme.md                     # Net documentation
-├── 📁 Security/                      # Security utilities
-│   ├── AESEncryption.cs              # AES encryption
-│   ├── Encryptor.cs                  # General encryption
-│   ├── VBMath.cs                     # Mathematical utilities
-│   └── readme.md                     # Security documentation
-├── 📁 Utils/                         # General utilities
-│   ├── BooleanParser.cs              # Boolean parsing
-│   ├── ConsoleUtil.cs                # Console utilities
-│   ├── DateTimeParser.cs             # DateTime parsing
-│   ├── DateTimeUtil.cs               # DateTime utilities
-│   ├── EnumExtensions.cs             # Enum extensions
-│   ├── HtmlUtil.cs                   # HTML utilities
-│   ├── IOUtils.cs                    # I/O utilities
-│   ├── IParser.cs                    # Parser interface
-│   ├── NameUtil.cs                   # Name utilities
-│   ├── Parser.cs                     # Generic parser
-│   ├── StringUtil.cs                 # String utilities
-│   ├── TemplateProcessor.cs          # Template processing
-│   ├── TimingUtil.cs                 # Timing utilities
-│   ├── TypeHelper.cs                 # Type utilities
-│   ├── Utils.cs                      # General utilities
-│   ├── ValueConverterRegistry.cs     # Value conversion
-│   └── readme.md                     # Utils documentation
-├── ByteForge.Toolkit.Modern.csproj   # Project file
-├── FodyWeavers.xml                   # Fody configuration
-├── FodyWeavers.xsd                   # Fody schema
-└── readme.md                         # This file
+├── CommandLine/
+│   ├── Attributes/
+│   │   ├── CommandAttribute.cs
+│   │   └── OptionAttribute.cs
+│   ├── CommandBuilder.cs
+│   ├── CommandParser.cs
+│   ├── ConsoleSpinner.cs
+│   ├── GlobalOption.cs
+│   ├── ParseResult.cs
+│   ├── ProgressSpinner.cs
+│   └── RootCommandBuilder.cs
+├── Configuration/
+│   ├── Attributes/
+│   │   ├── ArrayAttribute.cs
+│   │   ├── ConfigNameAttribute.cs
+│   │   ├── DefaultValueProviderAttribute.cs
+│   │   ├── DictionaryAttribute.cs
+│   │   └── DoNotPersistAttribute.cs
+│   ├── Helpers/
+│   │   ├── DefaultValueHelper.cs
+│   │   ├── IParsingHelper.cs
+│   │   └── ParsingHelper.cs
+│   ├── Interfaces/
+│   │   ├── IConfigSection.cs
+│   │   └── IConfigurationManager.cs
+│   ├── Models/
+│   │   ├── ConfigSection.cs
+│   │   └── GlobalizationInfo.cs
+│   ├── AssemblyException.cs
+│   └── Configuration.cs
+├── Core/
+│   ├── Core.cs
+│   └── Core.WinScpResourceManager.cs
+├── Data/
+│   ├── Attributes/
+│   │   ├── CSVColumnAttribute.cs
+│   │   └── DBColumnAttribute.cs
+│   ├── Audio/
+│   │   └── AudioFormatDetector.cs
+│   ├── CSV/
+│   │   ├── BufferedReader.cs
+│   │   ├── ConversionException.cs
+│   │   ├── CSVFormat.cs
+│   │   ├── CSVReader.cs
+│   │   ├── CSVRecord.cs
+│   │   ├── CSVWriter.cs
+│   │   ├── DataProcessingException.cs
+│   │   ├── ICSVRecord.cs
+│   │   └── ValidationErrors.cs
+│   ├── Database/
+│   │   ├── BulkDbProcessor.Core.cs
+│   │   ├── BulkDbProcessor.Events.cs
+│   │   ├── BulkDbProcessor.Operations.cs
+│   │   ├── BulkDbProcessor.SqlGeneration.cs
+│   │   ├── BulkDbProcessor.TableManagement.cs
+│   │   ├── DBAccess.Core.cs
+│   │   ├── DBAccess.Factory.cs
+│   │   ├── DBAccess.Logging.cs
+│   │   ├── DBAccess.Methods.cs
+│   │   ├── DBAccess.Parameters.cs
+│   │   ├── DBAccess.Properties.cs
+│   │   ├── DBAccess.ScriptExecution.cs
+│   │   ├── DBAccess.Transactions.cs
+│   │   ├── DBOptions.cs
+│   │   ├── DBTransaction.cs
+│   │   ├── ScriptExecutionResult.cs
+│   │   └── TypeConverter.cs
+│   └── Exceptions/
+│       └── ParamArgumentsMismatchException.cs
+├── DataStructures/
+│   ├── BinarySearchTree.cs
+│   └── Url.cs
+├── Dependencies/
+│   └── WinSCP.exe                  (EmbeddedResource)
+├── Json/
+│   ├── DeltaContractResolver.cs
+│   └── JsonDeltaSerializer.cs
+├── Logging/
+│   ├── Implementations/
+│   │   ├── BaseLogger.cs
+│   │   ├── CompositeLogger.cs
+│   │   ├── ConsoleLogger.cs
+│   │   ├── FileLogger.cs
+│   │   ├── NullLogger.cs
+│   │   ├── SessionFileLogger.cs
+│   │   └── StaticLoggerAdapter.cs
+│   ├── Interfaces/
+│   │   └── ILogger.cs
+│   ├── Models/
+│   │   ├── AsyncOptions.cs
+│   │   ├── CorrelationContext.cs
+│   │   ├── FileLoggerOptions.cs
+│   │   ├── LogEntry.cs
+│   │   ├── LogLevel.cs
+│   │   ├── LogSettings.cs
+│   │   └── SessionFileLoggerOptions.cs
+│   ├── Log.cs
+│   └── LoggingScopeContext.cs
+├── Mail/
+│   ├── AttachmentProcessResult.cs
+│   ├── EmailAttachmentHandler.cs
+│   ├── MailUtil.cs
+│   ├── PartInfo.cs
+│   ├── ProcessingMethod.cs
+│   ├── SkippedFile.cs
+│   └── TempFileAttachment.cs
+├── Net/
+│   ├── FileOperationProgress.cs
+│   ├── FileOperationResult.cs
+│   ├── FileTransferClient.cs
+│   ├── FileTransferConfig.cs
+│   ├── FileTransferException.cs
+│   ├── FileTransferItem.cs
+│   ├── FileTransferProgress.cs
+│   ├── FileTransferResult.cs
+│   ├── RemoteFileInfo.cs
+│   └── TransferProtocol.cs
+├── Properties/
+│   └── AssemblyInfo.cs
+├── Security/
+│   ├── AESEncryption.cs
+│   ├── Encryptor.cs
+│   └── VBMath.cs
+├── Utilities/
+│   ├── BooleanParser.cs
+│   ├── ConsoleUtil.cs
+│   ├── DateTimeParser.cs
+│   ├── DateTimeUtil.cs
+│   ├── EnumExtensions.cs
+│   ├── HtmlUtil.cs
+│   ├── IOUtils.cs
+│   ├── IParser.cs
+│   ├── NameUtil.cs
+│   ├── Parser.cs
+│   ├── StringUtil.cs
+│   ├── TemplateProcessor.cs
+│   ├── TimingUtil.cs
+│   ├── TypeHelper.cs
+│   ├── Utils.cs
+│   └── ValueConverterRegistry.cs
+├── ByteForge.Toolkit.Modern.csproj
+├── FodyWeavers.xml
+├── FodyWeavers.xsd
+└── version.txt
 ```
 
 ---
 
-## 🛠️ Development Guidelines
+## Module Documentation
 
-### Code Standards
-- **Modern C# 12** language features with nullable reference types
-- **Comprehensive XML documentation** for all public APIs
-- **Consistent naming conventions** following .NET guidelines
-- **Attribute-driven programming** for declarative configurations
-
-### Architecture Principles
-- **Single responsibility** - Each class has a focused purpose
-- **Dependency inversion** - Depend on abstractions, not concretions
-- **Open/closed principle** - Open for extension, closed for modification
-- **Interface segregation** - Many specific interfaces are better than one general-purpose interface
-
-### Performance Considerations
-- **Memory efficiency** - Streaming for large data operations
-- **Async patterns** - Non-blocking operations where appropriate
-- **Resource management** - Proper disposal and cleanup
-- **Caching strategies** - Cache expensive operations appropriately
-
----
-
-## 🔗 Integration Points
-
-### WinSCP Integration
-The library includes embedded WinSCP.exe resources and integrates with the WinSCPnet project for comprehensive file transfer capabilities.
-
-### Configuration Integration
-All modules support configuration through the centralized Configuration system, enabling consistent settings management across the entire library.
-
-### Logging Integration
-All modules integrate with the centralized logging system, providing consistent diagnostic information and troubleshooting capabilities.
-
----
-
-For comprehensive examples and detailed API documentation, refer to the individual module readme files and the solution-level documentation.
-
----
-
-## 📖 Documentation Links
-
-### 🏗️ Core Modules
-| Module                                         | Description                |
-|------------------------------------------------|----------------------------|
-| **[CLI](CommandLine/readme.md)**               | Command-line parsing       |
-| **[Configuration](Configuration/readme.md)**   | INI-based configuration    |
-| **[Core](Core/readme.md)**                     | Core utilities             |
-| **[Data](Data/readme.md)**                     | Database & file processing |
-| **[DataStructures](DataStructures/readme.md)** | Collections & utilities    |
-| **[JSON](Json/readme.md)**                     | Delta serialization        |
-| **[Logging](Logging/readme.md)**               | Structured logging         |
-| **[Mail](Mail/readme.md)**                     | Email processing           |
-| **[Net](Net/readme.md)**                       | Network file transfers     |
-| **[Security](Security/readme.md)**             | Encryption & security      |
-| **[Utils](Utilities/readme.md)**               | General utilities          |
-
-### 📊 Data Modules
-| Module                                           | Description             |
-|--------------------------------------------------|-------------------------|
-| **[Data.Attributes](Data/Attributes/readme.md)** | Data mapping attributes |
+| Module | readme |
+|--------|--------|
+| CommandLine | [CommandLine/readme.md](CommandLine/readme.md) |
+| Configuration | [Configuration/readme.md](Configuration/readme.md) |
+| Core | [Core/readme.md](Core/readme.md) |
+| Data | [Data/readme.md](Data/readme.md) |
+| DataStructures | [DataStructures/readme.md](DataStructures/readme.md) |
+| Json | [Json/readme.md](Json/readme.md) |
+| Logging | [Logging/readme.md](Logging/readme.md) |
+| Mail | [Mail/readme.md](Mail/readme.md) |
+| Net | [Net/readme.md](Net/readme.md) |
+| Security | [Security/readme.md](Security/readme.md) |
+| Utilities | [Utilities/readme.md](Utilities/readme.md) |

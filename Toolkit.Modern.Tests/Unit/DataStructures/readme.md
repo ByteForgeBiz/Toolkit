@@ -1,58 +1,67 @@
-# DataStructures Tests
+# DataStructures Unit Tests
 
-This directory contains unit tests for the ByteForge.Toolkit DataStructures module, which provides specialized data structures for efficient data organization and manipulation.
+Tests for `ByteForge.Toolkit.DataStructures`.
 
-## Overview
-
-The DataStructures module includes implementations of common data structures like binary search trees and specialized types like URL processing. These tests ensure that all data structures function correctly and efficiently.
+**Test classes:** `BinarySearchTreeTests`, `UrlTests`
+**Test categories:** `Unit`, `DataStructures`
+**Source module:** `Toolkit.Modern/DataStructures/`
 
 ## Test Classes
 
 ### BinarySearchTreeTests
 
-Tests for the BinarySearchTree<T> class, which implements a self-balancing binary search tree:
+Validates `BinarySearchTree<T>`, a generic self-ordering binary search tree.
 
-- Insertion and removal of nodes
-- Tree balancing operations
-- In-order, pre-order, and post-order traversal
-- Search operations
-- Minimum and maximum value finding
-- Handling of duplicate values
-- Performance with large datasets
-- Edge cases like empty trees and single nodes
+| Test area | Coverage |
+|-----------|---------|
+| Constructor | Empty tree: `Count = 0`, `IsEmpty = true` |
+| `Insert` | Single value, duplicate values, ordered and unordered sequences |
+| `Remove` | Leaf node, node with one child, node with two children |
+| `Contains` | Found and not-found cases |
+| `Count` / `IsEmpty` | Updated correctly after insertions and removals |
+| In-order traversal | `GetInOrderTraversal()` returns values in sorted ascending order |
+| Min / Max | Finding the minimum and maximum values in the tree |
+| Large datasets | Performance with many values |
+| Edge cases | Empty tree operations, single-node tree, all-duplicate values |
+
+`AssertionHelpers.AssertBinarySearchTreeOrdering` is used to verify that in-order traversal produces a sorted sequence matching the inserted values.
 
 ### UrlTests
 
-Tests for the Url class, which provides URL parsing and manipulation:
+Validates the `Url` utility class, which provides URL combination and manipulation.
 
-- URL parsing from strings
-- Component extraction (scheme, host, port, path, query, fragment)
-- URL modification
-- Query parameter handling
-- URL encoding and decoding
-- Relative URL resolution
-- URL comparison and equality
-- URL validation
-- Edge cases like malformed URLs and special characters
+| Test area | Coverage |
+|-----------|---------|
+| `Url.Combine(url1, url2)` | Basic combination with correct slash handling |
+| Trailing/leading slashes | Redundant slashes are normalized |
+| Empty/null segments | Graceful handling without throwing |
+| Multiple segments | `Url.Combine(base, seg1, seg2, ...)` |
+| Query strings | Combined URL retains query parameters |
+| Fragment handling | Fragment (`#anchor`) is preserved |
+| Special characters | Encoded characters pass through unmodified |
+| Edge cases | Both segments empty, one segment empty |
 
-## Testing Strategy
+## Prerequisites
 
-The DataStructures tests follow a comprehensive approach that covers:
+No external dependencies. All tests are fully in-memory.
 
-1. **Core functionality**: Basic operations of each data structure
-2. **Performance**: Efficient operation with large datasets
-3. **Edge cases**: Handling of unusual or extreme inputs
-4. **Correctness**: Validation against expected behaviors
-5. **API usability**: Testing the public interface for completeness and consistency
+## Running These Tests
 
-## Test Helpers
+```powershell
+# All DataStructures tests
+dotnet test --filter "TestCategory=DataStructures"
 
-These tests may utilize helper classes to assist with test setup and validation:
+# By class
+dotnet test --filter "FullyQualifiedName~BinarySearchTreeTests"
+dotnet test --filter "FullyQualifiedName~UrlTests"
+```
 
-- **AssertionHelpers**: Contains custom assertions for data structure validation
-- Custom comparison and equality methods for specialized testing
+---
 
-## Notes
+## Documentation Links
 
-The DataStructures module focuses on providing efficient, specialized data structures that aren't available in the standard .NET Framework collections. These implementations are optimized for specific use cases while maintaining broad compatibility.
-
+| Location | Description | Documentation |
+|----------|-------------|---------------|
+| **Tests root** | Test project overview | [../../README.md](../../README.md) |
+| **Unit overview** | Unit test organization | [../readme.md](../readme.md) |
+| **Helpers** | Test helper classes | [../../Helpers/README.md](../../Helpers/README.md) |

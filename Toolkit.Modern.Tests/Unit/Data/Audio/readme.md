@@ -1,45 +1,60 @@
-# Audio Tests
+# Audio Unit Tests
 
-This directory contains unit tests for the ByteForge.Toolkit Data Audio module, which provides functionality for detecting and processing audio file formats.
+Tests for `AudioFormatDetector` in `ByteForge.Toolkit.Data`.
 
-## Overview
+**Test class:** `AudioFormatDetectorTests`
+**Test categories:** `Unit`, `Data`, `Audio`
+**Source module:** `Toolkit.Modern/Data/`
 
-The Audio module includes components for identifying audio file formats, extracting metadata, and determining appropriate file extensions and MIME types. These tests ensure that audio format detection works correctly for various audio formats.
+## What Is Tested
 
-## Test Classes
+`AudioFormatDetector` identifies audio file formats by inspecting raw byte headers rather than file extensions. It exposes a static `DetectFormat(byte[])` method returning an `AudioFormat` enum value, plus helpers for MIME type and file extension lookup.
 
-### AudioFormatDetectorTests
+### Format Detection (`DetectFormat`)
 
-Tests for the AudioFormatDetector class, which analyzes audio data to determine its format:
+| Format | Header Pattern |
+|--------|---------------|
+| MP3 | ID3v2 tag `"ID3"` prefix |
+| MP3 | MPEG frame sync `0xFF 0xFB` |
+| WAV | `"RIFF"` + `"WAVE"` |
+| FLAC | `"fLaC"` |
+| OGG | `"OggS"` |
+| M4A | `"ftyp"` box |
+| WMA | ASF GUID `30 26 B2 75 ...` |
+| AIFF | `"FORM"` + `"AIFF"` |
 
-- Detection of common audio formats (MP3, WAV, FLAC, AAC, etc.)
-- Extraction of file extensions based on detected formats
-- Determination of MIME types for audio formats
-- Handling of incomplete or corrupted audio data
-- Performance with large audio files
-- Edge cases such as null inputs, empty arrays
-- Format mapping consistency across all supported formats
+All eight format headers above are defined as inline `byte[]` constants in the test class and passed directly to `DetectFormat` — no audio files on disk are required.
 
-## Testing Strategy
+### Additional Coverage
 
-The Audio tests follow a comprehensive approach that covers:
+| Test area | Description |
+|-----------|-------------|
+| Null/empty input | `DetectFormat(null)` and `DetectFormat([])` must not throw; expected return value is `Unknown` |
+| Truncated data | Arrays shorter than a complete header return `Unknown` or the correct partial-match result |
+| MIME type mapping | `GetMimeType(AudioFormat)` returns the correct MIME string for every defined format |
+| Extension mapping | `GetFileExtension(AudioFormat)` returns the correct extension for every defined format |
+| Mapping consistency | MIME type and extension mappings cover all `AudioFormat` enum values |
 
-1. **Format detection**: Accurate identification of various audio formats
-2. **Metadata extraction**: Proper reading of format-specific metadata
-3. **Error handling**: Appropriate response to invalid or corrupted audio data
-4. **Performance**: Acceptable processing speed for audio format detection
-5. **Completeness**: Testing all supported audio formats and conversions
+## Prerequisites
 
-## Test Data
+No external files or databases required. All test data is constructed inline as `byte[]` constants.
 
-The tests use various audio file samples:
+## Running These Tests
 
-- Valid audio files in different formats
-- Corrupted or incomplete audio files
-- Files with unusual headers or metadata
-- Edge cases with minimal valid data
+```powershell
+# All audio tests
+dotnet test --filter "TestCategory=Audio"
 
-## Notes
+# By class name
+dotnet test --filter "FullyQualifiedName~AudioFormatDetectorTests"
+```
 
-The AudioFormatDetector implements format detection based on file headers and signatures rather than relying on file extensions. This allows for accurate format identification even when files have incorrect or missing extensions.
+---
 
+## Documentation Links
+
+| Location | Description | Documentation |
+|----------|-------------|---------------|
+| **Tests root** | Test project overview | [../../../README.md](../../../README.md) |
+| **Unit overview** | Unit test organization | [../../readme.md](../../readme.md) |
+| **Data overview** | Data tests overview | [../readme.md](../readme.md) |

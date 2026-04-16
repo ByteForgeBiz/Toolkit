@@ -1,86 +1,123 @@
-# Configuration Tests
+# Configuration Unit Tests
 
-This directory contains unit tests for the ByteForge.Toolkit Configuration module, which provides an INI-based configuration system with section support, strong typing, dynamic access, and array support.
+Tests for `ByteForge.Toolkit.Configuration`. The module provides an INI-based configuration system with typed section mapping, array support, dictionary support, globalization, migration, and thread safety.
 
-## Overview
-
-The Configuration module is a core component of ByteForge.Toolkit, enabling applications to store and retrieve configuration data with strong typing and organized sections. These tests ensure that all aspects of the Configuration system work correctly.
+**Source module:** `Toolkit.Modern/Configuration/`
 
 ## Test Classes
 
+| Class | Description |
+|-------|-------------|
+| `ConfigurationCoreTests` | Initialization, section registration, save/load round-trips |
+| `ConfigSectionTests` | Property-to-key mapping, attribute control, default values |
+| `ConfigurationArrayTests` | Array and collection persistence with `[Array]` attribute |
+| `ConfigurationDictionaryTests` | Dictionary property support |
+| `ConfigurationDictionaryEdgeCaseTests` | Edge cases and error paths for dictionary handling |
+| `ConfigurationAdvancedTests` | Complex naming conventions, inheritance, real-world patterns |
+| `ConfigurationEnhancementTests` | Enhanced features and recent additions |
+| `ConfigurationMigrationTests` | Configuration file migration and version compatibility |
+| `ConfigurationParserIntegrationTests` | Integration-level parsing with real INI content |
+| `ConfigurationThreadSafetyTests` | Concurrent read/write safety |
+| `ConfigurationErrorTests` | Error handling: file system errors, type conversion errors, missing sections |
+| `GlobalizationTests` | Culture loading, date/number/currency formatting methods |
+
+## Key Scenarios
+
 ### ConfigurationCoreTests
 
-Tests for the core functionality of the Configuration class, including:
-
-- Initialization with file paths, directories, and auto-detection
+- Initialization from an explicit file path
 - Prevention of double initialization
-- Invalid directory and missing file handling
-- Section management (adding, retrieving, duplicate prevention)
-- Thread safety
-- Save and load operations
-- Round-trip accuracy and formatting preservation
+- Handling of invalid or missing file paths
+- Section registration and retrieval
+- Save and load round-trip accuracy
+- Formatting preservation (comments, blank lines)
 
 ### ConfigSectionTests
 
-Tests for the typed section functionality, including:
+Tests typed section models (`BasicTestConfig`, `DatabaseConfig`) decorated with control attributes:
 
-- Basic property mapping for various types (string, numeric, boolean, DateTime, enum)
-- Default value handling with DefaultValueAttribute
-- Custom default value providers
-- Property control attributes (DoNotPersist, Ignore, ConfigName)
-- Mixed attribute scenarios
+| Attribute | Behavior Tested |
+|-----------|----------------|
+| `[DefaultValue(value)]` | Value is used when the INI key is absent |
+| `[ConfigName("key")]` | Property maps to a different key name |
+| `[DoNotPersist]` | Property is readable but skipped on save |
+| `[Ignore]` | Property is excluded from both read and write |
+
+Primitive types tested: `string`, `int`, `double`, `bool`, `DateTime`, `enum`.
 
 ### ConfigurationArrayTests
 
-Tests for array and collection support, including:
+Tests the `[Array]` and `[Array("SectionName")]` attributes on these collection types: `string[]`, `List<string>`, `List<int>`, `IList<string>`, `IEnumerable<string>`.
 
-- Basic array support for various types
-- Array section naming conventions
-- Array key formats and normalization
-- Array persistence and clearing
+Covers:
+- Default section naming convention (property name)
+- Custom section name via attribute parameter
+- Persistence and clearing
 - Null element handling
 
 ### GlobalizationTests
 
-Tests for culture and formatting support, including:
-
-- CultureInfo loading and management
-- Date, number, and currency formatting
-- Default culture behavior
-- Formatting methods (FormatCurrency, FormatDate, FormatNumber)
+- `CultureInfo` loading and storage
+- `FormatDate`, `FormatNumber`, and `FormatCurrency` methods
+- Default culture behavior when none is configured
 - Culture-aware parsing
-
-### ConfigurationErrorTests
-
-Tests for error handling and edge cases, including:
-
-- File system errors (permissions, corruption)
-- Type conversion errors
-- Configuration structure errors
-- Missing sections and circular references
-
-## Testing Strategy
-
-The configuration tests follow a comprehensive testing strategy that covers:
-
-1. **Core functionality**: Basic operations working correctly
-2. **Advanced features**: Array support, attributes, globalization
-3. **Error handling**: Validation of proper error responses
-4. **Edge cases**: Handling unusual or extreme scenarios
-5. **Performance**: Ensuring acceptable performance with large configurations
-
-## Test Helpers
-
-These tests make use of helper classes in the `Tests\ByteForge.Toolkit.Tests\Helpers` directory:
-
-- **ConfigurationTestHelper**: Provides utilities for creating test configuration files and sections
-- **TempFileHelper**: Assists with temporary file management for configuration tests
 
 ## Test Data
 
-Test data includes sample INI files and model classes:
+Tests construct inline INI content and write it to temporary files via `TempFileHelper.CreateTempIniFile()`. No external INI files are required. A representative sample:
 
-- **BasicTestConfig**: Simple properties of various types
-- **ArrayTestConfig**: Various array and collection properties
-- **ComplexTestConfig**: Nested objects and advanced scenarios
+```ini
+[TestSection]
+StringValue=Test String
+IntValue=42
+BoolValue=true
+DoubleValue=3.14159
+DateValue=2024-01-15T10:30:00
+ArrayValue=TestArray
 
+[TestArray]
+0=Item1
+1=Item2
+2=Item3
+
+[DatabaseSettings]
+Server=localhost
+Port=1433
+Username=testuser
+Password=testpass
+Timeout=30
+UseSSL=true
+```
+
+## Helpers Used
+
+- `ConfigurationTestHelper` — creates isolated `Configuration` instances from inline INI content
+- `TestConfigurationHelper` — low-level INI file construction helpers
+- `TempFileHelper` — manages temp files so they are cleaned up after each test
+
+## Prerequisites
+
+No external resources. All tests are self-contained and use temporary files.
+
+## Running These Tests
+
+```powershell
+# All Configuration tests
+dotnet test --filter "FullyQualifiedName~Unit.Configuration"
+
+# A specific class
+dotnet test --filter "FullyQualifiedName~ConfigurationCoreTests"
+dotnet test --filter "FullyQualifiedName~GlobalizationTests"
+```
+
+---
+
+## Documentation Links
+
+| Location | Description | Documentation |
+|----------|-------------|---------------|
+| **Tests root** | Test project overview | [../../README.md](../../README.md) |
+| **Unit overview** | Unit test organization | [../readme.md](../readme.md) |
+| **Helpers** | Test helper classes | [../../Helpers/README.md](../../Helpers/README.md) |
+| **Models** | Configuration test models | [../../Models/README.md](../../Models/README.md) |
+| **Configuration source** | Production module | [../../../Toolkit.Modern/Configuration/readme.md](../../../Toolkit.Modern/Configuration/readme.md) |

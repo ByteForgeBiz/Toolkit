@@ -1,300 +1,228 @@
 # ByteForge Toolkit
 
-**A comprehensive, enterprise-grade .NET library providing modular utilities for configuration management, database access, CLI parsing, security, data processing, and more.**
+A modular, enterprise-grade .NET library providing utilities for configuration management, database access, CLI parsing, security, data processing, file transfer, logging, and more.
 
 ---
 
-## 🎯 Project Overview
+## Solution Overview
 
-ByteForge.Toolkit is a modern, multi-targeting .NET library designed for enterprise applications. It combines the reliability of .NET Framework 4.8 with the performance and features of modern .NET (8.0+ and 9.0). The solution consists of three main projects working together to provide comprehensive functionality.
-
-### Target Frameworks
-- **.NET Framework 4.8** - Enterprise compatibility
-- **.NET 8.0** - Current LTS version  
-- **.NET 9.0** - Latest stable version
-
----
-
-## 📦 Solution Architecture
-
-The solution follows a clean, modular architecture with clear separation of concerns:
+`ByteForge.Toolkit.sln` contains four C# projects targeting multiple .NET frameworks from a single codebase.
 
 ```
 ByteForge.Toolkit.sln
-├── ByteForge.Toolkit.Modern     # Main library (multi-target)
-├── WinSCPnet                    # SFTP/FTP functionality (multi-target) 
-└── ByteForge.Toolkit.Modern.Tests  # Comprehensive test suite (.NET 8+)
+├── Toolkit.Modern/          # ByteForge.Toolkit.Modern  — core library (net48; net8.0; net9.0)
+├── WinSCP/                  # WinSCPnet                 — SFTP/FTP wrapper (net48-windows; net8.0-windows; net9.0-windows)
+├── Toolkit.Modern.Tests/    # ByteForge.Toolkit.Modern.Tests — test suite (net48; net9.0)
+└── TestBed/                 # TestBed                   — scratch console app (net9.0-windows)
 ```
 
-### Core Projects
+### Project summaries
 
-#### **ByteForge.Toolkit.Modern** 
-*Primary library with modular components*
-- **Configuration**: INI-based configuration with strong typing and section support
-- **CLI**: Attribute-based command-line parsing with automatic help generation  
-- **Database**: Multi-database access layer with bulk operations and transactions
-- **CSV**: High-performance CSV reading/writing with format auto-detection
-- **Security**: AES encryption, secure credential storage, and security utilities
-- **Logging**: Thread-safe, multi-target logging with structured output
-- **Mail**: Email processing with attachment handling and MIME support
-- **Net**: File transfer operations with progress monitoring
-- **Utils**: Comprehensive utility collection for parsing, string manipulation, I/O, and more
-- **Data Structures**: Binary search trees, URL utilities, and specialized collections
-- **JSON**: Delta serialization and contract resolution for efficient data exchange
+| Project | Assembly | Frameworks | Role |
+|---------|----------|------------|------|
+| `Toolkit.Modern` | `ByteForge.Toolkit.Modern` | net48, net8.0, net9.0 | Primary library — all modules live here |
+| `WinSCP` | `WinSCPnet` | net48-windows, net8.0-windows, net9.0-windows | .NET wrapper for WinSCP (SFTP/FTP/FTPS/SCP) |
+| `Toolkit.Modern.Tests` | `ByteForge.Toolkit.Modern.Tests` | net48, net9.0 | MSTest unit and integration tests |
+| `TestBed` | `TestBed` | net9.0-windows | Ephemeral console app for manual experimentation |
 
-#### **WinSCPnet**
-*Enterprise file transfer wrapper*
-- Complete .NET wrapper for WinSCP functionality
-- SFTP, FTP, FTPS, and SCP protocol support
-- Progress monitoring and event handling
-- Multi-target compatibility (.NET Framework 4.8, .NET 8.0, .NET 9.0)
-
-#### **ByteForge.Toolkit.Modern.Tests**
-*Comprehensive test suite*
-- 100+ test classes covering all modules
-- Integration and unit tests
-- Code coverage reporting with OpenCover and ReportGenerator
-- Database testing with Access and SQL Server scenarios
+`Toolkit.Modern` references `WinSCPnet` and also embeds `WinSCP.exe` as an `EmbeddedResource` for self-contained deployment.
 
 ---
 
-## 🚀 Quick Start
+## Build Requirements
 
-### Build Requirements
-- **.NET SDK 9.0+** (includes .NET Framework 4.8 targeting)
-- **Visual Studio 2022** or **VS Code** with C# extensions
-- **PowerShell** (recommended for build scripts)
+- **Visual Studio 2022 or 2026** (MSBuild is resolved automatically by the build script)
+- **.NET SDK 9.0+** (for net8.0/net9.0 targets)
+- **.NET Framework 4.8** developer pack (for the net48 target)
+- **PowerShell** (used internally by the build script)
 
-### Building the Solution
+---
 
-**Recommended approach:**
-```powershell
-# Build Debug configuration (default) - builds all target frameworks
-.\BuildSolution.bat
+## Building the Solution
 
-# Build Release configuration  
-.\BuildSolution.bat Release
+Use `BuildSolution.bat` from the repo root. It auto-detects the Visual Studio installation via `vswhere`, runs NuGet restore, and builds all projects.
+
+```bat
+:: Debug (default)
+BuildSolution.bat
+
+:: Release
+BuildSolution.bat Release
 ```
 
-**Manual build:**
+The script:
+1. Cleans `obj\` and `bin\<cfg>\` directories before building.
+2. Searches for MSBuild via `vswhere`, then falls back through VS 2026/2022/2019/2017 and the .NET Framework SDK.
+3. Runs MSBuild restore followed by an AnyCPU build.
+4. Writes a build log to `Logs\Build\ByteForge.Toolkit.log`.
+
+If you need a manual build (no script):
+
 ```powershell
 dotnet restore
 dotnet build --configuration Debug
 ```
 
-### Running Tests
+---
+
+## Running Tests
+
+The test project targets both `net48` and `net9.0`. Build the solution first, then:
+
 ```powershell
-# After building
+# Run all tests (no rebuild)
 dotnet test "Toolkit.Modern.Tests\ByteForge.Toolkit.Modern.Tests.csproj" --no-build
 
-# With code coverage
-cd "Toolkit.Modern.Tests"
-.\RunCoverage.bat  # Generates HTML coverage report
+# Run with code coverage (OpenCover is included as a NuGet package)
+cd Toolkit.Modern.Tests
+packages\OpenCover.4.7.1221\tools\OpenCover.Console.exe `
+    -target:"dotnet.exe" `
+    -targetargs:"test ByteForge.Toolkit.Modern.Tests.csproj --no-build --configuration Debug" `
+    -output:coverage.xml -register:user `
+    -filter:"+[ByteForge.Toolkit*]*"
+
+# Generate HTML report
+packages\ReportGenerator.5.4.18\tools\net47\ReportGenerator.exe `
+    -reports:coverage.xml -targetdir:coverage-report -reporttypes:Html
+```
+
+Test categories:
+
+| Category | Location |
+|----------|----------|
+| CLI | `Unit\CLI\` |
+| Configuration | `Unit\Configuration\` |
+| Data (Audio, CSV, Database) | `Unit\Data\` |
+| DataStructures | `Unit\DataStructures\` |
+| Logging | `Unit\Logging\` |
+| Mail | `Unit\Mail\` |
+| Security | `Unit\Security\` |
+| Utils | `Unit\Utils\` |
+
+ODBC tests (Access `.mdb`/`.accdb`) require the Microsoft Access ODBC driver and are separated from the default test run.
+
+---
+
+## Solution Structure
+
+```
+.
+├── Toolkit.Modern/               # Core library source (see Toolkit.Modern/readme.md)
+│   ├── CommandLine/              # CLI parsing
+│   ├── Configuration/            # INI configuration
+│   ├── Core/                     # Core utilities and WinSCP resource manager
+│   ├── Data/                     # CSV, database, audio, attributes
+│   ├── DataStructures/           # BinarySearchTree, URL utilities
+│   ├── Dependencies/             # Embedded WinSCP.exe
+│   ├── Json/                     # Delta serialization
+│   ├── Logging/                  # Logging system
+│   ├── Mail/                     # Email/attachment processing
+│   ├── Net/                      # File transfer client
+│   ├── Properties/               # AssemblyInfo.cs
+│   ├── Security/                 # AES encryption
+│   ├── Utilities/                # General-purpose helpers
+│   └── ByteForge.Toolkit.Modern.csproj
+├── WinSCP/                       # WinSCPnet wrapper library
+│   └── WinSCPnet.csproj
+├── Toolkit.Modern.Tests/         # Test suite
+│   ├── Unit/                     # Unit tests organised by module
+│   ├── Helpers/                  # Shared test helpers
+│   ├── Models/                   # Test data models
+│   ├── TestData/                 # Access databases, large dummy files
+│   └── ByteForge.Toolkit.Modern.Tests.csproj
+├── TestBed/                      # Manual experimentation console app
+│   └── TestBed.csproj
+├── .github/
+│   ├── scripts/                  # bootstrap-test-sql.ps1
+│   └── workflows/                # ci.yml
+├── BuildSolution.bat             # Primary build script
+├── ByteForge.Tasks.targets       # Custom MSBuild targets (bidirectional sync, versioning)
+└── ByteForge.Toolkit.sln
 ```
 
 ---
 
-## 📚 Module Documentation
+## Custom Build System — ByteForge.Tasks.targets
 
-Each module contains comprehensive documentation and examples:
+`ByteForge.Tasks.targets` is an optional MSBuild import that adds enterprise-grade build automation. It is only active when a `CentralLocationPath` property is set and the targets file is reachable from the project directory.
 
-| Module                                                      | Purpose                      | Key Features                                     |
-|-------------------------------------------------------------|------------------------------|--------------------------------------------------|
-| [**CLI**](Toolkit.Modern/CLI/readme.md)                     | Command-line parsing         | Attribute-based, type-safe, help generation      |
-| [**Configuration**](Toolkit.Modern/Configuration/readme.md) | INI configuration management | Strong typing, sections, arrays, encryption      |
-| [**Data**](Toolkit.Modern/Data/readme.md)                   | Database & file processing   | Multi-DB support, CSV, audio detection, bulk ops |
-| [**Security**](Toolkit.Modern/Security/readme.md)           | Encryption & security        | AES encryption, secure storage, validation       |
-| [**Logging**](Toolkit.Modern/Logging/readme.md)             | Structured logging           | Thread-safe, multi-target, configurable output   |
-| [**Utils**](Toolkit.Modern/Utils/readme.md)                 | General utilities            | Parsing, string manipulation, I/O, templates     |
+Key capabilities:
 
----
+| Phase | Target | Description |
+|-------|--------|-------------|
+| 1 — Pre-build | `SyncFromCentral` | Copies files from a central shared location into the project (newer-wins). |
+| 2 — Post-build | `SyncToCentral` | Pushes changed project files back to the central location. |
+| 3 — Cleanup | `SafeCleanupCentral` | Removes obsolete files from the central location that are no longer in the project. |
+| 4 — Versioning | `UpdateSmartVersion` | Increments `Minor` for new files, `Patch` for modified files, and writes the version to `version.txt` and `AssemblyInfo.cs`. |
+| 5 — Housekeeping | `ForceCleanupFiles` | Deletes leftover artefacts from the previous ROBOCOPY-based build system. |
 
-## 🔧 Key Features
-
-### Multi-Framework Support
-- Single codebase targeting .NET Framework 4.8, .NET 8.0, and .NET 9.0
-- Platform-specific optimizations and compatibility layers
-- Modern C# language features with nullable reference types
-
-### Enterprise-Grade Components
-- **Configuration Management**: INI-based with strong typing, encryption, and globalization
-- **Database Access**: Multi-database support (SQL Server, ODBC) with bulk operations
-- **Security**: AES encryption, secure credential storage, validation utilities
-- **File Processing**: High-performance CSV, audio format detection, email attachments
-
-### Developer Experience  
-- **Comprehensive Documentation**: Each module has detailed readme with examples
-- **Extensive Testing**: 100+ test classes with high code coverage
-- **Modern Tooling**: Support for latest IDE features and debugging tools
-- **Clean Architecture**: Modular design with clear separation of concerns
-
-### Performance & Reliability
-- **Thread-Safe Operations**: All core components support concurrent access
-- **Memory Efficient**: Optimized for large data processing scenarios
-- **Error Handling**: Comprehensive exception handling with detailed diagnostics
-- **Progress Monitoring**: Built-in progress reporting for long-running operations
+The bidirectional sync uses a custom inline Roslyn task (`BidirectionalSyncTask`) and only copies a file when the source timestamp is newer than the target. The versioning format is `Major.Minor.Patch.MMdd`.
 
 ---
 
-## 📁 Solution Structure
+## Dependencies
 
-```
-├── 📁 Toolkit.Modern/                 # Main library source
-│   ├── 📁 CLI/                        # Command-line interface components
-│   ├── 📁 Configuration/              # Configuration management
-│   ├── 📁 Data/                       # Database, CSV, audio processing
-│   │   ├── 📁 Audio/                  # Audio format detection
-│   │   ├── 📁 CSV/                    # CSV reading/writing
-│   │   ├── 📁 Database/               # Database access layer
-│   │   └── 📁 Exceptions/             # Data processing exceptions
-│   ├── 📁 Security/                   # Encryption and security
-│   ├── 📁 Logging/                    # Structured logging system
-│   ├── 📁 Mail/                       # Email processing
-│   ├── 📁 Net/                        # Network file transfers
-│   ├── 📁 Utils/                      # General utilities
-│   └── 📁 Dependencies/               # Embedded resources (WinSCP.exe)
-├── 📁 WinSCP/                         # SFTP/FTP wrapper library
-├── 📁 Toolkit.Modern.Tests/          # Test suite
-│   ├── 📁 Unit/                       # Unit tests by module
-│   ├── 📁 Helpers/                    # Test helper classes
-│   ├── 📁 Models/                     # Test data models
-│   └── 📁 TestData/                   # Test databases and files
-├── 📁 docs/                           # Solution documentation
-├── BuildSolution.bat                  # Build automation script
-├── ByteForge.Tasks.targets            # Custom MSBuild targets  
-└── CLAUDE.md                          # AI assistant instructions
-```
+### Toolkit.Modern
 
----
+| Package | Version | Purpose |
+|---------|---------|---------|
+| `Costura.Fody` / `Fody` | 6.0.0 / 6.9.3 | Embeds dependencies into the output assembly |
+| `Microsoft.Extensions.Configuration` + extensions | 9.0.10 | INI configuration provider |
+| `Newtonsoft.Json` | 13.0.4 | JSON serialization |
+| `RestSharp` | 112.1.0 | HTTP client |
+| `System.CommandLine` | 2.0.0-beta4 | CLI parsing (net8.0/net9.0 only) |
+| `System.CommandLine.NamingConventionBinder` | 2.0.0-beta4 | CLI option binding |
+| `System.Data.SqlClient` | 4.9.0 | SQL Server connectivity |
+| `System.Data.Odbc` | 9.0.10 | ODBC connectivity |
+| `System.Text.Json` | 9.0.10 | High-performance JSON |
+| Various BCL back-ports | — | `System.Memory`, `System.Buffers`, `System.IO.Pipelines`, `System.ValueTuple`, etc. |
 
-## 🛠️ Development Guidelines
+### WinSCPnet
 
-### Code Standards
-- **C# 12** language features with nullable reference types enabled
-- **Comprehensive XML documentation** for all public APIs
-- **Attribute-based configuration** for declarative programming  
-- **Partial classes** for large components (DBAccess, BulkDbProcessor)
+| Package | Version | Purpose |
+|---------|---------|---------|
+| `System.Diagnostics.PerformanceCounter` | 9.0.10 | Performance monitoring |
+| `System.Threading.AccessControl` | 9.0.10 | Thread synchronisation primitives |
 
-### Testing Standards
-- **Unit tests** for all public methods
-- **Integration tests** for database and file operations
-- **Code coverage** reporting with OpenCover
-- **Test data** management with embedded resources
+### Toolkit.Modern.Tests
 
-### Build System
-- **Multi-target builds** with framework-specific optimizations
-- **Automated version management** based on file changes
-- **Dependency embedding** with Costura.Fody
-- **Clean build artifacts** with custom MSBuild targets
+| Package | Version | Purpose |
+|---------|---------|---------|
+| `MSTest` | 4.0.1 | Test framework |
+| `Microsoft.NET.Test.Sdk` | 18.0.0 | Test runner |
+| `AwesomeAssertions` | 9.3.0 | Fluent assertion library |
+| `OpenCover` | 4.7.1221 | Code coverage instrumentation |
+| `ReportGenerator` | 5.4.18 | HTML coverage reports |
+| `coverlet.collector` | 6.0.4 | Alternative coverage collector |
 
 ---
 
-## 📋 Build Artifacts
+## Build Artefacts
 
-| Configuration     | Output Location             | Description                      |
-|-------------------|-----------------------------|----------------------------------|
-| **Debug**         | `bin\Debug\netX.X\`         | Development builds with symbols  |
-| **Release**       | `bin\Release\netX.X\`       | Optimized production builds      |
-| **Documentation** | `bin\ByteForge.Toolkit.xml` | Auto-generated API documentation |
-| **Test Results**  | `TestResults\`              | Coverage reports and test output |
-
----
-
-## 🔗 Dependencies
-
-### Core Dependencies
-- **Microsoft.Extensions.Configuration** (9.0.10) - Configuration abstractions
-- **System.CommandLine** (2.0.0-beta4) - CLI parsing foundation
-- **Newtonsoft.Json** (13.0.4) - JSON serialization
-- **RestSharp** (112.1.0) - HTTP client operations
-
-### Framework-Specific
-- **.NET Framework 4.8**: System.Data.SqlClient, legacy framework support
-- **.NET 8.0+**: Modern BCL packages, improved performance APIs
-- **WinSCP Integration**: Embedded WinSCP.exe for file transfer operations
+| Configuration | Output location |
+|---------------|----------------|
+| Debug | `Toolkit.Modern\bin\Debug\net48\`, `\net8.0\`, `\net9.0\` |
+| Release | `Toolkit.Modern\bin\Release\net48\`, `\net8.0\`, `\net9.0\` |
+| API docs | `Toolkit.Modern\bin\ByteForge.Toolkit.Modern.xml` |
+| Build logs | `Logs\Build\ByteForge.Toolkit.log` |
+| Test results | `Toolkit.Modern.Tests\TestResults\` |
 
 ---
 
-## 📝 Version History
+## Module Documentation
 
-The solution has undergone significant evolution:
-- **Legacy Architecture**: Original single .NET Framework 4.8 library
-- **Modern Multi-Target**: Current architecture supporting .NET Framework 4.8 + .NET 8.0/9.0
-- **Build System**: Custom MSBuild targets for file synchronization and versioning
-- **Test Suite**: Comprehensive testing with coverage reporting
-
----
-
-## 🎯 Usage Examples
-
-### Quick Configuration Access
-```csharp
-// Initialize and access strongly-typed configuration
-Configuration.Initialize("appsettings.ini");
-var dbConfig = Configuration.GetSection<DatabaseOptions>("Database");
-string connectionString = dbConfig.ConnectionString;
-```
-
-### Command-Line Application
-```csharp
-[Command("process", "Process data files")]
-public class ProcessCommand
-{
-    [Option("input", "i", "Input file path", required: true)]
-    public string InputFile { get; set; }
-    
-    [Option("format", "f", "Output format", defaultValue: "csv")]  
-    public string Format { get; set; }
-}
-```
-
-### Database Operations  
-```csharp
-var db = new DBAccess(connectionString);
-var results = db.GetDataTable("SELECT * FROM Users WHERE Active = @active", 
-    new { active = true });
-```
-
-### CSV Processing
-```csharp
-var reader = new CSVReader();
-reader.ReadFile("data.csv");
-foreach (var record in reader.Records)
-{
-    Console.WriteLine($"{record["Name"]}: {record["Email"]}");
-}
-```
-
----
-
-For detailed documentation on specific modules, see the individual readme files in each module directory.
-
----
-
-## 📖 Documentation Links
-
-### 📁 Main Projects
-| Module                                         | Description               |
-|------------------------------------------------|---------------------------|
-| **[Toolkit.Modern](Toolkit.Modern/readme.md)** | Core multi-target library |
-| **[WinSCP](WinSCP/readme.md)**                 | SFTP/FTP wrapper library  |
-
-### 🏗️ Core Modules
-| Module                                                        | Description                |
-|---------------------------------------------------------------|----------------------------|
-| **[CLI](Toolkit.Modern/CommandLine/readme.md)**               | Command-line parsing       |
-| **[Configuration](Toolkit.Modern/Configuration/readme.md)**   | INI-based configuration    |
-| **[Core](Toolkit.Modern/Core/readme.md)**                     | Core utilities             |
-| **[Data](Toolkit.Modern/Data/readme.md)**                     | Database & file processing |
-| **[DataStructures](Toolkit.Modern/DataStructures/readme.md)** | Collections & utilities    |
-| **[JSON](Toolkit.Modern/Json/readme.md)**                     | Delta serialization        |
-| **[Logging](Toolkit.Modern/Logging/readme.md)**               | Structured logging         |
-| **[Mail](Toolkit.Modern/Mail/readme.md)**                     | Email processing           |
-| **[Net](Toolkit.Modern/Net/readme.md)**                       | Network file transfers     |
-| **[Security](Toolkit.Modern/Security/readme.md)**             | Encryption & security      |
-| **[Utils](Toolkit.Modern/Utilities/readme.md)**               | General utilities          |
-
-### 📊 Data Modules
-| Module                                                          | Description             |
-|-----------------------------------------------------------------|-------------------------|
-| **[Data.Attributes](Toolkit.Modern/Data/Attributes/readme.md)** | Data mapping attributes |
+| Module | readme |
+|--------|--------|
+| Core library | [Toolkit.Modern/readme.md](Toolkit.Modern/readme.md) |
+| WinSCP wrapper | [WinSCP/readme.md](WinSCP/readme.md) |
+| CommandLine | [Toolkit.Modern/CommandLine/readme.md](Toolkit.Modern/CommandLine/readme.md) |
+| Configuration | [Toolkit.Modern/Configuration/readme.md](Toolkit.Modern/Configuration/readme.md) |
+| Core | [Toolkit.Modern/Core/readme.md](Toolkit.Modern/Core/readme.md) |
+| Data | [Toolkit.Modern/Data/readme.md](Toolkit.Modern/Data/readme.md) |
+| DataStructures | [Toolkit.Modern/DataStructures/readme.md](Toolkit.Modern/DataStructures/readme.md) |
+| Json | [Toolkit.Modern/Json/readme.md](Toolkit.Modern/Json/readme.md) |
+| Logging | [Toolkit.Modern/Logging/readme.md](Toolkit.Modern/Logging/readme.md) |
+| Mail | [Toolkit.Modern/Mail/readme.md](Toolkit.Modern/Mail/readme.md) |
+| Net | [Toolkit.Modern/Net/readme.md](Toolkit.Modern/Net/readme.md) |
+| Security | [Toolkit.Modern/Security/readme.md](Toolkit.Modern/Security/readme.md) |
+| Utilities | [Toolkit.Modern/Utilities/readme.md](Toolkit.Modern/Utilities/readme.md) |

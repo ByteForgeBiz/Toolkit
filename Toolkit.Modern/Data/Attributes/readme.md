@@ -2,707 +2,144 @@
 
 ## Overview
 
-The **Attributes** module defines custom attributes used throughout the ByteForge Toolkit for declarative programming and metadata-driven configuration. These attributes enable annotation-based feature discovery and configuration without boilerplate code.
+The **Attributes** module defines custom attributes used throughout the ByteForge Toolkit for declarative data mapping. Two attributes live here and are applied to C# properties to control how they map to CSV columns and database columns respectively.
 
 ---
 
-## Purpose
+## Attributes
 
-Custom attributes allow developers to:
-1. **Mark intent** - Indicate how properties should be mapped
-2. **Configure behavior** - Specify options without code changes
-3. **Enable tooling** - Allow reflection-based discovery
-4. **Reduce boilerplate** - Avoid manual mapping configuration
-5. **Maintain DRY** - Don't repeat configuration logic
+### `CSVColumnAttribute`
 
----
+**Namespace:** `ByteForge.Toolkit.Data`
+**Target:** Properties
 
-## Attributes by Category
+Maps a C# property to a column in a CSV file. Used by `CSVReader`, `CSVWriter`, and `CSVRecord` to discover which properties participate in CSV serialisation and what column header name they correspond to.
 
-### CSV Mapping Attributes
+| Constructor | Signature | Description |
+|-------------|-----------|-------------|
+| Default | `CSVColumnAttribute()` | No column name or index. Property name is used as fallback. |
+| By name | `CSVColumnAttribute(string name)` | Maps property to a column with the given header name |
+| By index and name | `CSVColumnAttribute(int index, string? name = null)` | Maps property to a zero-based column position, with optional name |
 
-#### `CSVColumnAttribute`
-**Namespace:** `ByteForge.Toolkit`
-**Targets:** Properties
+| Property | Type | Description |
+|----------|------|-------------|
+| `Name` | `string?` | Header name of the CSV column |
+| `Index` | `int` | Zero-based column position (`-1` = not set) |
 
-**Purpose:** Maps a C# class property to a CSV column.
+When both `Index` and `Name` are provided, the writer orders columns by `Index` and uses `Name` as the header. During reading, mapping is by name when headers are present.
 
-**Parameters:**
-- `ColumnName` (string) - Name of CSV column header
-- `ColumnIndex` (int, optional) - Zero-based column position
-- `Format` (string, optional) - Format string for date/number columns
-- `Optional` (bool) - Whether column can be missing
-
-**Usage:**
 ```csharp
-public class PersonRecord
+public class PersonRecord : CSVRecord
 {
-    [CSVColumn("First Name")]
-  public string FirstName { get; set; }
-    
-    [CSVColumn("Last Name")]
+    [CSVColumn(0, "First Name")]
+    public string FirstName { get; set; }
+
+    [CSVColumn(1, "Last Name")]
     public string LastName { get; set; }
-    
- [CSVColumn("Birth Date", Format = "MM/dd/yyyy")]
+
+    [CSVColumn(2, "Birth Date")]
     public DateTime BirthDate { get; set; }
-    
-    [CSVColumn("Email", Optional = true)]
-    public string Email { get; set; }
-}
-```
 
-**Usage in Code:**
-```csharp
-public void ProcessCSV(string filePath)
-{
-    var reader = new CSVReader();
-    reader.RowHandler = (row, status, line) =>
+    // No attribute — excluded from CSV mapping
+    public string InternalNote { get; set; }
+
+    public override void Validate()
     {
-   if (status != CSVReader.CSVRowStatus.OK) return true;
-        
-        // Map to object
-        var person = MapCSVRow<PersonRecord>(row);
-        
-      return true;  // Continue processing
-    };
-    reader.ReadFile(filePath);
+        if (string.IsNullOrEmpty(FirstName))
+            ValidationErrors.Add("First Name", "Required", FirstName);
+    }
 }
 ```
 
 ---
 
-### Database Mapping Attributes
+### `DBColumnAttribute`
 
-#### `DBColumnAttribute`
-**Namespace:** `ByteForge.Toolkit`
-**Targets:** Properties
+**Namespace:** `ByteForge.Toolkit.Data`
+**Target:** Properties
 
-**Purpose:** Maps a C# class property to a database column.
+Maps a C# property to a database column. Used by `TypeConverter` (DataRow-to-object mapping) and `BulkDbProcessor<T>` (table creation, bulk copy, upsert, delete).
 
-**Parameters:**
-- `ColumnName` (string) - Database column name
-- `DataType` (string, optional) - SQL data type
-- `AllowNull` (bool) - Whether column allows NULL
-- `IsPrimaryKey` (bool) - Indicates primary key
-- `IsIdentity` (bool) - Auto-increment column
-- `MaxLength` (int) - Maximum string length (-1 for unlimited)
-- `Precision` (int) - Decimal precision
-- `Scale` (int) - Decimal scale
+| Constructor | Signature | Description |
+|-------------|-----------|-------------|
+| By name | `DBColumnAttribute(string name)` | Maps to the named column; no PK, index, or unique constraint |
+| By PK flag | `DBColumnAttribute(bool isPrimaryKey)` | PK flag only; column name defaults to the property name |
+| Name + PK | `DBColumnAttribute(string name, bool isPrimaryKey)` | Named column with PK flag |
+| Full | `DBColumnAttribute(string? name, bool isPrimaryKey, bool hasIndex, bool isUnique)` | All structural options |
 
-**Usage:**
+| Property | Type | Default | Description |
+|----------|------|---------|-------------|
+| `Name` | `string?` | `null` | DB column name. If `null`, the property name is used |
+| `DbType` | `DbType?` | `null` | ADO.NET `DbType` for parameter creation |
+| `IsPrimaryKey` | `bool` | `false` | Marks the column as part of the primary key |
+| `IsIdentity` | `bool` | `false` | Auto-increment / IDENTITY column (excluded from upsert matching) |
+| `IdentitySeed` | `long` | `1` | IDENTITY seed value |
+| `IdentityStep` | `long` | `1` | IDENTITY increment step |
+| `HasIndex` | `bool` | `false` | Create an index on this column (auto-true when PK or unique) |
+| `IsUnique` | `bool` | `false` | Create a unique index on this column |
+| `IsNullable` | `bool` | `true` | Column allows NULL |
+| `MaxLength` | `int` | `0` | Max string length (0 = use default, typically 255 or `nvarchar(max)`) |
+| `ConverterName` | `string?` | `null` | Name of a registered `ValueConverterRegistry` function applied during DataRow mapping |
+| `Converter` | `Func<object,object>?` | — | Resolved converter function (read-only; resolved via `ConverterName`) |
+
 ```csharp
-public class UserEntity
+public class OrderEntity
 {
-    [DBColumn("UserId", IsPrimaryKey = true, IsIdentity = true)]
+    [DBColumn("OrderId", isPrimaryKey: true, isIdentity: true)]
     public int Id { get; set; }
-    
-    [DBColumn("UserName", MaxLength = 50, AllowNull = false)]
-    public string Username { get; set; }
-    
-    [DBColumn("EmailAddress", MaxLength = 100)]
-    public string Email { get; set; }
-    
-    [DBColumn("CreationDate", DataType = "datetime")]
+
+    [DBColumn("CustomerId", isPrimaryKey: false, hasIndex: true, isUnique: false)]
+    public int CustomerId { get; set; }
+
+    [DBColumn("Status", isNullable: false, maxLength: 20)]
+    public string Status { get; set; }
+
+    [DBColumn("TotalAmount")]
+    public decimal Total { get; set; }
+
+    [DBColumn("CreatedAt")]
     public DateTime CreatedAt { get; set; }
-    
-    [DBColumn("LastLoginDate", AllowNull = true)]
-    public DateTime? LastLogin { get; set; }
+
+    // No attribute — ignored by BulkDbProcessor and TypeConverter
+    public string ComputedLabel { get; set; }
 }
 ```
 
-**Used By:** `BulkDbProcessor<T>`, `DBAccess` for automatic table mapping.
-
----
-
-### Configuration Attributes
-
-#### `ConfigNameAttribute`
-**Namespace:** `ByteForge.Toolkit`
-**Targets:** Properties
-
-**Purpose:** Maps a C# property to an INI configuration key.
-
-**Parameters:**
-- `ColumnName` (string) - INI key name
-- `ColumnCaption` (string) - Friendly display name
-
-**Usage:**
-```csharp
-public class DatabaseSettings
-{
-    [ConfigName("Server", "Database Server Name")]
-    public string Server { get; set; }
-    
-    [ConfigName("Database", "Database Name")]
-    public string DatabaseName { get; set; }
-    
-    [ConfigName("Port", "Server Port")]
-    public int Port { get; set; }
-}
-```
-
-**INI Mapping:**
-```ini
-[DatabaseSettings]
-Server=prod.server.com
-Database=MyApplication
-Port=1433
-```
-
----
-
-#### `DefaultValueAttribute`
-**Namespace:** `ByteForge.Toolkit`
-**Targets:** Properties
-
-**Purpose:** Specifies default value when INI key is missing.
-
-**Parameters:**
-- `Value` (object) - Default value
-
-**Usage:**
-```csharp
-public class AppSettings
-{
-    [ConfigName("Environment")]
-    [DefaultValue("Development")]
-    public string Environment { get; set; }
- 
-    [ConfigName("Port")]
-    [DefaultValue(8080)]
-    public int Port { get; set; }
-    
-    [ConfigName("Timeout")]
- [DefaultValue(30)]
-    public int TimeoutSeconds { get; set; }
-}
-```
-
-**Behavior:**
-- Applied when key missing from INI
-- Type-coerced to property type
-- Improves graceful degradation
-
----
-
-#### `DefaultValueProviderAttribute`
-**Namespace:** `ByteForge.Toolkit`
-**Targets:** Properties
-
-**Purpose:** Uses a provider class to generate default values for complex types.
-
-**Parameters:**
-- `ProviderType` (Type) - Class implementing `IDefaultValueProvider`
-
-**Usage:**
-```csharp
-public class ConnectionSettings
-{
-    [ConfigName("ConnectionString")]
-    [DefaultValueProvider(typeof(DefaultConnectionStringProvider))]
-    public string ConnectionString { get; set; }
-}
-
-public class DefaultConnectionStringProvider : IDefaultValueProvider
-{
-    public object GetDefaultValue()
-    {
-        return $"Server=(local);Database=AppDB;Integrated Security=true;";
-    }
-}
-```
-
-**When to Use:**
-- Default values require computation
-- Defaults depend on environment
-- Value needs special initialization
-
----
-
-#### `DoNotPersistAttribute`
-**Namespace:** `ByteForge.Toolkit`
-**Targets:** Properties
-
-**Purpose:** Prevents a configuration property from being saved to INI file.
-
-**Parameters:** None
-
-**Usage:**
-```csharp
-public class RuntimeSettings
-{
-    [ConfigName("ApiKey")]
-    public string ApiKey { get; set; }  // Saved to INI
-    
-    [ConfigName("CachedToken")]
-    [DoNotPersist]
-    public string CachedAuthToken { get; set; }  // NOT saved
-    
-    [DoNotPersist]
-    public DateTime LastLoadTime { get; set; }  // NOT saved
-}
-```
-
-**Behavior:**
-- Property still loaded from INI if present
-- Only affects `Configuration.Save()`
-- Useful for runtime-only values
-
-**Common Uses:**
-- Session tokens
-- Cached computed values
-- Temporary runtime state
-
----
-
-#### `ArrayAttribute`
-**Namespace:** `ByteForge.Toolkit`
-**Targets:** Classes
-
-**Purpose:** Marks a configuration section as containing array elements.
-
-**Parameters:**
-- `ItemElementName` (string) - Name of array item in INI
-
-**Usage:**
-```csharp
-[Array("Hosts")]
-public class AllowedHostsConfig
-{
-    public List<string> Hosts { get; set; }
-}
-
-[Array("Items")]
-public class DatabaseServersConfig
-{
-    [ConfigName("Server")]
-    public List<string> ServerList { get; set; }
-}
-```
-
-**INI Format:**
-```ini
-[AllowedHosts]
-Hosts0=localhost
-Hosts1=127.0.0.1
-Hosts2=api.production.com
-
-[DatabaseServers]
-Server0=SERVER01
-Server1=SERVER02
-Server2=SERVER03
-```
-
-**Behavior:**
-- Elements indexed as `name0`, `name1`, `name2`, etc.
-- Loads into `List<T>` properties
-- Flexible list lengths
-
----
-
-#### `DictionaryAttribute`
-**Namespace:** `ByteForge.Toolkit`
-**Targets:** Classes
-
-**Purpose:** Marks a section as containing key-value pairs (dictionary).
-
-**Parameters:**
-- None (uses all key-value pairs in section)
-
-**Usage:**
-```csharp
-[Dictionary]
-public class FeatureFlags
-{
-    public Dictionary<string, bool> Flags { get; set; }
-}
-
-[Dictionary]
-public class ApiEndpoints
-{
-    [ConfigName("Endpoint")]
-  public Dictionary<string, string> Endpoints { get; set; }
-}
-```
-
-**INI Format:**
-```ini
-[FeatureFlags]
-EnableNewUI=true
-EnableAnalytics=false
-BetaFeatures=false
-
-[ApiEndpoints]
-Endpoint.Users=https://api.example.com/users
-Endpoint.Products=https://api.example.com/products
-Endpoint.Orders=https://api.example.com/orders
-```
-
-**Behavior:**
-- All key-value pairs become dictionary entries
-- Keys are INI keys, values are INI values
-- No strict schema required
-
----
-
-## Complete Attribute Combination Example
+#### Using a custom converter
 
 ```csharp
-[Array("Database")]
-public class DatabaseConnectionsConfig
+// Register a converter once at startup
+ValueConverterRegistry.Register("UpperCase", v => v?.ToString()?.ToUpperInvariant() ?? "");
+
+// Apply it via the attribute
+public class ProductRecord
 {
-    [ConfigName("Connection")]
-    public List<DatabaseConnection> Connections { get; set; }
-}
-
-public class DatabaseConnection
-{
-    [ConfigName("Name")]
-    public string Name { get; set; }
-    
- [ConfigName("Server")]
-    public string Server { get; set; }
-
-    [ConfigName("Database")]
-    [DefaultValue("master")]
-    public string DatabaseName { get; set; }
-    
-    [ConfigName("Port")]
-    [DefaultValue(1433)]
-    public int Port { get; set; }
-    
-    [ConfigName("Username")]
-    public string Username { get; set; }
-    
-    [ConfigName("Password")]
-    public string EncryptedPassword { get; set; }
-    
-    [ConfigName("ConnectionTimeout")]
-    [DefaultValue(30)]
-    public int Timeout { get; set; }
-    
-    [ConfigName("LastConnected")]
-    [DoNotPersist]
-    public DateTime? LastConnectionTime { get; set; }
-}
-
-[Dictionary]
-public class ApplicationFeatures
-{
-    public Dictionary<string, bool> Features { get; set; }
-}
-```
-
-**INI File:**
-```ini
-[Database]
-Connection0.Name=Production
-Connection0.Server=prod-db.company.com
-Connection0.Database=ProductionDB
-Connection0.Port=1433
-Connection0.Username=sa
-Connection0.Password=encrypted_password_here
-Connection0.ConnectionTimeout=60
-
-Connection1.Name=Staging
-Connection1.Server=staging-db.company.com
-Connection1.Database=StagingDB
-Connection1.Port=1433
-Connection1.Username=sa
-Connection1.Password=encrypted_password_here
-
-[ApplicationFeatures]
-FeatureNewDashboard=true
-FeatureReporting=false
-FeatureBetaAPI=true
-FeatureExperimentalUI=false
-```
-
----
-
-## File Organization
-
-Each attribute is defined in its own file under the `Attributes/` directory:
-
-```
-Attributes/
-??? CSVColumnAttribute.cs         # CSV column mapping
-??? DBColumnAttribute.cs   # Database column mapping
-??? ConfigNameAttribute.cs        # INI configuration key mapping
-??? DefaultValueAttribute.cs      # Default value specification
-??? DefaultValueProviderAttribute.cs  # Complex default value provider
-??? DoNotPersistAttribute.cs     # Exclude from persistence
-??? ArrayAttribute.cs             # Array configuration
-??? DictionaryAttribute.cs        # Dictionary configuration
-```
-
----
-
-## Reflection-Based Discovery
-
-Attributes are discovered at runtime using reflection:
-
-```csharp
-// Get all CSV column attributes
-var csvProperties = typeof(PersonRecord)
-    .GetProperties()
-    .Where(p => p.GetCustomAttribute<CSVColumnAttribute>() != null)
-    .ToList();
-
-// Get default values
-foreach (var prop in csvProperties)
-{
-  var defaultAttr = prop.GetCustomAttribute<DefaultValueAttribute>();
-    if (defaultAttr != null)
-    {
-        object defaultValue = defaultAttr.Value;
-        // Use default value
-    }
-}
-
-// Check if property should persist
-var persist = prop.GetCustomAttribute<DoNotPersistAttribute>() == null;
-```
-
----
-
-## Best Practices
-
-### 1. **Meaningful Names**
-```csharp
-// Good
-[ConfigName("DatabaseServer", "Primary Database Server")]
-public string Server { get; set; }
-
-// Bad
-[ConfigName("db")]
-public string Server { get; set; }
-```
-
-### 2. **Consistent Naming**
-```csharp
-// Use consistent key naming convention
-[ConfigName("ApplicationTitle")]
-public string Title { get; set; }
-
-[ConfigName("ApplicationVersion")]
-public string Version { get; set; }
-
-[ConfigName("ApplicationAuthor")]
-public string Author { get; set; }
-```
-
-### 3. **Sensible Defaults**
-```csharp
-// Good defaults help with graceful degradation
-[ConfigName("Port")]
-[DefaultValue(8080)]
-public int Port { get; set; }
-
-[ConfigName("Timeout")]
-[DefaultValue(30)]
-public int TimeoutSeconds { get; set; }
-```
-
-### 4. **Documentation**
-```csharp
-/// <summary>
-/// Database server address.
-/// This should be the fully qualified domain name or IP address.
-/// </summary>
-[ConfigName("Server", "Database Server Address")]
-public string Server { get; set; }
-```
-
----
-
-## Validation
-
-Combine attributes with property validation:
-
-```csharp
-public class ValidatedSettings
-{
-    private string _server;
-    
-    [ConfigName("Server")]
- public string Server
-    {
-    get => _server;
-        set
-        {
-     if (string.IsNullOrWhiteSpace(value))
-            throw new ArgumentException("Server cannot be empty");
-            _server = value;
-        }
-    }
-  
-    private int _port;
-    
-    [ConfigName("Port")]
-    [DefaultValue(1433)]
-    public int Port
-  {
-        get => _port;
-        set
-      {
-         if (value < 1 || value > 65535)
- throw new ArgumentException("Port must be 1-65535");
-            _port = value;
-        }
-    }
+    [DBColumn("SKU", ConverterName = "UpperCase")]
+    public string Sku { get; set; }
 }
 ```
 
 ---
 
-## Common Patterns
+## How the Attributes Are Used
 
-### Feature Flags Configuration
-```csharp
-[Dictionary]
-public class FeatureFlags
-{
-    public Dictionary<string, bool> Features { get; set; }
-    
-    public bool IsEnabled(string featureName)
-        => Features.TryGetValue(featureName, out var enabled) && enabled;
-}
-
-// Usage
-var flags = Configuration.GetSection<FeatureFlags>();
-if (flags.IsEnabled("NewUI"))
-{
-    // Use new UI
-}
-```
-
-### Multi-Environment Configuration
-```csharp
-public class EnvironmentSettings
-{
-    [ConfigName("Environment")]
-    [DefaultValue("Development")]
-    public string Environment { get; set; }
-    
-[ConfigName("IsProduction")]
-    public bool IsProduction => Environment == "Production";
-    
-    [ConfigName("IsStaging")]
-    public bool IsStaging => Environment == "Staging";
-}
-```
-
-### Array of Complex Objects
-```csharp
-[Array("Server")]
-public class ClusterConfiguration
-{
-    public List<ClusterNode> Nodes { get; set; }
-}
-
-public class ClusterNode
-{
-    [ConfigName("Address")]
-    public string Address { get; set; }
-    
-    [ConfigName("Port")]
-  [DefaultValue(9200)]
-  public int Port { get; set; }
-    
-    [ConfigName("Role")]
-    public string Role { get; set; }
-}
-```
-
----
-
-## Extension Points
-
-### Creating Custom Attributes
-
-Create custom attributes for application-specific needs:
-
-```csharp
-[AttributeUsage(AttributeTargets.Property)]
-public class CustomAttribute : Attribute
-{
-    public string CustomProperty { get; set; }
-    
-    public CustomAttribute(string customProperty)
-    {
-        CustomProperty = customProperty;
-    }
-}
-
-// Usage
-public class MySettings
-{
-    [Custom("MyValue")]
-  public string MyProperty { get; set; }
-}
-```
-
----
-
-## Testing
-
-Validate attributes work correctly:
-
-```csharp
-[TestMethod]
-public void ConfigName_AttributeExists_OnServerProperty()
-{
-    var attr = typeof(DatabaseSettings)
-  .GetProperty("Server")
-        .GetCustomAttribute<ConfigNameAttribute>();
-    
-    Assert.IsNotNull(attr);
-    Assert.AreEqual("DatabaseServer", attr.ColumnName);
-}
-```
-
----
-
-## Summary
-
-The Attributes module provides:
-
-**Key Strengths:**
-- ? Declarative configuration
-- ? Reduces boilerplate code
-- ? Enables reflection-based discovery
-- ? Flexible and extensible
-- ? Well-organized attribute hierarchy
-
-**Best For:**
-- ORM and data mapping scenarios
-- Configuration management
-- CSV/Database import/export
-- Metadata-driven applications
-
-**Common Uses:**
-- Configuring database schema from C# classes
-- Mapping CSV files to business objects
-- INI-based configuration with type safety
-- Feature flag and settings management
+| Consumer | Attribute | How |
+|----------|-----------|-----|
+| `CSVReader` | `CSVColumnAttribute` | Discovers mapped properties; fills values by column name |
+| `CSVWriter.WriteRecords<T>` | `CSVColumnAttribute` | Orders columns by `Index`, uses `Name` as header |
+| `CSVRecord` constructor | `CSVColumnAttribute` | Builds property→column map; converts and assigns values |
+| `TypeConverter.ConvertDataRowTo<T>` | `DBColumnAttribute` | Maps `DataRow` column names (or property names) to properties; applies `Converter` |
+| `BulkDbProcessor<T>` | `DBColumnAttribute` | Determines table schema, PKs, indexes, identity columns, and column order |
 
 ---
 
 ## 📖 Documentation Links
 
-### 🏗️ Related Modules
-| Module                                               | Description             |
-|------------------------------------------------------|-------------------------|
-| **[CLI](../../CommandLine/readme.md)**               | Command-line parsing    |
-| **[Configuration](../../Configuration/readme.md)**   | INI-based configuration |
-| **[Core](../../Core/readme.md)**                     | Core utilities          |
-| **[DataStructures](../../DataStructures/readme.md)** | Collections & utilities |
-| **[JSON](../../Json/readme.md)**                     | Delta serialization     |
-| **[Logging](../../Logging/readme.md)**               | Structured logging      |
-| **[Mail](../../Mail/readme.md)**                     | Email processing        |
-| **[Net](../../Net/readme.md)**                       | Network file transfers  |
-| **[Security](../../Security/readme.md)**             | Encryption & security   |
-| **[Utils](../../Utilities/readme.md)**               | General utilities       |
-
-
+| Module | Description |
+|--------|-------------|
+| **[Data](../readme.md)** | Data module overview |
+| **[CSV](../CSV/readme.md)** | CSVReader, CSVWriter, CSVRecord |
+| **[Database](../Database/readme.md)** | DBAccess, BulkDbProcessor, TypeConverter |
+| **[Exceptions](../Exceptions/readme.md)** | ConversionException and others |
+| **[Configuration](../../Configuration/readme.md)** | INI-based configuration attributes |
+| **[Utilities](../../Utilities/readme.md)** | ValueConverterRegistry |

@@ -1,67 +1,78 @@
-# Security Tests
+# Security Unit Tests
 
-This directory contains unit tests for the ByteForge.Toolkit Security module, which provides encryption and security-related functionality.
+Tests for `ByteForge.Toolkit.Security`.
 
-## Overview
-
-The Security module offers tools for data encryption, hashing, and secure data handling. These tests ensure that security functions work correctly and provide appropriate protection for sensitive data.
+**Test classes:** `AESEncryptionTests`, `EncryptorTests`
+**Test categories:** `Unit`, `Security`
+**Source module:** `Toolkit.Modern/Security/`
 
 ## Test Classes
 
 ### AESEncryptionTests
 
-Tests for the AESEncryption class, which implements Advanced Encryption Standard (AES) encryption:
+Validates the static `AESEncryption` class, which provides low-level AES key generation and symmetric encryption.
 
-- Encryption and decryption of strings and byte arrays
-- Key management and derivation
-- Initialization vector (IV) handling
-- Salt generation and processing
-- Error handling for invalid inputs
-- Performance of encryption operations
-- Compatibility across different platforms and versions
-- Security aspects like key strength and entropy
+| Test area | Coverage |
+|-----------|---------|
+| `GenerateKey(int seed, int size)` | Different seeds produce different keys; same seed and size produce the same key (deterministic) |
+| `GenerateKey` — invalid size | Throws for sizes outside supported values (e.g. 0, negative) |
+| `Encrypt(string plaintext)` | Returns a non-null, non-empty string; result differs from plaintext |
+| `Decrypt(string ciphertext)` | Round-trip: `Decrypt(Encrypt(x)) == x` |
+| Empty string | Encryption and decryption of `""` |
+| Null input | `Encrypt(null)` and `Decrypt(null)` — expected behavior (throw or return null) |
+| Unicode and special characters | Multi-byte strings survive the round-trip unchanged |
+| Large inputs | Strings of several thousand characters encrypt and decrypt correctly |
+| Key uniqueness | Two `GenerateKey` calls with different seeds produce different byte sequences |
+| Performance | Encryption and decryption complete within a measured time threshold |
+
+`AssertionHelpers.AssertEncryptionRoundTrip` is used in round-trip tests.
 
 ### EncryptorTests
 
-Tests for the Encryptor class, which provides a higher-level encryption interface:
+Validates the `Encryptor` class, which provides a higher-level encryption interface built on top of `AESEncryption`.
 
-- String and file encryption/decryption
-- Password-based encryption
-- Default encryption settings
-- Custom encryption configuration
-- Error handling during encryption operations
-- Performance with various data sizes
-- Round-trip verification of encrypted data
+| Test area | Coverage |
+|-----------|---------|
+| Constructor `Encryptor(int seed, int size)` | Creates a non-null instance |
+| `Encryptor.Default` | Returns the same singleton on repeated access |
+| `Encrypt(string plaintext)` | Result is non-null, non-empty, and differs from plaintext |
+| `Decrypt(string ciphertext)` | Round-trip: `Decrypt(Encrypt(x)) == x` |
+| Empty/null inputs | Consistent behavior for edge-case inputs |
+| `Encryptor.Default` round-trip | Default instance can encrypt and decrypt |
+| Key isolation | Two `Encryptor` instances with different seeds produce different ciphertexts for the same plaintext |
+| Performance | Large string encryption completes within a measured threshold |
 
-## Testing Strategy
+`TempFileHelper` is used where file encryption/decryption is tested.
 
-The Security tests follow a comprehensive approach that covers:
+## Security Properties Verified
 
-1. **Correctness**: Ensuring encryption and decryption work properly
-2. **Security**: Validating that encryption provides adequate protection
-3. **Performance**: Measuring encryption and decryption speed
-4. **Error handling**: Testing behavior with invalid inputs
-5. **Compatibility**: Ensuring encrypted data can be decrypted correctly
-6. **Edge cases**: Handling unusual inputs and scenarios
+- **Deterministic key generation:** same seed + size = same key (required for stored-credential decryption)
+- **Ciphertext distinctness:** encrypted output differs from plaintext
+- **Round-trip integrity:** plaintext is recovered exactly after decrypt
+- **Singleton stability:** `Encryptor.Default` is stateless and thread-safe (same instance always returned)
 
-## Test Helpers
+## Prerequisites
 
-These tests utilize helper classes:
+No external dependencies. All tests are fully in-memory.
 
-- **AssertionHelpers.AssertEncryptionRoundTrip**: Validates that data can be encrypted and then decrypted back to its original form
-- **TempFileHelper**: Manages temporary files for testing file encryption
+## Running These Tests
 
-## Security Considerations
+```powershell
+# All Security tests
+dotnet test --filter "TestCategory=Security"
 
-The security tests verify not only functional correctness but also security properties:
+# By class
+dotnet test --filter "FullyQualifiedName~AESEncryptionTests"
+dotnet test --filter "FullyQualifiedName~EncryptorTests"
+```
 
-1. **Key strength**: Using sufficiently strong encryption keys
-2. **Salt uniqueness**: Ensuring salts are properly generated and applied
-3. **IV handling**: Proper initialization vector management
-4. **Error messages**: Not leaking sensitive information in error cases
-5. **Memory handling**: Proper clearing of sensitive data from memory
+---
 
-## Notes
+## Documentation Links
 
-While the tests provide good coverage of encryption functionality, they do not replace a formal security audit. The tests focus on correct implementation and behavior rather than cryptographic strength or resistance to specific attacks.
-
+| Location | Description | Documentation |
+|----------|-------------|---------------|
+| **Tests root** | Test project overview | [../../README.md](../../README.md) |
+| **Unit overview** | Unit test organization | [../readme.md](../readme.md) |
+| **Helpers** | Test helper classes | [../../Helpers/README.md](../../Helpers/README.md) |
+| **Security source** | Production module | [../../../Toolkit.Modern/Security/readme.md](../../../Toolkit.Modern/Security/readme.md) |

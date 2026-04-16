@@ -1,267 +1,247 @@
-# Net (Network) Module
+# Net Module
 
-## Overview
-
-The **Net** module provides network file transfer operations, abstracting the complexity of different protocols (FTP, SFTP, SCP) into a unified interface. It works with the WinSCPnet wrapper library to provide reliable file transfer capabilities.
+The Net module provides file transfer operations over FTP, FTPS, and SFTP, built on top of `ByteForge.WinSCP.Session`. It exposes a unified `FileTransferClient` with sync and async methods for uploading, downloading, listing, deleting, and checking files, plus batch async operations with concurrency control and progress reporting.
 
 ---
 
-## Purpose
+## Key Types
 
-Network operations need:
-1. **Protocol abstraction** - Single API for multiple protocols
-2. **Progress tracking** - Real-time transfer feedback
-3. **Error recovery** - Resumable transfers and retry logic
-4. **Configuration** - Flexible transport options
-5. **Result reporting** - Detailed operation outcomes
+| Type | Description |
+|------|-------------|
+| `FileTransferClient` | Main client — connects, transfers files, and manages the WinSCP session |
+| `FileTransferConfig` | Connection parameters (host, credentials, protocol, port, timeout) |
+| `TransferProtocol` | Enum of supported protocols |
+| `FileTransferResult` | Result of a single upload or download |
+| `FileTransferItem` | A local+remote path pair for batch operations |
+| `FileTransferProgress` | Progress snapshot for batch transfers |
+| `FileOperationProgress` | Progress snapshot for batch delete/other operations |
+| `FileOperationResult` | Result of a single file operation (delete, mkdir, etc.) |
+| `RemoteFileInfo` | Metadata for a file or directory on the remote server |
+| `FileTransferException` | Custom exception thrown on connection or transfer failures |
 
 ---
 
-## Key Classes
+## `TransferProtocol`
 
-### `FileTransferClient`
-**Purpose:** Main client for file transfer operations.
-
-**Responsibilities:**
-- Establish remote connections
-- Execute file transfers
-- Track progress
-- Handle errors
-
-**Key Methods:**
-```csharp
-// Connection
-void Connect(FileTransferConfig config);
-void Disconnect();
-bool IsConnected { get; }
-
-// Operations
-Task<FileTransferResult> UploadAsync(string localPath, string remotePath);
-Task<FileTransferResult> DownloadAsync(string remotePath, string localPath);
-Task<FileTransferResult> UploadBatchAsync(IEnumerable<FileTransferItem> items);
-Task<FileTransferResult> DownloadBatchAsync(IEnumerable<FileTransferItem> items);
-
-// Events
-event EventHandler<FileTransferProgress>? ProgressChanged;
-event EventHandler<FileTransferResult>? TransferCompleted;
-```
-
-### `FileTransferConfig`
-**Purpose:** Configuration for file transfers.
-
-**Properties:**
-```csharp
-TransferProtocol Protocol { get; set; }  // FTP, SFTP, SCP
-string HostName { get; set; }
-int Port { get; set; }
-string UserName { get; set; }
-string Password { get; set; }
-TimeSpan Timeout { get; set; }
-bool EnableCompression { get; set; }
-TransferMode TransferMode { get; set; }
-```
-
-### `FileTransferItem`
-**Purpose:** Represents a single file transfer operation.
-
-**Properties:**
-```csharp
-string SourcePath { get; set; }    // Local or remote
-string DestinationPath { get; set; }  // Remote or local
-string FileName { get; set; }
-long FileSize { get; set; }
-DateTime LastModified { get; set; }
-bool Overwrite { get; set; }
-```
-
-### `FileTransferProgress`
-**Purpose:** Progress information for ongoing transfer.
-
-**Properties:**
-```csharp
-string FileName { get; }
-long TotalBytes { get; }
-long TransferredBytes { get; }
-double PercentComplete { get; }
-TimeSpan ElapsedTime { get; }
-TimeSpan EstimatedTimeRemaining { get; }
-TransferSpeed Speed { get; }  // bytes per second
-```
-
-### `FileTransferResult`
-**Purpose:** Result of a transfer operation.
-
-**Properties:**
-```csharp
-bool IsSuccess { get; }
-FileTransferStatus Status { get; }  // Completed, Failed, Cancelled
-IList<FileTransferItem> TransferedFiles { get; }
-IList<FileTransferItem> FailedFiles { get; }
-string ErrorMessage { get; }
-DateTime StartTime { get; }
-DateTime EndTime { get; }
-TimeSpan Duration { get; }
-```
-
-### Enums
-
-**`TransferProtocol`**
 ```csharp
 public enum TransferProtocol
 {
-    FTP,      // Standard FTP
-    FTPS,     // FTP over SSL/TLS
-    SFTP,     // SSH File Transfer (secure)
-    SCP,    // Secure Copy
-    WebDAV    // WebDAV over HTTP
+    FTP,
+    FTPS_Explicit,
+    FTPS_Implicit,
+    SFTP
 }
 ```
 
-**`TransferMode`**
-```csharp
-public enum TransferMode
-{
-    ASCII,  // Text mode
-    Binary,     // Binary mode
-    Auto        // Detect automatically
-}
-```
+Use `FileTransferConfig.CreateFtpsConfig(useImplicitTls: false)` for FTPS Explicit, or `useImplicitTls: true` for FTPS Implicit.
 
-**`FileTransferStatus`**
-```csharp
-public enum FileTransferStatus
-{
-    Pending,     // Not yet started
-    InProgress,  // Actively transferring
-    Completed,   // Successfully finished
-    Failed,      // Transfer failed
-    Cancelled,   // User cancelled
-    Paused       // Transfer paused
-}
-```
+---
 
-### Remote File Information
+## `FileTransferConfig`
 
-**`RemoteFileInfo`**
-```csharp
-public class RemoteFileInfo
-{
-    string FileName { get; }
-    string FullPath { get; }
-    long FileSize { get; }
-    DateTime LastModified { get; }
-    bool IsDirectory { get; }
-    bool IsSymLink { get; }
-    string Permissions { get; }
-}
-```
+Connection configuration. Use the static factory methods rather than constructing manually.
 
-**`RemoteDirectoryInfo`**
+| Property | Default | Description |
+|----------|---------|-------------|
+| `HostName` | — | Remote server hostname or IP |
+| `UserName` | — | Login username |
+| `Password` | — | Login password |
+| `SshPrivateKeyPath` | `null` | Path to SSH private key (SFTP only) |
+| `Protocol` | `SFTP` | Transfer protocol |
+| `Port` | 22 | Remote port |
+| `TimeoutSeconds` | 30 | Connection and command timeout |
+| `AcceptAnyHostKey` | `false` | Skip SSH host key validation (use with care) |
+| `AcceptAnyCertificate` | `false` | Skip TLS certificate validation (use with care) |
+
+### Factory methods
+
 ```csharp
-public class RemoteDirectoryInfo
-{
-    string DirectoryName { get; }
-    string FullPath { get; }
-    DateTime LastModified { get; }
-    IList<RemoteFileInfo> Files { get; }
-    IList<RemoteDirectoryInfo> SubDirectories { get; }
-}
+FileTransferConfig.CreateFtpConfig(host, user, pass, port = 21)
+FileTransferConfig.CreateFtpsConfig(host, user, pass, useImplicitTls = false, port = 0)
+FileTransferConfig.CreateSftpConfig(host, user, pass, port = 22)
 ```
 
 ---
 
-## Usage Patterns
+## `FileTransferClient`
 
-### Basic Upload
+Wraps `ByteForge.WinSCP.Session`. A `SemaphoreSlim` guards the underlying session to ensure thread-safe access.
 
+**Constructor:**
 ```csharp
-var config = new FileTransferConfig
-{
-    Protocol = TransferProtocol.SFTP,
-    HostName = "sftp.example.com",
-    UserName = "user",
-    Password = "password",
-    Timeout = TimeSpan.FromSeconds(30)
-};
-
-var client = new FileTransferClient();
-
-try
-{
-    client.Connect(config);
-    
-    var result = await client.UploadAsync(
-     localPath: @"C:\data\file.csv",
-    remotePath: "/uploads/"
-    );
-    
-    if (result.IsSuccess)
-        Console.WriteLine("Upload completed");
-    else
- Console.WriteLine($"Upload failed: {result.ErrorMessage}");
-}
-finally
-{
-    client.Disconnect();
-}
+var client = new FileTransferClient(config);
 ```
 
-### Download with Progress
+### Connection
 
 ```csharp
-client.ProgressChanged += (sender, progress) =>
-{
-    Console.WriteLine($"{progress.FileName}: {progress.PercentComplete:P}");
-    Console.WriteLine($"Speed: {progress.Speed} B/s");
-    Console.WriteLine($"ETA: {progress.EstimatedTimeRemaining}");
-};
-
-var result = await client.DownloadAsync(
-    remotePath: "/exports/data.zip",
-    localPath: @"C:\downloads\"
-);
+bool Connect();       // Returns true on success
+void Disconnect();
 ```
 
-### Batch Operations
+### Single-file operations
+
+| Method | Description |
+|--------|-------------|
+| `UploadFile(localPath, remotePath, overwrite)` | Upload one file |
+| `DownloadFile(remotePath, localPath, overwrite)` | Download one file |
+| `FileExists(remotePath)` | Check whether a remote file exists |
+| `DeleteFile(remotePath)` | Delete a remote file |
+| `CreateDirectory(remotePath)` | Create a remote directory |
+| `ListDirectory(remotePath)` | List files and directories at a remote path |
+
+All methods have async equivalents (`UploadFileAsync`, `DownloadFileAsync`, etc.).
+
+Resume behavior: `OverwriteMode.Resume` is used by default for uploads, enabling interrupted transfer resumption.
+
+### Batch async operations
+
+```csharp
+Task<IReadOnlyList<FileTransferResult>> UploadFilesAsync(
+    IEnumerable<FileTransferItem> items,
+    int maxConcurrent = 4,
+    IProgress<FileTransferProgress>? progress = null,
+    CancellationToken ct = default);
+
+Task<IReadOnlyList<FileTransferResult>> DownloadFilesAsync(
+    IEnumerable<FileTransferItem> items,
+    int maxConcurrent = 4,
+    IProgress<FileTransferProgress>? progress = null,
+    CancellationToken ct = default);
+
+Task<IReadOnlyList<FileOperationResult>> DeleteFilesAsync(
+    IEnumerable<string> remotePaths,
+    int maxConcurrent = 4,
+    IProgress<FileOperationProgress>? progress = null,
+    CancellationToken ct = default);
+```
+
+`maxConcurrent` controls a `SemaphoreSlim` that limits how many transfers run in parallel.
+
+---
+
+## Result Types
+
+### `FileTransferResult`
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `LocalPath` | `string?` | Local file path involved in the transfer |
+| `RemotePath` | `string?` | Remote file path involved in the transfer |
+| `Success` | `bool` | Whether the transfer succeeded |
+| `ErrorMessage` | `string?` | Error description if `Success` is `false` |
+
+### `FileOperationResult`
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `Path` | `string?` | Path involved in the operation |
+| `Success` | `bool` | Whether the operation succeeded |
+| `ErrorMessage` | `string?` | Error description if failed |
+
+### `RemoteFileInfo`
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `Name` | `string?` | File or directory name |
+| `FullPath` | `string?` | Full remote path |
+| `Size` | `long` | File size in bytes |
+| `LastModified` | `DateTime` | Last modification time |
+| `IsDirectory` | `bool` | Whether the entry is a directory |
+| `Permissions` | `string?` | UNIX permission string (e.g., `rwxr-xr-x`) |
+
+### Progress Types
+
+**`FileTransferProgress`** (for upload/download batches):
+
+| Property | Description |
+|----------|-------------|
+| `ProcessedCount` | Number of files completed so far |
+| `TotalCount` | Total files in the batch |
+| `PercentComplete` | Integer 0–100 |
+| `CurrentItem` | The `FileTransferItem` currently being processed |
+
+**`FileOperationProgress`** (for delete batches):
+
+| Property | Description |
+|----------|-------------|
+| `ProcessedCount` | Files processed so far |
+| `TotalCount` | Total in batch |
+| `PercentComplete` | Integer 0–100 |
+| `CurrentPath` | Remote path currently being processed |
+
+---
+
+## Usage
+
+### Upload a file via SFTP
+
+```csharp
+var config = FileTransferConfig.CreateSftpConfig("sftp.example.com", "user", "secret");
+using var client = new FileTransferClient(config);
+
+client.Connect();
+var result = client.UploadFile(@"C:\reports\daily.csv", "/uploads/daily.csv", overwrite: true);
+
+if (!result.Success)
+    Log.Error($"Upload failed: {result.ErrorMessage}");
+```
+
+### Upload via FTPS (Explicit TLS)
+
+```csharp
+var config = FileTransferConfig.CreateFtpsConfig("ftp.example.com", "user", "secret",
+                                                  useImplicitTls: false);
+```
+
+### Batch upload with progress
 
 ```csharp
 var items = new[]
 {
-    new FileTransferItem 
-    { 
-        SourcePath = @"C:\data1.csv", 
-        DestinationPath = "/uploads/" 
-    },
-    new FileTransferItem 
-    { 
-        SourcePath = @"C:\data2.csv", 
-        DestinationPath = "/uploads/" 
-    },
-    new FileTransferItem 
-    { 
-  SourcePath = @"C:\data3.csv", 
-      DestinationPath = "/uploads/" 
-    }
+    new FileTransferItem { LocalPath = @"C:\data\a.csv", RemotePath = "/in/a.csv" },
+    new FileTransferItem { LocalPath = @"C:\data\b.csv", RemotePath = "/in/b.csv" },
 };
 
-var result = await client.UploadBatchAsync(items);
+var progress = new Progress<FileTransferProgress>(p =>
+    Console.WriteLine($"{p.PercentComplete}% — {p.CurrentItem.LocalPath}"));
 
-foreach (var failed in result.FailedFiles)
-    Log.Warning($"Failed to upload: {failed.FileName}");
+var results = await client.UploadFilesAsync(items, maxConcurrent: 3, progress: progress);
+
+foreach (var r in results.Where(r => !r.Success))
+    Log.Warning($"Failed: {r.LocalPath} — {r.ErrorMessage}");
 ```
 
-### Remote Directory Listing
+### SFTP with private key authentication
 
 ```csharp
-var remoteDir = await client.ListDirectoryAsync("/data/");
-
-Console.WriteLine($"Directory: {remoteDir.DirectoryName}");
-Console.WriteLine("Files:");
-foreach (var file in remoteDir.Files)
+var config = new FileTransferConfig
 {
-  Console.WriteLine($"  {file.FileName} ({file.FileSize} bytes)");
-    Console.WriteLine($"  Modified: {file.LastModified}");
-    Console.WriteLine($"  Permissions: {file.Permissions}");
+    Protocol           = TransferProtocol.SFTP,
+    HostName           = "sftp.example.com",
+    UserName           = "deploy",
+    SshPrivateKeyPath  = @"C:\keys\id_rsa.ppk",
+    Port               = 22,
+    AcceptAnyHostKey   = false
+};
+```
+
+### List a remote directory
+
+```csharp
+var entries = client.ListDirectory("/uploads/");
+foreach (var entry in entries)
+    Console.WriteLine($"{(entry.IsDirectory ? "DIR" : "   ")} {entry.Name} ({entry.Size} bytes)");
+```
+
+### Download and check existence
+
+```csharp
+if (client.FileExists("/exports/report.zip"))
+{
+    var result = await client.DownloadFileAsync("/exports/report.zip", @"C:\downloads\", overwrite: true);
+    if (result.Success)
+        Log.Info($"Downloaded to {result.LocalPath}");
 }
 ```
 
@@ -269,159 +249,24 @@ foreach (var file in remoteDir.Files)
 
 ## Error Handling
 
-### Common Transfer Errors
-
-| Error                 | Cause               | Recovery                                |
-|-----------------------|---------------------|-----------------------------------------|
-| Connection timeout    | Network delay       | Retry with longer timeout               |
-| Authentication failed | Wrong credentials   | Verify username/password                |
-| File not found        | Path incorrect      | Check remote path                       |
-| Permission denied     | Insufficient rights | Request access or use different account |
-| Disk full             | No space            | Free up space or use compression        |
-
-### Exception Handling
+`FileTransferException` is thrown on connection or session failures. Individual file failures in batch operations are captured in `FileTransferResult.ErrorMessage` rather than thrown.
 
 ```csharp
 try
 {
-    await client.UploadAsync(localPath, remotePath);
+    client.Connect();
 }
-catch (FileTransferException ex) when (ex.ErrorCode == 530)
+catch (FileTransferException ex)
 {
-    // 530 = User not logged in / Access denied
-    Log.Error("Access denied - check credentials");
-}
-catch (FileTransferException ex) when (ex.ErrorCode == 550)
-{
-// 550 = File not found
-    Log.Error("Remote file not found");
-}
-catch (TimeoutException ex)
-{
-    Log.Error("Transfer timeout - network issue");
-}
-catch (Exception ex)
-{
-    Log.Error($"Unexpected error: {ex.Message}");
+    Log.Error("Could not connect to remote server", ex);
 }
 ```
 
 ---
 
-## Performance Optimization
+## Related Modules
 
-### Compression
-
-```csharp
-var config = new FileTransferConfig
-{
-    // ... other settings ...
-    EnableCompression = true  // Reduce bandwidth usage
-};
-```
-
-### Batch Transfers
-
-```csharp
-// Efficient - single connection for multiple files
-var items = GetAllFilesToUpload();
-var result = await client.UploadBatchAsync(items);
-
-// Less efficient - new connection per file
-foreach (var file in files)
-{
-    client.Connect(config);
-    await client.UploadAsync(file.LocalPath, file.RemotePath);
-    client.Disconnect();
-}
-```
-
-### Large File Resumption
-
-```csharp
-var config = new FileTransferConfig
-{
-    // ... other settings ...
-    EnableResume = true  // Resume interrupted transfers
-};
-```
-
----
-
-## File Organization
-
-### `FileTransferClient.cs`
-Main client implementation.
-
-### `FileTransferConfig.cs`
-Configuration model.
-
-### `FileTransferItem.cs`
-Individual transfer item.
-
-### `FileTransferProgress.cs`
-Progress tracking model.
-
-### `FileTransferResult.cs`
-Operation result model.
-
-### `FileTransferException.cs`
-Custom exception for transfer errors.
-
-### `TransferProtocol.cs`
-Supported protocol enumeration.
-
-### `Remote/`
-Remote file information classes.
-
----
-
-## Summary
-
-The Net module provides:
-
-**Key Strengths:**
-- ? Multiple protocol support
-- ? Unified transfer interface
-- ? Real-time progress reporting
-- ? Batch operation support
-- ? Comprehensive error handling
-- ? Large file support
-- ? Resume capability
-
-**Best For:**
-- File synchronization
-- Automated backups
-- Cross-server deployments
-- Data migration
-- Remote monitoring
-
-**Not Ideal For:**
-- Real-time streaming
-- Extremely high-frequency operations
-- Direct socket-level control
-
----
-
-## 📖 Documentation Links
-
-### 🏗️ Related Modules
-| Module                                            | Description                |
-|---------------------------------------------------|----------------------------|
-| **[CLI](../CommandLine/readme.md)**               | Command-line parsing       |
-| **[Configuration](../Configuration/readme.md)**   | INI-based configuration    |
-| **[Core](../Core/readme.md)**                     | Core utilities             |
-| **[Data](../Data/readme.md)**                     | Database & file processing |
-| **[DataStructures](../DataStructures/readme.md)** | Collections & utilities    |
-| **[JSON](../Json/readme.md)**                     | Delta serialization        |
-| **[Logging](../Logging/readme.md)**               | Structured logging         |
-| **[Mail](../Mail/readme.md)**                     | Email processing           |
-| **[Security](../Security/readme.md)**             | Encryption & security      |
-| **[Utils](../Utilities/readme.md)**               | General utilities          |
-
-### 🏗️ Related Components
-| Component                            | Description           |
-|--------------------------------------|-----------------------|
-| **[WinSCP](../../WinSCP/readme.md)** | File transfer backend |
-
-
+| Module | Description |
+|--------|-------------|
+| [WinSCP](../../WinSCP/readme.md) | Underlying WinSCP session wrapper |
+| [Logging](../Logging/readme.md) | Logging used throughout the client |

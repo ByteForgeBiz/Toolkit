@@ -1,58 +1,67 @@
 # Unit Tests
 
-This directory contains unit tests for the ByteForge.Toolkit library. The tests are organized into folders that correspond to the modules and components in the main library.
+All unit tests for `ByteForge.Toolkit.Modern`, organized by module. Each subdirectory mirrors the module structure of the production library.
 
-## Overview
+## Structure
 
-The unit tests in this directory focus on testing individual components in isolation, ensuring that each component functions correctly according to its specification. The tests are designed to be comprehensive, covering not only typical use cases but also edge cases and error conditions.
+| Folder | Module Tested | Test Classes |
+|--------|---------------|--------------|
+| `CLI/` | `ByteForge.Toolkit.CommandLine` | `CommandAttributeTests`, `OptionAttributeTests`, `GlobalOptionTests`, `ConsoleSpinnerTests` |
+| `Configuration/` | `ByteForge.Toolkit.Configuration` | `ConfigurationCoreTests`, `ConfigSectionTests`, `ConfigurationArrayTests`, `ConfigurationAdvancedTests`, `ConfigurationEnhancementTests`, `ConfigurationMigrationTests`, `ConfigurationDictionaryTests`, `ConfigurationDictionaryEdgeCaseTests`, `ConfigurationErrorTests`, `ConfigurationParserIntegrationTests`, `ConfigurationThreadSafetyTests`, `GlobalizationTests` |
+| `Data/Audio/` | `ByteForge.Toolkit.Data` | `AudioFormatDetectorTests` |
+| `Data/CSV/` | `ByteForge.Toolkit.Data` | `CSVReaderTests`, `CSVWriterTests` |
+| `Data/Database/` | `ByteForge.Toolkit.Data` | `DBAccessCoreTests`, `DBAccessMethodsSQLServerTests`, `DBAccessMethodsODBCTests`, `DBAccessParameterParsingTests`, `DBAccessParameterParsingSimpleTests`, `DBAccessExtendedPropertiesTests`, `DBAccessScriptExecutionTests`, `DBAccessTransactionTests`, `BulkDbProcessorTests`, `BulkDbProcessorEdgeCaseTests` |
+| `DataStructures/` | `ByteForge.Toolkit.DataStructures` | `BinarySearchTreeTests`, `UrlTests` |
+| `Logging/` | `ByteForge.Toolkit.Logging` | `LogTests`, `DatabaseLoggerTests`, `DatabaseLoggerLiveTests` (contains `DatabaseLoggerSqlServerLiveTests`) |
+| `Mail/` | `ByteForge.Toolkit.Mail` | `EmailAttachmentHandlerTests` |
+| `Security/` | `ByteForge.Toolkit.Security` | `AESEncryptionTests`, `EncryptorTests` |
+| `Utils/` | `ByteForge.Toolkit.Utilities` | `BooleanParserTests`, `ConsoleUtilTests`, `DateTimeParserTests`, `DateTimeUtilTests`, `EnumExtensionsTests`, `IOUtilsTests`, `NameCapitalizerTests`, `ParserTests`, `StringUtilTests`, `TemplateProcessorTests`, `TimingUtilTests`, `UtilsTests` |
 
-## Test Structure
+## Testing Conventions
 
-Tests are organized into the following categories:
+### Arrange-Act-Assert
 
-- **Configuration**: Tests for the INI-based configuration system with section support, strong typing, and array handling.
-- **CSV**: Tests for CSV reading and writing functionality.
-- **Data**: Tests for data processing components including audio format detection, CSV handling, and database access.
-- **DataStructures**: Tests for core data structures like BinarySearchTree and URL handling.
-- **Logging**: Tests for the logging framework.
-- **Mail**: Tests for email and attachment handling.
-- **Security**: Tests for encryption and security-related features.
-- **Utils**: Tests for various utility classes and helper functions.
+All test methods follow the AAA pattern. Sections are separated by blank lines or region blocks.
 
-## Testing Methodology
+### Categories
 
-Each test class follows a consistent pattern:
+Every test class carries at least `[TestCategory("Unit")]` plus a module-specific category (e.g. `[TestCategory("CLI")]`). Tests that require external infrastructure carry additional categories:
 
-1. **Arrange**: Set up the test environment, create necessary objects and test data.
-2. **Act**: Execute the functionality being tested.
-3. **Assert**: Verify that the results match the expected outcomes.
+- `[TestCategory("SQLServer")]` — requires a running SQL Server instance
+- `[TestCategory("ODBC")]` — requires the Microsoft Access ODBC driver
 
-The tests make use of the AwesomeAssertions library for clear and expressive assertions.
+### Assertion library
 
-## Test Categories
+`AwesomeAssertions` is used exclusively. `Assert.ThrowsException<T>()` from MSTest is used in a small number of early tests; most exception assertions use `.Should().Throw<T>()`.
 
-Tests are marked with categories using the `[TestCategory]` attribute. Common categories include:
+### Lifecycle attributes
 
-- `Unit`: Indicates that the test is a unit test.
-- Module-specific categories like `Configuration`, `Utils`, `Security`, etc.
-- Behavior categories like `Performance`, `ErrorHandling`, etc.
+- `[ClassInitialize]` — validates that the required database or resource is reachable before any test in the class runs
+- `[TestInitialize]` / `[TestCleanup]` — create and tear down per-test state
+- `[ClassCleanup]` — disposes class-level resources such as `CancellationTokenSource`
 
-## Helper Classes
+## Running Specific Modules
 
-The test project includes several helper classes located in the `Tests\ByteForge.Toolkit.Tests\Helpers` directory:
+```powershell
+# All CLI tests
+dotnet test --filter "TestCategory=CLI"
 
-- **TempFileHelper**: Assists with creating and managing temporary files for testing.
-- **DatabaseTestHelper**: Provides utilities for database testing.
-- **ConfigurationTestHelper**: Assists with configuration testing.
-- **AssertionHelpers**: Provides custom assertions for specific scenarios.
+# All tests except those requiring live databases
+dotnet test --filter "TestCategory!=SQLServer&TestCategory!=ODBC"
 
-## Running Tests
+# All database tests (ODBC + SQL Server)
+dotnet test --filter "FullyQualifiedName~Data.Database"
 
-Tests can be executed using the Visual Studio Test Explorer or via the command line:
-
-```bash
-dotnet test "Tests\ByteForge.Toolkit.Tests\ByteForge.Toolkit.Tests.csproj"
+# A specific test class
+dotnet test --filter "FullyQualifiedName~BinarySearchTreeTests"
 ```
 
-For performance testing or tests that require specific resources, some tests may be marked with `[TestCategory("Manual")]` and require manual execution.
+---
 
+## Documentation Links
+
+| Location | Description | Documentation |
+|----------|-------------|---------------|
+| **Tests root** | Test project overview | [../README.md](../README.md) |
+| **Helpers** | Shared test infrastructure | [../Helpers/README.md](../Helpers/README.md) |
+| **Models** | Test entity and config models | [../Models/README.md](../Models/README.md) |

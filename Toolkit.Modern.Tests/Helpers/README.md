@@ -1,188 +1,142 @@
 # Test Helpers
 
-This directory contains helper classes that provide common functionality and utilities for the ByteForge.Toolkit test suite.
-
-## Overview
-
-The helper classes in this directory simplify test setup, provide assertions, manage temporary resources, and offer other supporting functionality to make tests more readable, maintainable, and effective.
+Shared infrastructure classes used across the entire test suite. All classes are `static` and live in the `ByteForge.Toolkit.Tests.Helpers` namespace.
 
 ## Helper Classes
 
 ### TempFileHelper
 
-```csharp
-public static class TempFileHelper
-{
-    public static string CreateTempFile(string content, string extension = ".tmp")
-    public static string CreateTempDirectory()
-    public static void CleanupTempFiles()
-}
-```
+Manages temporary files and directories that must survive for the duration of a test and be cleaned up afterwards.
 
-Provides utilities for creating and managing temporary files and directories during tests:
+| Method | Description |
+|--------|-------------|
+| `CreateTempFile(string content, string extension)` | Creates a temp file with UTF-8 text content (default extension `.tmp`) |
+| `CreateTempFile(byte[] data, string extension)` | Creates a temp file with binary content (default extension `.dat`) |
+| `CreateTempCsvFile(string csvContent)` | Shorthand — creates a `.csv` temp file |
+| `CreateTempIniFile(string iniContent)` | Shorthand — creates a `.ini` temp file |
+| `GetTempFilePath(string extension)` | Returns a unique path without creating the file; path is still registered for cleanup |
+| `CreateTempDirectory()` | Creates a unique temp directory under `Path.GetTempPath()` |
+| `CleanupTempFiles()` | Deletes all tracked files and directories; silently ignores errors |
 
-- **CreateTempFile**: Creates a temporary file with specified content and extension
-- **CreateTempDirectory**: Creates a unique temporary directory
-- **CleanupTempFiles**: Removes temporary files created during testing
+Files are tracked in static lists. Callers typically call `CleanupTempFiles()` in `[TestCleanup]`.
 
 ### AssertionHelpers
 
-```csharp
-public static class AssertionHelpers
-{
-    public static void AssertEncryptionRoundTrip(string plaintext, AESEncryption encryption)
-    public static void AssertCSVRoundTrip(List<object> data, CSVFormat format)
-    public static void AssertConfigurationRoundTrip<T>(T original, string configFile)
-    public static void AssertThrows<TException>(Action action, string context = null)
-}
-```
+Domain-specific assertion utilities that wrap AwesomeAssertions.
 
-Provides specialized assertion methods for common testing scenarios:
-
-- **AssertEncryptionRoundTrip**: Verifies encryption and decryption operations maintain data integrity
-- **AssertCSVRoundTrip**: Validates CSV write/read operations maintain data integrity
-- **AssertConfigurationRoundTrip**: Ensures configuration save/load operations preserve values
-- **AssertThrows**: Helper for validating exception throwing with context
+| Method | Description |
+|--------|-------------|
+| `AssertEncryptionRoundTrip(string plaintext, Func<string,string> encryptMethod, Func<string,string> decryptMethod)` | Verifies that encrypt → decrypt produces the original value and that the encrypted form is different |
+| `AssertCsvRoundTrip<T>(List<T> originalData, string csvContent, List<T> parsedData)` | Validates CSV write/read produces the same record count |
+| `AssertCollectionsEquivalent<T>(IEnumerable<T> expected, IEnumerable<T> actual, string because)` | Order-independent collection equality |
+| `AssertJavaScriptEscaping(string original, string escaped)` | Checks that backslash, quote, newline, carriage-return, and tab characters are properly escaped |
+| `AssertBinarySearchTreeOrdering<T>(BinarySearchTree<T> tree, IEnumerable<T> values)` | Verifies all values are present and that in-order traversal produces a sorted sequence |
+| `AssertThrows<TException>(Action action, string? expectedMessage)` | Asserts a specific exception type is thrown, optionally matching message content |
+| `AssertInRange<T>(T actual, T min, T max, string because)` | Asserts a value falls within an inclusive range |
 
 ### DatabaseTestHelper
 
-```csharp
-public static class DatabaseTestHelper
-{
-    public static DBAccess CreateTestDBAccess()
-    public static void AssertTestDatabaseSetup(DBAccess dbAccess)
-    public static string GenerateTestString(string prefix)
-    public static void CleanupTestData(DBAccess dbAccess, string tableName, string condition)
-    public static void AssertExecutionTime(Action action, int maxMilliseconds, string operationName)
-}
-```
+Centralizes connection configuration, test data management, and performance utilities for all database tests.
 
-Facilitates database testing with utilities for:
+#### Connection factory methods
 
-- **CreateTestDBAccess**: Creates a DBAccess instance pointing to the test database
-- **AssertTestDatabaseSetup**: Validates that the test database is properly configured
-- **GenerateTestString**: Creates unique test data identifiers
-- **CleanupTestData**: Removes test data after test execution
-- **AssertExecutionTime**: Validates performance of database operations
+| Method | Description |
+|--------|-------------|
+| `CreateTestDBAccess()` | `DBAccess` pointing at `TestUnitDB` on `(local)` using Windows Authentication, or CI environment variables if set |
+| `CreateTestDatabaseOptions()` | `DatabaseOptions` for the SQL Server test database |
+| `CreateTestDatabaseOptions(int connectionTimeout, int commandTimeout, bool autoTrimStrings)` | `DatabaseOptions` with custom timeouts |
+| `CreateInvalidDatabaseOptions()` | `DatabaseOptions` pointing at a non-existent database, for error-path tests |
+| `CreateTestAccessDBAccess()` | `DBAccess` using ODBC to the Access test database |
+| `CreateTestAccessDatabaseOptions()` | `DatabaseOptions` for the Access test database (resolves `.accdb` vs `.mdb`) |
+| `CreateTestAccessDatabaseOptionsWithDSN()` | `DatabaseOptions` using a named DSN `TestAccessDB` |
+| `CreateInvalidAccessDatabaseOptions()` | `DatabaseOptions` with a non-existent DSN |
+
+**CI environment variables read by `DatabaseTestHelper`:**
+
+| Variable | Purpose |
+|----------|---------|
+| `BYTEFORGE_TEST_SQL_SERVER` | SQL Server host |
+| `BYTEFORGE_TEST_SQL_PORT` | SQL Server port |
+| `BYTEFORGE_TEST_SQL_USER` | SQL login user |
+| `BYTEFORGE_TEST_SQL_PASSWORD` | SQL login password |
+| `BYTEFORGE_TEST_SQL_CONNECTION_STRING` | Full connection string (highest priority) |
+| `BYTEFORGE_TEST_SQL_DATABASE` | Database name |
+| `BYTEFORGE_TEST_ACCESS_FORMAT` | `accdb` or `mdb` to select the Access file format |
+
+#### Database validation
+
+| Method | Description |
+|--------|-------------|
+| `AssertTestDatabaseSetup(DBAccess dbAccess)` | Fails the test if `TestUnitDB` is not reachable or missing expected seed data |
+| `AssertAccessDatabaseSetup(DBAccess dbAccess)` | Fails the test if the Access database is not reachable or missing expected tables |
+| `VerifyTestDatabaseSetup(DBAccess dbAccess)` | Returns `bool` — used internally by the assert variant |
+| `VerifyAccessDatabaseSetup(DBAccess dbAccess)` | Returns `bool` |
+| `VerifyAccessDatabaseFileExists()` | Returns `true` if the resolved Access database file exists on disk |
+
+#### Test data management
+
+| Method | Description |
+|--------|-------------|
+| `GenerateTestString(string prefix)` | Produces a unique, 50-character-max string in the form `{prefix}_{yyyyMMdd_HHmmss}_{guid}` |
+| `GenerateTestCode()` | Produces a short unique code `TEST{yyyyMMddHHmmss}` |
+| `CleanupTestData(DBAccess dbAccess, string tableName, string whereClause)` | Deletes rows matching the clause; returns affected count |
+| `CleanupTestEntities(DBAccess dbAccess)` | Removes rows from `TestEntities` where `Name LIKE 'Test_%'` or description contains `unit test` |
+| `CleanupBulkTestEntities(DBAccess dbAccess)` | Removes rows from `BulkTestEntities` where `Code LIKE 'TEST%'` or name matches |
+| `GetRecordCount(DBAccess dbAccess, string tableName)` | Returns the row count for the specified table |
+| `AssertRecordCount(DBAccess dbAccess, string tableName, int expectedCount, int tolerance)` | Asserts count is within `expectedCount ± tolerance` |
+| `ValidateTestEntity(DBAccess dbAccess, int entityId, string expectedName)` | Returns `true` if the entity exists with the expected name |
+
+#### Performance utilities
+
+| Method | Description |
+|--------|-------------|
+| `MeasureExecutionTime(Action operation)` | Returns elapsed milliseconds |
+| `MeasureExecutionTime<T>(Func<T> operation)` | Returns `(T Result, long ElapsedMs)` |
+| `AssertExecutionTime(Action operation, long maxMilliseconds, string operationName)` | Fails the test if the operation exceeds the time limit |
 
 ### ConfigurationTestHelper
 
-```csharp
-public static class ConfigurationTestHelper
-{
-    public static string CreateTempConfigFile(string content)
-    public static void InitializeConfiguration(string content = null)
-    public static T GetDefaultConfigSection<T>() where T : class, IConfigSection, new()
-}
-```
+Creates isolated `Configuration` instances from inline INI content.
 
-Assists with configuration testing:
+| Method | Description |
+|--------|-------------|
+| `CreateTestConfiguration(string iniContent)` | Writes INI content to a temp file and returns an initialized `IConfigurationManager` |
+| `CreateConfiguration()` | Returns an uninitialized `Configuration` instance |
+| `CreateStandardTestConfiguration()` | Returns a pre-configured instance with `[TestSection]`, `[DatabaseSettings]`, and `[GlobalizationSettings]` sections |
 
-- **CreateTempConfigFile**: Creates a temporary configuration file with specified content
-- **InitializeConfiguration**: Sets up the Configuration system for testing
-- **GetDefaultConfigSection**: Retrieves a typed configuration section with default values
+### TestConfigurationHelper
+
+Low-level utilities for creating temp config files and constructing INI content.
+
+| Method | Description |
+|--------|-------------|
+| `CreateTempConfigFile(string content)` | Delegates to `TempFileHelper.CreateTempIniFile` |
+| `CreateTestSection<T>(string sectionName, Dictionary<string, object> values)` | Builds a single-section INI file from a dictionary |
+| `CreateConfigWithArray(string sectionName, string arrayName, string[] arrayItems, ...)` | Builds a two-section INI file: a main section and a numeric-keyed array section |
+| `CreateStandardTestConfig()` | Creates a multi-section config with `[TestSection]`, `[TestArray]`, `[DatabaseSettings]`, `[EmptySection]`, and `[SpecialCharacters]` |
+| `CreateEncryptedTestConfig()` | Creates a config with `es`-prefixed (encrypted string) keys for security testing |
+| `CleanupTempFiles()` | Delegates to `TempFileHelper.CleanupTempFiles()` |
+| `ValidateConfigurationRoundTrip<T>(T original, string configFile)` | Placeholder — checks that the file exists |
 
 ### AwesomeAssertionsExtensions
 
-Extends the AwesomeAssertions library with additional assertion methods specifically tailored for ByteForge.Toolkit testing.
+`internal static` class extending AwesomeAssertions fluent interfaces with `SatisfyAny` and `SatisfyAll` predicate combinators.
 
-## Usage Examples
+Both methods are overloaded for all common assertion subject types: `object`, `ReferenceType`, `bool`, `bool?`, `DateTime`, `DateTime?`, `DateTimeOffset`, `DateTimeOffset?`, `Guid`, `Guid?`, `TimeSpan`, `TimeSpan?`, and any `Enum` or `Enum?` type.
 
-### Using TempFileHelper
-
-```csharp
-[TestMethod]
-public void TestFileOperation()
-{
-    // Create a temporary file for testing
-    string testFilePath = TempFileHelper.CreateTempFile("Test content", ".txt");
-    
-    // Use the file in tests
-    string content = File.ReadAllText(testFilePath);
-    content.Should().Be("Test content");
-    
-    // Cleanup is automatic, but can be forced
-    TempFileHelper.CleanupTempFiles();
-}
-```
-
-### Using AssertionHelpers
-
-```csharp
-[TestMethod]
-public void EncryptionTest()
-{
-    var encryption = new AESEncryption("password");
-    
-    // Verify encryption round-trip
-    AssertionHelpers.AssertEncryptionRoundTrip("Sensitive data", encryption);
-}
-```
-
-### Using DatabaseTestHelper
-
-```csharp
-[TestMethod]
-public void DatabaseOperationTest()
-{
-    // Create database access for testing
-    var dbAccess = DatabaseTestHelper.CreateTestDBAccess();
-    
-    // Generate unique test identifier
-    string testName = DatabaseTestHelper.GenerateTestString("UserTest");
-    
-    try
-    {
-        // Perform database operations
-        bool success = dbAccess.ExecuteQuery(
-            "INSERT INTO TestEntities (Name) VALUES (@name)",
-            testName);
-            
-        success.Should().BeTrue();
-    }
-    finally
-    {
-        // Clean up test data
-        DatabaseTestHelper.CleanupTestData(dbAccess, "TestEntities", 
-            $"Name = '{testName}'");
-    }
-}
-```
-
-## Notes
-
-- Helper classes are designed to be used across multiple test fixtures
-- They encapsulate common testing patterns to reduce duplication
-- Most helpers include proper cleanup mechanisms to prevent test pollution
-- The helpers focus on making tests more readable and maintainable
+| Extension | Description |
+|-----------|-------------|
+| `.SatisfyAny(string because, params Func<TSubject,bool>[] predicates)` | Passes if at least one predicate returns `true` |
+| `.SatisfyAll(string because, params Func<TSubject,bool>[] predicates)` | Passes if all predicates return `true` |
 
 ---
 
-## 📖 Documentation Links
+## Documentation Links
 
-### 🏠 Project Navigation
-| Location           | Description           | Documentation                                                       |
-|--------------------|-----------------------|---------------------------------------------------------------------|
-| **Root**           | Solution overview     | [📘 ../../readme.md](../../readme.md)                               |
-| **Toolkit.Modern** | Core library overview | [📘 ../../Toolkit.Modern/readme.md](../../Toolkit.Modern/readme.md) |
-| **Tests**          | Test suite overview   | [📘 ../README.md](../README.md)                                     |
-
-### 🧪 Related Test Modules
-| Module                  | Description           | Documentation                                                         |
-|-------------------------|-----------------------|-----------------------------------------------------------------------|
-| **Unit Tests**          | Unit test suite       | [📘 ../Unit/readme.md](../Unit/readme.md)                             |
-| **Test Models**         | Test data models      | [📘 ../Models/README.md](../Models/README.md)                         |
-| **CLI Tests**           | CLI module tests      | [📘 ../Unit/CLI/readme.md](../Unit/CLI/readme.md)                     |
-| **Configuration Tests** | Configuration tests   | [📘 ../Unit/Configuration/readme.md](../Unit/Configuration/readme.md) |
-| **Data Tests**          | Data module tests     | [📘 ../Unit/Data/readme.md](../Unit/Data/readme.md)                   |
-| **Security Tests**      | Security module tests | [📘 ../Unit/Security/readme.md](../Unit/Security/readme.md)           |
-
-### 🏗️ Production Modules
-| Module            | Description                | Documentation                                                                                   |
-|-------------------|----------------------------|-------------------------------------------------------------------------------------------------|
-| **CLI**           | Command-line parsing       | [📘 ../../Toolkit.Modern/CommandLine/readme.md](../../Toolkit.Modern/CommandLine/readme.md)     |
-| **Configuration** | INI-based configuration    | [📘 ../../Toolkit.Modern/Configuration/readme.md](../../Toolkit.Modern/Configuration/readme.md) |
-| **Data**          | Database & file processing | [📘 ../../Toolkit.Modern/Data/readme.md](../../Toolkit.Modern/Data/readme.md)                   |
-| **Logging**       | Structured logging         | [📘 ../../Toolkit.Modern/Logging/readme.md](../../Toolkit.Modern/Logging/readme.md)             |
-| **Security**      | Encryption & security      | [📘 ../../Toolkit.Modern/Security/readme.md](../../Toolkit.Modern/Security/readme.md)           |
-
+| Location | Description | Documentation |
+|----------|-------------|---------------|
+| **Root** | Solution overview | [../../readme.md](../../readme.md) |
+| **Tests** | Test suite overview | [../README.md](../README.md) |
+| **Models** | Test model classes | [../Models/README.md](../Models/README.md) |
+| **Unit** | Unit test overview | [../Unit/readme.md](../Unit/readme.md) |
+| **Data/Database** | Database tests | [../Unit/Data/Database/readme.md](../Unit/Data/Database/readme.md) |

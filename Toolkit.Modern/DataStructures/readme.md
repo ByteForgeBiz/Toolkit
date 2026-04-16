@@ -2,477 +2,206 @@
 
 ## Overview
 
-The **DataStructures** module provides efficient, well-tested data structures for storing and retrieving data in organized ways. It includes a self-balancing binary search tree and URL parsing utilities.
+The **DataStructures** module provides two utility types: a self-balancing AVL binary search tree for ordered, efficient data storage and retrieval, and a static URL helper for combining URL path fragments.
 
 ---
 
-## Purpose
+## Key Types
 
-Complex applications need specialized data structures that:
-1. **Maintain order** - Keep data sorted for efficient searching
-2. **Balance automatically** - Prevent tree skewing and degradation
-3. **Support traversal** - Iterate in different orders (in-order, pre-order, post-order)
-4. **Handle URLs** - Parse and manipulate URLs reliably
-5. **Perform efficiently** - O(log n) operations for balanced trees
+| Type | Kind | Namespace | Description |
+|------|------|-----------|-------------|
+| `BinarySearchTree<T>` | Class | `ByteForge.Toolkit.DataStructures` | Generic self-balancing AVL tree with O(log n) insert, delete, and search |
+| `Url` | Static class | `ByteForge.Toolkit.DataStructures` | Combines URL path fragments safely, handling slashes and protocol prefixes |
 
 ---
 
-## Key Classes
+## BinarySearchTree\<T\>
 
-### `BinarySearchTree<T>`
-**Purpose:** Self-balancing AVL (Adelson-Velsky and Landis) binary search tree.
+A generic AVL (Adelson-Velsky and Landis) binary search tree. It automatically rebalances after every insert and delete, guaranteeing O(log n) worst-case performance regardless of insertion order.
 
-**Generic Type Parameter:** 
-- `T` - Element type, must implement `IComparable<T?>`
+**Type constraint:** `T : IComparable<T?>`
 
-**Key Characteristics:**
-- **Self-balancing** - Maintains height balance through rotations
-- **Generic** - Works with any comparable type
-- **O(log n)** - Efficient insert, delete, search
-- **Complete traversal support** - In-order, pre-order, post-order
+### Inner class: `Node`
 
-#### Core Methods
+Each node stores a key, optional metadata, left/right child pointers, and an AVL height counter.
 
-**Basic Operations:**
-```csharp
-// Insert element
-void Insert(T key);
+| Property | Type | Description |
+|----------|------|-------------|
+| `Key` | `T` | The element stored in the node |
+| `Left` | `Node?` | Left child |
+| `Right` | `Node?` | Right child |
+| `Height` | `int` | Node height used for AVL balance factor |
+| `Value` | `object?` | Optional associated metadata |
 
-// Remove element
-bool Remove(T key);
+### Core methods
 
-// Search for element
-bool Contains(T key);
+| Method | Returns | Description |
+|--------|---------|-------------|
+| `Insert(T key)` | `void` | Inserts a key and rebalances. Duplicate keys are silently ignored. |
+| `Remove(T key)` | `bool` | Removes a key and rebalances. Returns `true` if found. |
+| `Contains(T key)` | `bool` | Returns `true` if the key exists in the tree |
+| `Find(T key)` | `Node?` | Returns the node for the given key, or `null` |
+| `FindMin()` | `T` | Returns the smallest key. Throws `InvalidOperationException` if empty. |
+| `FindMax()` | `T` | Returns the largest key. Throws `InvalidOperationException` if empty. |
+| `Clear()` | `void` | Removes all nodes |
+| `ToArray()` | `T[]` | Returns all keys as an array in sorted (in-order) sequence |
+| `Count` | `int` | Number of elements in the tree |
+| `IsEmpty` | `bool` | `true` when `Count == 0` |
 
-// Find specific node
-BinarySearchTree<T>.Node Find(T key);
+### Traversal methods
 
-// Clear all elements
-void Clear();
-```
+| Method | Order | Description |
+|--------|-------|-------------|
+| `GetInOrderTraversal()` | Left → Node → Right | Yields keys in ascending sorted order |
+| `GetPreOrderTraversal()` | Node → Left → Right | Prefix order; useful for tree serialisation |
+| `GetPostOrderTraversal()` | Left → Right → Node | Postfix order |
 
-**Tree Navigation:**
-```csharp
-// Find extremes
-T FindMin();  // Smallest element
-T FindMax();  // Largest element
-
-// Get count and status
-int Count { get; }
-bool IsEmpty { get; }
-```
-
-**Traversals:**
-```csharp
-// Convert to array (in-order)
-T[] ToArray();
-
-// Enumerable traversals
-IEnumerable<T> GetInOrderTraversal();  // Left, Node, Right (sorted)
-IEnumerable<T> GetPreOrderTraversal(); // Node, Left, Right (prefix)
-IEnumerable<T> GetPostOrderTraversal();  // Left, Right, Node (postfix)
-```
-
-#### Inner Class: `Node`
-**Purpose:** Represents a single tree node.
-
-**Properties:**
-```csharp
-T Key { get; set; }          // Element stored in node
-Node? Left { get; set; }      // Left subtree
-Node? Right { get; set; }     // Right subtree
-int Height { get; internal set; }  // Node height (for balance)
-object? Value { get; set; }   // Associated metadata
-```
-
----
-
-### Usage Patterns
-
-#### Creating and Populating
-
-```csharp
-// Create tree for integers
-var intTree = new BinarySearchTree<int>();
-intTree.Insert(50);
-intTree.Insert(30);
-intTree.Insert(70);
-intTree.Insert(20);
-intTree.Insert(40);
-intTree.Insert(60);
-intTree.Insert(80);
-
-// Tree structure (automatically balanced):
-//        50
-//       /  \
-//      30   70
-//     / \   / \
-//    20 40 60 80
-```
-
-#### Searching
-
-```csharp
-var tree = new BinarySearchTree<string>();
-tree.Insert("Apple");
-tree.Insert("Zebra");
-tree.Insert("Mango");
-
-// Check if element exists
-if (tree.Contains("Mango"))
-{
-    Console.WriteLine("Found!");
-}
-
-// Find exact node
-var node = tree.Find("Apple");
-if (node != null)
-{
-    Console.WriteLine($"Found: {node.Key}");
-}
-```
-
-#### Removing Elements
+### Usage examples
 
 ```csharp
 var tree = new BinarySearchTree<int>();
-// ... populate tree ...
 
-// Remove element
-bool removed = tree.Remove(30);  // Returns true if found and removed
+// Insertions — balanced automatically even in ascending order
+foreach (var n in new[] { 50, 30, 70, 20, 40, 60, 80 })
+    tree.Insert(n);
 
-Console.WriteLine($"Tree size: {tree.Count}");
-```
+// Searching
+bool found = tree.Contains(40);   // true
+var node   = tree.Find(70);       // Node with Key = 70
 
-#### Traversing
-
-```csharp
-var tree = new BinarySearchTree<int>();
-var numbers = new[] { 50, 30, 70, 20, 40, 60, 80 };
-foreach (var num in numbers)
-    tree.Insert(num);
-
-// In-order traversal (sorted)
-Console.WriteLine("In-order (sorted):");
-foreach (var value in tree.GetInOrderTraversal())
-    Console.Write($"{value} ");  // Output: 20 30 40 50 60 70 80
-
-// Pre-order traversal (prefix)
-Console.WriteLine("\nPre-order (prefix):");
-foreach (var value in tree.GetPreOrderTraversal())
-    Console.Write($"{value} ");  // Output: 50 30 20 40 70 60 80
-
-// Post-order traversal (postfix)
-Console.WriteLine("\nPost-order (postfix):");
-foreach (var value in tree.GetPostOrderTraversal())
-    Console.Write($"{value} ");  // Output: 20 40 30 60 80 70 50
-```
-
-#### Finding Min/Max
-
-```csharp
-var tree = new BinarySearchTree<int>();
-foreach (var num in new[] { 50, 30, 70, 20, 40, 60, 80 })
-    tree.Insert(num);
-
+// Extremes
 int min = tree.FindMin();  // 20
 int max = tree.FindMax();  // 80
+
+// Sorted traversal
+int[] sorted = tree.GetInOrderTraversal().ToArray();
+// [20, 30, 40, 50, 60, 70, 80]
+
+// Deletion
+bool removed = tree.Remove(30);   // true; tree rebalances
+Console.WriteLine(tree.Count);    // 6
 ```
 
----
-
-### AVL Balancing Algorithm
-
-The tree maintains balance through automatic rotations:
-
-#### Balance Factor
-**Definition:** Height(left subtree) - Height(right subtree)
-- **+1, 0, -1:** Balanced
-- **< -1:** Right-heavy (right rotation needed)
-- **> +1:** Left-heavy (left rotation needed)
-
-#### Rotation Types
-
-**Left Rotation** (fix right-heavy trees):
-```
-    x           y
-     \         / \
-      y       x   z
-       \
-        z
-```
-
-**Right Rotation** (fix left-heavy trees):
-```
-        z         x
-       /         / \
-      x    =>   w   z
-     /
-    w
-```
-
-**Left-Right Rotation** (fix left-heavy with right-heavy child):
-```
-Perform left rotation on left child, then right rotation on parent
-```
-
-**Right-Left Rotation** (fix right-heavy with left-heavy child):
-```
-Perform right rotation on right child, then left rotation on parent
-```
-
-#### Automatic Rebalancing
-
-The tree automatically rebalances after each insert/delete:
+### String tree
 
 ```csharp
-var tree = new BinarySearchTree<int>();
-tree.Insert(1);
-tree.Insert(2);
-tree.Insert(3);
-tree.Insert(4);
-tree.Insert(5);
+var names = new BinarySearchTree<string>();
+names.Insert("Charlie");
+names.Insert("Alice");
+names.Insert("Bob");
 
-// Without rebalancing, would be: 1 -> 2 -> 3 -> 4 -> 5 (linked list)
-// With AVL balancing:
-//      3
-//    /   \
-//   2     4
-//  /       \
-// 1         5
+foreach (var name in names.GetInOrderTraversal())
+    Console.WriteLine(name);
+// Alice
+// Bob
+// Charlie
 ```
 
----
+### Practical patterns
 
-### Performance Characteristics
+#### Range query
 
-| Operation   | Best     | Average   | Worst    |
-|-------------|----------|-----------|----------|
-| Insert      | O(1)     | O(log n)  | O(log n) |
-| Delete      | O(log n) | O(log n)  | O(log n) |
-| Search      | O(log n) | O(log n)  | O(log n) |
-| Min/Max     | O(log n) | O(log n)  | O(log n) |
-| Traversal   | O(n)     | O(n)      | O(n)     |
-
-**Comparison with Other Structures:**
-- **Unordered List:** Insert O(1), Search O(n), Delete O(n)
-- **Sorted List:** Insert O(n), Search O(log n), Delete O(n)
-- **Hash Table:** Insert O(1), Search O(1), No ordering
-- **AVL Tree:** Insert O(log n), Search O(log n), Delete O(log n), Maintains order
-
----
-
-### Practical Applications
-
-#### 1. Sorted Data Queries
 ```csharp
-// Build database index
-var index = new BinarySearchTree<(string lastName, string firstName, int id)>();
-foreach (var person in persons)
-    index.Insert((person.LastName, person.FirstName, person.Id));
+var scores = new BinarySearchTree<int>();
+// … populate …
 
-// Query: Get all people in last name range
-var results = index.GetInOrderTraversal()
-    .Where(p => p.lastName >= "Smith" && p.lastName <= "Wilson")
+var inRange = scores.GetInOrderTraversal()
+    .Where(s => s >= 80 && s <= 90)
     .ToList();
 ```
 
-#### 2. Event Scheduling
-```csharp
-// Events sorted by time
-var events = new BinarySearchTree<(DateTime time, string description)>();
-events.Insert((DateTime.Now, "Meeting"));
-events.Insert((DateTime.Now.AddHours(1), "Lunch"));
-events.Insert((DateTime.Now.AddMinutes(30), "Break"));
-
-// Get chronological order
-foreach (var (@event, description) in events.GetInOrderTraversal())
-    Console.WriteLine($"{@event}: {description}");
-```
-
-#### 3. Range Queries
-```csharp
-var tree = new BinarySearchTree<int>();
-// ... populate with scores ...
-
-// Get scores in range 80-90
-var inRange = tree.GetInOrderTraversal()
-    .Where(score => score >= 80 && score <= 90)
-    .ToList();
-```
-
----
-
-### Exception Handling
+#### Sorted deduplication
 
 ```csharp
-var tree = new BinarySearchTree<int>();
+var distinct = new BinarySearchTree<string>();
+foreach (var item in rawList)
+    distinct.Insert(item);   // duplicates are silently dropped
 
-try
-{
-    // Empty tree operations
-    int min = tree.FindMin();  // Throws InvalidOperationException
-}
-catch (InvalidOperationException ex)
-{
-    Console.WriteLine("Tree is empty");
-}
-
-try
-{
-    // Type constraint violation
-    var stringTree = new BinarySearchTree<string>();
-    // Must implement IComparable<string?>
-}
-catch (Exception ex)
-{
-    // Type must be comparable
-}
+var deduped = distinct.ToArray();
 ```
 
----
+### AVL rebalancing
 
-### Testing
+The tree maintains a balance factor (left height − right height) for each node. Whenever an insert or delete makes the factor exceed ±1, one of four rotation types is applied:
 
-```csharp
-[TestMethod]
-public void BinarySearchTree_InsertAndFind_ReturnsElement()
-{
-    var tree = new BinarySearchTree<int>();
-    tree.Insert(50);
-    tree.Insert(30);
-    tree.Insert(70);
+| Condition | Rotation |
+|-----------|----------|
+| Right-heavy subtree | Left rotation |
+| Left-heavy subtree | Right rotation |
+| Left-heavy with right-heavy child | Left-Right double rotation |
+| Right-heavy with left-heavy child | Right-Left double rotation |
 
-    Assert.IsTrue(tree.Contains(30));
-    Assert.IsTrue(tree.Contains(70));
- Assert.IsFalse(tree.Contains(40));
-}
+### Performance
 
-[TestMethod]
-public void BinarySearchTree_Balanced_MaintainsBalance()
-{
-    var tree = new BinarySearchTree<int>();
-    // Insert in ascending order - would be skewed without balancing
-    for (int i = 1; i <= 100; i++)
-        tree.Insert(i);
-  
-    // Tree should still have ~log2(100) ≈ 7 height, not 100
-    Assert.IsTrue(tree.Count == 100);
-}
-
-[TestMethod]
-public void BinarySearchTree_InOrderTraversal_ReturnsSorted()
-{
-    var tree = new BinarySearchTree<int>();
-    foreach (var num in new[] { 50, 30, 70, 20, 40, 60, 80 })
- tree.Insert(num);
- 
-    var sorted = tree.GetInOrderTraversal().ToArray();
-    Assert.IsTrue(sorted.SequenceEqual(new[] { 20, 30, 40, 50, 60, 70, 80 }));
-}
-```
-
----
+| Operation | Complexity |
+|-----------|------------|
+| Insert | O(log n) |
+| Delete | O(log n) |
+| Search / Find | O(log n) |
+| FindMin / FindMax | O(log n) |
+| Traversal | O(n) |
 
 ### Limitations
 
-- **Not thread-safe** - Requires external synchronization for multi-threaded use
-- **Generic only** - Must implement IComparable<T?>
-- **Memory overhead** - Each node stores pointers and height
-- **No duplicate handling** - Silently ignores duplicate inserts
+- **Not thread-safe.** Use external locking for concurrent access.
+- **No duplicates.** A second `Insert` of an existing key is a no-op.
+- **Memory overhead.** Each node stores two child pointers plus a height integer in addition to the key.
 
 ---
 
-### Url Class
+## Url (static utility class)
 
-**Purpose:** Parse and manipulate URLs.
+`Url` provides `Combine` overloads that join URL path fragments the same way `Path.Combine` joins file-system paths, handling protocol prefixes, trailing/leading slashes, and backslash normalisation.
 
-**Key Methods:**
+### Methods
+
+| Method | Description |
+|--------|-------------|
+| `Combine(string url1, string url2)` | Joins two URL fragments |
+| `Combine(string url1, string url2, string url3)` | Joins three fragments |
+| `Combine(string url1, string url2, string url3, string url4)` | Joins four fragments |
+| `Combine(params string[] urls)` | Joins any number of fragments |
+
+### Behaviour
+
+- Backslashes are normalised to forward slashes.
+- Duplicate slashes are collapsed to a single slash.
+- If `url2` begins with a protocol (`http://`, `https://`, `ftp://`) or is an absolute path (`/`), it takes precedence and `url1` is discarded (same as `Path.Combine` on Windows with an absolute second argument).
+- The result is not percent-encoded; inputs are expected to be already valid URL-encoded strings.
+
+### Usage
+
 ```csharp
-// Parse URL
-Url url = new Url("https://api.example.com/users/123?sort=name&limit=10");
+// Basic joining
+Url.Combine("https://api.example.com", "users", "123");
+// → "https://api.example.com/users/123"
 
-// Component access
-string protocol = url.Protocol;  // "https"
-string host = url.Host;          // "api.example.com"
-string path = url.Path;   // "/users/123"
-string query = url.Query;  // "sort=name&limit=10"
+// Trailing/leading slashes are handled
+Url.Combine("https://api.example.com/", "/users/", "/profile");
+// → "https://api.example.com/users/profile"
 
-// Query parameter access
-string? sort = url.GetQueryParameter("sort");  // "name"
-string? limit = url.GetQueryParameter("limit");  // "10"
+// Absolute second segment resets the result
+Url.Combine("https://api.example.com/v1", "https://cdn.example.com/assets");
+// → "https://cdn.example.com/assets"
 
-// URL manipulation
-url.SetQueryParameter("sort", "date");
-url.RemoveQueryParameter("limit");
+// Arbitrary number of segments
+Url.Combine("base", "api", "v2", "orders", "detail");
+// → "base/api/v2/orders/detail"
 ```
-
-**Features:**
-- URL parsing and validation
-- Query parameter manipulation
-- URL encoding/decoding
-- Component extraction
-- Fragment handling
-
----
-
-## File Organization
-
-### `BinarySearchTree.cs`
-Complete AVL tree implementation.
-
-**Contains:**
-- Generic tree class
-- Node inner class
-- Insertion with balancing
-- Deletion with rebalancing
-- Traversal methods
-- Search and min/max operations
-
-### `Url.cs`
-URL parsing and manipulation.
-
----
-
-## Summary
-
-The DataStructures module provides:
-
-**Key Strengths:**
-- ✓ Self-balancing AVL tree (O(log n) operations)
-- ✓ Generic, type-safe implementation
-- ✓ Multiple traversal orders
-- ✓ Automatic balance maintenance
-- ✓ Efficient for sorted data operations
-- ✓ URL parsing and manipulation
-
-**Best For:**
-- Maintaining sorted datasets
-- Implementing indexes
-- Range queries
-- Event scheduling
-- Efficient searching
-
-**Not Ideal For:**
-- Unsorted data operations (use List<T>)
-- Highly frequent insertions/deletions (consider hash tables)
-- Multi-threaded scenarios (add synchronization)
-- Duplicate-heavy datasets (not supported)
 
 ---
 
 ## 📖 Documentation Links
 
-### 🏗️ Related Modules
-| Module                                          | Description                |
-|-------------------------------------------------|----------------------------|
-| **[CLI](../CommandLine/readme.md)**             | Command-line parsing       |
-| **[Configuration](../Configuration/readme.md)** | INI-based configuration    |
-| **[Core](../Core/readme.md)**                   | Core utilities             |
-| **[Data](../Data/readme.md)**                   | Database & file processing |
-| **[JSON](../Json/readme.md)**                   | Delta serialization        |
-| **[Logging](../Logging/readme.md)**             | Structured logging         |
-| **[Mail](../Mail/readme.md)**                   | Email processing           |
-| **[Net](../Net/readme.md)**                     | Network file transfers     |
-| **[Security](../Security/readme.md)**           | Encryption & security      |
-| **[Utils](../Utilities/readme.md)**             | General utilities          |
+| Module | Description |
+|--------|-------------|
+| **[CLI](../CommandLine/readme.md)** | Command-line parsing |
+| **[Configuration](../Configuration/readme.md)** | INI-based configuration |
+| **[Core](../Core/readme.md)** | Core utilities |
+| **[Data](../Data/readme.md)** | Database and file processing |
+| **[JSON](../Json/readme.md)** | Delta serialisation |
+| **[Logging](../Logging/readme.md)** | Structured logging |
+| **[Mail](../Mail/readme.md)** | Email processing |
+| **[Net](../Net/readme.md)** | Network file transfers |
+| **[Security](../Security/readme.md)** | Encryption and security |
+| **[Utils](../Utilities/readme.md)** | General utilities |
