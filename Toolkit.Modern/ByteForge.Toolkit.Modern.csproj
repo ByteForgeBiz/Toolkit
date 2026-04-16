@@ -12,7 +12,7 @@
     <!-- CS0618: System.Data.SqlClient types are marked obsolete in favour of Microsoft.Data.SqlClient;
                 migration is a deliberate future task and net48 compatibility requires this package for now.
          SYSLIB0014: ServicePointManager is obsolete in .NET 5+; retained for net48 SMTP/TLS configuration.
-         CS8xxx: Nullable annotation cleanup is tracked as a future work item.
+         CS8600/CS8602/CS8603/CS8604/CS8618/CS8619/CS8625: Nullable annotation cleanup is tracked as a future work item.
          CS1574/CS1587/CS1734: XML doc cross-reference and param-tag warnings from generated/partial docs. -->
     <NoWarn>$(NoWarn);CS0618;SYSLIB0014;CS8600;CS8602;CS8603;CS8604;CS8618;CS8619;CS8625;CS1574;CS1587;CS1734</NoWarn>
   </PropertyGroup>
