@@ -366,7 +366,7 @@ Internal APIs are accessible to both `ByteForge.Toolkit.Tests` and `ByteForge.To
 | `RestSharp` | 112.1.0 | All targets |
 | `System.CommandLine` | 2.0.0-beta4 | net8.0, net9.0 only |
 | `System.CommandLine.NamingConventionBinder` | 2.0.0-beta4 | All targets |
-| `System.Data.SqlClient` | 4.9.0 | All targets |
+| `Microsoft.Data.SqlClient` | 6.0.1 | All targets |
 | `System.Data.Odbc` | 9.0.10 | All targets |
 | `System.Text.Json` | 9.0.10 | All targets |
 | `System.IO.Pipelines` | 9.0.10 | All targets |

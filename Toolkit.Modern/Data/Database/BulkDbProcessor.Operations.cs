@@ -1,5 +1,5 @@
 using System.Data;
-using System.Data.SqlClient;
+using Microsoft.Data.SqlClient;
 using System.Reflection;
 using ByteForge.Toolkit.Utilities;
 using static ByteForge.Toolkit.Data.DBAccess;

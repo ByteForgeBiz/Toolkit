@@ -9,13 +9,11 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <DocumentationFile>$(MSBuildThisFileDirectory)bin\$(AssemblyName).xml</DocumentationFile>
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
-    <!-- CS0618: System.Data.SqlClient types are marked obsolete in favour of Microsoft.Data.SqlClient;
-                migration is a deliberate future task and net48 compatibility requires this package for now.
-         SYSLIB0014: ServicePointManager is obsolete in .NET 5+; retained for net48 SMTP/TLS configuration.
-         CS8600/CS8602/CS8603/CS8604/CS8618/CS8619/CS8625: Nullable annotation cleanup is tracked as a future work item.
+    <!-- SYSLIB0014: ServicePointManager is obsolete in .NET 5+; retained for net48 SMTP/TLS configuration.
+         CS8600/CS8602/CS8603/CS8604/CS8618/CS8619/CS8625: Nullable annotation cleanup is tracked as a future work item (issue #9).
          CS1574/CS1587/CS1734: XML doc cross-reference and param-tag warnings from generated/partial docs.
          NU1702: This project multi-targets net48/net8.0/net9.0, and referencing the .NET Framework-targeted WinSCPnet package from the net8.0/net9.0 targets is intentional. -->
-    <NoWarn>$(NoWarn);CS0618;SYSLIB0014;CS8600;CS8602;CS8603;CS8604;CS8618;CS8619;CS8625;CS1574;CS1587;CS1734;NU1702</NoWarn>
+    <NoWarn>$(NoWarn);SYSLIB0014;CS8600;CS8602;CS8603;CS8604;CS8618;CS8619;CS8625;CS1574;CS1587;CS1734;NU1702</NoWarn>
   </PropertyGroup>
 
   <!-- Documentation build configuration: Disable Costura to allow SHFB access to dependencies -->
@@ -61,7 +59,7 @@
     <PackageReference Include="System.CommandLine" Version="2.0.0-beta4.22272.1" Condition="'$(TargetFramework)' != 'net48' AND '$(TargetFramework)' != 'netcoreapp3.1' AND '$(TargetFramework)' != 'net5.0'" />
     <PackageReference Include="System.CommandLine.NamingConventionBinder" Version="2.0.0-beta4.22272.1" />
     <PackageReference Include="System.Data.Odbc" Version="9.0.10" />
-    <PackageReference Include="System.Data.SqlClient" Version="4.9.0" />
+    <PackageReference Include="Microsoft.Data.SqlClient" Version="6.0.1" />
     <PackageReference Include="System.IO.Pipelines" Version="9.0.10" />
     <PackageReference Include="System.Memory" Version="4.6.3" />
     <PackageReference Include="System.Numerics.Vectors" Version="4.6.1" />
