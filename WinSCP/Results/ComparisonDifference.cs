@@ -12,8 +12,14 @@ namespace ByteForge.WinSCP;
 [ComVisible(true)]
 public sealed class ComparisonDifference
 {
+	/// <summary>
+	/// Stores the absolute local root path used to resolve relative file paths.
+	/// </summary>
 	private readonly string _localPath;
 
+	/// <summary>
+	/// Stores the absolute remote root path used to resolve relative file paths.
+	/// </summary>
 	private readonly string _remotePath;
 
 	/// <summary>
@@ -78,21 +84,37 @@ public sealed class ComparisonDifference
 		}
 	}
 
+	/// <summary>
+	/// Translates the remote file path to the corresponding local directory path.
+	/// </summary>
+	/// <returns>The equivalent local directory path for the remote file.</returns>
 	private string TranslateRemotePathToLocal()
 	{
 		return RemotePath.TranslateRemotePathToLocal(RemotePath.GetDirectoryName(Remote.FileName), _remotePath, _localPath);
 	}
 
+	/// <summary>
+	/// Translates the local file path to the corresponding remote directory path.
+	/// </summary>
+	/// <returns>The equivalent remote directory path for the local file.</returns>
 	private string TranslateLocalPathToRemote()
 	{
 		return RemotePath.TranslateLocalPathToRemote(Path.GetDirectoryName(Local.FileName), _localPath, _remotePath);
 	}
 
+	/// <summary>
+	/// Returns the formatted remote file path string, appending a trailing slash for directories.
+	/// </summary>
+	/// <returns>The remote file name with a trailing slash if the entry is a directory.</returns>
 	private string GetRemotePathString()
 	{
 		return Remote.FileName + (IsDirectory ? "/" : string.Empty);
 	}
 
+	/// <summary>
+	/// Returns the formatted local file path string, appending a trailing backslash for directories.
+	/// </summary>
+	/// <returns>The local file name with a trailing backslash if the entry is a directory.</returns>
 	private string GetLocalPathString()
 	{
 		return Local.FileName + (IsDirectory ? "\\" : string.Empty);

@@ -24,66 +24,159 @@ namespace ByteForge.WinSCP;
 [ComSourceInterfaces(typeof(ISessionEvents))]
 public sealed class Session : IDisposable, IReflect
 {
+   /// <summary>
+	/// The XML namespace for WinSCP session schema.
+	/// </summary>
 	internal const string Namespace = "http://winscp.net/schema/session/1.0";
 
+	/// <summary>
+	/// The process used for the session.
+	/// </summary>
 	private ExeSessionProcess _process;
 
+	/// <summary>
+	/// The last output timestamp.
+	/// </summary>
 	private DateTime _lastOutput;
 
+	/// <summary>
+	/// The log reader for session elements.
+	/// </summary>
 	private ElementLogReader _reader;
 
+	/// <summary>
+	/// The session log reader.
+	/// </summary>
 	private SessionLogReader _logReader;
 
+	/// <summary>
+	/// The list of operation results.
+	/// </summary>
 	private readonly IList<OperationResultBase> _operationResults;
 
+	/// <summary>
+	/// The list of event actions.
+	/// </summary>
 	private readonly IList<Action> _events;
 
+	/// <summary>
+	/// The event used for signaling session events.
+	/// </summary>
 	private AutoResetEvent _eventsEvent;
 
+	/// <summary>
+	/// The event used for signaling user choices.
+	/// </summary>
 	private ManualResetEvent _choiceEvent;
 
+	/// <summary>
+	/// Indicates whether the session has been disposed.
+	/// </summary>
 	private bool _disposed;
 
+	/// <summary>
+	/// The path to the WinSCP executable.
+	/// </summary>
 	private string _executablePath;
 
+	/// <summary>
+	/// Additional arguments for the WinSCP executable.
+	/// </summary>
 	private string _additionalExecutableArguments;
 
+	/// <summary>
+	/// Indicates whether to use the default configuration.
+	/// </summary>
 	private bool _defaultConfiguration;
 
+	/// <summary>
+	/// Indicates whether to disable version check.
+	/// </summary>
 	private bool _disableVersionCheck;
 
+	/// <summary>
+	/// The path to the INI file.
+	/// </summary>
 	private string _iniFilePath;
 
+	/// <summary>
+	/// The reconnect time span.
+	/// </summary>
 	private TimeSpan _reconnectTime;
 
+	/// <summary>
+	/// The path to the session log file.
+	/// </summary>
 	private string _sessionLogPath;
 
+  /// <summary>
+	/// Indicates whether the session was aborted.
+	/// </summary>
 	private bool _aborted;
 
+	/// <summary>
+	/// Unique log identifier.
+	/// </summary>
 	private int _logUnique;
 
+	/// <summary>
+	/// The path to the XML log file.
+	/// </summary>
 	private string _xmlLogPath;
 
+	/// <summary>
+	/// The file transfer progress event handler.
+	/// </summary>
 	private FileTransferProgressEventHandler _fileTransferProgress;
 
+	/// <summary>
+	/// The progress handling mode.
+	/// </summary>
 	private int _progressHandling;
 
+	/// <summary>
+	/// Indicates whether to guard the process with a job object.
+	/// </summary>
 	private bool _guardProcessWithJob;
 
+	/// <summary>
+	/// The home path for the session.
+	/// </summary>
 	private string _homePath;
 
+	/// <summary>
+	/// The user name for the process running WinSCP.
+	/// </summary>
 	private string _executableProcessUserName;
 
+	/// <summary>
+	/// The password for the process running WinSCP.
+	/// </summary>
 	private SecureString _executableProcessPassword;
 
+	/// <summary>
+	/// The collection of error messages.
+	/// </summary>
 	private StringCollection _error;
 
+	/// <summary>
+	/// Indicates whether to ignore failed operations.
+	/// </summary>
 	private bool _ignoreFailed;
 
+	/// <summary>
+	/// The session timeout value.
+	/// </summary>
 	private TimeSpan _sessionTimeout;
 
+	/// <summary>
+	/// The query received event handler.
+	/// </summary>
 	private QueryReceivedEventHandler _queryReceived;
 
+	/// <summary>
+	/// Indicates whether to throw on standard output exception.
+	/// </summary>
 	private bool _throwStdOut;
 
 	/// <summary>
@@ -335,12 +428,28 @@ public sealed class Session : IDisposable, IReflect
 		}
 	}
 
+	/// <summary>
+	/// Gets a value indicating whether a file transfer progress handler is registered.
+	/// </summary>
+	/// <value><c>true</c> if a <see cref="FileTransferProgress"/> handler is subscribed; otherwise, <c>false</c>.</value>
 	internal bool WantsProgress => _fileTransferProgress != null;
 
+	/// <summary>
+	/// Gets the underlying system type for COM reflection purposes.
+	/// </summary>
+	/// <value>The runtime <see cref="Type"/> of this instance.</value>
 	Type IReflect.UnderlyingSystemType => GetType();
 
+	/// <summary>
+	/// Gets the session logger used for diagnostic output.
+	/// </summary>
+	/// <value>The <see cref="Logger"/> instance associated with this session.</value>
 	internal Logger Logger { get; private set; }
 
+	/// <summary>
+	/// Gets or sets a value indicating whether the WinSCP child process is guarded by a Windows Job Object.
+	/// </summary>
+	/// <value><c>true</c> to guard the process; otherwise, <c>false</c>.</value>
 	internal bool GuardProcessWithJobInternal
 	{
 		get
@@ -354,12 +463,28 @@ public sealed class Session : IDisposable, IReflect
 		}
 	}
 
+	/// <summary>
+	/// Gets or sets a value used in tests to simulate closed handles.
+	/// </summary>
+	/// <value><c>true</c> to enable closed-handle simulation in tests; otherwise, <c>false</c>.</value>
 	internal bool TestHandlesClosedInternal { get; set; }
 
+	/// <summary>
+	/// Gets the dictionary of raw WinSCP configuration settings added via <see cref="AddRawConfiguration"/>.
+	/// </summary>
+	/// <value>A dictionary mapping raw setting names to their values.</value>
 	internal Dictionary<string, string> RawConfiguration { get; private set; }
 
+	/// <summary>
+	/// Gets a value indicating whether the default WinSCP configuration is used.
+	/// </summary>
+	/// <value><c>true</c> if the default configuration is active; otherwise, <c>false</c>.</value>
 	internal bool DefaultConfigurationInternal => _defaultConfiguration;
 
+	/// <summary>
+	/// Gets the path to the INI file used for configuration, if any.
+	/// </summary>
+	/// <value>The INI file path, or <c>null</c> if not configured.</value>
 	internal string IniFilePathInternal => _iniFilePath;
 
 	/// <summary>
@@ -415,6 +540,12 @@ public sealed class Session : IDisposable, IReflect
 		}
 	}
 
+	/// <summary>
+	/// Creates a callstack log scope combined with the session lock, and verifies that no stream is
+	/// currently being read from <see cref="GetFile"/>.
+	/// </summary>
+	/// <returns>A <see cref="CallstackAndLock"/> that must be disposed to release the lock.</returns>
+	/// <exception cref="InvalidOperationException">Thrown when a <see cref="GetFile"/> stream is still open.</exception>
 	private CallstackAndLock CreateCallstackAndLock()
 	{
 		CallstackAndLock callstackAndLock = Logger.CreateCallstackAndLock();
@@ -426,6 +557,11 @@ public sealed class Session : IDisposable, IReflect
 		return callstackAndLock;
 	}
 
+	/// <summary>
+	/// Subscribes a handler to the <see cref="QueryReceived"/> event and, if the session is already
+	/// open and this is the first subscriber, sends the appropriate option-batch command.
+	/// </summary>
+	/// <param name="value">The event handler to add.</param>
 	private void AddQueryReceived(QueryReceivedEventHandler value)
 	{
 		using (CreateCallstackAndLock())
@@ -440,6 +576,11 @@ public sealed class Session : IDisposable, IReflect
 		}
 	}
 
+	/// <summary>
+	/// Unsubscribes a handler from the <see cref="QueryReceived"/> event and, if the session is open
+	/// and no subscribers remain, restores the default batch-mode option.
+	/// </summary>
+	/// <param name="value">The event handler to remove.</param>
 	private void RemoveQueryReceived(QueryReceivedEventHandler value)
 	{
 		using (CreateCallstackAndLock())
@@ -479,6 +620,9 @@ public sealed class Session : IDisposable, IReflect
 		}
 	}
 
+	/// <summary>
+	/// Clears the session output and error string collections.
+	/// </summary>
 	private void ResetOutput()
 	{
 		Output = new StringCollection();
@@ -606,18 +750,29 @@ public sealed class Session : IDisposable, IReflect
 		}
 	}
 
+	/// <summary>
+	/// Sends the <c>option batch</c> command to WinSCP, enabling or disabling batch mode
+	/// depending on whether a <see cref="QueryReceived"/> handler is registered.
+	/// </summary>
 	private void SendOptionBatchCommand()
 	{
 		string command = string.Format(CultureInfo.InvariantCulture, "option batch {0}", new object[1] { (_queryReceived != null) ? "off" : "on" });
 		WriteCommand(command);
 	}
 
+	/// <summary>
+	/// Waits for the next XML log group element and reads it to completion, throwing on any failures.
+	/// </summary>
 	private void WaitForGroup()
 	{
 		using ElementLogReader reader = _reader.WaitForGroupAndCreateLogReader();
 		ReadElement(reader, LogReadFlags.ThrowFailures);
 	}
 
+	/// <summary>
+	/// Builds a formatted string from the captured error output lines, or <c>null</c> if there is none.
+	/// </summary>
+	/// <returns>A message describing the error output, or <c>null</c> when no error output was captured.</returns>
 	internal string GetErrorOutputMessage()
 	{
 		string result = null;
@@ -628,6 +783,11 @@ public sealed class Session : IDisposable, IReflect
 		return result;
 	}
 
+	/// <summary>
+	/// Joins all items in a <see cref="StringCollection"/> into a single newline-separated string.
+	/// </summary>
+	/// <param name="list">The collection of strings to join.</param>
+	/// <returns>A single string with each item separated by <see cref="Environment.NewLine"/>.</returns>
 	private static string ListToString(StringCollection list)
 	{
 		string[] array = new string[list.Count];
@@ -703,6 +863,11 @@ public sealed class Session : IDisposable, IReflect
 		}
 	}
 
+	/// <summary>
+	/// Normalizes an algorithm identifier string by removing all hyphen characters.
+	/// </summary>
+	/// <param name="algorithm">The algorithm identifier to normalize (e.g., "sha-256").</param>
+	/// <returns>The identifier with hyphens removed (e.g., "sha256").</returns>
 	private static string NormalizeIdent(string algorithm)
 	{
 		return algorithm.Replace("-", string.Empty);
@@ -774,6 +939,18 @@ public sealed class Session : IDisposable, IReflect
 		}
 	}
 
+	/// <summary>
+	/// Recursively enumerates remote files matching the given regular expression and enumeration options.
+	/// </summary>
+	/// <param name="path">The remote directory path to enumerate.</param>
+	/// <param name="regex">The compiled regular expression used to filter file names.</param>
+	/// <param name="options">Enumeration options controlling recursion, directory matching, and directory enumeration.</param>
+	/// <param name="throwReadErrors">
+	/// <c>true</c> to propagate <see cref="SessionRemoteException"/> when listing fails;
+	/// <c>false</c> to silently skip unreadable directories.
+	/// </param>
+	/// <returns>A lazily evaluated sequence of matching <see cref="RemoteFileInfo"/> objects.</returns>
+	/// <exception cref="ArgumentException">Thrown when incompatible enumeration options are combined.</exception>
 	private IEnumerable<RemoteFileInfo> DoEnumerateRemoteFiles(string path, Regex regex, EnumerationOptions options, bool throwReadErrors)
 	{
 		Logger.WriteLine("Starting enumeration of {0} ...", path);
@@ -845,6 +1022,11 @@ public sealed class Session : IDisposable, IReflect
 		}
 	}
 
+	/// <summary>
+	/// Converts a file mask containing wildcards (<c>*</c>, <c>?</c>) into a case-insensitive <see cref="Regex"/>.
+	/// </summary>
+	/// <param name="mask">The file mask to convert. <c>null</c>, empty, or <c>"*.*"</c> are treated as <c>"*"</c>.</param>
+	/// <returns>A compiled, case-insensitive <see cref="Regex"/> equivalent to the mask.</returns>
 	internal static Regex MaskToRegex(string mask)
 	{
 		if (string.IsNullOrEmpty(mask) || mask == "*.*")
@@ -883,6 +1065,15 @@ public sealed class Session : IDisposable, IReflect
 		}
 	}
 
+	/// <summary>
+	/// Core implementation of <see cref="PutFiles"/> that issues the WinSCP <c>put</c> command and
+	/// reads the resulting XML log entries into a <see cref="TransferOperationResult"/>.
+	/// </summary>
+	/// <param name="localPath">The local file path or mask to upload.</param>
+	/// <param name="remotePath">The remote destination path.</param>
+	/// <param name="remove">Whether to delete local files after successful upload.</param>
+	/// <param name="options">Transfer options; a default instance is created when <c>null</c>.</param>
+	/// <returns>A <see cref="TransferOperationResult"/> describing the completed transfers.</returns>
 	public TransferOperationResult DoPutFiles(string localPath, string remotePath, bool remove, TransferOptions options)
 	{
 		using (Logger.CreateCallstack())
@@ -1029,6 +1220,16 @@ public sealed class Session : IDisposable, IReflect
 		}
 	}
 
+	/// <summary>
+	/// Uploads a single local file or directory entry to the specified remote directory and
+	/// verifies the result, throwing on failure.
+	/// </summary>
+	/// <param name="localFilePath">The full path of the local file to upload. Must not be empty.</param>
+	/// <param name="remoteDirectory">The remote destination directory.</param>
+	/// <param name="remove">Whether to delete the local file after a successful upload.</param>
+	/// <param name="options">Transfer options; a default instance is used when <c>null</c>.</param>
+	/// <returns>A checked <see cref="TransferOperationResult"/>.</returns>
+	/// <exception cref="ArgumentException">Thrown when <paramref name="localFilePath"/> is null or empty.</exception>
 	internal TransferOperationResult PutEntryToDirectory(string localFilePath, string remoteDirectory, bool remove = false, TransferOptions options = null)
 	{
 		using (Logger.CreateCallstack())
@@ -1045,6 +1246,11 @@ public sealed class Session : IDisposable, IReflect
 		}
 	}
 
+	/// <summary>
+	/// Adds a completed transfer to the operation result and raises the <see cref="FileTransferred"/> event.
+	/// </summary>
+	/// <param name="result">The operation result to update.</param>
+	/// <param name="args">The transfer event arguments; no action is taken when <c>null</c>.</param>
 	private void AddTransfer(TransferOperationResult result, TransferEventArgs args)
 	{
 		if (args != null)
@@ -1070,6 +1276,16 @@ public sealed class Session : IDisposable, IReflect
 		}
 	}
 
+	/// <summary>
+	/// Core implementation that issues the WinSCP <c>get</c> command with optional extra parameters and
+	/// collects the resulting XML log entries into a <see cref="TransferOperationResult"/>.
+	/// </summary>
+	/// <param name="remotePath">The remote path or mask to download.</param>
+	/// <param name="localPath">The local destination path.</param>
+	/// <param name="remove">Whether to delete remote files after a successful download.</param>
+	/// <param name="options">Transfer options; a default instance is used when <c>null</c>.</param>
+	/// <param name="additionalParams">Extra command-line switches appended to the <c>get</c> command.</param>
+	/// <returns>A <see cref="TransferOperationResult"/> describing the completed transfers.</returns>
 	private TransferOperationResult DoGetFiles(string remotePath, string localPath, bool remove, TransferOptions options, string additionalParams)
 	{
 		using (Logger.CreateCallstack())
@@ -1103,6 +1319,14 @@ public sealed class Session : IDisposable, IReflect
 		}
 	}
 
+	/// <summary>
+	/// Validates that the session is open, builds, and sends the WinSCP <c>get</c> command.
+	/// </summary>
+	/// <param name="remotePath">The remote path or mask to download.</param>
+	/// <param name="localPath">The local destination path.</param>
+	/// <param name="remove">Whether to delete remote files after a successful download.</param>
+	/// <param name="options">Transfer options; a default instance is used when <c>null</c>.</param>
+	/// <param name="additionalParams">Extra command-line switches inserted before the path arguments.</param>
 	private void StartGetCommand(string remotePath, string localPath, bool remove, TransferOptions options, string additionalParams)
 	{
 		if (options == null)
@@ -1130,6 +1354,19 @@ public sealed class Session : IDisposable, IReflect
 		}
 	}
 
+	/// <summary>
+	/// Core implementation that validates arguments, constructs the remote path, and delegates to
+	/// <see cref="DoGetFiles"/> to download files into a local directory.
+	/// </summary>
+	/// <param name="remoteDirectory">The remote directory to download from. Must not be <c>null</c>.</param>
+	/// <param name="localDirectory">The local directory to download into. Must exist and must not be <c>null</c>.</param>
+	/// <param name="filemask">The file mask to apply; defaults to <c>"*"</c> when null or empty.</param>
+	/// <param name="remove">Whether to delete remote files after a successful download.</param>
+	/// <param name="options">Transfer options; a default instance is used when <c>null</c>.</param>
+	/// <param name="additionalParams">Extra command-line switches forwarded to the <c>get</c> command.</param>
+	/// <returns>A <see cref="TransferOperationResult"/> describing the completed transfers.</returns>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="remoteDirectory"/> or <paramref name="localDirectory"/> is <c>null</c>.</exception>
+	/// <exception cref="DirectoryNotFoundException">Thrown when <paramref name="localDirectory"/> does not exist.</exception>
 	private TransferOperationResult DoGetFilesToDirectory(string remoteDirectory, string localDirectory, string filemask, bool remove, TransferOptions options, string additionalParams)
 	{
 		using (Logger.CreateCallstack())
@@ -1174,6 +1411,16 @@ public sealed class Session : IDisposable, IReflect
 		}
 	}
 
+	/// <summary>
+	/// Downloads a single remote file or directory entry to the specified local directory and
+	/// verifies the result, throwing on failure.
+	/// </summary>
+	/// <param name="remoteFilePath">The full remote file path to download. Must not be empty.</param>
+	/// <param name="localDirectory">The local directory to download into.</param>
+	/// <param name="remove">Whether to delete the remote file after a successful download.</param>
+	/// <param name="options">Transfer options; a default instance is used when <c>null</c>.</param>
+	/// <param name="additionalParams">Extra command-line switches forwarded to the <c>get</c> command, or <c>null</c>.</param>
+	/// <returns>A checked <see cref="TransferOperationResult"/>.</returns>
 	internal TransferOperationResult GetEntryToDirectory(string remoteFilePath, string localDirectory, bool remove = false, TransferOptions options = null, string additionalParams = null)
 	{
 		using (Logger.CreateCallstack())
@@ -1185,6 +1432,13 @@ public sealed class Session : IDisposable, IReflect
 		}
 	}
 
+	/// <summary>
+	/// Splits a full remote file path into its directory component and an escaped file mask.
+	/// </summary>
+	/// <param name="remoteFilePath">The full remote file path to parse. Must not be null or empty.</param>
+	/// <param name="remoteDirectory">Output: the directory portion of the path.</param>
+	/// <param name="filemask">Output: the file-name portion, escaped for use as a file mask.</param>
+	/// <exception cref="ArgumentException">Thrown when <paramref name="remoteFilePath"/> is null or empty.</exception>
 	private void ParseRemotePath(string remoteFilePath, out string remoteDirectory, out string filemask)
 	{
 		if (string.IsNullOrEmpty(remoteFilePath))
@@ -1195,6 +1449,15 @@ public sealed class Session : IDisposable, IReflect
 		filemask = RemotePath.EscapeFileMask(RemotePath.GetFileName(remoteFilePath));
 	}
 
+	/// <summary>
+	/// Returns the single element from a collection of file operations, throwing when the collection
+	/// has zero or more than one element.
+	/// </summary>
+	/// <typeparam name="T">The type of the operation result.</typeparam>
+	/// <param name="operations">The collection of operations expected to contain exactly one item.</param>
+	/// <returns>The sole element in <paramref name="operations"/>.</returns>
+	/// <exception cref="FileNotFoundException">Thrown when <paramref name="operations"/> is empty.</exception>
+	/// <exception cref="InvalidOperationException">Thrown when <paramref name="operations"/> contains more than one element.</exception>
 	private T GetOnlyFileOperation<T>(ICollection<T> operations)
 	{
 		if (operations.Count == 0)
@@ -1326,6 +1589,12 @@ public sealed class Session : IDisposable, IReflect
 		}
 	}
 
+	/// <summary>
+	/// Issues the WinSCP <c>rm</c> command and collects the resulting removal events.
+	/// </summary>
+	/// <param name="path">The remote path or mask of files to remove.</param>
+	/// <param name="additionalParams">Extra command-line switches prepended to the path argument.</param>
+	/// <returns>A <see cref="RemovalOperationResult"/> describing the removed files.</returns>
 	private RemovalOperationResult DoRemoveFiles(string path, string additionalParams)
 	{
 		using (Logger.CreateCallstack())
@@ -1368,6 +1637,14 @@ public sealed class Session : IDisposable, IReflect
 		}
 	}
 
+	/// <summary>
+	/// Validates the path, escapes the file mask component, and delegates to <see cref="DoRemoveFiles"/>,
+	/// throwing on failure.
+	/// </summary>
+	/// <param name="path">The full remote file path to remove. Must not be null or empty.</param>
+	/// <param name="additionalParams">Optional extra command-line switches forwarded to the <c>rm</c> command.</param>
+	/// <returns>A checked <see cref="RemovalOperationResult"/>.</returns>
+	/// <exception cref="ArgumentException">Thrown when <paramref name="path"/> is null, empty, or has an empty file name component.</exception>
 	internal RemovalOperationResult RemoveEntry(string path, string additionalParams = null)
 	{
 		using (Logger.CreateCallstack())
@@ -1409,6 +1686,19 @@ public sealed class Session : IDisposable, IReflect
 		}
 	}
 
+	/// <summary>
+	/// Validates synchronization arguments and issues the WinSCP <c>synchronize</c> command.
+	/// </summary>
+	/// <param name="mode">The synchronization direction.</param>
+	/// <param name="localPath">The local directory path.</param>
+	/// <param name="remotePath">The remote directory path.</param>
+	/// <param name="removeFiles">Whether to delete files not present in the source.</param>
+	/// <param name="mirror">Whether to apply mirror semantics.</param>
+	/// <param name="criteria">The criteria used to determine which files need synchronization.</param>
+	/// <param name="options">Transfer options; a default instance is used when <c>null</c>.</param>
+	/// <param name="additionalParameters">Extra command-line switches inserted into the command.</param>
+	/// <exception cref="ArgumentException">Thrown when incompatible arguments are combined (e.g., delete with Both mode).</exception>
+	/// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="mode"/> or <paramref name="criteria"/> is out of range.</exception>
 	private void DoSynchronizeDirectories(SynchronizationMode mode, string localPath, string remotePath, bool removeFiles, bool mirror, SynchronizationCriteria criteria, TransferOptions options, string additionalParameters)
 	{
 		if (options == null)
@@ -1475,6 +1765,10 @@ public sealed class Session : IDisposable, IReflect
 		WriteCommand(string.Format(CultureInfo.InvariantCulture, "synchronize {0} {1} {2} {3} -criteria=\"{4}\" {5} -- \"{6}\" \"{7}\"", text, BooleanSwitch(removeFiles, "delete"), BooleanSwitch(mirror, "mirror"), options.ToSwitches(), text2, additionalParameters, Tools.ArgumentEscape(localPath), Tools.ArgumentEscape(remotePath)));
 	}
 
+	/// <summary>
+	/// Reads the XML log output of a <c>synchronize</c> command and populates a <see cref="SynchronizationResult"/>.
+	/// </summary>
+	/// <returns>A <see cref="SynchronizationResult"/> containing all uploads, downloads, and removals.</returns>
 	private SynchronizationResult ReadSynchronizeDirectories()
 	{
 		using (Logger.CreateCallstack())
@@ -1563,6 +1857,13 @@ public sealed class Session : IDisposable, IReflect
 		}
 	}
 
+	/// <summary>
+	/// Reads the XML log output of a preview synchronize command and builds a
+	/// <see cref="ComparisonDifferenceCollection"/> describing the detected differences.
+	/// </summary>
+	/// <param name="localPath">The local directory path used as the comparison base.</param>
+	/// <param name="remotePath">The remote directory path used as the comparison base.</param>
+	/// <returns>A <see cref="ComparisonDifferenceCollection"/> listing all directory differences.</returns>
 	private ComparisonDifferenceCollection ReadCompareDirectories(string localPath, string remotePath)
 	{
 		using (Logger.CreateCallstack())
@@ -1957,6 +2258,12 @@ public sealed class Session : IDisposable, IReflect
 	 * }
 	 */
 
+    /// <summary>
+    /// Called by the COM infrastructure when this type is registered. Writes the assembly GUID and
+    /// version into the registry under the type's CLSID key.
+    /// </summary>
+    /// <param name="t">The type being registered.</param>
+    /// <exception cref="InvalidOperationException">Thrown when the assembly does not carry a <see cref="GuidAttribute"/>.</exception>
     [ComRegisterFunction]
     private static void ComRegister(Type t)
     {
@@ -1969,6 +2276,11 @@ public sealed class Session : IDisposable, IReflect
         classesRoot.CreateSubKey(GetVersionKey(t)).SetValue(null, value2);
     }
     
+	/// <summary>
+	/// Called by the COM infrastructure when this type is unregistered. Removes the TypeLib and Version
+	/// subkeys from the registry under the type's CLSID key.
+	/// </summary>
+	/// <param name="t">The type being unregistered.</param>
 	[ComUnregisterFunction]
 	private static void ComUnregister(Type t)
 	{
@@ -1977,21 +2289,42 @@ public sealed class Session : IDisposable, IReflect
 		classesRoot.DeleteSubKey(GetVersionKey(t), throwOnMissingSubKey: false);
 	}
 
+	/// <summary>
+	/// Returns the registry path for the CLSID of the specified type (e.g., <c>"CLSID\{GUID}"</c>).
+	/// </summary>
+	/// <param name="t">The type whose CLSID key is required.</param>
+	/// <returns>A registry key path string for the type's CLSID.</returns>
 	private static string GetClsidKey(Type t)
 	{
 		return "CLSID\\" + t.GUID.ToString("B").ToUpperInvariant();
 	}
 
+	/// <summary>
+	/// Returns the registry path for the TypeLib subkey under the CLSID of the specified type.
+	/// </summary>
+	/// <param name="t">The type whose TypeLib key is required.</param>
+	/// <returns>A registry key path string (e.g., <c>"CLSID\{GUID}\TypeLib"</c>).</returns>
 	private static string GetTypeLibKey(Type t)
 	{
 		return GetClsidKey(t) + "\\TypeLib";
 	}
 
+	/// <summary>
+	/// Returns the registry path for the Version subkey under the CLSID of the specified type.
+	/// </summary>
+	/// <param name="t">The type whose Version key is required.</param>
+	/// <returns>A registry key path string (e.g., <c>"CLSID\{GUID}\Version"</c>).</returns>
 	private static string GetVersionKey(Type t)
 	{
 		return GetClsidKey(t) + "\\Version";
 	}
 
+	/// <summary>
+	/// Populates file metadata fields on <paramref name="fileInfo"/> from the current XML log element
+	/// read by <paramref name="fileReader"/>.
+	/// </summary>
+	/// <param name="fileInfo">The <see cref="RemoteFileInfo"/> object to populate.</param>
+	/// <param name="fileReader">The log reader positioned at a file-attribute element.</param>
 	private void ReadFile(RemoteFileInfo fileInfo, CustomLogReader fileReader)
 	{
 		using (Logger.CreateCallstack())
@@ -2023,6 +2356,13 @@ public sealed class Session : IDisposable, IReflect
 		}
 	}
 
+	/// <summary>
+	/// Returns a command-line switch string (<c>"-name"</c>) when <paramref name="flag"/> is <c>true</c>,
+	/// or <c>null</c> when it is <c>false</c>.
+	/// </summary>
+	/// <param name="flag">The boolean value that controls whether the switch is emitted.</param>
+	/// <param name="name">The name of the switch (without the leading hyphen).</param>
+	/// <returns>The formatted switch string, or <c>null</c>.</returns>
 	internal static string BooleanSwitch(bool flag, string name)
 	{
 		if (!flag)
@@ -2032,6 +2372,13 @@ public sealed class Session : IDisposable, IReflect
 		return string.Format(CultureInfo.InvariantCulture, "-{0}", new object[1] { name });
 	}
 
+	/// <summary>
+	/// Returns either <c>"-onName"</c> or <c>"-offName"</c> depending on the value of <paramref name="flag"/>.
+	/// </summary>
+	/// <param name="flag">When <c>true</c> the on-switch is returned; otherwise the off-switch.</param>
+	/// <param name="onName">The switch name emitted when <paramref name="flag"/> is <c>true</c>.</param>
+	/// <param name="offName">The switch name emitted when <paramref name="flag"/> is <c>false</c>.</param>
+	/// <returns>The formatted switch string.</returns>
 	internal static string BooleanSwitch(bool flag, string onName, string offName)
 	{
 		if (!flag)
@@ -2041,6 +2388,12 @@ public sealed class Session : IDisposable, IReflect
 		return string.Format(CultureInfo.InvariantCulture, "-{0}", new object[1] { onName });
 	}
 
+	/// <summary>
+	/// Adds a completed synchronization transfer to the result as an upload or download depending on
+	/// its side, and raises the <see cref="FileTransferred"/> event.
+	/// </summary>
+	/// <param name="result">The synchronization result to update.</param>
+	/// <param name="transfer">The transfer event arguments; no action is taken when <c>null</c>.</param>
 	private void AddSynchronizationTransfer(SynchronizationResult result, TransferEventArgs transfer)
 	{
 		if (transfer != null)
@@ -2057,6 +2410,11 @@ public sealed class Session : IDisposable, IReflect
 		}
 	}
 
+	/// <summary>
+	/// Ensures that the path ends with a forward slash, appending one if necessary.
+	/// </summary>
+	/// <param name="path">The path to normalize.</param>
+	/// <returns>The path with a trailing slash, or the original value if it is null or empty.</returns>
 	private static string IncludeTrailingSlash(string path)
 	{
 		if (!string.IsNullOrEmpty(path) && !path.EndsWith("/", StringComparison.Ordinal))
@@ -2066,6 +2424,10 @@ public sealed class Session : IDisposable, IReflect
 		return path;
 	}
 
+	/// <summary>
+	/// Terminates the WinSCP child process, disposes all log readers, and deletes the temporary XML log
+	/// file unless <see cref="XmlLogPreserve"/> is set.
+	/// </summary>
 	private void Cleanup()
 	{
 		using (Logger.CreateCallstack())
@@ -2126,11 +2488,20 @@ public sealed class Session : IDisposable, IReflect
 		}
 	}
 
+	/// <summary>
+	/// Sends a command to the WinSCP process, using the same string for both the command and its log entry.
+	/// </summary>
+	/// <param name="command">The command string to send and log.</param>
 	private void WriteCommand(string command)
 	{
 		WriteCommand(command, command);
 	}
 
+	/// <summary>
+	/// Sends a command to the WinSCP process with a separate sanitized string for log output.
+	/// </summary>
+	/// <param name="command">The actual command string sent to the process.</param>
+	/// <param name="log">The version of the command written to the log (may have passwords masked).</param>
 	private void WriteCommand(string command, string log)
 	{
 		Logger.WriteLine("Command: [{0}]", log);
@@ -2138,6 +2509,11 @@ public sealed class Session : IDisposable, IReflect
 		GotOutput();
 	}
 
+	/// <summary>
+	/// Reads all remaining elements from the log reader, discarding content, until EOF is reached.
+	/// </summary>
+	/// <param name="reader">The log reader to drain.</param>
+	/// <param name="flags">Flags controlling error handling during reading.</param>
 	private static void ReadElement(CustomLogReader reader, LogReadFlags flags)
 	{
 		while (reader.Read(flags))
@@ -2145,6 +2521,18 @@ public sealed class Session : IDisposable, IReflect
 		}
 	}
 
+	/// <summary>
+	/// Converts a <see cref="SessionOptions"/> instance into a WinSCP URL and command-line switch string,
+	/// producing separate versions for the actual command and the log (with credentials masked).
+	/// </summary>
+	/// <param name="sessionOptions">The session options to convert.</param>
+	/// <param name="scanFingerprint">
+	/// <c>true</c> when building the arguments for a fingerprint scan; credentials and certain options
+	/// are omitted in this mode.
+	/// </param>
+	/// <param name="command">Output: the full command string including URL and switches.</param>
+	/// <param name="log">Output: a log-safe version of the command with sensitive values replaced by <c>***</c>.</param>
+	/// <exception cref="ArgumentException">Thrown when the session options contain invalid or inconsistent values.</exception>
 	private void SessionOptionsToUrlAndSwitches(SessionOptions sessionOptions, bool scanFingerprint, out string command, out string log)
 	{
 		using (Logger.CreateCallstack())
@@ -2223,6 +2611,17 @@ public sealed class Session : IDisposable, IReflect
 		}
 	}
 
+	/// <summary>
+	/// Converts the non-URL portion of a <see cref="SessionOptions"/> instance into WinSCP command-line switches,
+	/// producing a separate log-safe version with passwords masked.
+	/// </summary>
+	/// <param name="sessionOptions">The session options to convert.</param>
+	/// <param name="scanFingerprint">
+	/// <c>true</c> when building arguments for a fingerprint scan; credential-related switches are omitted.
+	/// </param>
+	/// <param name="arguments">Output: the full switch string.</param>
+	/// <param name="logArguments">Output: a log-safe version of the switches with sensitive values masked.</param>
+	/// <exception cref="ArgumentException">Thrown when the session options contain invalid or inconsistent values.</exception>
 	private void SessionOptionsToSwitches(SessionOptions sessionOptions, bool scanFingerprint, out string arguments, out string logArguments)
 	{
 		using (Logger.CreateCallstack())
@@ -2339,16 +2738,32 @@ public sealed class Session : IDisposable, IReflect
 		}
 	}
 
+	/// <summary>
+	/// Converts an in-memory SSH private key string into the hex-encoded format required by WinSCP.
+	/// </summary>
+	/// <param name="sessionOptions">The session options containing the <see cref="SessionOptions.SshPrivateKey"/> value.</param>
+	/// <returns>The private key encoded as an uppercase hex string without separators.</returns>
 	internal static string GenerateInMemoryPrivateKey(SessionOptions sessionOptions)
 	{
 		return BitConverter.ToString(Encoding.Default.GetBytes(sessionOptions.SshPrivateKey)).Replace("-", "");
 	}
 
+	/// <summary>
+	/// Appends a wildcard (<c>*</c>) entry to a semicolon-separated list, creating the list if it is empty.
+	/// </summary>
+	/// <param name="list">The existing semicolon-separated list, or <c>null</c>/empty to start a new one.</param>
+	/// <returns>The list with <c>*</c> appended.</returns>
 	private static string AddStarToList(string list)
 	{
 		return (string.IsNullOrEmpty(list) ? string.Empty : (list + ";")) + "*";
 	}
 
+	/// <summary>
+	/// Sends the WinSCP <c>stat</c> command and parses the resulting XML log entry into a
+	/// <see cref="RemoteFileInfo"/> object.
+	/// </summary>
+	/// <param name="path">The remote file path to query.</param>
+	/// <returns>A populated <see cref="RemoteFileInfo"/> for the specified path.</returns>
 	private RemoteFileInfo DoGetFileInfo(string path)
 	{
 		using (Logger.CreateCallstack())
@@ -2390,11 +2805,22 @@ public sealed class Session : IDisposable, IReflect
 		}
 	}
 
+	/// <summary>
+	/// Formats a boolean WinSCP command-line switch as <c>"-key"</c>.
+	/// </summary>
+	/// <param name="key">The switch name (without the leading hyphen).</param>
+	/// <returns>The formatted switch string.</returns>
 	internal static string FormatSwitch(string key)
 	{
 		return string.Format(CultureInfo.InvariantCulture, "-{0}", new object[1] { key });
 	}
 
+	/// <summary>
+	/// Formats a string-valued WinSCP command-line switch as <c>-key="value"</c>, escaping the value.
+	/// </summary>
+	/// <param name="key">The switch name (without the leading hyphen).</param>
+	/// <param name="value">The string value to assign to the switch.</param>
+	/// <returns>The formatted switch string.</returns>
 	internal static string FormatSwitch(string key, string value)
 	{
 		return string.Format(CultureInfo.InvariantCulture, "-{0}=\"{1}\"", new object[2]
@@ -2404,6 +2830,12 @@ public sealed class Session : IDisposable, IReflect
 		});
 	}
 
+	/// <summary>
+	/// Formats an integer-valued WinSCP command-line switch as <c>-key=value</c>.
+	/// </summary>
+	/// <param name="key">The switch name (without the leading hyphen).</param>
+	/// <param name="value">The integer value to assign to the switch.</param>
+	/// <returns>The formatted switch string.</returns>
 	internal static string FormatSwitch(string key, int value)
 	{
 		return string.Format(CultureInfo.InvariantCulture, "-{0}={1}", new object[2]
@@ -2413,21 +2845,42 @@ public sealed class Session : IDisposable, IReflect
 		});
 	}
 
+	/// <summary>
+	/// Formats a boolean WinSCP command-line switch as <c>-key=1</c> or <c>-key=0</c>.
+	/// </summary>
+	/// <param name="key">The switch name (without the leading hyphen).</param>
+	/// <param name="value"><c>true</c> produces <c>1</c>; <c>false</c> produces <c>0</c>.</param>
+	/// <returns>The formatted switch string.</returns>
 	internal static string FormatSwitch(string key, bool value)
 	{
 		return FormatSwitch(key, value ? 1 : 0);
 	}
 
+	/// <summary>
+	/// Percent-encodes a string for safe embedding in a URI.
+	/// </summary>
+	/// <param name="s">The string to encode.</param>
+	/// <returns>The URI-encoded string.</returns>
 	private static string UriEscape(string s)
 	{
 		return Uri.EscapeDataString(s);
 	}
 
+	/// <summary>
+	/// Records the current time as the timestamp of the most recent output received from WinSCP,
+	/// resetting the inactivity timeout counter.
+	/// </summary>
 	internal void GotOutput()
 	{
 		_lastOutput = DateTime.Now;
 	}
 
+	/// <summary>
+	/// Handles output data received from the WinSCP process, adding it to the output/error buffers and
+	/// scheduling the <see cref="OutputDataReceived"/> event for dispatch.
+	/// </summary>
+	/// <param name="sender">The source of the event.</param>
+	/// <param name="e">The event arguments containing the output data; <c>null</c> indicates incomplete progress output.</param>
 	private void ProcessOutputDataReceived(object sender, OutputDataReceivedEventArgs e)
 	{
 		if (e == null)
@@ -2462,6 +2915,10 @@ public sealed class Session : IDisposable, IReflect
 		GotOutput();
 	}
 
+	/// <summary>
+	/// Enqueues an action for dispatch on the session's event thread and signals the event wait handle.
+	/// </summary>
+	/// <param name="action">The action to enqueue.</param>
 	private void ScheduleEvent(Action action)
 	{
 		lock (_events)
@@ -2471,6 +2928,13 @@ public sealed class Session : IDisposable, IReflect
 		}
 	}
 
+	/// <summary>
+	/// Checks whether the session has timed out or been aborted, and throws the appropriate exception
+	/// when either condition is detected.
+	/// </summary>
+	/// <param name="additional">Optional context message appended to the timeout exception message.</param>
+	/// <exception cref="TimeoutException">Thrown when no output has been received within the configured timeout.</exception>
+	/// <exception cref="SessionLocalException">Thrown when the session was aborted via <see cref="Abort"/>.</exception>
 	internal void CheckForTimeout(string additional = null)
 	{
 		TimeSpan timeSpan = Timeout;
@@ -2502,12 +2966,21 @@ public sealed class Session : IDisposable, IReflect
 		}
 	}
 
+	/// <summary>
+	/// Raises the <see cref="FileTransferred"/> event with the given transfer arguments.
+	/// </summary>
+	/// <param name="args">The event arguments describing the completed transfer.</param>
 	private void RaiseFileTransferredEvent(TransferEventArgs args)
 	{
 		Logger.WriteLine("FileTransferredEvent: [{0}]", args.FileName);
 		this.FileTransferred?.Invoke(this, args);
 	}
 
+	/// <summary>
+	/// Raises the <see cref="Failed"/> event (when not suppressed) and records the failure on all
+	/// active operation results.
+	/// </summary>
+	/// <param name="e">The remote exception describing the failure.</param>
 	internal void RaiseFailed(SessionRemoteException e)
 	{
 		Logger.WriteLine("Failed: [{0}]", e);
@@ -2524,6 +2997,10 @@ public sealed class Session : IDisposable, IReflect
 		}
 	}
 
+	/// <summary>
+	/// Throws an <see cref="InvalidOperationException"/> if the session has been disposed or aborted.
+	/// </summary>
+	/// <exception cref="InvalidOperationException">Thrown when the session is disposed or was aborted.</exception>
 	private void CheckNotDisposed()
 	{
 		if (_disposed)
@@ -2536,6 +3013,10 @@ public sealed class Session : IDisposable, IReflect
 		}
 	}
 
+	/// <summary>
+	/// Throws an <see cref="InvalidOperationException"/> if the session is not currently open.
+	/// </summary>
+	/// <exception cref="InvalidOperationException">Thrown when the session has not been opened.</exception>
 	private void CheckOpened()
 	{
 		if (!Opened)
@@ -2544,6 +3025,10 @@ public sealed class Session : IDisposable, IReflect
 		}
 	}
 
+	/// <summary>
+	/// Throws an <see cref="InvalidOperationException"/> if the session is already open.
+	/// </summary>
+	/// <exception cref="InvalidOperationException">Thrown when the session is already opened.</exception>
 	private void CheckNotOpened()
 	{
 		if (Opened)
@@ -2552,12 +3037,21 @@ public sealed class Session : IDisposable, IReflect
 		}
 	}
 
+	/// <summary>
+	/// Raises the <see cref="OutputDataReceived"/> event with the specified output data.
+	/// </summary>
+	/// <param name="data">The output text received from the WinSCP process.</param>
+	/// <param name="error"><c>true</c> if the data was received on the error stream; otherwise, <c>false</c>.</param>
 	private void RaiseOutputDataReceived(string data, bool error)
 	{
 		Logger.WriteLine("Output: [{0}]", data);
 		this.OutputDataReceived?.Invoke(this, new OutputDataReceivedEventArgs(data, error));
 	}
 
+	/// <summary>
+	/// Dispatches all queued session events within the specified time interval.
+	/// </summary>
+	/// <param name="interval">The maximum number of milliseconds to spend dispatching events.</param>
 	internal void DispatchEvents(int interval)
 	{
 		DateTime now = DateTime.Now;
@@ -2581,17 +3075,31 @@ public sealed class Session : IDisposable, IReflect
 		}
 	}
 
+	/// <summary>
+	/// Adds an operation result to the active-results list and returns a guard that removes it on disposal.
+	/// </summary>
+	/// <param name="operationResult">The operation result to register.</param>
+	/// <returns>An <see cref="IDisposable"/> guard that unregisters the result when disposed.</returns>
 	private IDisposable RegisterOperationResult(OperationResultBase operationResult)
 	{
 		_operationResults.Add(operationResult);
 		return new OperationResultGuard(this, operationResult);
 	}
 
+	/// <summary>
+	/// Removes the specified operation result from the active-results list.
+	/// </summary>
+	/// <param name="operationResult">The operation result to remove.</param>
 	internal void UnregisterOperationResult(OperationResultBase operationResult)
 	{
 		_operationResults.Remove(operationResult);
 	}
 
+	/// <summary>
+	/// Increments the progress-handling reference count and returns a guard object that decrements
+	/// it (and dispatches any pending events) on disposal.
+	/// </summary>
+	/// <returns>An <see cref="IDisposable"/> that disables progress handling when disposed.</returns>
 	private IDisposable CreateProgressHandler()
 	{
 		using (Logger.CreateCallstack())
@@ -2601,6 +3109,10 @@ public sealed class Session : IDisposable, IReflect
 		}
 	}
 
+	/// <summary>
+	/// Dispatches any pending events and decrements the progress-handling reference count.
+	/// </summary>
+	/// <exception cref="InvalidOperationException">Thrown when progress handling is not currently enabled.</exception>
 	internal void DisableProgressHandling()
 	{
 		using (Logger.CreateCallstack())
@@ -2614,6 +3126,10 @@ public sealed class Session : IDisposable, IReflect
 		}
 	}
 
+	/// <summary>
+	/// Schedules a query-received event for dispatch and blocks until the subscriber has provided a choice.
+	/// </summary>
+	/// <param name="args">The query event arguments to pass to the <see cref="QueryReceived"/> handler.</param>
 	internal void ProcessChoice(QueryReceivedEventArgs args)
 	{
 		if (_queryReceived != null)
@@ -2627,12 +3143,21 @@ public sealed class Session : IDisposable, IReflect
 		}
 	}
 
+	/// <summary>
+	/// Invokes the <see cref="QueryReceived"/> handler synchronously and then signals the choice event
+	/// so that <see cref="ProcessChoice"/> can unblock.
+	/// </summary>
+	/// <param name="args">The query event arguments.</param>
 	private void Choice(QueryReceivedEventArgs args)
 	{
 		_queryReceived?.Invoke(this, args);
 		_choiceEvent.Set();
 	}
 
+	/// <summary>
+	/// Schedules a file transfer progress event for dispatch on the event thread.
+	/// </summary>
+	/// <param name="args">The progress event arguments to dispatch.</param>
 	internal void ProcessProgress(FileTransferProgressEventArgs args)
 	{
 		ScheduleEvent(delegate
@@ -2641,6 +3166,11 @@ public sealed class Session : IDisposable, IReflect
 		});
 	}
 
+	/// <summary>
+	/// Invokes the <see cref="FileTransferProgress"/> handler and, if the subscriber requests
+	/// cancellation, instructs the WinSCP process to cancel the current transfer.
+	/// </summary>
+	/// <param name="args">The progress event arguments.</param>
 	private void Progress(FileTransferProgressEventArgs args)
 	{
 		if (_progressHandling >= 0 && WantsProgress)
@@ -2653,6 +3183,11 @@ public sealed class Session : IDisposable, IReflect
 		}
 	}
 
+	/// <summary>
+	/// Determines and validates the path for the temporary XML log file, generating a unique name in
+	/// the system's temp directory when no explicit path has been configured.
+	/// </summary>
+	/// <exception cref="SessionLocalException">Thrown when the configured XML log path already exists.</exception>
 	private void SetupTempPath()
 	{
 		using (Logger.CreateCallstack())
@@ -2686,6 +3221,11 @@ public sealed class Session : IDisposable, IReflect
 		}
 	}
 
+	/// <summary>
+	/// Resolves the effective path to the WinSCP executable, checking the running process, the
+	/// configured path, and the default search as fallbacks.
+	/// </summary>
+	/// <returns>The path to the WinSCP executable.</returns>
 	private string GetExecutablePath()
 	{
 		if (_process != null)
@@ -2699,6 +3239,11 @@ public sealed class Session : IDisposable, IReflect
 		return ExeSessionProcess.FindExecutable(this);
 	}
 
+	/// <summary>
+	/// Validates and sets the session log file path, rejecting paths with an <c>.xml</c> extension.
+	/// </summary>
+	/// <param name="value">The path to the session log file.</param>
+	/// <exception cref="ArgumentException">Thrown when <paramref name="value"/> has a <c>.xml</c> extension.</exception>
 	private void SetSessionLogPath(string value)
 	{
 		CheckNotOpened();
@@ -2709,6 +3254,12 @@ public sealed class Session : IDisposable, IReflect
 		_sessionLogPath = value;
 	}
 
+	/// <summary>
+	/// Returns the <see cref="FieldInfo"/> for the field with the specified name, or <c>null</c> if not found.
+	/// </summary>
+	/// <param name="name">The name of the field to find.</param>
+	/// <param name="bindingAttr">Binding flags that control the search.</param>
+	/// <returns>The matching <see cref="FieldInfo"/>, or <c>null</c>.</returns>
 	FieldInfo IReflect.GetField(string name, BindingFlags bindingAttr)
 	{
 		using (Logger.CreateCallstack())
@@ -2720,6 +3271,11 @@ public sealed class Session : IDisposable, IReflect
 		}
 	}
 
+	/// <summary>
+	/// Returns all fields that match the specified binding flags.
+	/// </summary>
+	/// <param name="bindingAttr">Binding flags that control the search.</param>
+	/// <returns>An array of <see cref="FieldInfo"/> objects representing matching fields.</returns>
 	FieldInfo[] IReflect.GetFields(BindingFlags bindingAttr)
 	{
 		using (Logger.CreateCallstack())
@@ -2730,6 +3286,12 @@ public sealed class Session : IDisposable, IReflect
 		}
 	}
 
+	/// <summary>
+	/// Returns all members with the specified name that match the binding flags.
+	/// </summary>
+	/// <param name="name">The name of the member to find.</param>
+	/// <param name="bindingAttr">Binding flags that control the search.</param>
+	/// <returns>An array of <see cref="MemberInfo"/> objects for matching members.</returns>
 	MemberInfo[] IReflect.GetMember(string name, BindingFlags bindingAttr)
 	{
 		using (Logger.CreateCallstack())
@@ -2741,6 +3303,11 @@ public sealed class Session : IDisposable, IReflect
 		}
 	}
 
+	/// <summary>
+	/// Returns all members that match the specified binding flags.
+	/// </summary>
+	/// <param name="bindingAttr">Binding flags that control the search.</param>
+	/// <returns>An array of <see cref="MemberInfo"/> objects for all matching members.</returns>
 	MemberInfo[] IReflect.GetMembers(BindingFlags bindingAttr)
 	{
 		using (Logger.CreateCallstack())
@@ -2751,6 +3318,12 @@ public sealed class Session : IDisposable, IReflect
 		}
 	}
 
+	/// <summary>
+	/// Returns the <see cref="MethodInfo"/> for the method with the specified name, or <c>null</c> if not found.
+	/// </summary>
+	/// <param name="name">The name of the method to find.</param>
+	/// <param name="bindingAttr">Binding flags that control the search.</param>
+	/// <returns>The matching <see cref="MethodInfo"/>, or <c>null</c>.</returns>
 	MethodInfo IReflect.GetMethod(string name, BindingFlags bindingAttr)
 	{
 		using (Logger.CreateCallstack())
@@ -2762,6 +3335,15 @@ public sealed class Session : IDisposable, IReflect
 		}
 	}
 
+	/// <summary>
+	/// Returns the <see cref="MethodInfo"/> for the method matching the specified signature, or <c>null</c> if not found.
+	/// </summary>
+	/// <param name="name">The name of the method to find.</param>
+	/// <param name="bindingAttr">Binding flags that control the search.</param>
+	/// <param name="binder">An object that provides custom binding; pass <c>null</c> for the default binder.</param>
+	/// <param name="types">An array of <see cref="Type"/> objects representing the parameter types.</param>
+	/// <param name="modifiers">An array of parameter modifiers.</param>
+	/// <returns>The matching <see cref="MethodInfo"/>, or <c>null</c>.</returns>
 	MethodInfo IReflect.GetMethod(string name, BindingFlags bindingAttr, Binder binder, Type[] types, ParameterModifier[] modifiers)
 	{
 		using (Logger.CreateCallstack())
@@ -2773,6 +3355,11 @@ public sealed class Session : IDisposable, IReflect
 		}
 	}
 
+	/// <summary>
+	/// Returns all methods that match the specified binding flags.
+	/// </summary>
+	/// <param name="bindingAttr">Binding flags that control the search.</param>
+	/// <returns>An array of <see cref="MethodInfo"/> objects for all matching methods.</returns>
 	MethodInfo[] IReflect.GetMethods(BindingFlags bindingAttr)
 	{
 		using (Logger.CreateCallstack())
@@ -2783,6 +3370,11 @@ public sealed class Session : IDisposable, IReflect
 		}
 	}
 
+	/// <summary>
+	/// Returns all properties that match the specified binding flags.
+	/// </summary>
+	/// <param name="bindingAttr">Binding flags that control the search.</param>
+	/// <returns>An array of <see cref="PropertyInfo"/> objects for all matching properties.</returns>
 	PropertyInfo[] IReflect.GetProperties(BindingFlags bindingAttr)
 	{
 		using (Logger.CreateCallstack())
@@ -2793,6 +3385,16 @@ public sealed class Session : IDisposable, IReflect
 		}
 	}
 
+	/// <summary>
+	/// Returns the <see cref="PropertyInfo"/> matching the specified name and signature, or <c>null</c> if not found.
+	/// </summary>
+	/// <param name="name">The name of the property to find.</param>
+	/// <param name="bindingAttr">Binding flags that control the search.</param>
+	/// <param name="binder">An object that provides custom binding; pass <c>null</c> for the default binder.</param>
+	/// <param name="returnType">The return type of the property.</param>
+	/// <param name="types">An array of <see cref="Type"/> objects representing the indexer parameter types.</param>
+	/// <param name="modifiers">An array of parameter modifiers.</param>
+	/// <returns>The matching <see cref="PropertyInfo"/>, or <c>null</c>.</returns>
 	PropertyInfo IReflect.GetProperty(string name, BindingFlags bindingAttr, Binder binder, Type returnType, Type[] types, ParameterModifier[] modifiers)
 	{
 		using (Logger.CreateCallstack())
@@ -2804,6 +3406,12 @@ public sealed class Session : IDisposable, IReflect
 		}
 	}
 
+	/// <summary>
+	/// Returns the <see cref="PropertyInfo"/> for the property with the specified name, or <c>null</c> if not found.
+	/// </summary>
+	/// <param name="name">The name of the property to find.</param>
+	/// <param name="bindingAttr">Binding flags that control the search.</param>
+	/// <returns>The matching <see cref="PropertyInfo"/>, or <c>null</c>.</returns>
 	PropertyInfo IReflect.GetProperty(string name, BindingFlags bindingAttr)
 	{
 		using (Logger.CreateCallstack())
@@ -2815,6 +3423,17 @@ public sealed class Session : IDisposable, IReflect
 		}
 	}
 
+	/// <summary>
+	/// Writes detailed diagnostic information about an <see cref="IReflect.InvokeMember"/> call to the session logger.
+	/// </summary>
+	/// <param name="name">The name of the member being invoked.</param>
+	/// <param name="invokeAttr">The binding flags used for the invocation.</param>
+	/// <param name="binder">The binder object, or <c>null</c>.</param>
+	/// <param name="target">The object on which the member is invoked.</param>
+	/// <param name="args">The argument array passed to the member, or <c>null</c>.</param>
+	/// <param name="modifiers">Parameter modifier array, or <c>null</c>.</param>
+	/// <param name="culture">The culture used for type coercion.</param>
+	/// <param name="namedParameters">Named parameter names, or <c>null</c>.</param>
 	private void LogInvokeMember(string name, BindingFlags invokeAttr, Binder binder, object target, object[] args, ParameterModifier[] modifiers, CultureInfo culture, string[] namedParameters)
 	{
 		Logger.WriteLine("Name [{0}]", name);
@@ -2839,6 +3458,20 @@ public sealed class Session : IDisposable, IReflect
 		}
 	}
 
+	/// <summary>
+	/// Invokes the specified member on the target object, with special handling to supply default values
+	/// for optional parameters and to resolve ambiguous method overloads by matching parameter count.
+	/// </summary>
+	/// <param name="name">The name of the member to invoke.</param>
+	/// <param name="invokeAttr">Binding flags that control the invocation.</param>
+	/// <param name="binder">An object that provides custom binding; pass <c>null</c> for the default binder.</param>
+	/// <param name="target">The object on which to invoke the member.</param>
+	/// <param name="args">The argument array to pass to the member.</param>
+	/// <param name="modifiers">Parameter modifier array, or <c>null</c>.</param>
+	/// <param name="culture">The culture used for type coercion.</param>
+	/// <param name="namedParameters">Named parameter names, or <c>null</c>.</param>
+	/// <returns>The return value of the invoked member, or <c>null</c> for void members.</returns>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="target"/> or <paramref name="args"/> is <c>null</c>.</exception>
 	object IReflect.InvokeMember(string name, BindingFlags invokeAttr, Binder binder, object target, object[] args, ParameterModifier[] modifiers, CultureInfo culture, string[] namedParameters)
 	{
 		using (Logger.CreateCallstack())

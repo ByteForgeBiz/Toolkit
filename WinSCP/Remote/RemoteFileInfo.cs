@@ -118,11 +118,19 @@ public sealed class RemoteFileInfo
 		return Name;
 	}
 
+	/// <summary>
+	/// Returns the file size clamped to a 32-bit integer value.
+	/// </summary>
+	/// <returns>The file size as a 32-bit integer.</returns>
 	private int GetLength32()
 	{
 		return Tools.LengthTo32Bit(Length);
 	}
 
+	/// <summary>
+	/// Sets the file size from a 32-bit integer value.
+	/// </summary>
+	/// <param name="value">The file size to assign.</param>
 	private void SetLength32(int value)
 	{
 		Length = value;

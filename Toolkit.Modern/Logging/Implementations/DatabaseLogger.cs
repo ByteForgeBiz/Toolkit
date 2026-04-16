@@ -29,7 +29,7 @@ public partial class DatabaseLogger : BaseLogger
 #if NET20_OR_GREATER
     private static readonly Regex ValidIdentifierPattern = new Regex(@"^[A-Za-z_][A-Za-z0-9_]*$", RegexOptions.Compiled);
 #elif NET5_0_OR_GREATER
-    private static readonly Regex ValidIdentifierPattern = ValidIdentifyerRegex();
+    private static readonly Regex ValidIdentifierPattern = ValidIdentifierRegex();
 #endif
 
     /// <summary>
@@ -448,6 +448,6 @@ END",
     /// commonly used to validate programming language identifiers.</remarks>
     /// <returns>A compiled <see cref="Regex"/> instance that matches strings conforming to the identifier naming pattern.</returns>
     [GeneratedRegex(@"^[A-Za-z_][A-Za-z0-9_]*$", RegexOptions.Compiled)]
-    private static partial Regex ValidIdentifyerRegex();
+    private static partial Regex ValidIdentifierRegex();
 #endif
 }

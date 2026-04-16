@@ -9,6 +9,9 @@ namespace ByteForge.WinSCP;
 /// <typeparam name="T">The type of elements in the enumerable.</typeparam>
 internal class ImplicitEnumerable<T> : IEnumerable<T>, IEnumerable
 {
+	/// <summary>
+	/// The underlying enumerable source that this wrapper delegates enumeration to.
+	/// </summary>
 	private readonly IEnumerable<T> _enumerable;
 
 	/// <summary>

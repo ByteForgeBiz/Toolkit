@@ -262,56 +262,137 @@ public sealed class RemotePath : IReflect
 	}
 
 	// IReflect interface implementation
+	/// <summary>
+	/// Returns a <see cref="FieldInfo"/> for the field with the specified name, delegating
+	/// to the underlying runtime type.
+	/// </summary>
+	/// <param name="name">The name of the field to find.</param>
+	/// <param name="bindingAttr">A bitwise combination of <see cref="BindingFlags"/> values that control the search.</param>
+	/// <returns>A <see cref="FieldInfo"/> for the field, or <see langword="null"/> if no matching field is found.</returns>
 	FieldInfo IReflect.GetField(string name, BindingFlags bindingAttr)
 	{
 		return GetType().GetField(name, bindingAttr);
 	}
 
+	/// <summary>
+	/// Returns all public fields of the underlying runtime type that match the specified binding flags.
+	/// </summary>
+	/// <param name="bindingAttr">A bitwise combination of <see cref="BindingFlags"/> values that control the search.</param>
+	/// <returns>An array of <see cref="FieldInfo"/> objects representing the matching fields.</returns>
 	FieldInfo[] IReflect.GetFields(BindingFlags bindingAttr)
 	{
 		return GetType().GetFields(bindingAttr);
 	}
 
+	/// <summary>
+	/// Returns all members with the specified name from the underlying runtime type.
+	/// </summary>
+	/// <param name="name">The name of the member to find.</param>
+	/// <param name="bindingAttr">A bitwise combination of <see cref="BindingFlags"/> values that control the search.</param>
+	/// <returns>An array of <see cref="MemberInfo"/> objects representing the matching members.</returns>
 	MemberInfo[] IReflect.GetMember(string name, BindingFlags bindingAttr)
 	{
 		return GetType().GetMember(name, bindingAttr);
 	}
 
+	/// <summary>
+	/// Returns all members of the underlying runtime type that match the specified binding flags.
+	/// </summary>
+	/// <param name="bindingAttr">A bitwise combination of <see cref="BindingFlags"/> values that control the search.</param>
+	/// <returns>An array of <see cref="MemberInfo"/> objects representing the matching members.</returns>
 	MemberInfo[] IReflect.GetMembers(BindingFlags bindingAttr)
 	{
 		return GetType().GetMembers(bindingAttr);
 	}
 
+	/// <summary>
+	/// Returns a <see cref="MethodInfo"/> for the method with the specified name, delegating
+	/// to the underlying runtime type.
+	/// </summary>
+	/// <param name="name">The name of the method to find.</param>
+	/// <param name="bindingAttr">A bitwise combination of <see cref="BindingFlags"/> values that control the search.</param>
+	/// <returns>A <see cref="MethodInfo"/> for the method, or <see langword="null"/> if no match is found.</returns>
 	MethodInfo IReflect.GetMethod(string name, BindingFlags bindingAttr)
 	{
 		return GetType().GetMethod(name, bindingAttr);
 	}
 
+	/// <summary>
+	/// Returns a <see cref="MethodInfo"/> for the method matching the specified name,
+	/// binder, parameter types, and modifiers.
+	/// </summary>
+	/// <param name="name">The name of the method to find.</param>
+	/// <param name="bindingAttr">A bitwise combination of <see cref="BindingFlags"/> values that control the search.</param>
+	/// <param name="binder">A <see cref="Binder"/> that defines a set of properties enabling binding.</param>
+	/// <param name="types">An array of <see cref="Type"/> objects representing the parameter types.</param>
+	/// <param name="modifiers">An array of <see cref="ParameterModifier"/> objects representing parameter modifiers.</param>
+	/// <returns>A <see cref="MethodInfo"/> for the matching method, or <see langword="null"/> if no match is found.</returns>
 	MethodInfo IReflect.GetMethod(string name, BindingFlags bindingAttr, Binder binder, Type[] types, ParameterModifier[] modifiers)
 	{
 		return GetType().GetMethod(name, bindingAttr, binder, types, modifiers);
 	}
 
+	/// <summary>
+	/// Returns all methods of the underlying runtime type that match the specified binding flags.
+	/// </summary>
+	/// <param name="bindingAttr">A bitwise combination of <see cref="BindingFlags"/> values that control the search.</param>
+	/// <returns>An array of <see cref="MethodInfo"/> objects representing the matching methods.</returns>
 	MethodInfo[] IReflect.GetMethods(BindingFlags bindingAttr)
 	{
 		return GetType().GetMethods(bindingAttr);
 	}
 
+	/// <summary>
+	/// Returns all properties of the underlying runtime type that match the specified binding flags.
+	/// </summary>
+	/// <param name="bindingAttr">A bitwise combination of <see cref="BindingFlags"/> values that control the search.</param>
+	/// <returns>An array of <see cref="PropertyInfo"/> objects representing the matching properties.</returns>
 	PropertyInfo[] IReflect.GetProperties(BindingFlags bindingAttr)
 	{
 		return GetType().GetProperties(bindingAttr);
 	}
 
+	/// <summary>
+	/// Returns a <see cref="PropertyInfo"/> for the property matching the specified name,
+	/// return type, parameter types, and modifiers.
+	/// </summary>
+	/// <param name="name">The name of the property to find.</param>
+	/// <param name="bindingAttr">A bitwise combination of <see cref="BindingFlags"/> values that control the search.</param>
+	/// <param name="binder">A <see cref="Binder"/> that defines a set of properties enabling binding.</param>
+	/// <param name="returnType">The return type of the property.</param>
+	/// <param name="types">An array of <see cref="Type"/> objects representing the indexer parameter types.</param>
+	/// <param name="modifiers">An array of <see cref="ParameterModifier"/> objects representing parameter modifiers.</param>
+	/// <returns>A <see cref="PropertyInfo"/> for the matching property, or <see langword="null"/> if no match is found.</returns>
 	PropertyInfo IReflect.GetProperty(string name, BindingFlags bindingAttr, Binder binder, Type returnType, Type[] types, ParameterModifier[] modifiers)
 	{
 		return GetType().GetProperty(name, bindingAttr, binder, returnType, types, modifiers);
 	}
 
+	/// <summary>
+	/// Returns a <see cref="PropertyInfo"/> for the property with the specified name and
+	/// binding flags, delegating to the underlying runtime type.
+	/// </summary>
+	/// <param name="name">The name of the property to find.</param>
+	/// <param name="bindingAttr">A bitwise combination of <see cref="BindingFlags"/> values that control the search.</param>
+	/// <returns>A <see cref="PropertyInfo"/> for the property, or <see langword="null"/> if no match is found.</returns>
 	PropertyInfo IReflect.GetProperty(string name, BindingFlags bindingAttr)
 	{
 		return GetType().GetProperty(name, bindingAttr);
 	}
 
+	/// <summary>
+	/// Invokes a member on the specified <paramref name="target"/> object using late binding.
+	/// </summary>
+	/// <param name="name">The name of the member to invoke.</param>
+	/// <param name="invokeAttr">A bitwise combination of <see cref="BindingFlags"/> values that specifies the invocation type.</param>
+	/// <param name="binder">A <see cref="Binder"/> that defines a set of properties enabling binding.</param>
+	/// <param name="target">The object on which to invoke the member.</param>
+	/// <param name="args">An array of arguments to pass to the member.</param>
+	/// <param name="modifiers">An array of <see cref="ParameterModifier"/> objects representing parameter modifiers.</param>
+	/// <param name="culture">The <see cref="CultureInfo"/> governing type coercion.</param>
+	/// <param name="namedParameters">An array of parameter names corresponding to elements in <paramref name="args"/>.</param>
+	/// <returns>The return value of the invoked member.</returns>
+	/// <exception cref="ArgumentNullException">Thrown if <paramref name="target"/> is <see langword="null"/>.</exception>
 	object IReflect.InvokeMember(string name, BindingFlags invokeAttr, Binder binder, object target, object[] args, ParameterModifier[] modifiers, CultureInfo culture, string[] namedParameters)
 	{
 		if (target == null)

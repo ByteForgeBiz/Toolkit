@@ -15,16 +15,38 @@ namespace ByteForge.WinSCP;
 /// </summary>
 internal class Logger : IDisposable
 {
+	/// <summary>
+	/// The underlying text writer used to append log entries to the log file.
+	/// <see langword="null"/> when logging is disabled.
+	/// </summary>
 	private StreamWriter _writter;
 
+	/// <summary>
+	/// The file path of the currently open log file, or <see langword="null"/> / empty when
+	/// logging is disabled.
+	/// </summary>
 	private string _logPath;
 
+	/// <summary>
+	/// Maps each managed thread ID to its current indentation depth so that log entries
+	/// from different threads are indented independently.
+	/// </summary>
 	private readonly Dictionary<int, int> _indents = new Dictionary<int, int>();
 
+	/// <summary>
+	/// Synchronisation object used to serialise all write operations to the log file.
+	/// </summary>
 	private readonly object _logLock = new object();
 
+	/// <summary>
+	/// The set of performance counters sampled at log open and periodically via
+	/// <see cref="WriteCounters"/>.
+	/// </summary>
 	private readonly List<PerformanceCounter> _performanceCounters = new List<PerformanceCounter>();
 
+	/// <summary>
+	/// Backing field for <see cref="LogLevel"/>.
+	/// </summary>
 	private int _logLevel;
 
 	/// <summary>
@@ -101,6 +123,16 @@ internal class Logger : IDisposable
 		return DoGetAssemblyFilePath(entryAssembly);
 	}
 
+	/// <summary>
+	/// Attempts to retrieve the <see cref="Assembly.CodeBase"/> of <paramref name="assembly"/>,
+	/// catching <see cref="NotSupportedException"/> that may be thrown in some hosting environments.
+	/// </summary>
+	/// <param name="assembly">The assembly whose code base URI is requested.</param>
+	/// <param name="e">
+	/// When this method returns, contains the exception that was thrown, or <see langword="null"/>
+	/// if the call succeeded.
+	/// </param>
+	/// <returns>The code base URI string, or <see langword="null"/> if it could not be retrieved.</returns>
 	private string TryGetCodeBase(Assembly assembly, out Exception e)
 	{
 		try
@@ -115,6 +147,15 @@ internal class Logger : IDisposable
 		}
 	}
 
+	/// <summary>
+	/// Resolves the physical file path for <paramref name="assembly"/>, trying both
+	/// <see cref="Assembly.CodeBase"/> and <see cref="Assembly.Location"/>.
+	/// </summary>
+	/// <param name="assembly">The assembly whose file path is to be resolved.</param>
+	/// <returns>
+	/// The absolute file path of the assembly, or <see langword="null"/> if it cannot be
+	/// determined.
+	/// </returns>
 	private string DoGetAssemblyFilePath(Assembly assembly)
 	{
 		string text = null;
@@ -152,6 +193,10 @@ internal class Logger : IDisposable
 		return text;
 	}
 
+	/// <summary>
+	/// Enumerates available performance counter categories and registers CPU and memory
+	/// counters for periodic logging via <see cref="WriteCounters"/>.
+	/// </summary>
 	private void CreateCounters()
 	{
 		try
@@ -180,6 +225,11 @@ internal class Logger : IDisposable
 		}
 	}
 
+	/// <summary>
+	/// Primes <paramref name="counter"/> by calling <see cref="PerformanceCounter.NextValue"/>
+	/// once (required before the first real read) and adds it to the tracked counter list.
+	/// </summary>
+	/// <param name="counter">The performance counter to register.</param>
 	private void AddCounter(PerformanceCounter counter)
 	{
 		counter.NextValue();
@@ -244,6 +294,11 @@ internal class Logger : IDisposable
 		}
 	}
 
+	/// <summary>
+	/// Returns the managed thread ID of the currently executing thread, used as the key
+	/// into the per-thread indentation dictionary.
+	/// </summary>
+	/// <returns>The managed thread ID of the current thread.</returns>
 	private static int GetThread()
 	{
 		return Thread.CurrentThread.ManagedThreadId;
@@ -343,6 +398,15 @@ internal class Logger : IDisposable
 		}
 	}
 
+	/// <summary>
+	/// Retrieves the start time of <paramref name="process"/>, returning the string
+	/// <c>"???"</c> if access is denied or the process has already exited.
+	/// </summary>
+	/// <param name="process">The process whose start time is requested.</param>
+	/// <returns>
+	/// A <see cref="DateTime"/> boxed as <see cref="object"/> if available; otherwise the
+	/// string <c>"???"</c>.
+	/// </returns>
 	private static object GetProcessStartTime(Process process)
 	{
 		try
@@ -355,6 +419,15 @@ internal class Logger : IDisposable
 		}
 	}
 
+	/// <summary>
+	/// Retrieves the total processor time used by <paramref name="process"/>, returning
+	/// the string <c>"???"</c> if access is denied or the process has already exited.
+	/// </summary>
+	/// <param name="process">The process whose total processor time is requested.</param>
+	/// <returns>
+	/// A <see cref="TimeSpan"/> boxed as <see cref="object"/> if available; otherwise the
+	/// string <c>"???"</c>.
+	/// </returns>
 	private static object GetTotalProcessorTime(Process process)
 	{
 		try
@@ -407,6 +480,10 @@ internal class Logger : IDisposable
 		return e;
 	}
 
+	/// <summary>
+	/// Returns the current indentation depth for the calling thread.
+	/// </summary>
+	/// <returns>The number of indent levels active on the current thread, or 0 if none.</returns>
 	private int GetIndent()
 	{
 		if (!_indents.TryGetValue(GetThread(), out var value))
@@ -416,6 +493,12 @@ internal class Logger : IDisposable
 		return value;
 	}
 
+	/// <summary>
+	/// Formats <paramref name="message"/> with a timestamp, thread ID, and per-thread
+	/// indentation, then writes it to the underlying <see cref="StreamWriter"/>.
+	/// Must be called while <see cref="_logLock"/> is held.
+	/// </summary>
+	/// <param name="message">The message text to write.</param>
 	private void DoWriteLine(string message)
 	{
 		int indent = GetIndent();
@@ -423,6 +506,12 @@ internal class Logger : IDisposable
 		_writter.WriteLine(value);
 	}
 
+	/// <summary>
+	/// Changes the log file path, closing any existing log file and opening a new one.
+	/// Writes environment information on open, and initialises performance counters when
+	/// the log level is 1 or higher.
+	/// </summary>
+	/// <param name="value">The new log file path, or an empty string / <see langword="null"/> to disable logging.</param>
 	private void SetLogPath(string value)
 	{
 		lock (_logLock)
@@ -446,6 +535,11 @@ internal class Logger : IDisposable
 		}
 	}
 
+	/// <summary>
+	/// Writes a block of environment diagnostics to the log at session open, including
+	/// assembly paths, OS version, bitness, time zone, user, runtime version, console
+	/// encodings, and working directory.
+	/// </summary>
 	private void WriteEnvironmentInfo()
 	{
 		Assembly executingAssembly = Assembly.GetExecutingAssembly();
@@ -494,6 +588,12 @@ internal class Logger : IDisposable
 		return new Win32Exception(Marshal.GetLastWin32Error()).Message;
 	}
 
+	/// <summary>
+	/// Validates and stores the new log level, throwing if the value is outside the
+	/// permitted range of -1 to 2.
+	/// </summary>
+	/// <param name="value">The new log level (-1 to 2).</param>
+	/// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="value"/> is outside the range -1 to 2.</exception>
 	private void SetLogLevel(int value)
 	{
 		if (value < -1 || value > 2)

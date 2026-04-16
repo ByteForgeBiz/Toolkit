@@ -137,7 +137,7 @@ namespace ByteForge.Toolkit.Tests.Unit.Logging
         [ClassInitialize]
         public static void ClassInitialize(TestContext context)
         {
-            var dbAccess = DatabaseTestHelper.CreateTestAccessDBAccess();
+            _ = DatabaseTestHelper.CreateTestAccessDBAccess();
         }
 
         [TestInitialize]
