@@ -6,7 +6,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <!-- Suppress nullable and test-infrastructure warnings; test code intentionally exercises null paths.
-         NU1702: WinSCPnet targets net48-windows; referencing it from net9 is intentional. -->
+         NU1702: WinSCPnet now multi-targets net48-windows;net8.0-windows;net9.0-windows, but this project targets plain net9.0, so the Windows-specific compatibility warning is still intentional. -->
     <NoWarn>$(NoWarn);CS8600;CS8601;CS8602;CS8603;CS8604;CS8605;CS8618;CS8619;CS8620;CS8625;CS8631;CS8765;CS8767;CS0219;MSTEST0001;NU1702</NoWarn>
   </PropertyGroup>
 
