@@ -6,7 +6,7 @@ This folder contains the Windows Job object wrapper used to guard the lifetime o
 
 ## Purpose
 
-When `Session.GuardProcessWithJob` is `true` (the default), `ExeSessionProcess` creates a named Windows Job object and assigns the WinSCP child process to it. The job is configured with the `JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE` flag, which means that when the .NET wrapper process exits (and the job handle is closed), the operating system automatically terminates all processes in the job — including `winscp.exe`. This prevents orphaned WinSCP processes if the host application crashes or is killed.
+By default, `ExeSessionProcess` creates a named Windows Job object and assigns the WinSCP child process to it. The job is configured with the `JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE` flag, which means that when the .NET wrapper process exits (and the job handle is closed), the operating system automatically terminates all processes in the job — including `winscp.exe`. This prevents orphaned WinSCP processes if the host application crashes or is killed.
 
 ---
 

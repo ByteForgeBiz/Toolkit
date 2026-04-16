@@ -28,7 +28,6 @@ This folder contains the two central public types of the WinSCP wrapper: `Sessio
 | `DefaultConfiguration` | When `true`, passes `/ini=nul` to prevent WinSCP from loading user settings. |
 | `DisableVersionCheck` | Bypasses the version-match check between the wrapper assembly and the executable. |
 | `ReconnectTime` | How long to attempt reconnection after a dropped connection. |
-| `GuardProcessWithJob` | When `true`, a Windows Job object ensures the child process is killed if the host exits. |
 | `ExecutableProcessUserName` | Runs `winscp.exe` under a different Windows user account. |
 
 **Core operation methods (representative):**

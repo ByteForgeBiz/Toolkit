@@ -97,11 +97,8 @@ Validates `NameUtil.CapitalizeName`, which applies proper capitalization rules f
 
 ### TemplateProcessorTests
 
-- `{Key}` placeholder substitution from a `Dictionary<string, string>`
-- Missing key handling (preserve, replace with empty, or throw)
-- Escaped braces `{{` and `}}`
-- Nested templates
-- Performance with many placeholders
+- `<key>` placeholder substitution from a `Dictionary<string, string>`
+- Missing key handling (preserve or replace with empty)
 
 ### TimingUtilTests
 
