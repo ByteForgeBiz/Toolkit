@@ -55,7 +55,7 @@ public partial class DBAccess
     }
 
     /// <summary>
-    /// Well-known <see cref="System.Data.SqlClient.SqlException.Number"/> values returned by SQL Server.
+    /// Well-known <see cref="Microsoft.Data.SqlClient.SqlException.Number"/> values returned by SQL Server.
     /// </summary>
     /// <remarks>
     /// These codes are used by <see cref="DBAccess"/> to classify exceptions as transient (retryable)
