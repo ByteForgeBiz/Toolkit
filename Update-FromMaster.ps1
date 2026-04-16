@@ -62,6 +62,31 @@ function Test-IgnoredDotFolderStatus {
     return $normalizedPath -match '^\.[^/]+/'
 }
 
+function Get-IgnoredDotFolder {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$StatusLine
+    )
+
+    if (-not (Test-IgnoredDotFolderStatus $StatusLine)) {
+        return $null
+    }
+
+    $path = Get-StatusPath $StatusLine
+    if ([string]::IsNullOrWhiteSpace($path)) {
+        return $null
+    }
+
+    $normalizedPath = $path.Replace('\', '/')
+    $pathParts = $normalizedPath -split '/', 2
+
+    if ($pathParts.Count -eq 0 -or [string]::IsNullOrWhiteSpace($pathParts[0])) {
+        return $null
+    }
+
+    return $pathParts[0]
+}
+
 $repoRoot = (Resolve-Path $PSScriptRoot).Path
 $tempBat = $null
 $stashCreated = $false
@@ -112,8 +137,19 @@ foreach ($stateFile in $stateFiles) {
 
 if ($stashRelevantStatus.Count -gt 0) {
     $stashName = "{0} {1}" -f $Mode, (Get-Date -Format 'yyyy-MM-dd HH:mm')
+    $ignoredDotFolders = @(
+        $statusOutput |
+            ForEach-Object { Get-IgnoredDotFolder $_ } |
+            Where-Object { -not [string]::IsNullOrWhiteSpace($_) } |
+            Sort-Object -Unique
+    )
 
-    git -C $repoRoot stash push --all --message $stashName -- . ":(top,glob,exclude).*/**" | Out-Null
+    $stashArguments = @('stash', 'push', '--all', '--message', $stashName, '--', '.')
+    foreach ($ignoredDotFolder in $ignoredDotFolders) {
+        $stashArguments += ":(top,glob,exclude)$ignoredDotFolder/**"
+    }
+
+    git -C $repoRoot @stashArguments | Out-Null
     Assert-GitSuccess "Unable to stash local changes before switching branches."
 
     $stashRef = (git -C $repoRoot stash list -1 --format="%gd").Trim()

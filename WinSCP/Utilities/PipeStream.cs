@@ -149,18 +149,17 @@ internal class PipeStream : Stream
 	/// <param name="buffer">The byte array to read data into.</param>
 	/// <param name="offset">The zero-based index in <paramref name="buffer"/> at which to begin storing bytes.</param>
 	/// <param name="count">The maximum number of bytes to read.</param>
-	/// <returns>The number of bytes actually read, or 0 if the stream has been disposed.</returns>
-	/// <exception cref="NotSupportedException">Thrown if <paramref name="offset"/> is negative.</exception>
+	/// <returns>
+	/// The number of bytes actually read. Returns 0 when <paramref name="count"/> is 0,
+	/// when no buffered data remains after the write side is closed, or if the stream is
+	/// disposed while waiting for data.
+	/// </returns>
 	/// <exception cref="ArgumentNullException">Thrown if <paramref name="buffer"/> is <see langword="null"/>.</exception>
 	/// <exception cref="ArgumentException">Thrown if the sum of <paramref name="offset"/> and <paramref name="count"/> exceeds the buffer length.</exception>
 	/// <exception cref="ArgumentOutOfRangeException">Thrown if <paramref name="offset"/> or <paramref name="count"/> is negative.</exception>
-	/// <exception cref="ObjectDisposedException">Thrown if the stream has been disposed.</exception>
+	/// <exception cref="ObjectDisposedException">Thrown if the stream has already been disposed when the read begins.</exception>
 	public override int Read(byte[] buffer, int offset, int count)
 	{
-		if (offset < 0)
-		{
-			throw new NotSupportedException("Offset cnnot be negative");
-		}
 		if (buffer == null)
 		{
 			throw new ArgumentNullException("buffer");
@@ -214,7 +213,7 @@ internal class PipeStream : Stream
 	/// <param name="count">The minimum number of bytes that must be available.</param>
 	/// <returns>
 	/// <see langword="true"/> if the buffer contains at least <paramref name="count"/> bytes,
-	/// or if the stream has been flushed (in which case any non-zero count suffices);
+	/// or if the stream has been flushed;
 	/// otherwise <see langword="false"/>.
 	/// </returns>
 	/// <exception cref="ObjectDisposedException">Thrown if the stream has been disposed.</exception>

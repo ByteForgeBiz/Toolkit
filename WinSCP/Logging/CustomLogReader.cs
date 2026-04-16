@@ -11,7 +11,7 @@ namespace ByteForge.WinSCP;
 internal abstract class CustomLogReader : IDisposable
 {
 	/// <summary>
-	/// Gets the <see cref="WinSCP.Session"/> associated with this log reader.
+	/// Gets the <see cref="Session"/> associated with this log reader.
 	/// </summary>
 	public Session Session { get; private set; }
 
