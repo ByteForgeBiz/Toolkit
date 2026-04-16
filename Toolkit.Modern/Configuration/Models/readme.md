@@ -39,6 +39,7 @@ A configuration POCO that holds culture and formatting settings for the applicat
 | Property | Default | Description |
 |---|---|---|
 | `CultureInfo` | `InvariantCulture` | The `CultureInfo` used in all `Format*` methods. |
+| `UseZuluTime` | `false` | When `true`, UTC offsets are rendered as `Z` instead of `+00:00` in all `Format*Offset` methods. |
 
 #### Date formats
 
@@ -51,6 +52,24 @@ A configuration POCO that holds culture and formatting settings for the applicat
 | `LongDateTimeFormat` | `LongDateFormat + " " + LongTimeFormat` | Long date + long time (computed). |
 | `ShortDateTime12Format` | `DateFormat + " " + ShortTime12Format` | Short date + 12-hour short time (computed). |
 | `LongDateTime12Format` | `LongDateFormat + " " + LongTime12Format` | Long date + 12-hour long time (computed). |
+
+#### DateTimeOffset formats (computed, read-only)
+
+All offset format properties compose the matching base format with `" zzz"` (the .NET UTC-offset specifier, e.g. `-03:00`). When `UseZuluTime` is `true`, `Format*Offset` methods replace `+00:00` with `Z` at call time — the format strings themselves are not affected.
+
+| Property | Default value | Description |
+|---|---|---|
+| `TimeOffsetFormat` | `TimeFormat + " zzz"` | 24-hour time with offset. |
+| `ShortTimeOffsetFormat` | `ShortTimeFormat + " zzz"` | Short 24-hour time with offset. |
+| `LongTimeOffsetFormat` | `LongTimeFormat + " zzz"` | Long 24-hour time with offset (includes milliseconds). |
+| `Time12OffsetFormat` | `Time12Format + " zzz"` | 12-hour time with offset. |
+| `ShortTime12OffsetFormat` | `ShortTime12Format + " zzz"` | Short 12-hour time with offset. |
+| `LongTime12OffsetFormat` | `LongTime12Format + " zzz"` | Long 12-hour time with offset (includes milliseconds). |
+| `DateTimeOffsetFormat` | `DateFormat + " " + TimeOffsetFormat` | Date + 24-hour time + offset (computed). |
+| `ShortDateTimeOffsetFormat` | `DateFormat + " " + ShortTimeOffsetFormat` | Date + short 24-hour time + offset (computed). |
+| `LongDateTimeOffsetFormat` | `LongDateFormat + " " + LongTimeOffsetFormat` | Long date + long 24-hour time + offset (computed). |
+| `ShortDateTime12OffsetFormat` | `DateFormat + " " + ShortTime12OffsetFormat` | Date + short 12-hour time + offset (computed). |
+| `LongDateTime12OffsetFormat` | `LongDateFormat + " " + LongTime12OffsetFormat` | Long date + long 12-hour time + offset (computed). |
 
 #### Time formats (24-hour)
 
@@ -96,6 +115,17 @@ A configuration POCO that holds culture and formatting settings for the applicat
 | `FormatLongDateTime(DateTime? value, string nullValue)` | Format using `LongDateTimeFormat`. |
 | `FormatShortDateTime12(DateTime? value, string nullValue)` | Format using `ShortDateTime12Format`. |
 | `FormatLongDateTime12(DateTime? value, string nullValue)` | Format using `LongDateTime12Format`. |
+| `FormatTimeOffset(DateTimeOffset? value, string nullValue)` | Format using `TimeOffsetFormat`. |
+| `FormatShortTimeOffset(DateTimeOffset? value, string nullValue)` | Format using `ShortTimeOffsetFormat`. |
+| `FormatLongTimeOffset(DateTimeOffset? value, string nullValue)` | Format using `LongTimeOffsetFormat`. |
+| `FormatTime12Offset(DateTimeOffset? value, string nullValue)` | Format using `Time12OffsetFormat`. |
+| `FormatShortTime12Offset(DateTimeOffset? value, string nullValue)` | Format using `ShortTime12OffsetFormat`. |
+| `FormatLongTime12Offset(DateTimeOffset? value, string nullValue)` | Format using `LongTime12OffsetFormat`. |
+| `FormatDateTimeOffset(DateTimeOffset? value, string nullValue)` | Format using `DateTimeOffsetFormat`. |
+| `FormatShortDateTimeOffset(DateTimeOffset? value, string nullValue)` | Format using `ShortDateTimeOffsetFormat`. |
+| `FormatLongDateTimeOffset(DateTimeOffset? value, string nullValue)` | Format using `LongDateTimeOffsetFormat`. |
+| `FormatShortDateTime12Offset(DateTimeOffset? value, string nullValue)` | Format using `ShortDateTime12OffsetFormat`. |
+| `FormatLongDateTime12Offset(DateTimeOffset? value, string nullValue)` | Format using `LongDateTime12OffsetFormat`. |
 | `FormatInteger(int?/long?/short?/byte?/uint?/ulong?/ushort?/sbyte? value, string nullValue)` | Format using `IntegerFormat`. |
 | `FormatNumber(double?/float?/decimal? value, string nullValue)` | Format using `NumberFormat`. |
 | `FormatCurrency(double?/float?/decimal? value, string nullValue)` | Format using `CurrencyFormat`. |

@@ -61,6 +61,11 @@ Covers:
 - `FormatDate`, `FormatNumber`, and `FormatCurrency` methods
 - Default culture behavior when none is configured
 - Culture-aware parsing
+- `UseZuluTime` flag: `false` by default; UTC offset renders as `+00:00` when `false` and as `Z` when `true`
+- All `Format*Offset(DateTimeOffset?)` methods — 24-hour, 12-hour, and combined date+time variants
+- Non-UTC offsets always render as `+/-HH:mm` regardless of `UseZuluTime`
+- Null handling for all offset methods
+- Computed offset format property strings verified (`TimeOffsetFormat`, `DateTimeOffsetFormat`, etc.)
 
 ## Test Data
 
