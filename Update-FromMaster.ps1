@@ -213,7 +213,7 @@ foreach ($buildArtifactDirectory in $buildArtifactDirectories) {
         throw "Refusing to remove build artifacts outside the repository root: $buildArtifactDirectory"
     }
 
-    if (Test-Path -LiteralPath $fullBuildArtifactPath) {
+    if (Test-Path -LiteralPath $fullBuildArtifactPath -PathType Container) {
         Remove-Item -LiteralPath $fullBuildArtifactPath -Recurse -Force
         Write-Host "Removed generated build artifacts: $buildArtifactDirectory"
     }
@@ -280,7 +280,7 @@ if errorlevel 1 exit /b 1
 
 echo.
 echo ^> git switch "%ORIGINAL_BRANCH%"
-git switch "%ORIGINAL_BRANCH%"
+git switch -- "%ORIGINAL_BRANCH%"
 if errorlevel 1 exit /b 1
 
 echo.
@@ -325,7 +325,13 @@ try {
     $exitCode = $LASTEXITCODE
 }
 finally {
-    $branchAfterRun = Get-TrimmedGitOutput @('branch', '--show-current')
+    $branchAfterRun = ''
+    try {
+        $branchAfterRun = Get-TrimmedGitOutput @('branch', '--show-current')
+    }
+    catch {
+        Write-Warning "Unable to determine the current branch during cleanup. Continuing with stash restoration and temp-file cleanup."
+    }
 
     if (-not [string]::IsNullOrWhiteSpace($branchAfterRun) -and $branchAfterRun -ne $currentBranch) {
         $hasGitState = $false
@@ -338,7 +344,7 @@ finally {
         }
 
         if (-not $hasGitState) {
-            git -C $repoRoot switch $currentBranch | Out-Null
+            git -C $repoRoot switch -- $currentBranch | Out-Null
         }
     }
 
