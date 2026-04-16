@@ -1,197 +1,78 @@
 # Test Models
 
-This directory contains model classes used specifically for testing the ByteForge.Toolkit library.
-
-## Overview
-
-The test models in this directory provide data structures and entity definitions for use in test scenarios across the test suite. These models help ensure consistent test data and facilitate testing of complex scenarios involving serialization, data mapping, and other operations.
+Model classes used across the test suite. They live in the `ByteForge.Toolkit.Tests.Models` namespace and mirror the table schema of the `TestUnitDB` test database.
 
 ## Model Classes
 
 ### TestEntity
 
-A general-purpose entity class used for testing database operations, data binding, and serialization:
+Maps to the `TestEntities` table. Used by SQL Server CRUD, transaction, and parameter-parsing tests.
 
-```csharp
-public class TestEntity
-{
-    public int Id { get; set; }
-    public string Name { get; set; }
-    public string Description { get; set; }
-    public bool IsActive { get; set; }
-    public decimal TestValue { get; set; }
-    public DateTime CreatedDate { get; set; }
-}
-```
+| Property | DB Column | Type | Notes |
+|----------|-----------|------|-------|
+| `Id` | `Id` | `int` | Primary key, identity |
+| `Name` | `Name` | `string` | Max 100 chars |
+| `Description` | `Description` | `string` | Max 255 chars |
+| `CreatedDate` | `CreatedDate` | `DateTime` | Defaults to `DateTime.Now` |
+| `IsActive` | `IsActive` | `bool` | Defaults to `true` |
+| `TestValue` | `TestValue` | `decimal` | |
+| `TestGuid` | `TestGuid` | `Guid` | Auto-generated in constructor |
+
+Factory methods: `TestEntity.Create(name, description)` and `TestEntity.Create(name, description, testValue, isActive)`.
 
 ### BulkTestEntity
 
-A specialized entity class used for testing bulk database operations and data mapping:
+Maps to the `BulkTestEntities` table. Designed for bulk-insert, upsert, and delete testing.
 
-```csharp
-public class BulkTestEntity
-{
-    [DBColumn("Id")]
-    public int EntityId { get; set; }
-    
-    [DBColumn("EntityName")]
-    public string Name { get; set; }
-    
-    [DBColumn("CreationDate")]
-    public DateTime Created { get; set; }
-    
-    [DBColumn("IsEnabled")]
-    public bool Active { get; set; }
-    
-    [DBColumn("DataValue", AllowNull = true)]
-    public decimal? Value { get; set; }
-}
-```
+| Property | DB Column | Type | Notes |
+|----------|-----------|------|-------|
+| `Id` | `Id` | `Guid` | Primary key |
+| `Code` | `Code` | `string` | Unique constraint, max 50 chars |
+| `Name` | `Name` | `string?` | Max 200 chars |
+| `Category` | `Category` | `string?` | Max 100 chars |
+| `Value` | `Value` | `decimal` | |
+| `Priority` | `Priority` | `int` | Defaults to 1 |
+| `IsActive` | `IsActive` | `bool` | Defaults to `true` |
+| `CreatedDate` | `CreatedDate` | `DateTime` | |
+| `ModifiedDate` | `ModifiedDate` | `DateTime` | |
+
+Factory methods: `BulkTestEntity.Create(code, name)`, `BulkTestEntity.Create(code, name, category, value, priority, isActive)`, and `BulkTestEntity.CreateBatch(count, prefix)` which generates an array of entities cycling through five categories.
+
+Additional utility: `Touch()` refreshes `ModifiedDate`; `CreateUpdatedCopy(newName, newValue)` produces a copy sharing the same `Id` and `Code` for upsert testing.
 
 ### TestDataTypeEntity
 
-An entity class with various data types for testing type conversion and handling:
+Defined in `TestDataTypeEntity.cs`. Contains one property for each of the common .NET primitive types to exercise the database layer's type conversion:
 
-```csharp
-public class TestDataTypeEntity
-{
-    public int IntValue { get; set; }
-    public long LongValue { get; set; }
-    public decimal DecimalValue { get; set; }
-    public double DoubleValue { get; set; }
-    public float FloatValue { get; set; }
-    public bool BoolValue { get; set; }
-    public DateTime DateTimeValue { get; set; }
-    public Guid GuidValue { get; set; }
-    public string StringValue { get; set; }
-    public byte[] ByteArrayValue { get; set; }
-    public TestEnum EnumValue { get; set; }
-    public TimeSpan TimeSpanValue { get; set; }
-}
-```
+`int`, `long`, `decimal`, `double`, `float`, `bool`, `DateTime`, `Guid`, `string`, `byte[]`, `TimeSpan`, and a test enum value.
 
-### ConfigurationTestModels
+### Configuration test models (`ConfigurationTestModels.cs`)
 
-Contains various models for testing the Configuration module:
+| Model | Purpose |
+|-------|---------|
+| `BasicTestConfig` | String, int, bool, double, DateTime properties; also tests `[DefaultValue]`, `[ConfigName]`, `[DoNotPersist]`, and `[Ignore]` attributes |
+| `ArrayTestConfig` | `string[]`, `List<string>`, `List<int>`, `IList<string>`, and `IEnumerable<string>` properties, all decorated with `[Array]` |
+| `DatabaseConfig` | Realistic connection-settings model with `[DefaultValue]`, `[ConfigName]`, `[DoNotPersist]`, and a computed `[Ignore]` property |
 
-```csharp
-public class BasicTestConfig : ConfigSection<BasicTestConfig>
-{
-    public string StringSetting { get; set; }
-    public int IntSetting { get; set; }
-    public bool BoolSetting { get; set; }
-    public DateTime DateSetting { get; set; }
-    public TimeSpan TimeSetting { get; set; }
-}
+Configuration models use attribute-based control from `ByteForge.Toolkit.Configuration`:
 
-public class ArrayTestConfig : ConfigSection<ArrayTestConfig>
-{
-    public string[] StringArray { get; set; }
-    public int[] IntArray { get; set; }
-    public List<string> StringList { get; set; }
-    public List<CustomItem> ComplexList { get; set; }
-}
-
-public class CustomItem
-{
-    public string Name { get; set; }
-    public int Value { get; set; }
-}
-```
-
-## Usage Examples
-
-### Using TestEntity in Database Tests
-
-```csharp
-[TestMethod]
-public void DatabaseInsertTest()
-{
-    // Create a test entity
-    var entity = new TestEntity
-    {
-        Name = "Test Entity",
-        Description = "Created for testing",
-        IsActive = true,
-        TestValue = 42.5m,
-        CreatedDate = DateTime.Now
-    };
-    
-    // Use in database operation
-    var dbAccess = DatabaseTestHelper.CreateTestDBAccess();
-    bool success = dbAccess.ExecuteQuery(
-        "INSERT INTO TestEntities (Name, Description, IsActive, TestValue, CreatedDate) " +
-        "VALUES (@Name, @Description, @IsActive, @TestValue, @CreatedDate)",
-        entity.Name, entity.Description, entity.IsActive, entity.TestValue, entity.CreatedDate);
-        
-    success.Should().BeTrue();
-}
-```
-
-### Using Configuration Test Models
-
-```csharp
-[TestMethod]
-public void ConfigurationSaveLoadTest()
-{
-    // Create a temp configuration file
-    var configFile = TempFileHelper.CreateTempFile("", ".ini");
-    Configuration.Initialize(configFile);
-    
-    // Create and configure a test section
-    var config = Configuration.GetSection<BasicTestConfig>();
-    config.StringSetting = "Test Value";
-    config.IntSetting = 42;
-    config.BoolSetting = true;
-    config.DateSetting = new DateTime(2025, 1, 1);
-    
-    // Save configuration
-    Configuration.Save();
-    
-    // Clear and reload
-    Configuration.Reset();
-    Configuration.Initialize(configFile);
-    
-    // Verify values were preserved
-    var loadedConfig = Configuration.GetSection<BasicTestConfig>();
-    loadedConfig.StringSetting.Should().Be("Test Value");
-    loadedConfig.IntSetting.Should().Be(42);
-    loadedConfig.BoolSetting.Should().BeTrue();
-    loadedConfig.DateSetting.Should().Be(new DateTime(2025, 1, 1));
-}
-```
-
-## Notes
-
-- Test models are designed specifically for testing and may not reflect production data models
-- Many models include attributes for testing attribute-based mapping and serialization
-- These models are used consistently across test fixtures to ensure testing consistency
-- Models may be extended or modified as needed for specific test scenarios
+| Attribute | Effect |
+|-----------|--------|
+| `[DefaultValue(value)]` | Supplies the default when the key is absent in the INI file |
+| `[ConfigName("key")]` | Maps the property to a different key name in the INI section |
+| `[DoNotPersist]` | Property is readable but never written back to the file |
+| `[Ignore]` | Property is completely skipped during both read and write |
+| `[Array]` | Marks a collection property; values are stored in a dedicated INI section |
+| `[Array("SectionName")]` | Same as `[Array]` but with an explicit section name |
 
 ---
 
-## 📖 Documentation Links
+## Documentation Links
 
-### 🏠 Project Navigation
-| Location           | Description           | Documentation                                                       |
-|--------------------|-----------------------|---------------------------------------------------------------------|
-| **Root**           | Solution overview     | [📘 ../../readme.md](../../readme.md)                               |
-| **Toolkit.Modern** | Core library overview | [📘 ../../Toolkit.Modern/readme.md](../../Toolkit.Modern/readme.md) |
-| **Tests**          | Test suite overview   | [📘 ../README.md](../README.md)                                     |
-
-### 🧪 Related Test Modules
-| Module                  | Description         | Documentation                                                         |
-|-------------------------|---------------------|-----------------------------------------------------------------------|
-| **Unit Tests**          | Unit test suite     | [📘 ../Unit/readme.md](../Unit/readme.md)                             |
-| **Test Helpers**        | Test helper classes | [📘 ../Helpers/README.md](../Helpers/README.md)                       |
-| **Configuration Tests** | Configuration tests | [📘 ../Unit/Configuration/readme.md](../Unit/Configuration/readme.md) |
-| **Data Tests**          | Data module tests   | [📘 ../Unit/Data/readme.md](../Unit/Data/readme.md)                   |
-| **Database Tests**      | Database tests      | [📘 ../Unit/Data/Database/readme.md](../Unit/Data/Database/readme.md) |
-
-### 🏗️ Production Modules
-| Module            | Description                | Documentation                                                                                       |
-|-------------------|----------------------------|-----------------------------------------------------------------------------------------------------|
-| **Configuration** | INI-based configuration    | [📘 ../../Toolkit.Modern/Configuration/readme.md](../../Toolkit.Modern/Configuration/readme.md)     |
-| **Data**          | Database & file processing | [📘 ../../Toolkit.Modern/Data/readme.md](../../Toolkit.Modern/Data/readme.md)                       |
-| **Attributes**    | Data mapping attributes    | [📘 ../../Toolkit.Modern/Data/Attributes/readme.md](../../Toolkit.Modern/Data/Attributes/readme.md) |
-
+| Location | Description | Documentation |
+|----------|-------------|---------------|
+| **Root** | Solution overview | [../../readme.md](../../readme.md) |
+| **Tests** | Test suite overview | [../README.md](../README.md) |
+| **Helpers** | Test helper classes | [../Helpers/README.md](../Helpers/README.md) |
+| **Data/Database** | Database tests | [../Unit/Data/Database/readme.md](../Unit/Data/Database/readme.md) |
+| **Configuration** | Configuration tests | [../Unit/Configuration/readme.md](../Unit/Configuration/readme.md) |

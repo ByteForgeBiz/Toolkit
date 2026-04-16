@@ -1,137 +1,142 @@
-# Utils Tests
+# Utils Unit Tests
 
-This directory contains unit tests for the ByteForge.Toolkit Utils module, which provides various utility functions and helper classes.
+Tests for `ByteForge.Toolkit.Utilities`.
 
-## Overview
-
-The Utils module offers a wide range of utility functions for common programming tasks, from string manipulation to date/time handling to IO operations. These tests ensure that all utility functions work correctly across various scenarios.
+**Test categories:** `Unit`, `Utils`
+**Source module:** `Toolkit.Modern/Utils/` (namespace `ByteForge.Toolkit.Utilities`)
 
 ## Test Classes
 
+| Class | Class Under Test | Description |
+|-------|-----------------|-------------|
+| `BooleanParserTests` | `BooleanParser` | Flexible boolean parsing from strings |
+| `ConsoleUtilTests` | `ConsoleUtil` | Console-related utilities |
+| `DateTimeParserTests` | `DateTimeParser` | Flexible date/time parsing |
+| `DateTimeUtilTests` | `DateTimeUtil` | Date/time manipulation utilities |
+| `EnumExtensionsTests` | `EnumExtensions` | Enum description and parsing helpers |
+| `IOUtilsTests` | `IOUtils` | File, directory, and path utilities |
+| `NameCapitalizerTests` | `NameUtil` | Name capitalization with linguistic rules |
+| `ParserTests` | Various parsers | Generic type-conversion and parsing |
+| `StringUtilTests` | `StringUtil` | String manipulation utilities |
+| `TemplateProcessorTests` | `TemplateProcessor` | String template substitution |
+| `TimingUtilTests` | `TimingUtil` | Stopwatch-based timing utilities |
+| `UtilsTests` | Miscellaneous | General helper and type-conversion methods |
+
+## Coverage Details
+
 ### BooleanParserTests
 
-Tests for the BooleanParser class, which provides enhanced boolean parsing functionality:
-
-- Parsing various string representations of boolean values
-- Case sensitivity options
-- Custom true/false value recognition
-- Handling of null and empty inputs
-- Performance of boolean parsing operations
+- `BooleanParser.Default` singleton returns the same instance on repeated access
+- Parsing `"true"`, `"false"`, `"1"`, `"0"`, `"yes"`, `"no"`, `"on"`, `"off"` and equivalents
+- Case-insensitive matching
+- Custom true/false strings
+- Null and empty input handling
 
 ### ConsoleUtilTests
 
-Tests for the ConsoleUtil class, which provides console-related utilities:
-
-- Console availability detection
-- Console output formatting
-- Color management
-- Progress indicators and spinners
-- User input handling
+- Console availability detection (redirected vs. interactive)
+- Color-safe output methods that do not throw when console is unavailable
+- Progress indicator creation
 
 ### DateTimeParserTests
 
-Tests for the DateTimeParser class, which provides flexible date and time parsing:
-
-- Parsing various date/time formats
-- Culture-specific date parsing
-- Handling of ambiguous dates
-- Performance with various format strings
-- Caching of parser results
+- Parsing ISO 8601, common locale formats, and custom format strings
+- Unambiguous vs. ambiguous date handling
+- Culture-aware parsing (en-US, fr-FR, etc.)
+- Parser result caching
 
 ### DateTimeUtilTests
 
-Tests for the DateTimeUtil class, which provides date and time manipulation utilities:
-
-- Unix timestamp conversion
-- Time zone handling
-- Date arithmetic
-- Date formatting
-- Performance of date/time operations
+- Unix timestamp to `DateTime` conversion (both directions)
+- `DateTime` arithmetic helpers
+- Formatting to common output strings
+- Round-trip accuracy
 
 ### EnumExtensionsTests
 
-Tests for the EnumExtensions class, which provides enhanced enum functionality:
-
-- Retrieving enum descriptions
-- Enum parsing with various options
-- Enum value validation
-- Performance of enum operations
+- `GetDescription()` — reads `[Description]` attribute value; falls back to enum name
+- `Parse<TEnum>(string)` — case-insensitive parsing; exception for unknown values
+- `IsValidValue<TEnum>(value)` — valid and out-of-range values
 
 ### IOUtilsTests
 
-Tests for the IOUtils class, which provides file and path utilities:
+- File pattern matching (`*.txt`, `**/*.cs`)
+- Directory scanning with recursion options
+- Path normalization (redundant separators, mixed slashes)
+- UNC path detection
 
-- File pattern matching
-- Directory searching
-- Path normalization
-- UNC path handling
-- Network path mapping
+### NameCapitalizerTests
+
+Validates `NameUtil.CapitalizeName`, which applies proper capitalization rules for human names:
+
+| Test area | Coverage |
+|-----------|---------|
+| Null input | Returns `null` |
+| Empty/whitespace | Returns input unchanged |
+| Basic capitalization | `"john doe"` → `"John Doe"` |
+| Particles | `"de"`, `"van"`, `"von"`, `"di"`, `"della"` remain lowercase when mid-name |
+| Prefixes | `"mc"`, `"mac"`, `"o'"` — prefix and first letter after are capitalized |
+| Hyphenated names | Each segment is independently capitalized |
+| All-caps input | Normalized to title-case |
+| Unicode | Non-Latin scripts pass through without modification |
 
 ### ParserTests
 
-Tests for various parsing utilities:
-
-- Generic parsing functions
-- Type conversion
-- String parsing with fallback values
-- Error handling during parsing
+- Generic `Parse<T>(string, T defaultValue)` helpers
+- Type conversion for `int`, `decimal`, `bool`, `DateTime`, `Guid`, `enum`
+- Fallback default value on parse failure
+- Null and empty input handling
 
 ### StringUtilTests
 
-Tests for the StringUtil class, which provides string manipulation utilities:
-
-- String formatting and transformation
-- Truncation and padding
-- Case conversion
+- Truncation with optional ellipsis
+- Padding (left, right, center)
+- Case conversion helpers
 - Pattern matching and replacement
-- Performance of string operations
+- Safe substring (no `IndexOutOfRangeException`)
 
 ### TemplateProcessorTests
 
-Tests for the TemplateProcessor class, which handles string templates with placeholders:
-
-- Template parsing and processing
-- Placeholder substitution
+- `{Key}` placeholder substitution from a `Dictionary<string, string>`
+- Missing key handling (preserve, replace with empty, or throw)
+- Escaped braces `{{` and `}}`
 - Nested templates
-- Escaping mechanisms
-- Performance with complex templates
+- Performance with many placeholders
 
 ### TimingUtilTests
 
-Tests for the TimingUtil class, which provides timing and performance measurement:
-
-- Operation timing
-- Elapsed time formatting
-- Performance benchmarking
-- Multiple timer management
+- Start / stop / elapsed timing
+- Multiple independent timers
+- Elapsed time formatted as `hh:mm:ss.fff`
+- Zero-duration operations
 
 ### UtilsTests
 
-Tests for miscellaneous utility functions:
+- Miscellaneous helper methods
+- Legacy utility methods maintained for compatibility
 
-- Various helper methods
-- Type conversion utilities
-- General-purpose functions
-- Legacy utility methods
+## Prerequisites
 
-## Testing Strategy
+No external dependencies. `TempFileHelper` is used in IO-related tests.
 
-The Utils tests follow a comprehensive approach that covers:
+## Running These Tests
 
-1. **Functionality**: Basic operation of each utility
-2. **Edge cases**: Handling of unusual or extreme inputs
-3. **Performance**: Efficient operation with various inputs
-4. **Error handling**: Proper response to invalid inputs
-5. **Compatibility**: Consistent behavior across different environments
+```powershell
+# All Utils tests
+dotnet test --filter "TestCategory=Utils"
 
-## Test Helpers
+# A specific class
+dotnet test --filter "FullyQualifiedName~NameCapitalizerTests"
+dotnet test --filter "FullyQualifiedName~BooleanParserTests"
+dotnet test --filter "FullyQualifiedName~TemplateProcessorTests"
+```
 
-These tests may utilize various helper classes:
+---
 
-- **AssertionHelpers**: Contains custom assertions for utility validation
-- **TempFileHelper**: Manages temporary files for IO testing
+## Documentation Links
 
-## Notes
-
-The Utils module contains some of the most frequently used functionality in the ByteForge.Toolkit library. These utilities are designed to be simple, efficient, and robust, with comprehensive error handling and performance optimization.
-
+| Location | Description | Documentation |
+|----------|-------------|---------------|
+| **Tests root** | Test project overview | [../../README.md](../../README.md) |
+| **Unit overview** | Unit test organization | [../readme.md](../readme.md) |
+| **Helpers** | Test helper classes | [../../Helpers/README.md](../../Helpers/README.md) |

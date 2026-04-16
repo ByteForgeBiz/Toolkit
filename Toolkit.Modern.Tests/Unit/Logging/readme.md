@@ -1,68 +1,105 @@
-# Logging Tests
+# Logging Unit Tests
 
-This directory contains unit tests for the ByteForge.Toolkit Logging module, which provides a flexible and extensible logging framework.
+Tests for `ByteForge.Toolkit.Logging`.
 
-## Overview
-
-The Logging module offers a centralized logging system with support for multiple log targets, log levels, and formatting options. These tests ensure that logging functionality works correctly across various scenarios.
+**Test classes:** `LogTests`, `DatabaseLoggerTests`, `DatabaseLoggerLiveTests` (which contains `DatabaseLoggerSqlServerLiveTests`)
+**Test categories:** `Unit`, `Logging`; live SQL Server tests also carry `SQLServer`
+**Source module:** `Toolkit.Modern/Logging/`
 
 ## Test Classes
 
 ### LogTests
 
-Tests for the Log class, which serves as the primary entry point for logging operations:
+Validates the static `Log` facade and the underlying `ILogger` infrastructure.
 
-- Log initialization and configuration
-- Log level filtering
-- Logger instance management (static and instance-based)
-- Log formatting
-- Different log targets (console, file, custom)
-- Error handling during logging
-- Performance of logging operations
-- Thread safety in concurrent logging scenarios
-- Logger lifecycle management
+A static constructor in `LogTests` initializes the global `Configuration` singleton from a temp INI file before any test runs, so that `Log` can load its settings:
 
-## Testing Strategy
+```ini
+[Logging]
+eTraceLogLevel=All
+bUseSessionLogging=False
+sLogFile=<temp_path>.log
+```
 
-The Logging tests follow a comprehensive approach that covers:
+| Test area | Coverage |
+|-----------|---------|
+| Singleton | `Log.Instance` returns the same reference on repeated access |
+| `LogLevel` property | Readable and writable; restored after each test |
+| Static log methods | `Log.Trace`, `Log.Debug`, `Log.Info`, `Log.Notice`, `Log.Warning`, `Log.Error`, `Log.Fatal` |
+| `AddLogger` / `RemoveLogger` | Custom `ILogger` implementations receive dispatched messages |
+| Log level filtering | Messages below `Log.LogLevel` are not dispatched |
+| `BeginSuppressedScope()` | Messages logged inside the scope are suppressed |
+| Nested suppressed scopes | Inner scope extends the outer scope; messages resume only after all scopes are exited |
+| Thread safety | Concurrent logging from multiple threads |
+| Logger lifecycle | Logger added and removed within a single test |
 
-1. **Core functionality**: Basic logging operations at different levels
-2. **Configuration**: Logger initialization with various settings
-3. **Performance**: Efficient logging with minimal overhead
-4. **Threading**: Thread-safe logging operations
-5. **Error handling**: Graceful handling of logging failures
-6. **Integration**: Interaction with other system components
+`[TestInitialize]` stores the original `LogLevel` and calls `TempFileHelper.CleanupTempFiles()`. `[TestCleanup]` restores the `LogLevel` and cleans temp files.
 
-## Test Helpers
+### DatabaseLoggerTests
 
-These tests may utilize helper classes:
+Tests the `DatabaseLogger` class in isolation using an in-process `CaptureLogger` implementation (defined inside the test file).
 
-- **TempFileHelper**: Manages temporary log files
-- Custom log targets for testing specific scenarios
-- Log output verification utilities
+| Test area | Coverage |
+|-----------|---------|
+| `BeginSuppressedScope()` | Suppresses messages dispatched through `Log.Info` while the scope is active |
+| Nested scopes | Multiple nested `BeginSuppressedScope()` calls — messages resume only after all are disposed |
+| Scope interaction with multiple loggers | `CaptureLogger` sees messages outside the scope; `DatabaseLogger` would be suppressed |
+| `Log.Instance.AddLogger` / `RemoveLogger` | Dynamic logger attachment and detachment |
+| `LastException` | Set when a logger throws during dispatch |
+
+The tests use reflection where necessary to access internal state.
+
+### DatabaseLoggerSqlServerLiveTests (in `DatabaseLoggerLiveTests.cs`)
+
+**Category:** `Unit`, `Logging`, `SQLServer`
+
+Live integration tests that verify `DatabaseLogger` writes to a real SQL Server table. Each test creates a dedicated table (`DatabaseLoggerTestEntries`) in `TestUnitDB`, exercises the logger, and drops the table in `[TestCleanup]`.
+
+**Requires:** SQL Server `TestUnitDB` accessible via `DatabaseTestHelper`.
+
+| Test | Description |
+|------|-------------|
+| `DatabaseLogger_SQLServer_ShouldAutoCreateTableAndPersistInfoEntry` | Logger with `AutoCreateTable = true` creates the log table and writes one `Info` row |
+| `DatabaseLogger_SQLServer_ShouldPersistExceptionDetails` | Exception message and stack trace are stored in the log row |
+| Additional tests | Various log levels, correlation IDs, structured log fields, and multi-entry scenarios |
+
+Each test verifies:
+- Table was auto-created
+- Row count matches expected
+- Stored row has correct `Level`, `Message`, `LoggerName`, `Source`, `CorrelationId`, and `Exception` columns
 
 ## Log Levels
 
-The logging system supports multiple log levels, all of which are tested:
+The logging system defines levels in ascending severity order:
 
-- **Trace**: Most detailed level for fine-grained debugging
-- **Debug**: Detailed information for debugging
-- **Info**: General information about application flow
-- **Notice**: Important but normal information
-- **Warning**: Potential issues that don't prevent normal operation
-- **Error**: Errors that allow the application to continue
-- **Fatal**: Critical errors that may cause application termination
+`Trace` → `Debug` → `Info` → `Notice` → `Warning` → `Error` → `Fatal`
 
-## Logger Implementations
+Filtering is inclusive: setting `LogLevel = Warning` dispatches `Warning`, `Error`, and `Fatal` only.
 
-The tests cover various logger implementations:
+## Running These Tests
 
-- **ConsoleLogger**: Logs to the console with color-coded output
-- **FileLogger**: Logs to files with rotation support
-- **NullLogger**: No-operation logger for performance optimization
-- **StaticLoggerAdapter**: Adapter for static logging methods
+```powershell
+# All logging tests (no SQL Server required — LogTests and DatabaseLoggerTests run in isolation)
+dotnet test --filter "TestCategory=Logging&TestCategory!=SQLServer"
 
-## Notes
+# SQL Server live tests only
+dotnet test --filter "TestCategory=SQLServer&FullyQualifiedName~Logging"
 
-The Logging module is designed to be highly extensible, allowing custom logger implementations to be plugged in as needed. The tests verify both the core logging functionality and the extensibility mechanisms.
+# All logging tests
+dotnet test --filter "TestCategory=Logging"
 
+# Specific class
+dotnet test --filter "FullyQualifiedName~LogTests"
+dotnet test --filter "FullyQualifiedName~DatabaseLoggerTests"
+```
+
+---
+
+## Documentation Links
+
+| Location | Description | Documentation |
+|----------|-------------|---------------|
+| **Tests root** | Test project overview | [../../README.md](../../README.md) |
+| **Unit overview** | Unit test organization | [../readme.md](../readme.md) |
+| **Helpers** | Test helper classes | [../../Helpers/README.md](../../Helpers/README.md) |
+| **Logging source** | Production module | [../../../Toolkit.Modern/Logging/readme.md](../../../Toolkit.Modern/Logging/readme.md) |

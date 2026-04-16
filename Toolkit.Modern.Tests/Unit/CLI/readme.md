@@ -1,72 +1,87 @@
-# CLI Module Tests
+# CLI Unit Tests
 
-This directory contains comprehensive unit tests for the ByteForge.Toolkit CLI module components.
+Tests for `ByteForge.Toolkit.CommandLine`. All test classes carry `[TestCategory("Unit")]` and `[TestCategory("CLI")]`.
 
-## Test Coverage
+**Source module:** `Toolkit.Modern/CommandLine/`
+
+## Test Classes
 
 ### CommandAttributeTests
-- Constructor validation with various parameter combinations
-- Property initialization and read-only validation
-- Edge cases including null, empty, and special character handling
-- Attribute usage validation for class and method targets
-- Unicode and long string handling
 
-### OptionAttributeTests  
-- Constructor tests for description-only and description-with-aliases variants
-- Property settability validation (Name property can be set, others are read-only)
-- Edge cases with null, empty, whitespace, and special characters
-- Attribute usage validation for parameter targets
-- Integration scenarios with full configuration
+Validates the `CommandAttribute` constructor, property immutability, and attribute target declarations.
+
+| Test area | Coverage |
+|-----------|---------|
+| Constructor | Valid parameters, omitted aliases, null name, null description, empty strings, multiple aliases |
+| Property immutability | `Name`, `Description`, and `Aliases` are read-only (verified via reflection) |
+| Alias reference stability | Multiple reads of `Aliases` return the same array reference |
+| Edge cases | Whitespace-only strings, special characters, Unicode and emoji, strings of 500–1000 characters |
+| `AttributeUsage` targets | `AttributeTargets.Class` and `AttributeTargets.Method` are both declared |
+
+### OptionAttributeTests
+
+Validates the `OptionAttribute` constructor, alias handling, and the settable `Name` property.
+
+| Test area | Coverage |
+|-----------|---------|
+| Constructor variants | Description-only and description-with-aliases |
+| Null/empty inputs | Null description, empty description, null aliases, empty alias array |
+| Alias deduplication | Duplicate aliases in the constructor |
+| Alias edge cases | Whitespace-only aliases, special characters, Unicode |
+| `Name` settability | `Name` is the only public writable property; `Description` and `Aliases` are read-only |
+| `AttributeUsage` target | `AttributeTargets.Parameter` |
 
 ### GlobalOptionTests
-- Constructor tests for both Action and Action<string> variants
-- Name normalization (stripping dash and slash prefixes)
-- Input validation with proper exception handling
-- Alias generation logic and conflict resolution
-- Pattern matching functionality with case-insensitive matching
-- Integration workflows
+
+Validates `GlobalOption` construction, name normalization, alias generation, and pattern matching.
+
+| Test area | Coverage |
+|-----------|---------|
+| Constructor — no-value action | `Action` delegate, `ExpectsValue = false`, empty `CustomAliases` |
+| Constructor — value action | `Action<string>` delegate, `ExpectsValue = true`, custom aliases |
+| Name normalization | Leading `--`, `-`, and `/` are stripped from the option name |
+| Input validation | `ArgumentNullException` thrown for null name; `ArgumentException` for empty/whitespace name |
+| Alias generation | Auto-generated aliases from name; custom aliases preserved |
+| Pattern matching | `Matches(string)` performs case-insensitive comparison against name and all aliases |
+| Action execution | Delegates are callable through the stored `Action` property |
 
 ### ConsoleSpinnerTests
-- Constructor tests with various parameter combinations
-- Property management (Message, Color, IsRunning)
-- Start/Stop lifecycle management
-- Thread safety validation for concurrent operations
-- Disposal pattern implementation
-- Edge cases with special characters, long messages, and extreme delay values
-- Performance characteristics under rapid start/stop operations
 
-## Test Categories
+Validates `ConsoleSpinner` lifecycle, property access, thread safety, and disposal.
 
-All tests are categorized with:
-- `[TestCategory("Unit")]` - Indicates unit test level
-- `[TestCategory("CLI")]` - Indicates CLI module component
+| Test area | Coverage |
+|-----------|---------|
+| Constructors | Default, message-only, message + style, message + style + delay, null message, empty message |
+| `SpinnerStyle` enum | All defined enum values are valid; all styles are accepted by the constructor |
+| `Message` property | Settable including null and strings containing line breaks |
+| `Color` property | Settable including null |
+| `IsRunning` | Initially `false`; becomes `true` after `Start()` and `false` after `Stop()` |
+| Start/Stop lifecycle | Start when not running, stop when running, start when already running (no-op), stop when not running (no-op), multiple start/stop cycles |
+| Thread safety | 10 concurrent tasks calling `Start()`/`Stop()` with no exceptions |
+| Concurrent `Message` writes | 10 concurrent writes do not throw |
+| Disposal | `Dispose()` stops a running spinner; `Dispose()` on a stopped spinner does not throw; multiple `Dispose()` calls are safe; `using` statement disposes correctly |
+| Edge cases | 1000-character message, special characters and emoji in messages, delay = 0, delay = −1 |
+| Performance | 100 rapid start/stop cycles without memory leaks |
 
-## Test Patterns
+A `[ClassInitialize]` method captures the `TestContext.CancellationTokenSource` to propagate test cancellation into async tasks.
 
-### AAA Pattern
-All tests follow the Arrange-Act-Assert pattern for clarity and consistency.
+## Running These Tests
 
-### Exception Testing
-Uses `Assert.ThrowsException<T>()` for expected exception scenarios.
-
-### Thread Safety
-Includes specific tests for thread safety using concurrent task execution.
-
-### Resource Management
-Tests proper disposal patterns and resource cleanup.
-
-### Edge Case Coverage
-Comprehensive testing of boundary conditions, null values, empty strings, and special characters.
-
-## Running Tests
-
-Execute CLI tests specifically:
 ```powershell
-dotnet test --filter "TestCategory=CLI" --verbosity normal --no-build
+# All CLI tests
+dotnet test --filter "TestCategory=CLI"
+
+# A specific class
+dotnet test --filter "FullyQualifiedName~CommandAttributeTests"
+dotnet test --filter "FullyQualifiedName~ConsoleSpinnerTests"
 ```
 
-Execute all tests in the CLI test directory:
-```powershell
-dotnet test --filter "FullyQualifiedName~CLI" --verbosity normal --no-build
-```
+---
 
+## Documentation Links
+
+| Location | Description | Documentation |
+|----------|-------------|---------------|
+| **Tests root** | Test project overview | [../../README.md](../../README.md) |
+| **Unit overview** | Unit test organization | [../readme.md](../readme.md) |
+| **CLI source** | Production module | [../../../Toolkit.Modern/CommandLine/readme.md](../../../Toolkit.Modern/CommandLine/readme.md) |

@@ -1,718 +1,252 @@
-# CLI (Command-Line Interface) Module
+# CommandLine Module
 
 ## Overview
 
-The **CLI** module provides attribute-based command-line argument parsing and execution. It enables developers to define command structures declaratively using attributes, with automatic help generation and type-safe argument handling.
+The **CommandLine** module provides attribute-based and reflection-driven command-line parsing for console applications. It builds on top of `System.CommandLine` to offer automatic command discovery from assemblies, token replacement pre-processing, optional banner display, and animated progress indicators.
 
 ---
 
-## Purpose & Design Philosophy
+## Purpose
 
-### Why This Module?
+The module solves four problems in one cohesive API:
 
-Command-line applications need:
-1. **Easy parsing** - Parse arguments without manual string handling
-2. **Type safety** - Convert arguments to target types automatically
-3. **Help generation** - Display usage without manual work
-4. **Validation** - Enforce required parameters
-5. **Subcommands** - Support hierarchical command structures
-
-The CLI module provides:
-- **Attribute-based definitions** - `[Command]` and `[Option]` attributes
-- **Automatic parsing** - Extract and type-convert arguments
-- **Help text** - Generated from attributes
-- **Validation** - Required parameters, type checking
-- **Subcommand support** - Nested command hierarchies
-
-### Architecture
-
-```
-Command-line args: ["upload", "--file", "data.csv", "--destination", "\\server\share"]
-   ↓
-[Parse with CommandParser]
-   ├─→ Identify command: "upload"
-   ├─→ Extract options: file="data.csv", destination="\\server\share"
-   ├─→ Validate required parameters
-   ↓
-[Map to command class attributes]
-   ├─→ [Command("upload")] class: UploadCommand
-   ├─→ [Option] properties: File, Destination
-   ↓
-[Invoke command with parameters]
-   ↓
-Return ParseResult with results
-```
+1. **Command discovery** — scan an assembly (or a `plugins/` directory) and build a fully configured `System.CommandLine` parser from methods decorated with `[Command]` and parameters decorated with `[Option]`.
+2. **Token normalization** — map case-variant or abbreviated tokens to their canonical forms before the parser sees them.
+3. **Global options** — intercept cross-cutting flags (e.g., `--console`, `--quiet`) before sub-command routing, without polluting individual command definitions.
+4. **Progress feedback** — `ConsoleSpinner` and `ProgressSpinner` provide animated spinners for long-running operations.
 
 ---
 
 ## Key Classes
 
-### `CommandParser`
-**Purpose:** Main parser for command-line arguments.
+### `RootCommandBuilder`
 
-**Responsibilities:**
-- Parse argument arrays into structured commands
-- Extract and type-convert options
-- Validate arguments
-- Generate parse results
+Fluent builder that configures the `System.CommandLine` pipeline and produces a `CommandParser`.
 
-**Key Methods:**
-```csharp
-// Parse arguments
-ParseResult Parse(string[] args);
-ParseResult Parse(params string[] args);
-
-// Access results
-ParseResult.Command  // Parsed command
-ParseResult.Options  // Parsed options
-ParseResult.RawArgs  // Unparsed arguments
-```
+| Method | Description |
+|---|---|
+| `AddAssembly(string path)` | Load commands from an assembly file. |
+| `AddAssembly(Assembly)` | Load commands from a loaded assembly. |
+| `SearchPlugins()` | Scan the `plugins/` directory next to the entry assembly. |
+| `SearchPlugins(string path)` | Scan a custom directory for plugin DLLs. |
+| `AddCommand(Command)` | Add a pre-built `System.CommandLine.Command` directly. |
+| `WithBanner(Action)` | Register an action printed before every `Parse` call. |
+| `UseParameterExplanation(bool)` | Print a summary of parsed values to the console after parsing. |
+| `AddGlobalOption(name, desc, Action, aliases)` | Register a flag-style global option (no value). |
+| `AddGlobalOption(name, desc, Action<string>, aliases)` | Register a value-taking global option. |
+| `AddConsoleLoggingOptions(enable, disable)` | Shortcut to add `--console`/`--quiet` global logging flags. |
+| `UseHelp / UseEnvironmentVariables / UseParseDirective / UseSuggestDirective / UseTypoCorrections / UseParseErrorReporting / UseExceptionHandler / UseCancellation / UseCaseSensitivity` | Toggle individual `System.CommandLine` middleware features. All default to enabled except `UseCaseSensitivity` (defaults disabled). |
+| `Build()` | Finalise alias generation and return a configured `CommandParser`. |
 
 **Usage:**
+
 ```csharp
-var parser = new CommandParser();
+var parser = new RootCommandBuilder("My tool description")
+    .AddAssembly(Assembly.GetExecutingAssembly())
+    .SearchPlugins()
+    .WithBanner(() => Console.WriteLine("MyTool v1.0"))
+    .UseParameterExplanation()
+    .AddConsoleLoggingOptions(
+        enableConsoleAction: () => Log.EnableConsole(),
+        disableConsoleAction: () => Log.DisableConsole())
+    .Build();
+
 var result = parser.Parse(args);
-
-if (result.Command != null)
-{
-switch (result.Command.Name)
-    {
-        case "upload":
-            HandleUpload(result);
-   break;
-        case "download":
-        HandleDownload(result);
-  break;
-    }
-}
+result.Invoke();
 ```
 
-### `CommandBuilder` / `RootCommandBuilder`
-**Purpose:** Fluent API for building command definitions.
+---
 
-**Features:**
-- Define command structure
-- Add subcommands
-- Set descriptions
-- Configure options
+### `CommandBuilder` (static)
 
-**Usage:**
-```csharp
-var rootBuilder = new RootCommandBuilder();
+Scans an assembly and produces a collection of `System.CommandLine.Command` objects. Called internally by `RootCommandBuilder`; can also be used standalone.
 
-var uploadCmd = rootBuilder.AddCommand("upload", "Upload files to server")
-    .AddOption("file", "f", "File path", required: true)
-    .AddOption("destination", "d", "Destination path", required: true);
+**Key behaviours:**
 
-var deleteCmd = rootBuilder.AddCommand("delete", "Delete files from server")
-  .AddOption("path", "p", "File path", required: true)
-    .AddOption("force", "Force deletion without confirmation");
+- Classes decorated with `[Command]` become command groups. Instance methods on those classes decorated with `[Command]` become sub-commands.
+- Static methods decorated with `[Command]` in any class become top-level commands.
+- Method parameters are mapped to `Option<T>` objects. Parameter names and `[Option]` attributes drive names, descriptions, and aliases.
+- Options receive automatically generated aliases: single-char (`-f`, `/f`), three-char prefix (`-fil`, `/fil`, `--fil`), and full name (`--filename`).
+- Enum parameters are supported; their value names are added to the token normalisation table.
+- Unsupported parameter types (arrays) and name conflicts are logged as warnings and skipped rather than thrown.
+- All registered names are stored in `CommandBuilder.TokenList` for use during token replacement in `CommandParser`.
 
-var root = rootBuilder.Build();
-```
+**Supported parameter types:** `string`, `int`, `long`, `float`, `double`, `decimal`, `bool`, `DateTime`, `Guid`, and any `enum`.
 
-### `[CommandAttribute]`
-**Purpose:** Marks a class as a CLI command.
+---
 
-**Targets:** Classes
+### `CommandParser`
 
-**Parameters:**
-- `CommandName` (string) - Name used to invoke command
-- `Description` (string) - Help text
+The parser produced by `RootCommandBuilder.Build()`. Wraps `System.CommandLine.Parsing.Parser`.
 
-**Usage:**
-```csharp
-[Command("upload", "Upload files to remote server")]
-public class UploadCommand
-{
-    [Option("file", "f")]
-    public string FilePath { get; set; }
-    
-    [Option("destination", "d")]
-    public string DestinationPath { get; set; }
-    
-    public void Execute()
-    {
-        // Upload logic
-    }
-}
+| Member | Description |
+|---|---|
+| `Parse(params string[] args)` | Apply token replacement, process global options, invoke the optional banner, parse, and optionally print a parameter summary. Returns a `ParseResult`. |
+| `Configuration` | Exposes the underlying `CommandLineConfiguration`. |
 
-[Command("delete", "Delete files from remote server")]
-public class DeleteCommand
-{
-    [Option("path", "p")]
-    public string Path { get; set; }
-    
-    [Option("force", "Skip confirmation")]
-    public bool Force { get; set; }
-    
-    public void Execute()
-    {
-    // Delete logic
-    }
-}
-```
-
-### `[OptionAttribute]`
-**Purpose:** Marks a property as a command-line option.
-
-**Targets:** Properties
-
-**Parameters:**
-- `LongName` (string) - Long form (e.g., `--file`)
-- `ShortName` (string, optional) - Short form (e.g., `-f`)
-- `Description` (string, optional) - Help text
-- `Required` (bool) - Whether parameter is required
-- `DefaultValue` (object, optional) - Value if not provided
-
-**Usage:**
-```csharp
-[Command("process")]
-public class ProcessCommand
-{
-    // Required option
-    [Option("input", "i", "Input file path", required: true)]
-    public string InputFile { get; set; }
-    
-    // Optional with default
- [Option("output", "o", "Output file path", defaultValue: "output.txt")]
-    public string OutputFile { get; set; }
-    
-    // Boolean flag
-    [Option("verbose", "v", "Enable verbose output")]
-    public bool Verbose { get; set; }
-    
-// With type conversion
-    [Option("threads", "t", "Number of threads", defaultValue: 4)]
-    public int ThreadCount { get; set; }
-}
-```
-
-### `GlobalOption`
-**Purpose:** Defines options available to all commands.
-
-**Usage:**
-```csharp
-public class GlobalOption
-{
-    [Option("help", "h", "Show help")]
-    public bool Help { get; set; }
-    
-    [Option("version", "v", "Show version")]
-    public bool Version { get; set; }
-    
-    [Option("config", "c", "Configuration file path")]
-    public string ConfigFile { get; set; }
-}
-```
+---
 
 ### `ParseResult`
-**Purpose:** Result of parsing command-line arguments.
 
-**Properties:**
-```csharp
-// Parsed command
-Command ParsedCommand { get; }
+A thin wrapper around `System.CommandLine.Parsing.ParseResult`.
 
-// Parsed options (Dictionary<string, object>)
-IDictionary<string, object> Options { get; }
+| Member | Description |
+|---|---|
+| `Invoke()` | Execute the matched command handler and return its exit code. |
+| `CommandResult` | The `System.CommandLine.CommandResult` for the parsed command. |
+| `Errors` | Read-only list of `ParseError` objects. |
+| `FindResultFor(Symbol)` | Look up the parse result for a specific symbol. |
+| `GetValueForOption<T>(Option<T>)` | Retrieve the typed value of an option. |
+| `GetValueForArgument<T>(Argument<T>)` | Retrieve the typed value of an argument. |
 
-// Unparsed remaining arguments
-string[] RemainingArgs { get; }
+---
 
-// Whether parsing succeeded
-bool IsValid { get; }
+### `GlobalOption`
 
-// Errors
-IList<string> Errors { get; }
-```
+Represents a cross-cutting option processed before sub-command routing. Not passed through to `System.CommandLine`; handled directly by `CommandParser.Parse`.
+
+| Property | Description |
+|---|---|
+| `Name` | Primary name (without prefix). |
+| `Description` | Help text. |
+| `ExpectsValue` | Whether the option consumes the next argument as its value. |
+| `AllAliases` | Full set of auto-generated and custom aliases (populated by `RootCommandBuilder.Build()`). |
+| `CustomAliases` | Developer-supplied aliases passed in the constructor. |
+| `Matches(string arg)` | Returns `true` if `arg` is any of the option's aliases (case-insensitive). |
+
+---
+
+### `ConsoleSpinner`
+
+Thread-safe animated spinner that renders at a fixed or dynamic console position. Implements `IDisposable`.
+
+| Constructor overloads | Description |
+|---|---|
+| `new ConsoleSpinner()` | Default style at current cursor position. |
+| `new ConsoleSpinner(string message)` | Display a message beside the spinner. |
+| `new ConsoleSpinner(string message, SpinnerStyle style)` | Specific animation style. |
+| `new ConsoleSpinner(string message, SpinnerStyle style, ConsoleColor color)` | With custom foreground color. |
+| `new ConsoleSpinner(int positionX, int positionY, ...)` | Fixed console position. Pass `-1` for dynamic. |
+
+Properties: `Message`, `Color`, `PositionX`, `PositionY`, `Delay`, `IsRunning`.
+
+Methods: `Start()`, `Stop()`, `Dispose()`.
+
+If Unicode is unavailable in the console, falls back to `SpinnerStyle.ASCII` automatically.
 
 **Usage:**
+
 ```csharp
-var result = parser.Parse(args);
-
-if (!result.IsValid)
+using (var spinner = new ConsoleSpinner("Processing...", SpinnerStyle.Braille, ConsoleColor.Cyan))
 {
-    foreach (var error in result.Errors)
-Console.WriteLine($"Error: {error}");
-    return;
-}
-
-// Access options
-string file = (string)result.Options["file"];
-int threads = (int)result.Options.GetValueOrDefault("threads", 4);
-```
-
-### `ConsoleSpinner` / `ProgressSpinner`
-**Purpose:** Display animated progress indicators.
-
-**Usage:**
-```csharp
-// Simple spinner
-var spinner = new ConsoleSpinner("Processing");
-spinner.Start();
-
-DoLongOperation();
-
-spinner.Stop();
-
-// Progress spinner with percentage
-var progress = new ProgressSpinner();
-for (int i = 0; i <= 100; i++)
-{
-    progress.Update(i, $"Processing {i}%");
-    System.Threading.Thread.Sleep(50);
-}
-progress.Complete();
+    DoLongWork();
+} // Stop() called automatically
 ```
 
 ---
 
-## Usage Patterns
+### `SpinnerStyle` (enum)
 
-### Basic Command Definition
+| Value | Characters |
+|---|---|
+| `ASCII` / `Default` | `\|/-\\` |
+| `Braille` / `Dots` | `⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏` |
+| `Circles` | `◐◓◑◒` |
+| `Arrows` | `←↖↑↗→↘↓↙` |
+| `SimpleStars` | `✶✸✹✺✹✷` |
+| `UnicodeStars` | `✶✸✹✺✹✷❋❂❉✼✽✾` |
+
+---
+
+### `ProgressSpinner`
+
+An `IDisposable` spinner that delegates rendering to `ConsoleUtil.DrawProgressBar` with an indefinite progress value (`-1`). Designed for `using` block usage.
+
+| Member | Description |
+|---|---|
+| `Message` | Get or set the displayed message while running. |
+| `UpdateMessage(string)` | Convenience wrapper for setting `Message`. |
+| `Stop()` | Stop the spinner and clear the progress bar line. |
+| `Dispose()` | Calls `Stop()`. |
 
 ```csharp
-[Command("greet", "Greet a person")]
-public class GreetCommand
+using (var spinner = new ProgressSpinner("Connecting to API..."))
 {
-    [Option("name", "n", "Person's name", required: true)]
-    public string Name { get; set; }
-    
-    [Option("greeting", "g", "Custom greeting", defaultValue: "Hello")]
-    public string Greeting { get; set; }
-    
-    public void Execute()
-    {
-        Console.WriteLine($"{Greeting}, {Name}!");
-    }
+    var result = await apiClient.FetchDataAsync();
+    spinner.UpdateMessage("Parsing response...");
+    Process(result);
 }
-
-// Usage:
-// app.exe greet --name John
-// app.exe greet -n John -g "Hi"
-// app.exe greet --name "Jane Doe" --greeting "Welcome"
 ```
 
-### Multiple Subcommands
+---
+
+## Attributes
+
+See [`Attributes/readme.md`](Attributes/readme.md) for `[Command]` and `[Option]`.
+
+---
+
+## Command Discovery Pattern
 
 ```csharp
+// Group: class-level [Command] + method-level [Command]
 [Command("files", "File operations")]
-public class FilesCommand
+public class FileCommands
 {
-    [Option("operation", "op", "Operation: list, copy, move, delete", required: true)]
-    public string Operation { get; set; }
-    
-    [Option("source", "s", "Source file")]
-    public string SourceFile { get; set; }
-    
-    [Option("destination", "d", "Destination")]
-    public string Destination { get; set; }
-    
-    public void Execute()
+    [Command("list", "List files in a directory")]
+    public void List(
+        [Option("Path to list")] string path,
+        [Option("Include hidden files")] bool? hidden)
     {
-   switch (Operation.ToLower())
-  {
-            case "list":
-      ListFiles();
-      break;
-        case "copy":
-                CopyFile(SourceFile, Destination);
- break;
-            case "move":
- MoveFile(SourceFile, Destination);
-          break;
-       case "delete":
-            DeleteFile(SourceFile);
-    break;
-        }
-}
-}
-```
+        // implementation
+    }
 
-### Type Conversion
+    [Command("copy", "Copy a file")]
+    public void Copy(
+        [Option("Source path", "--src")] string source,
+        [Option("Destination path", "--dst")] string destination)
+    {
+        // implementation
+    }
+}
 
-```csharp
-[Command("import", "Import data from file")]
-public class ImportCommand
+// Top-level: static method with [Command]
+public static class Utilities
 {
-    [Option("file", "f", "File path", required: true)]
-    public string FilePath { get; set; }
-    
-    [Option("format", "Format: csv, json, xml", defaultValue: "csv")]
-    public string Format { get; set; }
-    
-    [Option("batch-size", "Records per batch", defaultValue: 1000)]
-    public int BatchSize { get; set; }
-    
-    [Option("skip-errors", "Continue on errors")]
-    public bool SkipErrors { get; set; }
-    
-    [Option("timeout", "Operation timeout (seconds)", defaultValue: 300)]
-    public int TimeoutSeconds { get; set; }
-    
-    public void Execute()
+    [Command("version", "Show tool version")]
+    public static void ShowVersion()
     {
-        // BatchSize is int, parsed from "1000"
-        // TimeoutSeconds is int, parsed from "300"
-        // SkipErrors is bool, true if flag provided
+        Console.WriteLine(Assembly.GetEntryAssembly().GetName().Version);
     }
 }
 ```
 
-### Argument Validation
-
-```csharp
-[Command("connect", "Connect to database")]
-public class ConnectCommand
-{
-    [Option("server", "s", "Server address", required: true)]
-    public string Server { get; set; }
-    
-    [Option("port", "p", "Port number", defaultValue: 1433)]
-    public int Port { get; set; }
-    
-  [Option("database", "d", "Database name", required: true)]
-    public string Database { get; set; }
-    
-    [Option("username", "u", "Username")]
-    public string Username { get; set; }
-    
-    [Option("password", "pwd", "Password")]
-    public string Password { get; set; }
-    
-    public void Execute()
-{
-        // Validate
-    if (Port < 1 || Port > 65535)
-            throw new ArgumentException("Port must be 1-65535");
-        
-        if (string.IsNullOrEmpty(Username))
-            Console.WriteLine("Warning: No username provided");
-        
-      // Connect
-        ConnectToDatabase();
-    }
-}
-```
+The above produces:
+- `files list --path <value> [--hidden]`
+- `files copy --source <value> --destination <value>`
+- `version`
 
 ---
 
-## Main Program Integration
+## File Organisation
 
-```csharp
-class Program
-{
-    static int Main(string[] args)
-    {
-        try
-        {
-     // Parse arguments
-     var parser = new CommandParser();
-            var result = parser.Parse(args);
-   
-            // Handle global options
-       if (HasGlobalOption(result, "help"))
-  {
-    DisplayHelp();
-             return 0;
-        }
-
-   if (HasGlobalOption(result, "version"))
-            {
-                Console.WriteLine($"Version {GetVersion()}");
-         return 0;
- }
-  
-            // Get command from attributes
-        var commands = LoadCommandsFromAttributes();
-         
-            var command = FindCommand(commands, result.ParsedCommand?.Name);
-       if (command == null)
-  {
-   Console.WriteLine($"Unknown command: {result.ParsedCommand?.Name}");
-       DisplayHelp();
-        return 1;
-  }
-            
-            // Set command options from parse result
-            SetCommandProperties(command, result.Options);
-
-            // Execute command
-     command.Execute();
-            
-            return 0;
-        }
-        catch (Exception ex)
-        {
-   Console.WriteLine($"Error: {ex.Message}");
-            return 1;
-      }
-    }
-    
-    private static void DisplayHelp()
-    {
-        Console.WriteLine("Usage: app.exe <command> [options]");
-        Console.WriteLine();
-        Console.WriteLine("Commands:");
-    // List available commands
- }
-}
-```
+| File | Contents |
+|---|---|
+| `CommandParser.cs` | `CommandParser` class |
+| `CommandBuilder.cs` | `CommandBuilder` static class, `NameTracker` (private) |
+| `RootCommandBuilder.cs` | `RootCommandBuilder` fluent builder |
+| `GlobalOption.cs` | `GlobalOption` class |
+| `ParseResult.cs` | `ParseResult` wrapper |
+| `ConsoleSpinner.cs` | `ConsoleSpinner` class, `SpinnerStyle` enum |
+| `ProgressSpinner.cs` | `ProgressSpinner` class |
+| `Attributes/` | `[Command]` and `[Option]` attributes |
 
 ---
 
-## Advanced Patterns
+## Related Modules
 
-### Dynamic Command Loading
-
-```csharp
-public static IList<object> LoadCommandsFromAssembly()
-{
-    var commands = new List<object>();
-    
-    foreach (var type in typeof(Program).Assembly.GetTypes())
-  {
-        var attr = type.GetCustomAttribute<CommandAttribute>();
-        if (attr != null)
-        {
-    commands.Add(Activator.CreateInstance(type));
-     }
-    }
-    
-    return commands;
-}
-```
-
-### Dependency Injection
-
-```csharp
-[Command("process", "Process data")]
-public class ProcessCommand
-{
-    private readonly IDataProcessor _processor;
-    private readonly ILogger _logger;
-    
-    public ProcessCommand(IDataProcessor processor, ILogger logger)
-    {
-     _processor = processor;
-        _logger = logger;
-    }
-    
-    [Option("input", "i", required: true)]
-    public string InputFile { get; set; }
-    
-    public void Execute()
-    {
-  _logger.Info($"Processing {InputFile}");
-        _processor.Process(InputFile);
-    }
-}
-
-// Usage
-var processor = container.Resolve<IDataProcessor>();
-var logger = container.Resolve<ILogger>();
-var command = new ProcessCommand(processor, logger);
-```
-
-### Custom Option Parsing
-
-```csharp
-// Extend to support environment variable fallback
-[Option("api-key", "key", "API key", required: true)]
-public string ApiKey { get; set; } = 
-    Environment.GetEnvironmentVariable("APP_API_KEY") ?? "";
-
-// Or custom parsing
-[Option("credentials", "c", "user:password format")]
-public (string user, string password) Credentials
-{
-    get
-    {
-      var parts = _credentials.Split(':');
-        return (parts[0], parts[1]);
-    }
-    set
-    {
-        _credentials = $"{value.user}:{value.password}";
-    }
-}
-private string _credentials;
-```
-
----
-
-## File Organization
-
-### `CommandParser.cs`
-Main argument parser.
-
-### `CommandBuilder.cs` / `RootCommandBuilder.cs`
-Fluent builders for command definitions.
-
-### `Attributes/`
-- `CommandAttribute.cs`
-- `OptionAttribute.cs`
-
-### `GlobalOption.cs`
-Global command options.
-
-### `ParseResult.cs`
-Parsing results.
-
-### `ConsoleSpinner.cs` / `ProgressSpinner.cs`
-Progress indicators.
-
----
-
-## Best Practices
-
-### 1. **Clear Command Names**
-```csharp
-// Good
-[Command("upload-file", "Upload file to server")]
-[Command("list-files", "List files on server")]
-[Command("delete-file", "Delete file from server")]
-
-// Bad
-[Command("cmd1")]
-[Command("cmd2")]
-[Command("cmd3")]
-```
-
-### 2. **Descriptive Options**
-```csharp
-// Good
-[Option("input-file", "i", "Path to input CSV file", required: true)]
-public string InputFile { get; set; }
-
-// Bad
-[Option("f")]
-public string File { get; set; }
-```
-
-### 3. **Sensible Defaults**
-```csharp
-// Good
-[Option("threads", "Number of processing threads", defaultValue: Environment.ProcessorCount)]
-public int ThreadCount { get; set; }
-
-// Bad
-[Option("threads", required: true)]
-public int ThreadCount { get; set; }
-```
-
-### 4. **Type Safety**
-```csharp
-// Good
-[Option("port", "p", defaultValue: 8080)]
-public int Port { get; set; }
-
-// Avoid
-[Option("port", "p")]
-public string Port { get; set; }  // Force parsing from string
-```
-
----
-
-## Error Handling
-
-```csharp
-var result = parser.Parse(args);
-
-if (!result.IsValid)
-{
-    foreach (var error in result.Errors)
-        Console.WriteLine($"Error: {error}");
-    
-  DisplayUsage();
-    return 1;
-}
-
-try
-{
-    var command = GetCommand(result.ParsedCommand.Name);
-    command.Execute();
-}
-catch (OperationCanceledException)
-{
-    Console.WriteLine("Operation cancelled");
-    return 130;
-}
-catch (Exception ex)
-{
- Console.WriteLine($"Unexpected error: {ex.Message}");
-    return 1;
-}
-```
-
----
-
-## Testing
-
-```csharp
-[TestMethod]
-public void Parser_ParseUploadCommand_WithRequiredOptions()
-{
-    var parser = new CommandParser();
-    var result = parser.Parse("upload", "--file", "data.csv", "--destination", "\\server\share");
-    
-    Assert.IsTrue(result.IsValid);
-    Assert.AreEqual("upload", result.ParsedCommand.Name);
-    Assert.AreEqual("data.csv", result.Options["file"]);
-    Assert.AreEqual("\\server\share", result.Options["destination"]);
-}
-
-[TestMethod]
-public void Parser_MissingRequiredOption_ReturnsError()
-{
-    var parser = new CommandParser();
-    var result = parser.Parse("upload", "--file", "data.csv");
-    
-    Assert.IsFalse(result.IsValid);
-    Assert.IsTrue(result.Errors.Any(e => e.Contains("destination")));
-}
-```
-
----
-
-## Summary
-
-The CLI module provides:
-
-**Key Strengths:**
-- ✓ Attribute-based command definitions
-- ✓ Automatic type conversion
-- ✓ Fluent API for building
-- ✓ Help text generation
-- ✓ Validation of required parameters
-- ✓ Support for subcommands
-
-**Best For:**
-- Console applications
-- Command-line tools
-- Administrative utilities
-- Batch processing scripts
-
-**Not Ideal For:**
-- Complex interactive CLIs (consider Spectre.Console)
-- Real-time user interfaces
-- Web applications
-
----
-
-## 📖 Documentation Links
-
-### 🏗️ Related Modules
-| Module                                            | Description                |
-|---------------------------------------------------|----------------------------|
-| **[Configuration](../Configuration/readme.md)**   | INI-based configuration    |
-| **[Core](../Core/readme.md)**                     | Core utilities             |
-| **[Data](../Data/readme.md)**                     | Database & file processing |
-| **[DataStructures](../DataStructures/readme.md)** | Collections & utilities    |
-| **[JSON](../Json/readme.md)**                     | Delta serialization        |
-| **[Logging](../Logging/readme.md)**               | Structured logging         |
-| **[Mail](../Mail/readme.md)**                     | Email processing           |
-| **[Net](../Net/readme.md)**                       | Network file transfers     |
-| **[Security](../Security/readme.md)**             | Encryption & security      |
-| **[Utils](../Utilities/readme.md)**               | General utilities          |
+| Module | Description |
+|---|---|
+| **[Configuration](../Configuration/readme.md)** | INI-based configuration |
+| **[Core](../Core/readme.md)** | WinSCP resource management |
+| **[Logging](../Logging/readme.md)** | Structured logging (used internally for warnings) |

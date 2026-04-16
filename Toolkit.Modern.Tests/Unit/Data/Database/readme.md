@@ -1,108 +1,176 @@
-# Database Tests
+# Database Unit Tests
 
-This directory contains unit tests for the ByteForge.Toolkit Data Database module, which provides database access and operations functionality.
+Tests for `DBAccess` and `BulkDbProcessor<T>` in `ByteForge.Toolkit.Data`. Coverage spans SQL Server operations, ODBC/Access operations, parameter parsing, script execution, transactions, and bulk processing.
 
-## Overview
-
-The Database module offers a flexible and efficient way to interact with various database systems, with a focus on SQL Server and ODBC connections. These tests ensure that database operations work correctly and efficiently.
+**Source module:** `Toolkit.Modern/Data/`
 
 ## Test Classes
 
+| Class | Category | Description |
+|-------|----------|-------------|
+| `DBAccessCoreTests` | (none) | Constructor, options, connection string generation, property access |
+| `DBAccessMethodsSQLServerTests` | (none) | CRUD operations, parameter handling, async variants — SQL Server |
+| `DBAccessMethodsODBCTests` | `Unit`, `ODBC` | CRUD operations, parameter handling — Access via ODBC |
+| `DBAccessParameterParsingTests` | (none) | Named parameter detection via private method reflection |
+| `DBAccessParameterParsingSimpleTests` | (none) | Simple parameter parsing scenarios |
+| `DBAccessExtendedPropertiesTests` | (none) | `RecordsAffected`, `LastException`, and other properties |
+| `DBAccessScriptExecutionTests` | (none) | Multi-statement scripts, `GO` batch separator, error handling |
+| `DBAccessTransactionTests` | (none) | `BeginTransaction`, `Commit`, `Rollback`, read consistency |
+| `BulkDbProcessorTests` | (none) | Bulk insert, upsert, delete with `BulkTestEntity` |
+| `BulkDbProcessorEdgeCaseTests` | (none) | Empty collections, null mappings, duplicate keys |
+
+Classes without an explicit `[TestCategory]` still require SQL Server (they use `DatabaseTestHelper.AssertTestDatabaseSetup` in `[ClassInitialize]`).
+
+## Prerequisites
+
+### SQL Server Tests (most classes)
+
+A SQL Server instance must be reachable with the `TestUnitDB` database set up. The `[ClassInitialize]` method in each SQL Server test class calls `DatabaseTestHelper.AssertTestDatabaseSetup()`, which verifies:
+
+- Basic connectivity (`TestConnection()` returns `true`)
+- `TestEntities` table has at least 15 rows
+- `TestDataTypes` table has at least 3 rows
+- `BulkTestEntities` table has at least 40 rows
+
+SQL scripts for creating and seeding the database are in the `TODO/` folder at the test project root.
+
+**Default connection:** `(local)` with Windows Authentication.
+
+**CI environment variable overrides** (read by `DatabaseTestHelper`):
+
+| Variable | Description |
+|----------|-------------|
+| `BYTEFORGE_TEST_SQL_SERVER` | Hostname or IP of the SQL Server instance |
+| `BYTEFORGE_TEST_SQL_PORT` | Port number (default 1433) |
+| `BYTEFORGE_TEST_SQL_USER` | SQL login user (omit for trusted/Windows auth) |
+| `BYTEFORGE_TEST_SQL_PASSWORD` | SQL login password |
+| `BYTEFORGE_TEST_SQL_CONNECTION_STRING` | Full connection string (takes priority over all others) |
+| `BYTEFORGE_TEST_SQL_DATABASE` | Database name (default `TestUnitDB`) |
+
+### ODBC Tests (`DBAccessMethodsODBCTests`, category `ODBC`)
+
+Requires the **Microsoft Access Database Engine ODBC driver** (`Microsoft Access Driver (*.mdb, *.accdb)` for `.accdb`, or `Microsoft Access Driver (*.mdb)` for legacy `.mdb`).
+
+The test database files are copied to the output directory by the build:
+
+| File | Description |
+|------|-------------|
+| `TestData/TestUnitDB.accdb` | Preferred format (Access 2007+) |
+| `TestData/TestUnitDB.mdb` | Legacy format fallback |
+
+The helper resolves which file to use automatically:
+
+1. If `BYTEFORGE_TEST_ACCESS_FORMAT=accdb` → uses `.accdb` with the `*.mdb, *.accdb` driver
+2. If `BYTEFORGE_TEST_ACCESS_FORMAT=mdb` → uses `.mdb` with the `*.mdb` driver
+3. If the variable is unset → prefers `.accdb` if it exists, falls back to `.mdb`
+
+The `[ClassInitialize]` for `DBAccessMethodsODBCTests` calls `DatabaseTestHelper.AssertAccessDatabaseSetup()`, which verifies:
+
+- Connectivity via ODBC
+- `TestEntities` has at least 3 rows
+- `TestDataTypes` has at least 1 row
+- `BulkTestEntities` has at least 3 rows
+
+## Coverage Details
+
 ### DBAccessCoreTests
 
-Tests for the core functionality of the DBAccess class:
+- Constructor with `DatabaseOptions` — properties initialized correctly
+- Constructor with null options — `ArgumentNullException` thrown
+- Different database types (`SQLServer`, `ODBC`)
+- `DbType`, `ConnectionString`, `Options` properties
+- `TestConnection()` — true for valid, false for invalid
+- `LastException` and `RecordsAffected` tracking
 
-- Constructor and initialization
-- Database configuration through DatabaseOptions
-- Connection string generation
-- Database type detection and configuration
-- Basic property access
-- Connection testing and management
-- RecordsAffected and LastException tracking
-- Performance and resource usage
+### DBAccessMethodsSQLServerTests / DBAccessMethodsODBCTests
 
-### DBAccessMethodsSQLServerTests
+Both cover the same API surface against different backends:
 
-Tests for SQL Server-specific database operations:
+| Method | Coverage |
+|--------|---------|
+| `TestConnection()` | Valid and invalid connections |
+| `GetValue<T>()` | Returns correct typed scalar value |
+| `GetRecord()` | Returns first-row `DataRow` |
+| `GetRecords()` | Returns `DataTable` with multiple rows |
+| `ExecuteQuery()` | INSERT, UPDATE, DELETE; returns `bool`; sets `RecordsAffected` |
+| `GetValue<T>()` async | Async scalar retrieval |
+| `GetRecords()` async | Async tabular retrieval |
+| `ExecuteQuery()` async | Async DML |
 
-- CRUD operations (Create, Read, Update, Delete)
-- Parameter handling
-- Transaction management
-- Stored procedure execution
-- Bulk operations
-- Error handling for SQL Server-specific scenarios
-- Data type mapping
+### DBAccessParameterParsingTests
 
-### DBAccessMethodsODBCTests
+Tests the private `ParseParameters` method via reflection. Covers:
 
-Tests for ODBC database operations:
+- Named parameters (`@paramName`) — detected and returned as a list
+- Named assignment syntax (`@paramName = @valueParam`) — used by stored procedure calls
+- Query with no parameters — returns empty list
+- Null/empty query — safe handling
+- Parameters in different positions in the SQL text
 
-- Connection to ODBC data sources
-- Basic CRUD operations
-- Parameter handling with ODBC syntax
-- Data type conversion for ODBC
-- Error handling in ODBC context
+### DBAccessTransactionTests
 
-### DBAccessParameterParsingTests & DBAccessParameterParsingSimpleTests
-
-Tests for parameter parsing and handling:
-
-- Named parameter detection
-- Parameter value substitution
-- Various parameter data types
-- Complex parameter expressions
-- Performance of parameter parsing
-- Edge cases in parameter syntax
+- `BeginTransaction()` returns a transaction object
+- `Commit()` — data is visible after commit
+- `Rollback()` — data is not visible after rollback
+- Exception during transaction — `LastException` is set; data is rolled back
+- Read consistency — `GetValue` within a transaction sees uncommitted data from the same connection
 
 ### DBAccessScriptExecutionTests
 
-Tests for SQL script execution:
+- Multi-statement scripts with `GO` batch separator
+- Error in one batch — subsequent batches are not executed
+- Transaction management within script execution
 
-- Multi-statement script execution
-- Script parsing and batching
-- Error handling during script execution
-- Transaction management for scripts
-- GO statement handling
-- Script performance
+### BulkDbProcessorTests
 
-### BulkDbProcessorTests & BulkDbProcessorEdgeCaseTests
+- Bulk insert: inserts all entities using `BulkTestEntity` (`[DBColumn]`-decorated)
+- Upsert: updates existing rows based on the `Code` unique column; inserts new rows
+- Bulk delete: removes rows matching specified keys
+- Attribute mapping: `[DBColumn(isPrimaryKey:true)]`, `[DBColumn(isUnique:true)]`, `[DBColumn(MaxLength=...)]`
 
-Tests for bulk database operations:
+### BulkDbProcessorEdgeCaseTests
 
-- Bulk insert functionality
-- Mapping between object collections and database tables
-- Attribute-based column mapping
-- Performance with large datasets
-- Transaction support in bulk operations
-- Error handling during bulk operations
-- Edge cases like empty collections, missing mappings
+- Empty collection — no SQL executed; no exceptions
+- Collection with null elements
+- Missing `[DBColumn]` attributes
+- Duplicate unique keys in the source collection
 
-## Testing Strategy
+## Test Models
 
-The Database tests follow a comprehensive approach that covers:
+| Model | Table | Purpose |
+|-------|-------|---------|
+| `TestEntity` | `TestEntities` | General CRUD and transaction tests |
+| `BulkTestEntity` | `BulkTestEntities` | Bulk operation tests |
+| `TestDataTypeEntity` | `TestDataTypes` | Type conversion tests |
 
-1. **Core functionality**: Basic database operations
-2. **Data access patterns**: Various ways to interact with databases
-3. **Performance**: Efficient database operations with large datasets
-4. **Error handling**: Proper response to database errors
-5. **Resource management**: Connection and transaction handling
-6. **Multi-database support**: SQL Server and ODBC compatibility
+See [Models/README.md](../../../Models/README.md) for property details.
 
-## Test Helpers
+## Running These Tests
 
-These tests utilize helper classes located in the `Tests\ByteForge.Toolkit.Tests\Helpers` directory:
+```powershell
+# All database tests
+dotnet test --filter "FullyQualifiedName~Data.Database"
 
-- **DatabaseTestHelper**: Provides utilities for database testing
-- **TempFileHelper**: Manages temporary files for scripts
-- **AssertionHelpers**: Contains custom assertions for database validation
+# Only SQL Server tests (no ODBC driver required)
+dotnet test --filter "FullyQualifiedName~Data.Database&TestCategory!=ODBC"
 
-## Test Prerequisites
+# Only ODBC tests
+dotnet test --filter "TestCategory=ODBC"
 
-Many of these tests require a working database connection. The tests are configured to use:
+# Specific class
+dotnet test --filter "FullyQualifiedName~BulkDbProcessorTests"
+dotnet test --filter "FullyQualifiedName~DBAccessTransactionTests"
+```
 
-- A SQL Server instance (local or remote)
-- Test database "TestUnitDB"
-- Windows Authentication (Integrated Security)
+---
 
-Tests will be skipped if the database connection cannot be established.
+## Documentation Links
 
+| Location | Description | Documentation |
+|----------|-------------|---------------|
+| **Tests root** | Test project overview | [../../../README.md](../../../README.md) |
+| **Unit overview** | Unit test organization | [../../readme.md](../../readme.md) |
+| **Data overview** | Data tests overview | [../readme.md](../readme.md) |
+| **Helpers** | Database test helper | [../../../Helpers/README.md](../../../Helpers/README.md) |
+| **Models** | Test entity models | [../../../Models/README.md](../../../Models/README.md) |
+| **Data source** | Production module | [../../../../Toolkit.Modern/Data/readme.md](../../../../Toolkit.Modern/Data/readme.md) |
