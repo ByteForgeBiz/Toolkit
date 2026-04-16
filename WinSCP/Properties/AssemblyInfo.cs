@@ -7,7 +7,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("Martin Prikryl")]
 [assembly: AssemblyProduct("WinSCP")]
-[assembly: AssemblyCopyright("")]
+[assembly: AssemblyCopyright("Copyright © Martin Prikryl. Licensed under the Mozilla Public License 2.0.")]
 [assembly: AssemblyTrademark("")]
 [assembly: ComVisible(false)]
 [assembly: Guid("a0b93468-d98a-4845-a234-8076229ad93f")]

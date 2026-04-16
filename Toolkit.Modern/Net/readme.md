@@ -270,3 +270,14 @@ catch (FileTransferException ex)
 |--------|-------------|
 | [WinSCP](../../WinSCP/readme.md) | Underlying WinSCP session wrapper |
 | [Logging](../Logging/readme.md) | Logging used throughout the client |
+
+---
+
+## License Notice
+
+The Net module delegates all file transfer operations to the `ByteForge.WinSCP` session layer,
+which is a derivative of the **WinSCPnet** library originally authored by
+**[Martin Prikryl](https://winscp.net/)** and distributed under the
+**[Mozilla Public License 2.0](../../WinSCP/LICENSE)** (MPL-2.0).
+
+See [`WinSCP/readme.md`](../../WinSCP/readme.md#attribution--license) for full attribution details.
