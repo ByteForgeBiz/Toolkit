@@ -120,7 +120,7 @@ This fork introduces only non-behavioural changes relative to WinSCPnet 6.5.3:
 - Added XML documentation comments to public and internal members
 - Added `#pragma warning` suppressions for P/Invoke struct layout fields (CS0649, CA1416, SYSLIB0012)
 
-No logic, algorithms, protocols, or public API contracts were changed.
+No intentional changes were made to logic, algorithms, protocols, or public API contracts.
 
 ### License
 
