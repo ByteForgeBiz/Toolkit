@@ -59,6 +59,22 @@ namespace ByteForge.Toolkit.Tests.Unit.Logging
         }
 
         /// <summary>
+        /// Verifies that merged routing contexts do not duplicate the same logger reference.
+        /// </summary>
+        [TestMethod]
+        public void Merge_WithDuplicateLoggerReferences_ShouldKeepSingleLogger()
+        {
+            var logger = new TestLogger("A");
+            var outer = new LogRoutingContext(new[] { logger }, new[] { "File" });
+            var inner = new LogRoutingContext(new[] { logger }, new[] { "file" });
+
+            var result = outer.Merge(inner);
+
+            result.AdditionalLoggers.Should().ContainSingle().Which.Should().BeSameAs(logger);
+            result.SuppressedLoggerNames.Should().ContainSingle().Which.Should().Be("File");
+        }
+
+        /// <summary>
         /// Verifies logger suppression is case-insensitive and null-safe.
         /// </summary>
         [TestMethod]

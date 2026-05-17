@@ -357,7 +357,7 @@ if errorlevel 1 exit /b 1
 
 echo.
 echo ^> git switch "%BASE_BRANCH%"
-git switch -- "%BASE_BRANCH%"
+git switch "%BASE_BRANCH%"
 if errorlevel 1 exit /b 1
 
 echo.
@@ -367,7 +367,7 @@ if errorlevel 1 exit /b 1
 
 echo.
 echo ^> git switch "%ORIGINAL_BRANCH%"
-git switch -- "%ORIGINAL_BRANCH%"
+git switch "%ORIGINAL_BRANCH%"
 if errorlevel 1 exit /b 1
 
 echo.

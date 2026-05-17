@@ -73,7 +73,7 @@ namespace ByteForge.Toolkit.Logging
         }
 
         /// <summary>
-        /// Clears the page identifier from the current execution context.
+        /// Clears the page identifier and routing context from the current execution context.
         /// </summary>
         public static void Clear()
         {

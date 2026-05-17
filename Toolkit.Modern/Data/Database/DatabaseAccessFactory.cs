@@ -16,6 +16,10 @@ public static class DatabaseAccessFactory
     {
         var rootOptions = TryGetRootOptions();
         var dbSection = rootOptions?.SelectedDatabase ?? string.Empty;
+
+        if (string.IsNullOrEmpty(dbSection))
+            throw new InvalidOperationException("No selected database is configured in the Data Source section.");
+
         return Create(dbSection);
     }
 

@@ -46,8 +46,10 @@ namespace ByteForge.Toolkit.Logging
             if (other == null)
                 return this;
 
+            var loggerComparer = ReferenceEqualityComparer<ILogger>.Instance;
+
             return new LogRoutingContext(
-                AdditionalLoggers.Concat(other.AdditionalLoggers),
+                AdditionalLoggers.Concat(other.AdditionalLoggers).Distinct(loggerComparer),
                 SuppressedLoggerNames.Concat(other.SuppressedLoggerNames));
         }
 
@@ -62,6 +64,47 @@ namespace ByteForge.Toolkit.Logging
                 return false;
 
             return SuppressedLoggerNames.Contains(logger.Name);
+        }
+
+        /// <summary>
+        /// Compares reference types by object identity.
+        /// </summary>
+        /// <typeparam name="T">The reference type to compare.</typeparam>
+        private sealed class ReferenceEqualityComparer<T> : IEqualityComparer<T>
+            where T : class
+        {
+            /// <summary>
+            /// Gets the shared comparer instance.
+            /// </summary>
+            public static readonly ReferenceEqualityComparer<T> Instance = new ReferenceEqualityComparer<T>();
+
+            /// <summary>
+            /// Prevents direct construction of the comparer.
+            /// </summary>
+            private ReferenceEqualityComparer()
+            {
+            }
+
+            /// <summary>
+            /// Determines whether two references point to the same object.
+            /// </summary>
+            /// <param name="x">The first object reference.</param>
+            /// <param name="y">The second object reference.</param>
+            /// <returns><see langword="true"/> when both references point to the same object; otherwise, <see langword="false"/>.</returns>
+            public bool Equals(T? x, T? y)
+            {
+                return ReferenceEquals(x, y);
+            }
+
+            /// <summary>
+            /// Gets a hash code based on object identity.
+            /// </summary>
+            /// <param name="obj">The object reference.</param>
+            /// <returns>The identity-based hash code for the object.</returns>
+            public int GetHashCode(T obj)
+            {
+                return System.Runtime.CompilerServices.RuntimeHelpers.GetHashCode(obj);
+            }
         }
     }
 }
