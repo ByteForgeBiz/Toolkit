@@ -768,7 +768,7 @@ public class Configuration : IConfigurationManager
         var existingKeys = new HashSet<string>(StringComparer.InvariantCultureIgnoreCase);
         var existingSections = new HashSet<string>(StringComparer.InvariantCultureIgnoreCase);
         var sectionEndPositions = new Dictionary<string, int>(StringComparer.InvariantCultureIgnoreCase);
-        var currentPosition = 0;
+        List<string>? pendingDocumentationBlock = null;
 
         // Get the full path to the INI file
         var iniFilePath = Path.Combine(_configDirectory, _configFile);
@@ -786,7 +786,24 @@ public class Configuration : IConfigurationManager
         foreach (var line in iniLines)
         {
             var trimmedLine = line.Trim();
-            currentPosition = iniData.Count;
+
+            if (IsDocumentationBlockStart(trimmedLine))
+            {
+                pendingDocumentationBlock = new List<string> { line };
+                continue;
+            }
+
+            if (pendingDocumentationBlock != null && IsDocumentationBlockContinuation(trimmedLine))
+            {
+                pendingDocumentationBlock.Add(line);
+                continue;
+            }
+
+            if (pendingDocumentationBlock != null && string.IsNullOrWhiteSpace(trimmedLine))
+            {
+                pendingDocumentationBlock.Add(line);
+                continue;
+            }
 
             // Preserve comments and empty lines as-is
             if (string.IsNullOrEmpty(trimmedLine) || trimmedLine.StartsWith(";") || trimmedLine.StartsWith("#"))
@@ -800,21 +817,26 @@ public class Configuration : IConfigurationManager
             {
                 // Extract section name without brackets
                 section = trimmedLine.Trim('[', ']');
+                AddPendingDocumentationBlock(iniData, ref pendingDocumentationBlock);
                 iniData.Add(line);
                 existingSections.Add(section);
                 // Track where this section ends for later insertion of new keys
-                sectionEndPositions[section] = currentPosition + 1;
+                sectionEndPositions[section] = iniData.Count;
                 continue;
             }
 
             // Skip array and dictionary section values - these are handled specially
             if (_arraySectionNames.Contains(section) || _dictionarySectionNames.Contains(section))
+            {
+                pendingDocumentationBlock = null;
                 continue;
+            }
 
             // Process key-value pairs
             var equalsIndex = trimmedLine.IndexOf('=');
             if (equalsIndex == -1)
             {
+                pendingDocumentationBlock = null;
                 iniData.Add(line);
                 continue;
             }
@@ -834,17 +856,19 @@ public class Configuration : IConfigurationManager
             }
             else
             {
-                // Skip keys that were set to null (likely default values)
+                // Skip keys and their attached documentation when they were set to null (likely default values)
+                pendingDocumentationBlock = null;
                 continue;
             }
 
             // Track that we've processed this key
             existingKeys.Add(configKey);
+            AddPendingDocumentationBlock(iniData, ref pendingDocumentationBlock);
             iniData.Add($"{key}={value}");
 
             // Update the end position of the current section
             if (!string.IsNullOrEmpty(section))
-                sectionEndPositions[section] = currentPosition;
+                sectionEndPositions[section] = iniData.Count;
         }
 
         // Update the last section's end position
@@ -909,4 +933,35 @@ public class Configuration : IConfigurationManager
         // Write the updated INI data back to the file
         File.WriteAllLines(iniFilePath, iniData);
     }
+
+    /// <summary>
+    /// Adds a pending physical documentation block to an INI output list and clears the pending reference.
+    /// </summary>
+    /// <param name="iniData">The INI output lines being built.</param>
+    /// <param name="pendingDocumentationBlock">The pending physical documentation block to add.</param>
+    private static void AddPendingDocumentationBlock(ICollection<string> iniData, ref List<string>? pendingDocumentationBlock)
+    {
+        if (pendingDocumentationBlock == null)
+            return;
+
+        foreach (var line in pendingDocumentationBlock)
+            iniData.Add(line);
+
+        pendingDocumentationBlock = null;
+    }
+
+    /// <summary>
+    /// Determines whether a trimmed INI line starts a Toolkit documentation block.
+    /// </summary>
+    /// <param name="trimmedLine">The trimmed INI line to inspect.</param>
+    /// <returns><see langword="true"/> when the line starts a Toolkit documentation block; otherwise, <see langword="false"/>.</returns>
+    private static bool IsDocumentationBlockStart(string trimmedLine) => trimmedLine == ";;;";
+
+    /// <summary>
+    /// Determines whether a trimmed INI line continues a Toolkit documentation block.
+    /// </summary>
+    /// <param name="trimmedLine">The trimmed INI line to inspect.</param>
+    /// <returns><see langword="true"/> when the line continues a Toolkit documentation block; otherwise, <see langword="false"/>.</returns>
+    private static bool IsDocumentationBlockContinuation(string trimmedLine)
+        => trimmedLine.StartsWith(";") && !IsDocumentationBlockStart(trimmedLine);
 }
