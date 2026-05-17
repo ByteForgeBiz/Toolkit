@@ -334,6 +334,32 @@ namespace ByteForge.Toolkit.Tests.Unit.Mail
             email.Dispose();
         }
 
+        /// <summary>
+        /// Verifies that repeated compression operations create distinct temporary attachment names.
+        /// </summary>
+        /// <remarks>
+        /// Guards against timestamp-only temporary zip names colliding during parallel test or application runs.
+        /// </remarks>
+        [TestMethod]
+        public void ProcessAttachments_RepeatedCompression_ShouldUseUniqueZipNames()
+        {
+            // Arrange
+            var files = new List<string> { _testFiles[2] };
+            var zipNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+            // Act
+            for (var i = 0; i < 3; i++)
+            {
+                using var email = CreateTestEmail();
+                var result = _handler.ProcessAttachments(email, files, [], true);
+
+                // Assert
+                result.Success.Should().BeTrue($"compression pass {i} should succeed");
+                email.Attachments.Should().ContainSingle("each compression pass should produce one zip");
+                zipNames.Add(email.Attachments[0].Name).Should().BeTrue("each compressed attachment should use a unique zip name");
+            }
+        }
+
         #endregion
 
         #region ProcessAttachments Method Tests - Large File Compression

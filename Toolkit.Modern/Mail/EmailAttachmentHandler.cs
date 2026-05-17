@@ -82,8 +82,8 @@ public partial class EmailAttachmentHandler : IDisposable
 
         EnsureTempDirectoryExists();
 
-        var timeStamp = DateTime.Now.ToString("yyyyMMddHHmmss");
-        var zipFileName = Path.Combine(TempDirectory, $"Attachments_{timeStamp}.zip");
+        var timeStamp = DateTime.UtcNow.ToString("yyyyMMddHHmmssfffffff");
+        var zipFileName = Path.Combine(TempDirectory, $"Attachments_{timeStamp}_{Guid.NewGuid():N}.zip");
 
         if (!TryCompressFiles(filesToAttach, zipFileName, fileNameMap, result))
             return result;
