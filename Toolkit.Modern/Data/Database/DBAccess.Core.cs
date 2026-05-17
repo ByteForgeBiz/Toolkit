@@ -36,7 +36,7 @@ namespace ByteForge.Toolkit.Data;
 /// Includes utility methods for type conversion and timing the execution of database operations.
 /// Designed to work with SQL Server and ODBC databases, and can be configured using a configuration file.
 /// </summary>
-public partial class DBAccess
+public partial class DBAccess : IDatabaseAccess
 {
     /// <summary>
     /// Enum representing the type of database.
