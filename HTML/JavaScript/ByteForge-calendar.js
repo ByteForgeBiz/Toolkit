@@ -27,12 +27,17 @@
  * @module CalendarWidget
  */
 
+var byteForgeCurrentDatePickerInput = null;
+
 /**
  * Shows the date picker near the specified input element.
  * @param {string} inputId - The ID of the input element.
  */
 function showDatePicker(inputId) {
     var input = document.getElementById(inputId);
+    if (!input)
+        return;
+
     var picker = document.getElementById('customDatePicker');
         
     if (!picker) {
@@ -40,6 +45,9 @@ function showDatePicker(inputId) {
         createDatePicker();
         picker = document.getElementById('customDatePicker');
     }
+
+    byteForgeCurrentDatePickerInput = input;
+    picker.dataset.inputId = inputId;
 
     // Position the picker near the input
     var rect = input.getBoundingClientRect();
@@ -89,7 +97,7 @@ function createDatePicker() {
         
     // Close picker when clicking outside
     document.addEventListener('click', function (e) {
-        var btn = document.getElementById('calendarButton');
+        var btn = e.target.closest ? e.target.closest('.bf-calendar-button') : null;
         if (!div.contains(e.target) && (!btn || !btn.contains(e.target))) {
             div.style.display = 'none';
         }
@@ -144,16 +152,9 @@ function updateCalendarDays() {
  */
 function selectDate(year, month, day) {
     var date = new Date(year, month, day);
-    
-    // Find the currently focused input or default to txtStartDate
-    var activeInput = document.activeElement;
-    var input = null;
-    
-    if (activeInput && activeInput.tagName === 'INPUT' && activeInput.type === 'text') {
-        input = activeInput;
-    } else {
-        input = document.getElementById('txtStartDate');
-    }
+    var picker = document.getElementById('customDatePicker');
+    var input = byteForgeCurrentDatePickerInput ||
+        (picker && picker.dataset.inputId ? document.getElementById(picker.dataset.inputId) : null);
     
     if (input) {
         input.setAttribute('manualUpdate', 'true');
@@ -165,7 +166,8 @@ function selectDate(year, month, day) {
         input.dispatchEvent(event);
     }
         
-    document.getElementById('customDatePicker').style.display = 'none';
+    if (picker)
+        picker.style.display = 'none';
         
     // Try to move focus to next logical field
     var agentNotes = document.getElementById('txtAgentNotes');
@@ -228,7 +230,10 @@ function createCalendarButton(inputId, buttonText = '📅') {
     button.className = 'bf-calendar-button';
     button.textContent = buttonText;
     button.setAttribute('aria-label', 'Open calendar');
-    button.onclick = function() { showDatePicker(inputId); };
+    button.onclick = function(event) {
+        event.stopPropagation();
+        showDatePicker(inputId);
+    };
     
     return button;
 }

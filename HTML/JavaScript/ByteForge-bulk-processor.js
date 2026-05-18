@@ -194,12 +194,35 @@
             }
 
             var classes = options.summaryClasses || {};
-            getSummary().html(
-                '<strong>Applied.</strong> ' +
-                '<span class="' + (classes.inserts || 'bf-bulk-processor-count bf-bulk-processor-count-inserts') + '">' + (applyResult.inserts || 0) + ' inserts</span> ' +
-                '<span class="' + (classes.updates || 'bf-bulk-processor-count bf-bulk-processor-count-updates') + '">' + (applyResult.updates || 0) + ' updates</span> ' +
-                '<span class="' + (classes.skipped || 'bf-bulk-processor-count bf-bulk-processor-count-skipped') + '">' + (applyResult.skipped || 0) + ' skipped</span>'
-            );
+            var $summary = getSummary();
+            $summary.empty();
+            $('<strong>').text('Applied.').appendTo($summary);
+            $summary.append(' ');
+            appendCount($summary, classes.inserts || 'bf-bulk-processor-count bf-bulk-processor-count-inserts', applyResult.inserts, 'inserts');
+            $summary.append(' ');
+            appendCount($summary, classes.updates || 'bf-bulk-processor-count bf-bulk-processor-count-updates', applyResult.updates, 'updates');
+            $summary.append(' ');
+            appendCount($summary, classes.skipped || 'bf-bulk-processor-count bf-bulk-processor-count-skipped', applyResult.skipped, 'skipped');
+        }
+
+        /**
+         * Appends one sanitized count span to the summary.
+         * @param {jQuery} $summary Summary element.
+         * @param {string} className CSS class list for the count span.
+         * @param {*} value Raw count value.
+         * @param {string} label Count label.
+         * @returns {void}
+         */
+        function appendCount($summary, className, value, label) {
+            var count = parseInt(value, 10);
+            if (isNaN(count)) {
+                count = 0;
+            }
+
+            $('<span>')
+                .addClass(className)
+                .text(count + ' ' + label)
+                .appendTo($summary);
         }
 
         /**

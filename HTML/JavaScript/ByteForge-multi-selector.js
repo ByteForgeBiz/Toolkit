@@ -66,7 +66,7 @@
      */
     function formatOption(value, title, description, tooltip, valueAttribute, options) {
         var classes = getClasses(options);
-        valueAttribute = valueAttribute || 'data-value';
+        valueAttribute = /^data-[a-z0-9_-]+$/i.test(valueAttribute || '') ? valueAttribute : 'data-value';
         return '<div class="' + escAttr(classes.option) + '" role="option" tabindex="0" aria-selected="false" ' +
             valueAttribute + '="' + escAttr(value) + '" title="' + escAttr(tooltip || description || title) + '">' +
             '<span class="' + escAttr(classes.name) + '">' + escHtml(title) + '</span>' +

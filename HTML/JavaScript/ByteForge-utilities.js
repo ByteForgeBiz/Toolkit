@@ -52,9 +52,8 @@ function CheckNumeric(event) {
         ].includes(key)
     ) return true;
 
-    // Allow: modifier keys (Shift, Ctrl, Alt, Meta)
+    // Allow: command shortcuts that combine a modifier with another key.
     if (
-        event.shiftKey ||
         event.ctrlKey ||
         event.altKey ||
         event.metaKey
@@ -105,15 +104,14 @@ function validateField(element) {
     // Basic validation without preventing focus change
     if (!element.value && element.classList.contains('required')) {
         element.classList.add('invalid');
-        return true;
+        return false;
     }
 
     // All other validations require the field to have a value
     if (!element.value) return true;
 
     // Validate regex patterns
-    var re = new RegExp(element.pattern);
-    if (element.pattern && !re.test(element.value)) {
+    if (element.pattern && !(new RegExp(element.pattern)).test(element.value)) {
         element.patternError = element.patternError ?? element.getAttribute('patternError') ?? 'Invalid input';
         element.classList.add('invalid');
         element.oldTitle = element.title;
@@ -121,7 +119,7 @@ function validateField(element) {
         element.title = element.patternError ?? element.pattern;
         return false;
     }
-    else if (element.title == element.patterError)
+    else if (element.title == element.patternError)
         element.title = element.oldTitle ?? '';
 
     // Return validation result without blocking
@@ -144,11 +142,11 @@ function RequireValue(id, isRequired) {
     var blur = element.getAttribute('onblur');
     var focus = element.getAttribute('onfocus');
 
-    if (blur !== null && element.oldBlur === null)
-        element.oldBlur = element.blur ?? validateField;
+    if (element._byteForgeOriginalBlurAttribute == null)
+        element._byteForgeOriginalBlurAttribute = blur;
 
-    if (focus !== null && element.oldFocus === null)
-        element.oldFocus = element.focus ?? removeInvalidClass;
+    if (element._byteForgeOriginalFocusAttribute == null)
+        element._byteForgeOriginalFocusAttribute = focus;
 
     /*
      * Toggle the required class on the element and any associated elements.
@@ -160,10 +158,19 @@ function RequireValue(id, isRequired) {
 
     if (isRequired === true) {
         /* 
-         * Restore the original blur and focus events if they are stored.
+         * Restore the original blur and focus attributes if they are stored.
          */
-        element.blur = element.oldBlur;
-        element.focus = element.oldFocus;
+        element.setAttribute('required', 'required');
+
+        if (element._byteForgeOriginalBlurAttribute)
+            element.setAttribute('onblur', element._byteForgeOriginalBlurAttribute);
+        else
+            element.setAttribute('onblur', 'validateField(this)');
+
+        if (element._byteForgeOriginalFocusAttribute)
+            element.setAttribute('onfocus', element._byteForgeOriginalFocusAttribute);
+        else
+            element.setAttribute('onfocus', 'removeInvalidClass(this)');
     }
     else {
         /*
@@ -172,9 +179,6 @@ function RequireValue(id, isRequired) {
         element.removeAttribute('required');
         element.removeAttribute('onblur');
         element.removeAttribute('onfocus');
-
-        element.blur = null;
-        element.focus = null;
     }
 }
 
@@ -445,8 +449,13 @@ function formatPhoneNumber(phoneNumber) {
  * @returns {boolean|void} Returns true to allow context menu on text inputs, otherwise prevents default behavior.
  */
 function preventRightClickOnNonText(e) {
-    if (e.target.type === 'text' || e.target.type === 'textarea' || e.target.isContentEditable)
+    var target = e.target;
+    if (!target)
+        return;
+
+    if (target.type === 'text' || target.tagName === 'TEXTAREA' || target.isContentEditable)
         return true;
+
     e.preventDefault();
 }
 

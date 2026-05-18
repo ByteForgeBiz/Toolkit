@@ -123,7 +123,7 @@ class ByteForgeModal {
         const title = document.createElement('h3');
         title.className = 'byte-forge-modal-title';
         title.id = `${modalId}-title`;
-        title.innerHTML = ByteForgeModal.getTitleContent(config.title, config.type);
+        ByteForgeModal.appendTitleContent(title, config.title, config.type);
 
         header.appendChild(title);
 
@@ -383,6 +383,19 @@ class ByteForgeModal {
      * @private
      */
     static getTitleContent(customTitle, type) {
+        const wrapper = document.createElement('span');
+        ByteForgeModal.appendTitleContent(wrapper, customTitle, type);
+        return wrapper.innerHTML;
+    }
+
+    /**
+     * Appends title content with an icon based on type.
+     * @param {HTMLElement} titleElement The title element to populate.
+     * @param {string|null} customTitle Optional caller-provided title.
+     * @param {string} type Modal type.
+     * @returns {void}
+     */
+    static appendTitleContent(titleElement, customTitle, type) {
         const icons = {
             none: '',
             info: 'ℹ',
@@ -402,8 +415,14 @@ class ByteForgeModal {
         const icon = icons[type] || icons.info;
         const title = customTitle || defaultTitles[type] || defaultTitles.info;
 
-        if (type === 'none') return title;
-        return `<span class="byte-forge-modal-icon ${type}">${icon}</span>${title}`;
+        if (type !== 'none') {
+            const iconSpan = document.createElement('span');
+            iconSpan.className = `byte-forge-modal-icon ${type}`;
+            iconSpan.textContent = icon;
+            titleElement.appendChild(iconSpan);
+        }
+
+        titleElement.appendChild(document.createTextNode(title));
     }
 
     /**
