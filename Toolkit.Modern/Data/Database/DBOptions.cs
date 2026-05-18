@@ -346,7 +346,7 @@ public class DatabaseOptions
     /// database type and configuration settings. It handles the following cases:
     /// <list type="bullet">
     ///   <item>If <see cref="ConnectionString"/> is provided, it's used directly</item>
-    ///   <item>For SQL Server, builds a connection string with appropriate parameters</item>
+    ///   <item>For SQL Server and Azure SQL, builds a connection string with appropriate parameters</item>
     ///   <item>For ODBC, builds a DSN-based connection string</item>
     /// </list>
     /// <para>
@@ -371,6 +371,13 @@ public class DatabaseOptions
                                                    $"Encrypt={(UseEncryption ? "Optional" : "false")};" +
                                                    $"Trusted_Connection={(UseTrustedConnection ? "true" : "false")};" +
                                                    $"Connection Timeout={ConnectionTimeout}",
+                DBAccess.DataBaseType.AzureSQL => $"Data Source={Server};" +
+                                                  $"Initial Catalog={DatabaseName};" +
+                                                  $"User ID={User};" +
+                                                  $"Password={Password};" +
+                                                  $"Encrypt={(UseEncryption ? "true" : "false")};" +
+                                                  $"TrustServerCertificate=False;" +
+                                                  $"Connection Timeout={ConnectionTimeout}",
                 DBAccess.DataBaseType.ODBC => $"DSN={ServerDSN};" +
                                               $"SERVER={Server};" +
                                               $"DATABASE={DatabaseName};" +

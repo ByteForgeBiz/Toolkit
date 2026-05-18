@@ -2,7 +2,7 @@
 
 ## Overview
 
-The **Database** module is the primary data-access layer for ByteForge.Toolkit. It supports SQL Server and ODBC databases, provides parameterised queries, transactions, bulk operations, multi-batch script execution, and attribute-driven ORM mapping. The module is split into focused partial classes for maintainability.
+The **Database** module is the primary data-access layer for ByteForge.Toolkit. It supports SQL Server, Azure SQL, and ODBC databases, provides parameterised queries, transactions, bulk operations, multi-batch script execution, and attribute-driven ORM mapping. The module is split into focused partial classes for maintainability.
 
 ---
 
@@ -137,7 +137,7 @@ catch
 
 | INI key | Property | Default | Description |
 |---------|----------|---------|-------------|
-| `sType` | `DatabaseType` | — | `SQLServer` or `ODBC` |
+| `sType` | `DatabaseType` | — | `SQLServer`, `AzureSQL`, or `ODBC` |
 | `sServer` | `Server` | `""` | Server name or IP |
 | `sServerDSN` | `ServerDSN` | `""` | ODBC DSN name |
 | `sDatabaseName` | `DatabaseName` | `""` | Database name |
@@ -174,11 +174,13 @@ bRetryEnabled=true
 iRetryMaxAttempts=3
 ```
 
+For Azure SQL, use `sType=AzureSQL`. If `sConnectionString` is present, it is used directly; otherwise the generated connection string uses `Data Source`, `Initial Catalog`, SQL credentials, encryption, and `TrustServerCertificate=False`.
+
 ---
 
 ## BulkDbProcessor\<T\>
 
-`BulkDbProcessor<T>` provides high-throughput insert, upsert, and delete operations for SQL Server using `SqlBulkCopy`. Entity properties must be decorated with `[DBColumn]`.
+`BulkDbProcessor<T>` provides high-throughput insert, upsert, and delete operations for SQL Server-compatible providers, including Azure SQL, using `SqlBulkCopy`. Entity properties must be decorated with `[DBColumn]`.
 
 ### Bulk insert
 

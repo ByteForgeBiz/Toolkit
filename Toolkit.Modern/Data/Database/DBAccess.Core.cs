@@ -12,7 +12,7 @@ namespace ByteForge.Toolkit.Data;
  * +----------------------+--------------------+---------------------------------------------------------------------------------+
  * | Property             | Configuration Key  | Description                                                                     |
  * +----------------------+--------------------+---------------------------------------------------------------------------------+
- * | DatabaseType         | sType              | Specifies the type of database (SQLServer or ODBC).                             |
+ * | DatabaseType         | sType              | Specifies the type of database (SQLServer, AzureSQL, or ODBC).                  |
  * | Server               | sServer            | The database server name or IP address.                                         |
  * | ServerDSN            | sServerDSN         | The database server DSN (for ODBC connections).                                 |
  * | DatabaseName         | sDatabaseName      | The name of the database.                                                       |
@@ -34,7 +34,7 @@ namespace ByteForge.Toolkit.Data;
 /// Supports executing SQL queries, scripts, and retrieving data in various forms such as scalar values, records, and result sets.
 /// Handles database connections, command creation, parameter management, and logging of query execution details.
 /// Includes utility methods for type conversion and timing the execution of database operations.
-/// Designed to work with SQL Server and ODBC databases, and can be configured using a configuration file.
+/// Designed to work with SQL Server, Azure SQL, and ODBC databases, and can be configured using a configuration file.
 /// </summary>
 public partial class DBAccess : IDatabaseAccess
 {
@@ -49,13 +49,18 @@ public partial class DBAccess : IDatabaseAccess
         SQLServer,
 
         /// <summary>
+        /// Represents an Azure SQL database.
+        /// </summary>
+        AzureSQL,
+
+        /// <summary>
         /// Represents an ODBC database.
         /// </summary>
         ODBC,
     }
 
     /// <summary>
-    /// Well-known <see cref="Microsoft.Data.SqlClient.SqlException.Number"/> values returned by SQL Server.
+    /// Well-known SQL client exception numbers returned by SQL Server providers.
     /// </summary>
     /// <remarks>
     /// These codes are used by <see cref="DBAccess"/> to classify exceptions as transient (retryable)
@@ -119,6 +124,12 @@ public partial class DBAccess : IDatabaseAccess
     /// Gets the type of the database.
     /// </summary>
     public DataBaseType DbType => Options.DatabaseType;
+
+    /// <summary>
+    /// Gets a value indicating whether this database uses the SQL Server ADO.NET provider stack.
+    /// </summary>
+    internal bool IsSqlClientDatabase =>
+        DbType == DataBaseType.SQLServer || DbType == DataBaseType.AzureSQL;
 
     /// <summary>
     /// Gets the connection string for the database.

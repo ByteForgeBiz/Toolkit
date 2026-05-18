@@ -1,6 +1,10 @@
 using ByteForge.Toolkit.Logging;
 using System.Data;
+#if NET48
+using System.Data.SqlClient;
+#else
 using Microsoft.Data.SqlClient;
+#endif
 
 namespace ByteForge.Toolkit.Data;
 

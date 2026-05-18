@@ -1,5 +1,9 @@
 using System.Data;
+#if NET48
+using System.Data.SqlClient;
+#else
 using Microsoft.Data.SqlClient;
+#endif
 using System.Reflection;
 using ByteForge.Toolkit.Utilities;
 using static ByteForge.Toolkit.Data.DBAccess;
@@ -27,7 +31,7 @@ public partial class BulkDbProcessor<T>
         records ??= [];
         OnStarted($"Bulk insert started for {typeof(T).Name} into {DestinationTableName}.");
         OnDebug($"Starting bulk insert of {typeof(T).Name} records into {DestinationTableName}. Number of records: {records.Count()}");
-        if (db.DbType != DataBaseType.SQLServer)
+        if (!db.IsSqlClientDatabase)
         {
             OnWarning("Bulk insert aborted: operation only supported for SQL Server databases.");
             OnError("Batch insert failed", new InvalidOperationException("Bulk insert is only supported for SQL Server databases."));
@@ -114,7 +118,7 @@ public partial class BulkDbProcessor<T>
         records ??= Array.Empty<T>();
         OnStarted($"Bulk upsert started for {typeof(T).Name} into {DestinationTableName}.");
         OnDebug($"Starting bulk upsert of {typeof(T).Name} records into {DestinationTableName}. Number of records: {records.Count()}");
-        if (db.DbType != DataBaseType.SQLServer)
+        if (!db.IsSqlClientDatabase)
         {
             OnWarning("Bulk upsert aborted: operation only supported for SQL Server databases.");
             OnError("Bulk upsert failed", new Exception("Bulk upsert is only supported for SQL Server databases."));
@@ -238,7 +242,7 @@ public partial class BulkDbProcessor<T>
         records ??= [];
         OnStarted($"Bulk delete started for {typeof(T).Name} from {DestinationTableName}.");
         OnDebug($"Starting bulk delete of {typeof(T).Name} records from {DestinationTableName}. Number of records: {records.Count()}");
-        if (db.DbType != DataBaseType.SQLServer)
+        if (!db.IsSqlClientDatabase)
         {
             OnWarning("Bulk delete aborted: operation only supported for SQL Server databases.");
             OnError("Bulk delete failed", new Exception("Bulk delete is only supported for SQL Server databases."));

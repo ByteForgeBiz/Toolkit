@@ -2,7 +2,11 @@ using ByteForge.Toolkit.Logging;
 using ByteForge.Toolkit.Utilities;
 using System.Data;
 using System.Data.Common;
+#if NET48
+using System.Data.SqlClient;
+#else
 using Microsoft.Data.SqlClient;
+#endif
 using System.Text.RegularExpressions;
 
 namespace ByteForge.Toolkit.Data;
@@ -48,8 +52,8 @@ public partial class DBAccess
                 $"The number of parameters ({distinctParams.Count}) does not match " +
                 $"the number of arguments ({arguments.Length}).");
 
-        // In SQL Server we can reuse the same parameter multiple times in a query
-        if (Options.DatabaseType == DataBaseType.SQLServer)
+        // SQL client databases can reuse the same named parameter multiple times in a query.
+        if (IsSqlClientDatabase)
             matches = distinctParams;
 
         foreach (var paramName in matches)

@@ -2,7 +2,11 @@ using ByteForge.Toolkit.Logging;
 using System.Data;
 using System.Data.Common;
 using System.Data.Odbc;
+#if NET48
+using System.Data.SqlClient;
+#else
 using Microsoft.Data.SqlClient;
+#endif
 
 namespace ByteForge.Toolkit.Data;
 /*
@@ -23,12 +27,13 @@ public partial class DBAccess
     {
         var conn = ConnectionString;
 
-        return DbType switch
-        {
-            DataBaseType.SQLServer => new SqlConnection(conn),
-            DataBaseType.ODBC => new OdbcConnection(conn),
-            _ => throw new NotSupportedException($"The database type {DbType} is not supported."),
-        };
+        if (IsSqlClientDatabase)
+            return new SqlConnection(conn);
+
+        if (DbType == DataBaseType.ODBC)
+            return new OdbcConnection(conn);
+
+        throw new NotSupportedException($"The database type {DbType} is not supported.");
     }
 
     /// <summary>
@@ -39,12 +44,13 @@ public partial class DBAccess
     /// <exception cref="NotSupportedException">Thrown when the database type is not supported.</exception>
     private IDbDataAdapter CreateDataAdapter(IDbCommand command)
     {
-        return DbType switch
-        {
-            DataBaseType.SQLServer => new SqlDataAdapter((SqlCommand)command),
-            DataBaseType.ODBC => new OdbcDataAdapter((OdbcCommand)command),
-            _ => throw new NotSupportedException($"The database type {DbType} is not supported."),
-        };
+        if (IsSqlClientDatabase)
+            return new SqlDataAdapter((SqlCommand)command);
+
+        if (DbType == DataBaseType.ODBC)
+            return new OdbcDataAdapter((OdbcCommand)command);
+
+        throw new NotSupportedException($"The database type {DbType} is not supported.");
     }
 
     /// <summary>

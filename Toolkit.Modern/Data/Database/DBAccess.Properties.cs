@@ -189,7 +189,7 @@ public partial class DBAccess
                                     ExtendedPropertyLevel1Type level1Type, string? level1Name,
                                     ExtendedPropertyLevel2Type level2Type, string? level2Name)
     {
-        if (DbType != DataBaseType.SQLServer)
+        if (!IsSqlClientDatabase)
             throw new NotSupportedException("Extended properties are only supported for SQL Server databases.");
 
         if (string.IsNullOrWhiteSpace(propertyName))
@@ -353,7 +353,7 @@ public partial class DBAccess
                                          ExtendedPropertyLevel1Type level1Type, string? level1Name,
                                          ExtendedPropertyLevel2Type level2Type, string? level2Name)
     {
-        if (DbType != DataBaseType.SQLServer)
+        if (!IsSqlClientDatabase)
             throw new NotSupportedException("Extended properties are only supported for SQL Server databases.");
 
         if (string.IsNullOrWhiteSpace(propertyName))
@@ -514,7 +514,7 @@ public partial class DBAccess
                                        ExtendedPropertyLevel1Type level1Type, string? level1Name,
                                        ExtendedPropertyLevel2Type level2Type, string? level2Name)
     {
-        if (DbType != DataBaseType.SQLServer)
+        if (!IsSqlClientDatabase)
             throw new NotSupportedException("Extended properties are only supported for SQL Server databases.");
 
         if (string.IsNullOrWhiteSpace(propertyName))
@@ -666,7 +666,7 @@ public partial class DBAccess
                                            ExtendedPropertyLevel1Type level1Type, string? level1Name,
                                            ExtendedPropertyLevel2Type level2Type, string? level2Name)
     {
-        if (DbType != DataBaseType.SQLServer)
+        if (!IsSqlClientDatabase)
             throw new NotSupportedException("Extended properties are only supported for SQL Server databases.");
 
         if (string.IsNullOrWhiteSpace(propertyName))
@@ -823,7 +823,7 @@ public partial class DBAccess
                                        ExtendedPropertyLevel1Type level1Type, string? level1Name,
                                        ExtendedPropertyLevel2Type level2Type, string? level2Name)
     {
-        if (DbType != DataBaseType.SQLServer)
+        if (!IsSqlClientDatabase)
             throw new NotSupportedException("Extended properties are only supported for SQL Server databases.");
 
         if (string.IsNullOrWhiteSpace(propertyName))
@@ -1034,7 +1034,7 @@ public partial class DBAccess
                                                          ExtendedPropertyLevel1Type level1Type, string? level1Name,
                                                          ExtendedPropertyLevel2Type level2Type, string? level2Name)
     {
-        if (DbType != DataBaseType.SQLServer)
+        if (!IsSqlClientDatabase)
             throw new NotSupportedException("Extended properties are only supported for SQL Server databases.");
 
         try
