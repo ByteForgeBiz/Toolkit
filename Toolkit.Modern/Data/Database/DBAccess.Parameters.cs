@@ -16,6 +16,21 @@ namespace ByteForge.Toolkit.Data;
 public partial class DBAccess
 {
     /// <summary>
+    /// Matches the boundary before a bind parameter while excluding SQL Server system variables such as @@ROWCOUNT.
+    /// </summary>
+    private const string ParameterPrefixBoundaryPattern = @"(?<![a-zA-Z0-9_.@])";
+
+    /// <summary>
+    /// Matches a Toolkit-supported bind parameter name.
+    /// </summary>
+    private const string ParameterNamePattern = @"@[A-Za-z]\w*";
+
+    /// <summary>
+    /// Matches positions that are outside single-quoted SQL string literals.
+    /// </summary>
+    private const string OutsideSingleQuotedStringPattern = @"(?=(?:[^']*'[^']*')*[^']*$)";
+
+    /// <summary>
     /// Adds parameters to a command if applicable.
     /// </summary>
     /// <param name="cmd">The command to which parameters will be added.</param>
@@ -126,7 +141,7 @@ public partial class DBAccess
         if (Options.DatabaseType == DataBaseType.ODBC)
         {
             // Original logic for non-SQL Server databases
-            var matches = Regex.Matches(noComments, @"(?<![a-zA-Z0-9_.])@[A-Za-z]\w*(?=(?:[^']*'[^']*')*[^']*$)");
+            var matches = Regex.Matches(noComments, ParameterPrefixBoundaryPattern + ParameterNamePattern + OutsideSingleQuotedStringPattern);
 
             foreach (Match match in matches)
                 if (set.Add(match.Value) || allowRepetition)
@@ -139,19 +154,29 @@ public partial class DBAccess
 
         // Find named parameter assignments and extract only the value parameters (right side of =)
         // Exclude assignments that are preceded by comparison keywords (these are comparisons, not parameter assignments)
-        var namedAssignments = Regex.Matches(noComments, @"(?<!(WHERE|HAVING|AND|OR|WHEN|ON|CASE|THEN|ELSE|NOT|EXISTS|IN|ANY|ALL|SOME)\s+)@[A-Za-z]\w*\s*=\s*(@[A-Za-z]\w*)(?=(?:[^']*'[^']*')*[^']*$)", RegexOptions.IgnoreCase);
+        var namedAssignments = Regex.Matches(
+            noComments,
+            @"(?<!(WHERE|HAVING|AND|OR|WHEN|ON|CASE|THEN|ELSE|NOT|EXISTS|IN|ANY|ALL|SOME)\s+)" +
+            ParameterPrefixBoundaryPattern +
+            ParameterNamePattern +
+            @"\s*=\s*(?<valueParam>" +
+            ParameterPrefixBoundaryPattern +
+            ParameterNamePattern +
+            ")" +
+            OutsideSingleQuotedStringPattern,
+            RegexOptions.IgnoreCase);
         var assignedParams = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
         foreach (Match match in namedAssignments)
         {
-            var valueParam = match.Groups[2].Value; // Now group 2 because of the lookbehind
+            var valueParam = match.Groups["valueParam"].Value;
             assignedParams.Add(valueParam);
             if (set.Add(valueParam) || allowRepetition)
                 parameters.Add(valueParam);
         }
 
         // Find standalone parameters (not part of named assignments)
-        var allMatches = Regex.Matches(noComments, @"(?<![a-zA-Z0-9_.])@[A-Za-z]\w*(?=(?:[^']*'[^']*')*[^']*$)");
+        var allMatches = Regex.Matches(noComments, ParameterPrefixBoundaryPattern + ParameterNamePattern + OutsideSingleQuotedStringPattern);
 
         foreach (Match match in allMatches)
         {
@@ -163,7 +188,14 @@ public partial class DBAccess
             // Skip if this parameter is the left side of an assignment that is NOT a comparison
             // (i.e., skip assignments that are NOT preceded by comparison keywords)
             var isAssignmentNotComparison = Regex.IsMatch(noComments, @"(?<!(WHERE|HAVING|AND|OR|WHEN|ON|CASE|THEN|ELSE|NOT|EXISTS|IN|ANY|ALL|SOME)\s+)" +
-                Regex.Escape(param) + @"\s*=\s*(?:@[A-Za-z]\w*|'[^']*'|""[^""]*""|[^,\s)]+)(?=(?:[^']*'[^']*')*[^']*$)", RegexOptions.IgnoreCase);
+                ParameterPrefixBoundaryPattern +
+                Regex.Escape(param) +
+                @"\s*=\s*(?:" +
+                ParameterPrefixBoundaryPattern +
+                ParameterNamePattern +
+                @"|'[^']*'|""[^""]*""|[^,\s)]+)" +
+                OutsideSingleQuotedStringPattern,
+                RegexOptions.IgnoreCase);
             if (isAssignmentNotComparison)
                 continue;
 

@@ -20,6 +20,7 @@ namespaces in new code.
 | `Converters` | `Toolkit.Modern/Utilities` or `Toolkit.Modern/Data/Database` | Existing modern namespace for the type |
 | `Attributes` | `Toolkit.Modern/Data/Attributes` for data mapping attributes | `ByteForge.Toolkit.Data` |
 | `Configuration` | `Toolkit.Modern/Configuration` | `ByteForge.Toolkit.Configuration` |
+| `HTML` | `HTML` | Static CSS and JavaScript assets |
 
 Legacy assembly metadata attributes are an exception: they remain in
 `ByteForge.Toolkit` so assembly info files can continue to use the short
@@ -53,3 +54,5 @@ The modern toolkit includes these legacy-parity additions:
 - `IDatabaseAccess` plus cancellation-token overloads on `DBAccess`.
 - `ReportTimestampFormatter` under `ByteForge.Toolkit.Utilities`.
 - Assembly metadata attributes under `ByteForge.Toolkit`.
+- Static HTML support assets under the repo-level `HTML` folder, with the
+  companion overview in `Docs/HTML.md`.
