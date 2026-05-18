@@ -109,6 +109,41 @@ namespace ByteForge.Toolkit.Tests.Unit.Data.Database
         }
 
         /// <summary>
+        /// Tests that SQL Server system variables are not parsed as command parameters.
+        /// </summary>
+        /// <remarks>
+        /// This regression test covers SQL batches that use SQL Server variables such as
+        /// <c>@@ROWCOUNT</c> alongside bind parameters. The parser must not split the
+        /// second at sign and treat <c>@ROWCOUNT</c> as a caller-supplied parameter.
+        /// </remarks>
+        [TestMethod]
+        public void ParseParameters_SQLServer_SystemVariables_ShouldIgnoreDoubleAtVariables()
+        {
+            // Arrange
+            var dbAccess = CreateSimpleDBAccess(DBAccess.DataBaseType.SQLServer);
+            var query = @"
+                IF EXISTS (SELECT 1 FROM dbo.tbl_Agents WHERE login_id = @LoginId)
+                BEGIN
+                    UPDATE dbo.tbl_Agents
+                       SET first_name = @FirstName,
+                           last_name = @LastName
+                     WHERE login_id = @LoginId
+                    SELECT CASE WHEN @@ROWCOUNT > 0 THEN 2 ELSE 0 END
+                END";
+
+            // Act
+            var parameters = InvokeParseParameters(dbAccess, query);
+
+            // Assert
+            parameters.Should().NotBeNull();
+            parameters.Should().HaveCount(3);
+            parameters.Should().Contain("@LoginId");
+            parameters.Should().Contain("@FirstName");
+            parameters.Should().Contain("@LastName");
+            parameters.Should().NotContain("@ROWCOUNT");
+        }
+
+        /// <summary>
         /// Tests mixed scenarios with both named assignments and standalone parameters.
         /// </summary>
         /// <remarks>
