@@ -1,6 +1,8 @@
 using Microsoft.Extensions.Configuration;
 using System.Collections.Concurrent;
 using System.Reflection;
+using System.Text.RegularExpressions;
+using System.Xml.Linq;
 #if NETFRAMEWORK
 using ByteForge.Toolkit.Security;
 using ByteForge.Toolkit.Utilities;
@@ -41,7 +43,7 @@ public class Configuration : IConfigurationManager
     /// <summary>
     /// Gets the default configuration instance for static access.
     /// </summary>
-    private static IConfigurationManager DefaultInstance => _defaultInstance ??= new Configuration();
+    public static IConfigurationManager DefaultInstance => _defaultInstance ??= new Configuration();
 
     // ===========================
     // Public Static Properties
@@ -162,6 +164,36 @@ public class Configuration : IConfigurationManager
     => DefaultInstance.RegisterEncrypted(section, key);
 
     /// <summary>
+    /// Registers all encrypted properties declared on a strongly typed configuration section.
+    /// </summary>
+    /// <typeparam name="T">The strongly typed configuration section type.</typeparam>
+    /// <param name="section">The configuration section name.</param>
+    public static void RegisterEncrypted<T>(string section) where T : class, new()
+    {
+        foreach (var property in GetConfigProperties(typeof(T)).Where(property => property.GetCustomAttribute<EncryptedAttribute>() != null))
+            DefaultInstance.RegisterEncrypted(section, GetConfigKey(property));
+    }
+
+    /// <summary>
+    /// Determines whether a configuration key stores encrypted values.
+    /// </summary>
+    /// <param name="section">The section name.</param>
+    /// <param name="key">The key name within the section.</param>
+    /// <returns><see langword="true"/> when the key is encrypted; otherwise, <see langword="false"/>.</returns>
+    public static bool IsEncrypted(string section, string key) => DefaultInstance.IsEncrypted(section, key);
+
+    /// <summary>
+    /// Registers documentation metadata for a strongly typed configuration section.
+    /// </summary>
+    /// <typeparam name="T">The strongly typed configuration section type.</typeparam>
+    /// <param name="section">The configuration section name.</param>
+    public static void RegisterDocumentation<T>(string section) where T : class, new()
+    {
+        if (DefaultInstance is Configuration configuration)
+            configuration.RegisterDocumentationForType<T>(section);
+    }
+
+    /// <summary>
     /// Registers a key as encrypted so that <see cref="GetString"/>, <see cref="SetString"/>,
     /// and <see cref="GetSectionValues"/> automatically decrypt and encrypt its value.
     /// </summary>
@@ -250,6 +282,12 @@ public class Configuration : IConfigurationManager
     private static readonly object _staticLock = new object();
 
     /// <summary>
+    /// Caches XML documentation by assembly to avoid reparsing documentation files for every schema request.
+    /// </summary>
+    private static readonly ConcurrentDictionary<Assembly, IReadOnlyDictionary<string, string>> _xmlDocumentationCache =
+        new ConcurrentDictionary<Assembly, IReadOnlyDictionary<string, string>>();
+
+    /// <summary>
     /// Reader-writer lock to coordinate configuration access between readers (loading) and writers (saving).
     /// Multiple readers can access concurrently, but writers require exclusive access.
     /// </summary>
@@ -261,6 +299,17 @@ public class Configuration : IConfigurationManager
     /// </summary>
     private readonly ConcurrentDictionary<string, byte> _encryptedKeys =
                  new ConcurrentDictionary<string, byte>(StringComparer.OrdinalIgnoreCase);
+
+    /// <summary>
+    /// Tracks sections removed through editor-oriented compatibility APIs.
+    /// </summary>
+    private readonly ConcurrentDictionary<string, byte> _deletedSectionNames =
+                 new ConcurrentDictionary<string, byte>(StringComparer.OrdinalIgnoreCase);
+
+    /// <summary>
+    /// Stores editor-facing documentation registered by application startup.
+    /// </summary>
+    private readonly ConfigDocumentationCatalog _documentationCatalog = new ConfigDocumentationCatalog();
 
     /// <summary>
     /// Gets the configuration lock for coordinating access between readers and writers.
@@ -483,6 +532,7 @@ public class Configuration : IConfigurationManager
     {
         // If no section name is provided, use the type name as a convention
         sectionName ??= typeof(T).Name;
+        RegisterDocumentationForType<T>(sectionName);
 
         // Create a wrapper that binds the configuration section to the concrete type
         // This enables strongly-typed access to configuration values
@@ -576,6 +626,8 @@ public class Configuration : IConfigurationManager
 
             var configKey = $"{section}:{key}";
             _root![configKey] = value;
+            if (value != null)
+                _deletedSectionNames.TryRemove(section, out _);
         }
         finally
         {
@@ -720,6 +772,73 @@ public class Configuration : IConfigurationManager
             _configLock.ExitReadLock();
         }
     }
+
+    /// <summary>
+    /// Gets schema metadata for all strongly typed sections registered in this manager.
+    /// </summary>
+    /// <returns>The registered section schemas.</returns>
+    IEnumerable<ConfigSectionSchema> IConfigurationManager.GetRegisteredSectionSchemas()
+    {
+        return _sections
+            .Select(pair => BuildSectionSchema(pair.Key, pair.Value.Keys))
+            .ToList();
+    }
+
+    /// <summary>
+    /// Determines whether a section has been deleted through the editor compatibility API.
+    /// </summary>
+    /// <param name="sectionName">The section name.</param>
+    /// <returns><see langword="true"/> when the section is deleted; otherwise, <see langword="false"/>.</returns>
+    bool IConfigurationManager.IsSectionDeleted(string sectionName)
+        => !string.IsNullOrWhiteSpace(sectionName) && _deletedSectionNames.ContainsKey(sectionName);
+
+    /// <summary>
+    /// Removes all persisted keys from a configuration section.
+    /// </summary>
+    /// <param name="sectionName">The section name.</param>
+    void IConfigurationManager.DeleteSection(string sectionName)
+    {
+        if (!_isInitialized || string.IsNullOrWhiteSpace(sectionName))
+            return;
+
+        try
+        {
+            _configLock.EnterWriteLock();
+            foreach (var child in _root!.GetSection(sectionName).GetChildren().ToList())
+                _root[child.Path] = null;
+
+            _deletedSectionNames.TryAdd(sectionName, 0);
+        }
+        finally
+        {
+            _configLock.ExitWriteLock();
+        }
+
+        ReloadSection(sectionName);
+    }
+
+    /// <summary>
+    /// Gets descriptive documentation for a section.
+    /// </summary>
+    /// <param name="sectionName">The section name.</param>
+    /// <returns>The section description, or an empty string when none is registered.</returns>
+    string IConfigurationManager.GetSectionDescription(string sectionName) => _documentationCatalog.GetSection(sectionName)?.Description ?? string.Empty;
+
+    /// <summary>
+    /// Gets descriptive documentation for a configuration item.
+    /// </summary>
+    /// <param name="sectionName">The section name.</param>
+    /// <param name="key">The item key.</param>
+    /// <returns>The item description, or an empty string when none is registered.</returns>
+    string IConfigurationManager.GetItemDescription(string sectionName, string key) => _documentationCatalog.GetItem(sectionName, key)?.Description ?? string.Empty;
+
+    /// <summary>
+    /// Determines whether a configuration key stores encrypted values.
+    /// </summary>
+    /// <param name="sectionName">The section name.</param>
+    /// <param name="key">The item key.</param>
+    /// <returns><see langword="true"/> when the key is encrypted; otherwise, <see langword="false"/>.</returns>
+    bool IConfigurationManager.IsEncrypted(string sectionName, string key) => IsEncryptedKey(sectionName, key);
 
     /// <summary>
     /// Saves the current configuration settings to the INI file.
@@ -964,4 +1083,269 @@ public class Configuration : IConfigurationManager
     /// <returns><see langword="true"/> when the line continues a Toolkit documentation block; otherwise, <see langword="false"/>.</returns>
     private static bool IsDocumentationBlockContinuation(string trimmedLine)
         => trimmedLine.StartsWith(";") && !IsDocumentationBlockStart(trimmedLine);
+
+    /// <summary>
+    /// Builds schema metadata for a registered typed configuration section.
+    /// </summary>
+    /// <param name="sectionName">The section name.</param>
+    /// <param name="sectionTypes">The registered CLR section types.</param>
+    /// <returns>The section schema.</returns>
+    private static ConfigSectionSchema BuildSectionSchema(string sectionName, IEnumerable<Type> sectionTypes)
+    {
+        var items = sectionTypes
+            .SelectMany(BuildItemSchemas)
+            .GroupBy(item => item.Key, StringComparer.OrdinalIgnoreCase)
+            .Select(group => group.First())
+            .ToList();
+
+        return new ConfigSectionSchema(sectionName, items);
+    }
+
+    /// <summary>
+    /// Builds schema metadata for editable properties on a typed configuration section.
+    /// </summary>
+    /// <param name="sectionType">The CLR section type.</param>
+    /// <returns>The item schemas.</returns>
+    private static IEnumerable<ConfigItemSchema> BuildItemSchemas(Type sectionType)
+    {
+        return sectionType
+            .GetProperties(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
+            .Where(IsEditableConfigProperty)
+            .Select(BuildItemSchema);
+    }
+
+    /// <summary>
+    /// Determines whether a reflected configuration property can be edited by external configuration editors.
+    /// </summary>
+    /// <param name="property">The reflected configuration property.</param>
+    /// <returns><see langword="true"/> when the property is suitable for external editing; otherwise, <see langword="false"/>.</returns>
+    private static bool IsEditableConfigProperty(PropertyInfo property)
+    {
+        if (!property.CanRead || !property.CanWrite)
+            return false;
+
+        if (property.GetCustomAttributes<IgnoreAttribute>().Any() || property.GetCustomAttributes<DoNotPersistAttribute>().Any())
+            return false;
+
+        if (property.GetCustomAttribute<ArrayAttribute>() != null || property.GetCustomAttribute<DictionaryAttribute>() != null)
+            return true;
+
+        if (property.GetCustomAttribute<ConfigOptionsProviderAttribute>() != null)
+            return true;
+
+        var propertyType = Nullable.GetUnderlyingType(property.PropertyType) ?? property.PropertyType;
+        return IsSimpleConfigEditorType(propertyType);
+    }
+
+    /// <summary>
+    /// Determines whether a CLR type can be represented safely as a scalar configuration editor value.
+    /// </summary>
+    /// <param name="type">The CLR type to inspect.</param>
+    /// <returns><see langword="true"/> when the type can be edited as a scalar value; otherwise, <see langword="false"/>.</returns>
+    private static bool IsSimpleConfigEditorType(Type type)
+    {
+        return type.IsEnum
+            || type == typeof(string)
+            || type == typeof(bool)
+            || type == typeof(byte)
+            || type == typeof(sbyte)
+            || type == typeof(short)
+            || type == typeof(ushort)
+            || type == typeof(int)
+            || type == typeof(uint)
+            || type == typeof(long)
+            || type == typeof(ulong)
+            || type == typeof(float)
+            || type == typeof(double)
+            || type == typeof(decimal)
+            || type == typeof(DateTime)
+            || type == typeof(DateTimeOffset)
+            || type == typeof(TimeSpan)
+            || type == typeof(Guid)
+            || type == typeof(Uri);
+    }
+
+    /// <summary>
+    /// Builds schema metadata for a single configuration property.
+    /// </summary>
+    /// <param name="property">The reflected property.</param>
+    /// <returns>The item schema.</returns>
+    private static ConfigItemSchema BuildItemSchema(PropertyInfo property)
+    {
+        var key = GetConfigKey(property);
+        var propertyType = Nullable.GetUnderlyingType(property.PropertyType) ?? property.PropertyType;
+        var arrayAttribute = property.GetCustomAttribute<ArrayAttribute>();
+        var dictionaryAttribute = property.GetCustomAttribute<DictionaryAttribute>();
+        var enumValues = propertyType.IsEnum ? Enum.GetNames(propertyType) : Array.Empty<string>();
+        var options = GetConfigOptions(property, enumValues);
+        var defaultValue = DefaultValueHelper.ResolveDefaultValue(property);
+
+        return new ConfigItemSchema(
+            key,
+            property.Name,
+            defaultValue?.ToString() ?? string.Empty,
+            property.GetCustomAttribute<EncryptedAttribute>() != null,
+            propertyType.Name,
+            propertyType == typeof(bool),
+            enumValues,
+            options,
+            arrayAttribute != null,
+            dictionaryAttribute != null,
+            arrayAttribute?.SectionName ?? dictionaryAttribute?.SectionName);
+    }
+
+    /// <summary>
+    /// Gets selectable editor options for a reflected configuration property.
+    /// </summary>
+    /// <param name="property">The reflected configuration property.</param>
+    /// <param name="enumValues">The enum values discovered for the property type, when applicable.</param>
+    /// <returns>The selectable editor options, or an empty collection when no options are available.</returns>
+    private static IReadOnlyCollection<ConfigItemOption> GetConfigOptions(PropertyInfo property, IReadOnlyCollection<string> enumValues)
+    {
+        var providerOptions = property.GetCustomAttribute<ConfigOptionsProviderAttribute>()?.CreateProvider().GetOptions(property);
+        if (providerOptions != null && providerOptions.Count > 0)
+            return providerOptions;
+
+        return enumValues.Count > 0
+            ? enumValues.Select(value => new ConfigItemOption(value, value)).ToList()
+            : Array.Empty<ConfigItemOption>();
+    }
+
+    /// <summary>
+    /// Registers fallback documentation for a strongly typed configuration section.
+    /// </summary>
+    /// <typeparam name="T">The strongly typed configuration section type.</typeparam>
+    /// <param name="section">The configuration section name.</param>
+    private void RegisterDocumentationForType<T>(string section) where T : class, new()
+    {
+        if (string.IsNullOrWhiteSpace(section))
+            return;
+
+        _documentationCatalog.SetFallbackSection(section, GetDocumentationDescription(typeof(T), typeof(T).Name));
+        foreach (var property in GetConfigProperties(typeof(T)))
+            _documentationCatalog.SetFallbackItem(section, GetConfigKey(property), GetDocumentationDescription(property, property.Name));
+    }
+
+    /// <summary>
+    /// Gets the best available user-facing description for a type.
+    /// </summary>
+    /// <param name="type">The type to document.</param>
+    /// <param name="fallback">The fallback text to use when no documentation is available.</param>
+    /// <returns>The description text.</returns>
+    private static string GetDocumentationDescription(Type type, string fallback)
+    {
+        var description = type.GetCustomAttribute<System.ComponentModel.DescriptionAttribute>()?.Description;
+        if (!string.IsNullOrWhiteSpace(description))
+            return description;
+
+        return GetXmlDocumentationSummary(type.Assembly, "T:" + GetXmlDocumentationTypeName(type)) ?? fallback;
+    }
+
+    /// <summary>
+    /// Gets the best available user-facing description for a property.
+    /// </summary>
+    /// <param name="property">The property to document.</param>
+    /// <param name="fallback">The fallback text to use when no documentation is available.</param>
+    /// <returns>The description text.</returns>
+    private static string GetDocumentationDescription(PropertyInfo property, string fallback)
+    {
+        var description = property.GetCustomAttribute<System.ComponentModel.DescriptionAttribute>()?.Description;
+        if (!string.IsNullOrWhiteSpace(description))
+            return description;
+
+        var declaringType = property.DeclaringType;
+        if (declaringType == null)
+            return fallback;
+
+        var memberName = "P:" + GetXmlDocumentationTypeName(declaringType) + "." + property.Name;
+        return GetXmlDocumentationSummary(declaringType.Assembly, memberName) ?? fallback;
+    }
+
+    /// <summary>
+    /// Gets the XML documentation member name for a type.
+    /// </summary>
+    /// <param name="type">The type to name.</param>
+    /// <returns>The XML documentation type name.</returns>
+    private static string GetXmlDocumentationTypeName(Type type)
+    {
+        var name = type.FullName ?? type.Name;
+        return name.Replace('+', '.');
+    }
+
+    /// <summary>
+    /// Gets a summary value from the generated XML documentation for an assembly.
+    /// </summary>
+    /// <param name="assembly">The assembly that owns the documented member.</param>
+    /// <param name="memberName">The XML documentation member name.</param>
+    /// <returns>The normalized summary, or <see langword="null"/> when none is available.</returns>
+    private static string? GetXmlDocumentationSummary(Assembly assembly, string memberName)
+    {
+        var documentation = _xmlDocumentationCache.GetOrAdd(assembly, LoadXmlDocumentation);
+        return documentation.TryGetValue(memberName, out var summary) ? summary : null;
+    }
+
+    /// <summary>
+    /// Loads generated XML documentation summaries for an assembly.
+    /// </summary>
+    /// <param name="assembly">The assembly to inspect.</param>
+    /// <returns>The documentation summaries keyed by XML member name.</returns>
+    private static IReadOnlyDictionary<string, string> LoadXmlDocumentation(Assembly assembly)
+    {
+        var path = assembly.Location;
+        if (string.IsNullOrWhiteSpace(path))
+            return new Dictionary<string, string>();
+
+        var xmlPath = Path.ChangeExtension(path, ".xml");
+        if (!File.Exists(xmlPath))
+            return new Dictionary<string, string>();
+
+        try
+        {
+            return XDocument.Load(xmlPath)
+                .Descendants("member")
+                .Select(member => new
+                {
+                    Name = member.Attribute("name")?.Value,
+                    Summary = NormalizeXmlDocumentationSummary(member.Element("summary")?.Value)
+                })
+                .Where(member => !string.IsNullOrWhiteSpace(member.Name) && !string.IsNullOrWhiteSpace(member.Summary))
+                .ToDictionary(member => member.Name!, member => member.Summary!, StringComparer.Ordinal);
+        }
+        catch
+        {
+            return new Dictionary<string, string>();
+        }
+    }
+
+    /// <summary>
+    /// Normalizes XML documentation text for compact UI display.
+    /// </summary>
+    /// <param name="summary">The raw summary text.</param>
+    /// <returns>The normalized summary text.</returns>
+    private static string? NormalizeXmlDocumentationSummary(string? summary)
+    {
+        if (string.IsNullOrWhiteSpace(summary))
+            return null;
+
+        return Regex.Replace(summary, @"\s+", " ").Trim();
+    }
+
+    /// <summary>
+    /// Gets configuration properties from a strongly typed section.
+    /// </summary>
+    /// <param name="sectionType">The strongly typed configuration section type.</param>
+    /// <returns>The reflected configuration properties.</returns>
+    private static IEnumerable<PropertyInfo> GetConfigProperties(Type sectionType)
+    {
+        return sectionType
+            .GetProperties(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
+            .Where(property => property.CanRead && !property.GetCustomAttributes<IgnoreAttribute>().Any());
+    }
+
+    /// <summary>
+    /// Gets the configuration key name for a reflected property.
+    /// </summary>
+    /// <param name="property">The reflected property.</param>
+    /// <returns>The configuration key name.</returns>
+    private static string GetConfigKey(PropertyInfo property) => property.GetCustomAttribute<ConfigNameAttribute>()?.Name ?? property.Name;
 }

@@ -44,6 +44,7 @@ public class GlobalizationInfo
     /// For example, setting this to <c>CultureInfo.GetCultureInfo("fr-FR")</c> will use French formatting conventions.
     /// </remarks>
     [DefaultValueProvider(typeof(GlobalizationInfo), nameof(GetDefaultCultureInfo))]
+    [ConfigOptionsProvider(typeof(CultureInfoOptionsProvider))]
     public CultureInfo CultureInfo { get; set; } = CultureInfo.InvariantCulture;
 
     /// <summary>

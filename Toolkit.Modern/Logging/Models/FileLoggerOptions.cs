@@ -34,6 +34,7 @@ public class FileLoggerOptions : AsyncOptions
     /// <see cref="System.Text.Encoding.Unicode"/>  based on the requirements of the log file consumers.
     /// </remarks>
     [DefaultValueProvider(typeof(FileLoggerOptions), nameof(GetDefaultEncoding))]
+    [ConfigOptionsProvider(typeof(EncodingOptionsProvider))]
     public Encoding FileEncoding { get; set; } = Encoding.UTF8;
 
     private static Encoding GetDefaultEncoding() => Encoding.UTF8;
@@ -77,5 +78,6 @@ public class FileLoggerOptions : AsyncOptions
     /// When set, this function is called to generate the file name and overrides FileNamingPattern.
     /// The function receives the base file path and current FileLoggerOptions as parameters.
     /// </summary>
+    [Ignore]
     public Func<string, FileLoggerOptions, string>? CustomFileNameProvider { get; set; }
 }

@@ -143,6 +143,48 @@ public interface IConfigurationManager
     IReadOnlyDictionary<string, string> GetSectionValues(string sectionName);
 
     /// <summary>
+    /// Gets schema metadata for all strongly typed sections registered in this manager.
+    /// </summary>
+    /// <returns>The registered section schemas.</returns>
+    IEnumerable<ConfigSectionSchema> GetRegisteredSectionSchemas();
+
+    /// <summary>
+    /// Determines whether a configuration section has been marked as deleted.
+    /// </summary>
+    /// <param name="sectionName">The section name.</param>
+    /// <returns><see langword="true"/> when the section is deleted; otherwise, <see langword="false"/>.</returns>
+    bool IsSectionDeleted(string sectionName);
+
+    /// <summary>
+    /// Removes all persisted keys from a configuration section.
+    /// </summary>
+    /// <param name="sectionName">The section name.</param>
+    void DeleteSection(string sectionName);
+
+    /// <summary>
+    /// Gets descriptive documentation for a section.
+    /// </summary>
+    /// <param name="sectionName">The section name.</param>
+    /// <returns>The section description, or an empty string when none is registered.</returns>
+    string GetSectionDescription(string sectionName);
+
+    /// <summary>
+    /// Gets descriptive documentation for a configuration item.
+    /// </summary>
+    /// <param name="sectionName">The section name.</param>
+    /// <param name="key">The item key.</param>
+    /// <returns>The item description, or an empty string when none is registered.</returns>
+    string GetItemDescription(string sectionName, string key);
+
+    /// <summary>
+    /// Determines whether a configuration key stores encrypted values.
+    /// </summary>
+    /// <param name="sectionName">The section name.</param>
+    /// <param name="key">The item key.</param>
+    /// <returns><see langword="true"/> when the key is encrypted; otherwise, <see langword="false"/>.</returns>
+    bool IsEncrypted(string sectionName, string key);
+
+    /// <summary>
     /// Saves the current configuration settings to the INI file.
     /// </summary>
     /// <exception cref="System.InvalidOperationException">Thrown if not initialized.</exception>
