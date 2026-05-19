@@ -29,14 +29,7 @@ public static class Utils
         if (string.IsNullOrWhiteSpace(phoneNumber))
             return string.Empty;
 
-        // Convert letters to numbers based on phone keypad mapping
-        var normalizedPhone = ConvertPhoneLettersToNumbers(phoneNumber);
-
-        // Remove all non-numeric characters
-        var digits = Regex.Replace(normalizedPhone, @"\D", "");
-
-        if (digits.Length == 11 && digits[0] == '1')
-            digits = digits.Substring(1);
+        var digits = NormalizeUSPhoneNumber(phoneNumber);
 
         // Ensure the phone number has 10 digits
         if (digits.Length != 10)
@@ -44,6 +37,24 @@ public static class Utils
 
         // Format the phone number
         return Regex.Replace(digits, @"(\d{3})(\d{3})(\d{4})", "($1) $2-$3");
+    }
+
+    /// <summary>
+    /// Normalizes a US phone number to raw digits without a leading country code.
+    /// </summary>
+    /// <param name="phoneNumber">The phone number to normalize.</param>
+    /// <returns>The digits-only phone number, with a leading <c>1</c> removed from 11-digit NANP numbers.</returns>
+    public static string NormalizeUSPhoneNumber(string phoneNumber)
+    {
+        if (string.IsNullOrWhiteSpace(phoneNumber))
+            return string.Empty;
+
+        var normalizedPhone = ConvertPhoneLettersToNumbers(phoneNumber);
+        var digits = Regex.Replace(normalizedPhone, @"\D", "");
+
+        return digits.Length == 11 && digits[0] == '1'
+            ? digits.Substring(1)
+            : digits;
     }
 
     /// <summary>
