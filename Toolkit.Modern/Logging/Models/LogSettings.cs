@@ -46,6 +46,7 @@ public class LogSettings
     private const bool DefaultClearLogOnStartup = false;
     private const bool DefaultUseSessionLogging = false;
     private const bool DefaultUseDatabaseLogging = false;
+    private const bool DefaultUseDaily = false;
     /// <summary>
     /// Gets or sets the path to the log file.
     /// </summary>
@@ -117,6 +118,17 @@ public class LogSettings
     [DefaultValue(DefaultUseSessionLogging)]
     [ConfigName("bUseSessionLogging")]
     public bool UseSessionLogging { get; set; } = DefaultUseSessionLogging;
+
+    /// <summary>
+    /// Gets or sets a value indicating whether file loggers should create a new
+    /// log file each day when the value is supplied in the logging section.
+    /// </summary>
+    /// <remarks>
+    /// Prefer configuring this option in the <c>FileLogger</c> section. This
+    /// property keeps existing <c>Logging</c> section configuration compatible.
+    /// </remarks>
+    [DefaultValue(DefaultUseDaily)]
+    public bool UseDaily { get; set; } = DefaultUseDaily;
 
     /// <summary>
     /// Gets or sets a value indicating whether database logging should be enabled.

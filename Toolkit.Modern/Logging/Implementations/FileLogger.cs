@@ -47,6 +47,13 @@ public class FileLogger : BaseLogger, IDisposable
     public FileLogger(string? filePath) : this(filePath, null) { }
 
     /// <summary>
+    /// Initializes a new instance of the <see cref="FileLogger"/> class.
+    /// </summary>
+    /// <param name="filePath">The path of the file to log messages to.</param>
+    /// <param name="options">Configuration options for the logger.</param>
+    public FileLogger(string? filePath, FileLoggerOptions? options) : this(filePath, options, false) { }
+
+    /// <summary>
     /// Gets the configuration settings for the file logger.
     /// </summary>
     public FileLoggerOptions Settings { get; }
@@ -57,7 +64,7 @@ public class FileLogger : BaseLogger, IDisposable
     /// <param name="filePath">The base path of the file to log messages to.</param>
     /// <param name="options">Configuration options for the logger.</param>
     /// <param name="delayInitialization">If true, delays file initialization (useful for derived classes).</param>
-    protected FileLogger(string? filePath, FileLoggerOptions? options, bool delayInitialization = false) : base(Path.GetFileNameWithoutExtension(filePath ?? ""))
+    protected FileLogger(string? filePath, FileLoggerOptions? options, bool delayInitialization) : base(Path.GetFileNameWithoutExtension(filePath ?? ""))
     {
         if (string.IsNullOrEmpty(filePath))
         {
@@ -65,7 +72,9 @@ public class FileLogger : BaseLogger, IDisposable
             filePath = Path.Combine(Path.GetDirectoryName(asm.Location)!, $"{asm.GetName().Name}.log");
         }
         else
-            filePath = Environment.ExpandEnvironmentVariables(filePath);
+        {
+            filePath = ResolveConfiguredLogPath(filePath);
+        }
 
         Settings = options ?? (Configuration.Configuration.IsInitialized ? Configuration.Configuration.GetSection<FileLoggerOptions>("FileLogger") : null) ?? new FileLoggerOptions();
         _baseFilePath = filePath;
@@ -82,6 +91,21 @@ public class FileLogger : BaseLogger, IDisposable
         if (delayInitialization) return;
 
         InitializeFileLogger(Settings);
+    }
+
+    /// <summary>
+    /// Resolves a configured log file path to an absolute path.
+    /// </summary>
+    /// <param name="filePath">The configured log file path, which may be absolute or relative.</param>
+    /// <returns>The absolute log file path.</returns>
+    private static string ResolveConfiguredLogPath(string filePath)
+    {
+        var expandedPath = Environment.ExpandEnvironmentVariables(filePath);
+        if (Path.IsPathRooted(expandedPath))
+            return Path.GetFullPath(expandedPath);
+
+        var baseDirectory = AppContext.BaseDirectory;
+        return Path.GetFullPath(Path.Combine(baseDirectory, expandedPath));
     }
 
     /// <summary>

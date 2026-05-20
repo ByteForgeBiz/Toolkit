@@ -19,7 +19,7 @@ public class SessionFileLogger : FileLogger
     /// <summary>
     /// Gets the unique session ID for this application run.
     /// </summary>
-    public string SessionId => _sessionId = _sessionId ?? GenerateSessionId(Settings);
+    public string SessionId => string.IsNullOrEmpty(_sessionId) ? _sessionId = GenerateSessionId(Settings) : _sessionId;
     private string _sessionId = "";
 
     /// <summary>

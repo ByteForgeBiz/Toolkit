@@ -259,6 +259,39 @@ sLogFile={tempLog}";
         }
 
         /// <summary>
+        /// Verifies that session log file names include the generated session ID
+        /// and daily suffix when both options are enabled.
+        /// </summary>
+        /// <remarks>
+        /// Protects against blank session placeholders producing names such as
+        /// DataImport_.log when session logging is enabled.
+        /// </remarks>
+        [TestMethod]
+        public void SessionFileLogger_WithDailyLogging_ShouldIncludeSessionAndDate()
+        {
+            // Arrange
+            var logFilePath = TempFileHelper.GetTempFilePath(".log");
+            var options = new SessionFileLoggerOptions
+            {
+                UseDaily = true,
+                WriteSessionHeader = false,
+                WriteSessionFooter = false,
+                CleanupOldSessions = false
+            };
+
+            // Act
+            using var logger = new SessionFileLogger(logFilePath, options);
+            var fileName = Path.GetFileName(logger.CurrentFilePath);
+            var baseName = Path.GetFileNameWithoutExtension(logFilePath);
+            var today = DateTime.Now.ToString("yyyy-MM-dd");
+
+            // Assert
+            fileName.Should().NotBe($"{baseName}_.log", "the session ID placeholder should not be blank");
+            fileName.Should().StartWith($"{baseName}_", "session logging should append a generated session ID");
+            fileName.Should().Contain(today, "daily logging should append the current date");
+        }
+
+        /// <summary>
         /// Ensures that calling EndSession does not throw exceptions.
         /// </summary>
         /// <remarks>

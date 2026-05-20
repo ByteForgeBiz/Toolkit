@@ -45,6 +45,7 @@ public class Log : CompositeLogger
             else
                 sessionOptions = Configuration.Configuration.GetSection<SessionFileLoggerOptions>("FileLogger");
 
+            ApplyFileLoggerFallbacks(sessionOptions, Settings);
             fileLogger = new SessionFileLogger(Settings.LogFilePath, sessionOptions)
             {
                 Name = "SessionFile",
@@ -53,7 +54,14 @@ public class Log : CompositeLogger
         }
         else
         {
-            fileLogger = new FileLogger(Settings.LogFilePath)
+            FileLoggerOptions fileOptions;
+            if (!Configuration.Configuration.IsInitialized)
+                fileOptions = new FileLoggerOptions();
+            else
+                fileOptions = Configuration.Configuration.GetSection<FileLoggerOptions>("FileLogger");
+
+            ApplyFileLoggerFallbacks(fileOptions, Settings);
+            fileLogger = new FileLogger(Settings.LogFilePath, fileOptions)
             {
                 Name = "File",
                 MinLogLevel = Settings.TraceLogLevel
@@ -95,6 +103,27 @@ public class Log : CompositeLogger
     }
 
     /// <summary>
+    /// Applies file logger option fallbacks that were historically accepted from
+    /// the broader logging section.
+    /// </summary>
+    /// <typeparam name="TOptions">The type of file logger options to update.</typeparam>
+    /// <param name="options">The file logger options to update.</param>
+    /// <param name="settings">The global logging settings that may provide fallback values.</param>
+    /// <returns>The updated <paramref name="options"/> instance.</returns>
+    private static TOptions ApplyFileLoggerFallbacks<TOptions>(TOptions options, LogSettings settings)
+        where TOptions : FileLoggerOptions
+    {
+        var useDaily = settings.UseDaily;
+        if (Configuration.Configuration.IsInitialized)
+            useDaily = Configuration.Configuration.GetValue("Logging", "bUseDaily", useDaily);
+
+        if (useDaily)
+            options.UseDaily = true;
+
+        return options;
+    }
+
+    /// <summary>
     /// Gets a value indicating whether the static Log instance has been initialized.
     /// </summary>
     public static bool IsInitialized => _instance != null;
@@ -109,6 +138,20 @@ public class Log : CompositeLogger
     /// Gets the current session's log file path if using session logging.
     /// </summary>
     public static string CurrentLogFile => SessionLogger?.CurrentFilePath ?? ((FileLogger)Instance.fileLogger)?.CurrentFilePath ?? "";
+
+    /// <summary>
+    /// Gets the current file logger name.
+    /// </summary>
+    public static string CurrentFileLoggerName => Instance.fileLogger.Name;
+
+    /// <summary>
+    /// Begins a scoped logging routing context.
+    /// </summary>
+    /// <param name="additionalLoggers">Additional loggers that should receive entries in this scope.</param>
+    /// <param name="suppressedLoggerNames">Logger names that should not receive entries in this scope.</param>
+    /// <returns>A disposable scope that restores the previous routing context.</returns>
+    public static IDisposable BeginRoutingScope(IEnumerable<ILogger> additionalLoggers = null, IEnumerable<string> suppressedLoggerNames = null)
+        => LogContext.BeginRoutingScope(additionalLoggers, suppressedLoggerNames);
 
     /// <summary>
     /// Ends the current logging session if using session logging.
