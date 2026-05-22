@@ -39,6 +39,7 @@ namespace ByteForge.Toolkit.Data;
 /// </code>
 /// </example>
 /// </remarks>
+[Description("Defines a database connection section, including server, database, credentials, timeouts, and retry behavior.")]
 public class DatabaseOptions
 {
     private static readonly object _lock = new object();
@@ -60,6 +61,7 @@ public class DatabaseOptions
     /// <see cref="GetConnectionString"/> is called.
     /// </remarks>
     [ConfigName("sType")]
+    [Description("Database provider type used to build the connection string.")]
     public DBAccess.DataBaseType DatabaseType { get; set; }
 
     /// <summary>
@@ -70,6 +72,7 @@ public class DatabaseOptions
     /// or IP address. For example: "localhost", "SQLSERVER01\INSTANCE1", or "192.168.1.100".
     /// </remarks>
     [ConfigName("sServer")]
+    [Description("Database server name, instance, host, or IP address.")]
     public string Server { get; set; } = "";
 
     /// <summary>
@@ -81,6 +84,7 @@ public class DatabaseOptions
     /// configured in the ODBC Data Source Administrator.
     /// </remarks>
     [ConfigName("sServerDSN")]
+    [Description("ODBC data source name used when the database type is ODBC.")]
     public string ServerDSN { get; set; } = "";
 
     /// <summary>
@@ -90,6 +94,7 @@ public class DatabaseOptions
     /// Specifies the name of the database to connect to on the server.
     /// </remarks>
     [ConfigName("sDatabaseName")]
+    [Description("Database name to connect to on the configured server.")]
     public string DatabaseName { get; set; } = "";
 
     /// <summary>
@@ -103,7 +108,9 @@ public class DatabaseOptions
     /// predefined encryption keys.
     /// </para>
     /// </remarks>
+    [Ignore]
     [ConfigName("esUser")]
+    [Description("Encrypted database username.")]
     public string EncryptedUser { get; set; } = "";
 
     /// <summary>
@@ -117,7 +124,9 @@ public class DatabaseOptions
     /// predefined encryption keys.
     /// </para>
     /// </remarks>
+    [Ignore]
     [ConfigName("esPass")]
+    [Description("Encrypted database password.")]
     public string EncryptedPassword { get; set; } = "";
 
     /// <summary>
@@ -133,6 +142,7 @@ public class DatabaseOptions
     /// </para>
     /// </remarks>
     [ConfigName("sConnectionString")]
+    [Description("Optional complete connection string used instead of building one from the individual fields.")]
     public string ConnectionString { get; set; } = "";
 
     /// <summary>
@@ -148,6 +158,7 @@ public class DatabaseOptions
     /// </para>
     /// </remarks>
     [ConfigName("bEncrypt")]
+    [Description("Enables transport encryption for SQL Server connections.")]
     public bool UseEncryption { get; set; }
 
     /// <summary>
@@ -163,6 +174,7 @@ public class DatabaseOptions
     /// </remarks>
     [DefaultValue(DefaultConnectionTimeout)]
     [ConfigName("iConnectionTimeout")]
+    [Description("Maximum number of seconds to wait while opening a database connection.")]
     public int ConnectionTimeout { get; set; } = DefaultConnectionTimeout;
 
     /// <summary>
@@ -182,6 +194,7 @@ public class DatabaseOptions
     /// </remarks>
     [DefaultValue(DefaultCommandTimeout)]
     [ConfigName("iCommandTimeout")]
+    [Description("Maximum number of seconds to wait for a database command to finish.")]
     public int CommandTimeout { get; set; } = DefaultCommandTimeout;
 
     /// <summary>
@@ -202,6 +215,7 @@ public class DatabaseOptions
     /// </remarks>
     [DefaultValue(DefaultUseTrustedConnection)]
     [ConfigName("bTrustedConnection")]
+    [Description("Uses Windows authentication instead of configured SQL credentials when enabled.")]
     public bool UseTrustedConnection { get; set; } = DefaultUseTrustedConnection;
 
     /// <summary>
@@ -215,6 +229,7 @@ public class DatabaseOptions
     /// </remarks>
     [DefaultValue(DefaultAutoTrimStrings)]
     [ConfigName("bAutoTrimStrings")]
+    [Description("Automatically trims leading and trailing whitespace from string values written through the database helper.")]
     public bool AutoTrimStrings { get; set; } = DefaultAutoTrimStrings;
 
     /// <summary>
@@ -228,6 +243,7 @@ public class DatabaseOptions
     /// </remarks>
     [DefaultValue(DefaultAllowNullStrings)]
     [ConfigName("bAllowNullStrings")]
+    [Description("Allows null strings to be stored as database NULL values.")]
     public bool AllowNullStrings { get; set; } = DefaultAllowNullStrings;
 
     /// <summary>
@@ -243,6 +259,7 @@ public class DatabaseOptions
     /// </remarks>
     [DefaultValue(DefaultRetryEnabled)]
     [ConfigName("bRetryEnabled")]
+    [Description("Retries transient database failures when enabled.")]
     public bool RetryEnabled { get; set; } = DefaultRetryEnabled;
 
     /// <summary>
@@ -257,6 +274,7 @@ public class DatabaseOptions
     /// </remarks>
     [DefaultValue(DefaultRetryMaxAttempts)]
     [ConfigName("iRetryMaxAttempts")]
+    [Description("Maximum number of database execution attempts when retry is enabled.")]
     public int RetryMaxAttempts { get; set; } = DefaultRetryMaxAttempts;
 
     /// <summary>
@@ -271,6 +289,7 @@ public class DatabaseOptions
     /// </remarks>
     [DefaultValue(DefaultRetryDelayMs)]
     [ConfigName("iRetryDelayMs")]
+    [Description("Base delay in milliseconds between retry attempts.")]
     public int RetryDelayMs { get; set; } = DefaultRetryDelayMs;
 
     /// <summary>
@@ -281,7 +300,9 @@ public class DatabaseOptions
     /// Setting this property encrypts the provided value before storing it. <br />
     /// Thread safety is ensured by locking during both get and set operations.
     /// </remarks>
-    [Ignore]
+    [Encrypted]
+    [ConfigName("esUser")]
+    [Description("Database username.")]
     public string User
     {
         get
@@ -313,7 +334,9 @@ public class DatabaseOptions
     /// Setting this property encrypts the provided value before storing it. <br />
     /// Thread safety is ensured by locking during both get and set operations.
     /// </remarks>
-    [Ignore]
+    [Encrypted]
+    [ConfigName("esPass")]
+    [Description("Database password.")]
     public string Password
     {
         get
@@ -420,6 +443,7 @@ public class DatabaseOptions
 /// var dbOptions = Configuration.Default.GetSection&lt;DatabaseOptions&gt;(rootOptions.SelectedDatabase);
 /// </code>
 /// </example>
+[Description("Selects which named database connection section is active.")]
 public class DatabaseRootOptions
 {
     /// <summary>
@@ -431,5 +455,6 @@ public class DatabaseRootOptions
     /// environment name like "Development", "Testing", or "Production".
     /// </remarks>
     [ConfigName("SelectedDB")]
+    [Description("Name of the database configuration section to use.")]
     public string SelectedDatabase { get; set; } = "";
 }

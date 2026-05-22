@@ -12,6 +12,7 @@ namespace ByteForge.Toolkit.Logging;
 /// Configuration options for the <see cref="SessionFileLogger"/>.
 /// Inherits all file logger options and adds session-specific settings.
 /// </summary>
+[Description("Per-session file logger settings, including session identity, headers, footers, cleanup, and inherited file logger behavior.")]
 public class SessionFileLoggerOptions : FileLoggerOptions
 {
     private const SessionIdFormat DefaultSessionIdFormat = SessionIdFormat.Timestamp;
@@ -22,6 +23,7 @@ public class SessionFileLoggerOptions : FileLoggerOptions
 
     /// <inheritdoc/>
     [DefaultValue(DefaultFileNamingPattern)]
+    [Description("Pattern used to generate session log file names. Supports {sessionid} plus the standard file logger placeholders.")]
     public override string FileNamingPattern { get; set; } = DefaultFileNamingPattern;
 
     /// <summary>
@@ -30,6 +32,7 @@ public class SessionFileLoggerOptions : FileLoggerOptions
     /// This is used to replace the {sessionid} placeholder in the FileNamingPattern.
     /// </summary>
     [DefaultValue(DefaultSessionIdFormat)]
+    [Description("Format used to generate the session ID inserted into the log file name.")]
     public SessionIdFormat SessionIdFormat { get; set; } = DefaultSessionIdFormat;
 
     /// <summary>
@@ -38,6 +41,7 @@ public class SessionFileLoggerOptions : FileLoggerOptions
     /// The default is <see langword="true"/>.
     /// </summary>
     [DefaultValue(DefaultWriteSessionHeader)]
+    [Description("Writes session metadata at the beginning of each session log file when enabled.")]
     public bool WriteSessionHeader { get; set; } = DefaultWriteSessionHeader;
 
     /// <summary>
@@ -46,6 +50,7 @@ public class SessionFileLoggerOptions : FileLoggerOptions
     /// The default is <see langword="true"/>.
     /// </summary>
     [DefaultValue(DefaultWriteSessionFooter)]
+    [Description("Writes a closing footer when the session log file is closed.")]
     public bool WriteSessionFooter { get; set; } = DefaultWriteSessionFooter;
 
     /// <summary>
@@ -54,6 +59,7 @@ public class SessionFileLoggerOptions : FileLoggerOptions
     /// The default is <see langword="true"/>.
     /// </summary>
     [DefaultValue(DefaultCleanupOldSessions)]
+    [Description("Deletes old session log files on startup according to the configured retention period.")]
     public bool CleanupOldSessions { get; set; } = DefaultCleanupOldSessions;
 
     /// <summary>

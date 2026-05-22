@@ -236,6 +236,7 @@ private static bool IsValidEmail(string email)
 /// <summary>
 /// Configuration section for mail server settings.
 /// </summary>
+[Description("Configures SMTP server, credentials, sender, and default recipient settings.")]
 public class MailServerSettings
 {
 private const int DefaultPort = 587;
@@ -244,6 +245,7 @@ private const SecurityProtocolType DefaultSecurityProtocol = SecurityProtocolTyp
 /// Gets or sets the mail server address.
 /// </summary>
 [ConfigName("sServer")]
+[Description("SMTP server host name or address.")]
 public string Server { get; set; }
 
 /// <summary>
@@ -251,6 +253,7 @@ public string Server { get; set; }
 /// </summary>
 [ConfigName("iPort")]
 [DefaultValue(DefaultPort)]
+[Description("SMTP server port.")]
 public int Port { get; set; } = DefaultPort;
 
 /// <summary>
@@ -258,30 +261,35 @@ public int Port { get; set; } = DefaultPort;
 /// </summary>
 [ConfigName("sSecurityProtocol")]
 [DefaultValue(DefaultSecurityProtocol)]
+[Description("Security protocol used for SMTP connections.")]
 public SecurityProtocolType SecurityProtocol { get; set; } = DefaultSecurityProtocol;
 
 /// <summary>
 /// Gets or sets the encrypted username used for SMTP authentication.
 /// </summary>
 [ConfigName("esUser")]
+[Description("Encrypted SMTP username.")]
 public string? EncryptedUser  { get; set; }
 
 /// <summary>
 /// Gets or sets the encrypted password used for SMTP authentication.
 /// </summary>
 [ConfigName("esPass")]
+[Description("Encrypted SMTP password.")]
 public string? EncryptedPassword  { get; set; }
 
 /// <summary>
 /// Gets or sets the email address used as the "From" address in emails.
 /// </summary>
 [ConfigName("sSender")]
+[Description("Email address used as the sender.")]
 public string? Sender  { get; set; }
 
 /// <summary>
 /// Gets or sets the email address used as the default "To" address in emails.
 /// </summary>
 [ConfigName("sSendTo")]
+[Description("Default recipient email address or recipient list.")]
 public string? SendTo  { get; set; }
 
 /// <summary>

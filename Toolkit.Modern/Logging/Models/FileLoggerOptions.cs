@@ -13,6 +13,7 @@ namespace ByteForge.Toolkit.Logging;
 /// <summary>
 /// Configuration options for the FileLogger.
 /// </summary>
+[Description("File logger rotation, retention, naming, encoding, and asynchronous write settings.")]
 public class FileLoggerOptions : AsyncOptions
 {
     private const bool DefaultUseDaily = false;
@@ -23,6 +24,7 @@ public class FileLoggerOptions : AsyncOptions
     /// Gets or sets whether to create a new log file each day.
     /// </summary>
     [DefaultValue(DefaultUseDaily)]
+    [Description("Creates a separate log file per day when enabled.")]
     public bool UseDaily { get; set; } = DefaultUseDaily;
 
     /// <summary>
@@ -35,6 +37,7 @@ public class FileLoggerOptions : AsyncOptions
     /// </remarks>
     [DefaultValueProvider(typeof(FileLoggerOptions), nameof(GetDefaultEncoding))]
     [ConfigOptionsProvider(typeof(EncodingOptionsProvider))]
+    [Description("Gets or sets the encoding used for writing to the log file.")]
     public Encoding FileEncoding { get; set; } = Encoding.UTF8;
 
     private static Encoding GetDefaultEncoding() => Encoding.UTF8;
@@ -43,6 +46,7 @@ public class FileLoggerOptions : AsyncOptions
     /// Gets or sets the maximum file size in megabytes before rolling over (0 for unlimited).
     /// </summary>
     [DefaultValue(DefaultMaxFileSizeMB)]
+    [Description("Maximum log file size in megabytes before rollover. Use 0 for unlimited size.")]
     public int MaxFileSizeMB { get; set; } = DefaultMaxFileSizeMB;
 
     /// <summary>
@@ -71,6 +75,7 @@ public class FileLoggerOptions : AsyncOptions
     /// The default is <c>"{basename}"</c> (no pattern).
     /// </summary>
     [DefaultValue(DefaultFileNamingPattern)]
+    [Description("Pattern used to generate log file names. Supports placeholders such as {basename}, {date:format}, {timestamp}, {index}, {pid}, and {guid}.")]
     public virtual string FileNamingPattern { get; set; } = DefaultFileNamingPattern;
 
     /// <summary>

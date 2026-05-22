@@ -40,6 +40,7 @@ namespace ByteForge.Toolkit.Logging;
 /// Log.Error(exception, "An error occurred");
 /// </code>
 /// </example>
+[Description("Controls the application logging behavior, log location, level, and optional database logging.")]
 public class LogSettings
 {
     private const LogLevel DefaultTraceLogLevel = LogLevel.All;
@@ -61,6 +62,7 @@ public class LogSettings
     /// </remarks>
     [ConfigName("sLogFile")]
     [DefaultValueProvider(typeof(LogSettings), nameof(GetDefaultLogPath))]
+    [Description("Path to the primary log file.")]
     public string? LogFilePath { get; set; }
 
     /// <summary>
@@ -90,6 +92,7 @@ public class LogSettings
     /// </remarks>
     [DefaultValue(DefaultTraceLogLevel)]
     [ConfigName("eLogLevel")]
+    [Description("Minimum log level written by the logging system.")]
     public LogLevel TraceLogLevel { get; set; } = DefaultTraceLogLevel;
 
     /// <summary>
@@ -109,6 +112,7 @@ public class LogSettings
     /// </remarks>
     [DefaultValue(DefaultClearLogOnStartup)]
     [ConfigName("bClearLogOnStartup")]
+    [Description("Clears the configured log file when the application starts.")]
     public bool ClearLogOnStartup { get; set; } = DefaultClearLogOnStartup;
 
     /// <summary>
@@ -117,6 +121,7 @@ public class LogSettings
     /// </summary>
     [DefaultValue(DefaultUseSessionLogging)]
     [ConfigName("bUseSessionLogging")]
+    [Description("Creates a separate log file for each application session when enabled.")]
     public bool UseSessionLogging { get; set; } = DefaultUseSessionLogging;
 
     /// <summary>
@@ -128,6 +133,7 @@ public class LogSettings
     /// property keeps existing <c>Logging</c> section configuration compatible.
     /// </remarks>
     [DefaultValue(DefaultUseDaily)]
+    [Description("Creates daily file logs when supplied in the Logging section.")]
     public bool UseDaily { get; set; } = DefaultUseDaily;
 
     /// <summary>
@@ -135,6 +141,7 @@ public class LogSettings
     /// </summary>
     [DefaultValue(DefaultUseDatabaseLogging)]
     [ConfigName("bUseDatabaseLogging")]
+    [Description("Enables database-backed logging when configured.")]
     public bool UseDatabaseLogging { get; set; } = DefaultUseDatabaseLogging;
 
     /// <summary>

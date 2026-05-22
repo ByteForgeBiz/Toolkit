@@ -13,6 +13,7 @@ namespace ByteForge.Toolkit.Configuration;
 /// <summary>
 /// Provides globalization information such as culture, date format, and time format.
 /// </summary>
+[Description("Controls culture-aware date, time, number, currency, and percent formatting defaults.")]
 public class GlobalizationInfo
 {
     private const string DefaultDateFormat = "MM'/'dd'/'yyyy";
@@ -45,6 +46,7 @@ public class GlobalizationInfo
     /// </remarks>
     [DefaultValueProvider(typeof(GlobalizationInfo), nameof(GetDefaultCultureInfo))]
     [ConfigOptionsProvider(typeof(CultureInfoOptionsProvider))]
+    [Description("Culture used when formatting dates, times, numbers, currencies, and percentages.")]
     public CultureInfo CultureInfo { get; set; } = CultureInfo.InvariantCulture;
 
     /// <summary>
@@ -57,6 +59,7 @@ public class GlobalizationInfo
     /// Non-UTC offsets are always rendered as <c>+HH:mm</c> / <c>-HH:mm</c> regardless of this setting.
     /// </remarks>
     [DefaultValue(false)]
+    [Description("Formats zero-offset DateTimeOffset values with a trailing Z instead of +00:00 when enabled.")]
     public bool UseZuluTime { get; set; } = false;
 
     /*
@@ -75,6 +78,7 @@ public class GlobalizationInfo
     /// For example, "MM/dd/yyyy" represents a date in month/day/year format.
     /// </remarks>
     [DefaultValue(DefaultDateFormat)]
+    [Description("Standard date format string used by date formatting helpers.")]
     public string DateFormat { get; set; } = DefaultDateFormat;
 
     /// <summary>
@@ -85,6 +89,7 @@ public class GlobalizationInfo
     /// For example, "dddd, MMMM d, yyyy" represents a long date with day of week, month, day, and year.
     /// </remarks>
     [DefaultValue(DefaultLongDateFormat)]
+    [Description("Long date format string used by long-date formatting helpers.")]
     public string LongDateFormat { get; set; } = DefaultLongDateFormat;
 
     /// <summary>
@@ -172,6 +177,7 @@ public class GlobalizationInfo
     /// For example, "HH:mm:ss.fff" represents hours, minutes, seconds, and milliseconds in 24-hour format.
     /// </remarks>
     [DefaultValue(DefaultLongTimeFormat)]
+    [Description("Long 24-hour time format string, including milliseconds.")]
     public string LongTimeFormat { get; set; } = DefaultLongTimeFormat;
 
     /// <summary>
@@ -182,6 +188,7 @@ public class GlobalizationInfo
     /// For example, "HH:mm" represents hours and minutes in 24-hour format.
     /// </remarks>
     [DefaultValue(DefaultShortTimeFormat)]
+    [Description("Short 24-hour time format string.")]
     public string ShortTimeFormat { get; set; } = DefaultShortTimeFormat;
 
     /// <summary>
@@ -192,6 +199,7 @@ public class GlobalizationInfo
     /// For example, "HH:mm:ss" represents hours, minutes, and seconds in 24-hour format.
     /// </remarks>
     [DefaultValue(DefaultTimeFormat)]
+    [Description("Standard 24-hour time format string.")]
     public string TimeFormat { get; set; } = DefaultTimeFormat;
 
     /*
@@ -210,6 +218,7 @@ public class GlobalizationInfo
     /// For example, "hh:mm:ss.fff tt" represents hours, minutes, seconds, milliseconds, and an AM/PM designator.
     /// </remarks>
     [DefaultValue(DefaultLongTime12Format)]
+    [Description("Long 12-hour time format string, including milliseconds and AM/PM.")]
     public string LongTime12Format { get; set; } = DefaultLongTime12Format;
 
     /// <summary>
@@ -220,6 +229,7 @@ public class GlobalizationInfo
     /// For example, "h:mm tt" represents hours and minutes with an AM/PM designator.
     /// </remarks>
     [DefaultValue(DefaultShortTime12Format)]
+    [Description("Short 12-hour time format string, including AM/PM.")]
     public string ShortTime12Format { get; set; } = DefaultShortTime12Format;
 
     /// <summary>
@@ -230,6 +240,7 @@ public class GlobalizationInfo
     /// For example, "hh:mm tt" represents hours and minutes with an AM/PM designator.
     /// </remarks>
     [DefaultValue(DefaultTime12Format)]
+    [Description("Standard 12-hour time format string, including AM/PM.")]
     public string Time12Format { get; set; } = DefaultTime12Format;
 
      /*
@@ -248,6 +259,7 @@ public class GlobalizationInfo
     /// For example, "'$' #,##0.00" represents a currency value with a dollar sign and two decimal places.
     /// </remarks>
     [DefaultValue(DefaultCurrencyFormat)]
+    [Description("Currency format string used by currency formatting helpers.")]
     public string CurrencyFormat { get; set; } = DefaultCurrencyFormat;
 
     /// <summary>
@@ -258,6 +270,7 @@ public class GlobalizationInfo
     /// For example, "#,##0" represents an integer with thousand separators.
     /// </remarks>
     [DefaultValue(DefaultIntegerFormat)]
+    [Description("Integer format string used by integer formatting helpers.")]
     public string IntegerFormat { get; set; } = DefaultIntegerFormat;
 
     /// <summary>
@@ -268,6 +281,7 @@ public class GlobalizationInfo
     /// For example, "#,##0.00" represents a number with thousand separators and two decimal places.
     /// </remarks>
     [DefaultValue(DefaultDecimalFormat)]
+    [Description("Number format string used by decimal and floating-point formatting helpers.")]
     public string NumberFormat { get; set; } = DefaultDecimalFormat;
 
     /// <summary>
@@ -278,6 +292,7 @@ public class GlobalizationInfo
     /// For example, "#0.00'%'" represents a percent value with two decimal places and a percent sign.
     /// </remarks>
     [DefaultValue(DefaultPercentFormat)]
+    [Description("Percent format string used by percent formatting helpers.")]
     public string PercentFormat { get; set; } = DefaultPercentFormat;
 
      /*
