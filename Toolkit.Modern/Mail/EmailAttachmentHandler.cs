@@ -15,6 +15,11 @@ namespace ByteForge.Toolkit.Mail;
 public partial class EmailAttachmentHandler : IDisposable
 {
     /// <summary>
+    /// Occurs before the automatic attachment summary is appended to the email body.
+    /// </summary>
+    public event EventHandler<EmailAttachmentSummaryEventArgs>? AttachmentSummaryBuilding;
+
+    /// <summary>
     /// Maximum allowed size for an individual file in megabytes.
     /// </summary>
     private const int MaxIndividualFileSizeMB = 5;
@@ -336,19 +341,20 @@ public partial class EmailAttachmentHandler : IDisposable
             return;
 
         fileNameMap ??= [];
+        var items = files
+            .Select(file => new EmailAttachmentSummaryItem(GetDisplayName(file.FullName, fileNameMap), file.Length, null))
+            .ToList();
         var summary = new System.Text.StringBuilder();
         summary.AppendLine();
         summary.AppendLine("----");
         summary.AppendLine("Attached:");
 
-        foreach (var file in files)
+        foreach (var item in items)
         {
-            var sizeStr = FormatFileSize(file.Length);
-            var displayName = GetDisplayName(file.FullName, fileNameMap);
-            summary.AppendLine($"   - {displayName} ({sizeStr})");
+            summary.AppendLine($"   - {item.DisplayName} ({item.SizeText})");
         }
 
-        email.Body += summary.ToString();
+        AppendAttachmentSummary(email, ProcessingMethod.DirectAttachment, items, summary.ToString());
     }
 
     /// <summary>
@@ -365,6 +371,13 @@ public partial class EmailAttachmentHandler : IDisposable
 
         fileNameMap ??= [];
         var zipSizeStr = FormatFileSize(zip.ContentStream.Length);
+        var originalItems = originalFiles
+            .Select(file => new EmailAttachmentSummaryItem(GetDisplayName(file.FullName, fileNameMap), file.Length, null))
+            .ToList();
+        var items = new List<EmailAttachmentSummaryItem>
+        {
+            new EmailAttachmentSummaryItem(zip.Name, zip.ContentStream.Length, originalItems)
+        };
 
         var summary = new System.Text.StringBuilder();
         summary.AppendLine();
@@ -372,13 +385,65 @@ public partial class EmailAttachmentHandler : IDisposable
         summary.AppendLine("Attached:");
         summary.AppendLine($"   - {zip.Name} ({zipSizeStr})");
 
-        foreach (var file in originalFiles)
+        foreach (var item in originalItems)
         {
-            var displayName = GetDisplayName(file.FullName, fileNameMap);
-            summary.AppendLine($"       - {displayName}");
+            summary.AppendLine($"       - {item.DisplayName}");
         }
 
-        email.Body += summary.ToString();
+        AppendAttachmentSummary(email, ProcessingMethod.Compressed, items, summary.ToString());
+    }
+
+    /// <summary>
+    /// Appends the attachment summary after allowing subscribers to customize the generated message.
+    /// </summary>
+    /// <param name="email">The email message that will receive the attachment summary.</param>
+    /// <param name="processingMethod">The attachment processing method used for the current message.</param>
+    /// <param name="items">The attachment summary items to describe.</param>
+    /// <param name="defaultMessage">The default summary message.</param>
+    private void AppendAttachmentSummary(
+        MailMessage email,
+        ProcessingMethod processingMethod,
+        IReadOnlyList<EmailAttachmentSummaryItem> items,
+        string defaultMessage)
+    {
+        var args = new EmailAttachmentSummaryEventArgs(
+            processingMethod,
+            items,
+            defaultMessage,
+            email?.IsBodyHtml ?? false);
+
+        AttachmentSummaryBuilding?.Invoke(this, args);
+
+        if (args.SuppressSummary || string.IsNullOrEmpty(args.Message))
+            return;
+
+        AppendSummaryToBody(email, args.Message);
+    }
+
+    /// <summary>
+    /// Appends the attachment summary to the email body.
+    /// </summary>
+    /// <param name="email">The email message that will receive the attachment summary.</param>
+    /// <param name="summary">The attachment summary message.</param>
+    private static void AppendSummaryToBody(MailMessage email, string summary)
+    {
+        if (email == null)
+            return;
+
+        if (!email.IsBodyHtml || string.IsNullOrEmpty(email.Body))
+        {
+            email.Body += summary;
+            return;
+        }
+
+        var closingBodyIndex = email.Body.LastIndexOf("</body>", StringComparison.OrdinalIgnoreCase);
+        if (closingBodyIndex < 0)
+        {
+            email.Body += summary;
+            return;
+        }
+
+        email.Body = email.Body.Insert(closingBodyIndex, summary);
     }
 
     /// <summary>
@@ -442,5 +507,114 @@ public partial class EmailAttachmentHandler : IDisposable
         // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
         Dispose(disposing: true);
         GC.SuppressFinalize(this);
+    }
+}
+
+/// <summary>
+/// Provides data for the attachment-summary customization event.
+/// </summary>
+public sealed class EmailAttachmentSummaryEventArgs : EventArgs
+{
+    /// <summary>
+    /// Initializes a new instance of the <see cref="EmailAttachmentSummaryEventArgs"/> class.
+    /// </summary>
+    /// <param name="processingMethod">The processing method used to attach the files.</param>
+    /// <param name="attachments">The attachment summary items.</param>
+    /// <param name="message">The default attachment summary message.</param>
+    /// <param name="isBodyHtml">A value indicating whether the email body is HTML.</param>
+    public EmailAttachmentSummaryEventArgs(
+        ProcessingMethod processingMethod,
+        IReadOnlyList<EmailAttachmentSummaryItem>? attachments,
+        string? message,
+        bool isBodyHtml)
+    {
+        ProcessingMethod = processingMethod;
+        Attachments = attachments ?? Array.Empty<EmailAttachmentSummaryItem>();
+        Message = message ?? string.Empty;
+        IsBodyHtml = isBodyHtml;
+    }
+
+    /// <summary>
+    /// Gets the processing method used to attach the files.
+    /// </summary>
+    public ProcessingMethod ProcessingMethod { get; }
+
+    /// <summary>
+    /// Gets the attachment summary items.
+    /// </summary>
+    public IReadOnlyList<EmailAttachmentSummaryItem> Attachments { get; }
+
+    /// <summary>
+    /// Gets a value indicating whether the email body is HTML.
+    /// </summary>
+    public bool IsBodyHtml { get; }
+
+    /// <summary>
+    /// Gets or sets the attachment summary message that will be appended to the email body.
+    /// </summary>
+    public string Message { get; set; }
+
+    /// <summary>
+    /// Gets or sets a value indicating whether the automatic attachment summary should be suppressed.
+    /// </summary>
+    public bool SuppressSummary { get; set; }
+}
+
+/// <summary>
+/// Represents an attachment entry exposed to attachment-summary customizers.
+/// </summary>
+public sealed class EmailAttachmentSummaryItem
+{
+    /// <summary>
+    /// Initializes a new instance of the <see cref="EmailAttachmentSummaryItem"/> class.
+    /// </summary>
+    /// <param name="displayName">The display name used for the attachment.</param>
+    /// <param name="sizeBytes">The attachment size in bytes.</param>
+    /// <param name="includedFiles">The files included inside this attachment, when it represents a compressed bundle.</param>
+    public EmailAttachmentSummaryItem(
+        string? displayName,
+        long sizeBytes,
+        IReadOnlyList<EmailAttachmentSummaryItem>? includedFiles)
+    {
+        DisplayName = displayName ?? string.Empty;
+        SizeBytes = sizeBytes;
+        SizeText = FormatSize(sizeBytes);
+        IncludedFiles = includedFiles ?? Array.Empty<EmailAttachmentSummaryItem>();
+    }
+
+    /// <summary>
+    /// Gets the display name used for the attachment.
+    /// </summary>
+    public string DisplayName { get; }
+
+    /// <summary>
+    /// Gets the attachment size in bytes.
+    /// </summary>
+    public long SizeBytes { get; }
+
+    /// <summary>
+    /// Gets the formatted attachment size.
+    /// </summary>
+    public string SizeText { get; }
+
+    /// <summary>
+    /// Gets the files included inside this attachment, when it represents a compressed bundle.
+    /// </summary>
+    public IReadOnlyList<EmailAttachmentSummaryItem> IncludedFiles { get; }
+
+    /// <summary>
+    /// Formats a file size in bytes to a human-readable string.
+    /// </summary>
+    /// <param name="bytes">The file size in bytes.</param>
+    /// <returns>A human-readable string representing the file size.</returns>
+    private static string FormatSize(long bytes)
+    {
+        if (bytes < 1024)
+            return $"{bytes} B";
+
+        if (bytes < 1024 * 1024)
+            return $"{bytes / 1024.0:F1} KB";
+
+        return $"{bytes / (1024.0 * 1024.0):F1} MB";
     }
 }

@@ -446,13 +446,19 @@ function IsDarkMode() {
 /**
  * Updates all images with the class "themedImage" to be theme aware.
  * Changes the image source from "light" to "dark" and vice-versa.
+ * @param {boolean} [isDarkMode] - Optional resolved dark-mode state.
  */
-function updateThemedImages() {
-    var isDarkMode = IsDarkMode();
+function updateThemedImages(isDarkMode) {
+    if (typeof isDarkMode !== 'boolean')
+        isDarkMode = IsDarkMode();
+
     var images = document.querySelectorAll('.themedImage');
 
     images.forEach(function (image) {
         var src = image.getAttribute('src');
+        if (!src)
+            return;
+
         if (isDarkMode) {
             image.setAttribute('src', src.replace('light', 'dark'));
         }
@@ -460,6 +466,42 @@ function updateThemedImages() {
             image.setAttribute('src', src.replace('dark', 'light'));
         }
     });
+}
+
+/**
+ * Applies the current system theme to body classes and themed images.
+ * @param {boolean} [isDarkMode] - Optional resolved dark-mode state.
+ */
+function applyTheme(isDarkMode) {
+    if (typeof isDarkMode !== 'boolean')
+        isDarkMode = IsDarkMode();
+
+    if (document.body) {
+        document.body.classList.toggle('dark-mode', isDarkMode);
+        document.body.classList.toggle('light-mode', !isDarkMode);
+    }
+
+    updateThemedImages(isDarkMode);
+}
+
+/**
+ * Registers a listener that reapplies theme assets when the system theme changes.
+ */
+function setupThemeChangeListener() {
+    if (!window.matchMedia || window.__byteForgeThemeListenerRegistered)
+        return;
+
+    var query = window.matchMedia('(prefers-color-scheme: dark)');
+    var handler = function (event) {
+        applyTheme(event.matches);
+    };
+
+    if (query.addEventListener)
+        query.addEventListener('change', handler);
+    else if (query.addListener)
+        query.addListener(handler);
+
+    window.__byteForgeThemeListenerRegistered = true;
 }
 
 /**
@@ -566,8 +608,8 @@ function setupEventListeners() {
     document.addEventListener('contextmenu', preventRightClickOnNonText);
 
     // Theme detection
-    updateThemedImages();
-    document.body.classList.add(IsDarkMode() ? 'dark-mode' : 'light-mode');
+    applyTheme();
+    setupThemeChangeListener();
 }
 
 // =============================================================================

@@ -198,6 +198,20 @@ public static class NameUtil
     }
 
     /// <summary>
+    /// Normalizes one personal-name component for display and matching.
+    /// </summary>
+    /// <param name="namePart">The personal-name component to normalize.</param>
+    /// <returns>The normalized name component.</returns>
+    public static string NormalizePersonalNamePart(string namePart) => CapitalizeName(namePart?.Trim());
+
+    /// <summary>
+    /// Normalizes a full personal name for display and matching.
+    /// </summary>
+    /// <param name="fullName">The full personal name to normalize.</param>
+    /// <returns>The normalized full personal name.</returns>
+    public static string NormalizePersonalFullName(string fullName) => CapitalizeFullName(fullName?.Trim());
+
+    /// <summary>
     /// Normalizes a user name by trimming whitespace, converting to lowercase, and removing domain information.
     /// </summary>
     /// <param name="name">The user name to normalize. This can include domain information (e.g., "DOMAIN\username" or "username@domain.com").</param>

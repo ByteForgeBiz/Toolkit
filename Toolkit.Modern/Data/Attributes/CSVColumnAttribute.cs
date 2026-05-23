@@ -16,6 +16,21 @@ public class CSVColumnAttribute : Attribute
     public string? Name { get; }
 
     /// <summary>
+    /// Gets or sets the standard or custom .NET format string used when writing the value.
+    /// </summary>
+    public string Format { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Gets or sets the value written when a Boolean property is <see langword="true"/>.
+    /// </summary>
+    public string TrueString { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Gets or sets the value written when a Boolean property is <see langword="false"/>.
+    /// </summary>
+    public string FalseString { get; set; } = string.Empty;
+
+    /// <summary>
     /// Initializes a new instance of the <see cref="CSVColumnAttribute"/> class with default values.
     /// </summary>
     /// <remarks>This constructor sets the column index to -1 and the column name to <see langword="null"/>.</remarks>

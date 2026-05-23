@@ -43,6 +43,11 @@ public class CSVFormat
     public bool TrimValues { get; set; }
 
     /// <summary>
+    /// Gets or sets the culture-specific format provider used by callers that format values before writing.
+    /// </summary>
+    public IFormatProvider FormatProvider { get; set; } = System.Globalization.CultureInfo.InvariantCulture;
+
+    /// <summary>
     /// Creates a default CSV format (comma-delimited, double-quoted).
     /// </summary>
     public static CSVFormat Default => new CSVFormat
