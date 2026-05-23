@@ -52,8 +52,9 @@ function CheckNumeric(event) {
         ].includes(key)
     ) return true;
 
-    // Allow: command shortcuts that combine a modifier with another key.
+    // Allow: modifier keys (Shift, Ctrl, Alt, Meta)
     if (
+        event.shiftKey ||
         event.ctrlKey ||
         event.altKey ||
         event.metaKey
@@ -104,14 +105,15 @@ function validateField(element) {
     // Basic validation without preventing focus change
     if (!element.value && element.classList.contains('required')) {
         element.classList.add('invalid');
-        return false;
+        return true;
     }
 
     // All other validations require the field to have a value
     if (!element.value) return true;
 
     // Validate regex patterns
-    if (element.pattern && !(new RegExp(element.pattern)).test(element.value)) {
+    var re = new RegExp(element.pattern);
+    if (element.pattern && !re.test(element.value)) {
         element.patternError = element.patternError ?? element.getAttribute('patternError') ?? 'Invalid input';
         element.classList.add('invalid');
         element.oldTitle = element.title;
@@ -119,7 +121,7 @@ function validateField(element) {
         element.title = element.patternError ?? element.pattern;
         return false;
     }
-    else if (element.title == element.patternError)
+    else if (element.title == element.patterError)
         element.title = element.oldTitle ?? '';
 
     // Return validation result without blocking
@@ -142,11 +144,11 @@ function RequireValue(id, isRequired) {
     var blur = element.getAttribute('onblur');
     var focus = element.getAttribute('onfocus');
 
-    if (element._byteForgeOriginalBlurAttribute == null)
-        element._byteForgeOriginalBlurAttribute = blur;
+    if (blur !== null && element.oldBlur === null)
+        element.oldBlur = element.blur ?? validateField;
 
-    if (element._byteForgeOriginalFocusAttribute == null)
-        element._byteForgeOriginalFocusAttribute = focus;
+    if (focus !== null && element.oldFocus === null)
+        element.oldFocus = element.focus ?? removeInvalidClass;
 
     /*
      * Toggle the required class on the element and any associated elements.
@@ -158,19 +160,10 @@ function RequireValue(id, isRequired) {
 
     if (isRequired === true) {
         /* 
-         * Restore the original blur and focus attributes if they are stored.
+         * Restore the original blur and focus events if they are stored.
          */
-        element.setAttribute('required', 'required');
-
-        if (element._byteForgeOriginalBlurAttribute)
-            element.setAttribute('onblur', element._byteForgeOriginalBlurAttribute);
-        else
-            element.setAttribute('onblur', 'validateField(this)');
-
-        if (element._byteForgeOriginalFocusAttribute)
-            element.setAttribute('onfocus', element._byteForgeOriginalFocusAttribute);
-        else
-            element.setAttribute('onfocus', 'removeInvalidClass(this)');
+        element.blur = element.oldBlur;
+        element.focus = element.oldFocus;
     }
     else {
         /*
@@ -179,6 +172,9 @@ function RequireValue(id, isRequired) {
         element.removeAttribute('required');
         element.removeAttribute('onblur');
         element.removeAttribute('onfocus');
+
+        element.blur = null;
+        element.focus = null;
     }
 }
 
@@ -256,26 +252,88 @@ async function copyToClipboard(text) {
 }
 
 /**
- * Copies the record information to the clipboard and shows a success message.
- * @returns {Promise<void>}
+ * Gets the record information fields shared by clipboard copy and tooltip display.
+ * @returns {{label: string, value: string}[]} The record information fields.
  */
-async function copyRecordInfo() {
-    // Get the name of the current page
+function getRecordInfoItems() {
     let href = window.location.href;
     let page = href.substring(href.lastIndexOf('/') + 1);
     page = page.indexOf('?') !== -1 ? page.substring(0, page.indexOf('?')) : page;
 
-    let text = 'Page: ' + page + '\n';
     const recordId = document.getElementById('lblRecordID');
     const phoneNumber = document.getElementById('lblPhoneNumber');
+    const ani = document.getElementById('lblANI');
 
-    if (recordId)
-        text += 'Record ID: ' + recordId.textContent.trim() + '\n';
-    if (phoneNumber)
-        text += 'Phone Number: ' + phoneNumber.textContent.trim() + '\n';
+    return [
+        { label: 'Page', value: page },
+        { label: 'Record ID', value: recordId ? recordId.textContent.trim() : '' },
+        { label: 'Phone Number', value: getRecordInfoPhoneValue(phoneNumber) },
+        { label: 'ANI', value: getRecordInfoPhoneValue(ani) }
+    ];
+}
 
-    // Copy to clipboard
-    const success = await copyToClipboard(text);
+/**
+ * Gets a formatted phone-like record information value from an element.
+ * @param {HTMLElement} element - The element containing the raw phone value.
+ * @returns {string} The formatted phone value.
+ */
+function getRecordInfoPhoneValue(element) {
+    if (!element)
+        return '';
+
+    const value = element.textContent.trim();
+    if (!value || value === 'N/A')
+        return value;
+
+    return formatPhoneNumber(value);
+}
+
+/**
+ * Gets the record information text that will be copied to the clipboard.
+ * @returns {string} The formatted clipboard text.
+ */
+function getRecordInfoClipboardText() {
+    return getRecordInfoItems()
+        .filter(item => item.value !== '')
+        .map(item => item.label + ': ' + item.value)
+        .join('\n') + '\n';
+}
+
+/**
+ * Updates the formatted tooltip on the Copy Record Info button.
+ * @returns {void}
+ */
+function updateCopyRecordTooltip() {
+    const tooltip = document.getElementById('copyRecordInfoTooltip');
+    if (!tooltip)
+        return;
+
+    tooltip.innerHTML = '';
+
+    getRecordInfoItems()
+        .filter(item => item.value !== '')
+        .forEach(item => {
+            const row = document.createElement('span');
+            row.className = 'copy-info-tooltip-row';
+
+            const label = document.createElement('strong');
+            label.textContent = item.label + ':';
+
+            const value = document.createElement('span');
+            value.textContent = item.value;
+
+            row.appendChild(label);
+            row.appendChild(value);
+            tooltip.appendChild(row);
+        });
+}
+
+/**
+ * Copies the record information to the clipboard and shows a success message.
+ * @returns {Promise<void>}
+ */
+async function copyRecordInfo() {
+    const success = await copyToClipboard(getRecordInfoClipboardText());
 
     if (success)
         showCopyMessage();
@@ -449,13 +507,8 @@ function formatPhoneNumber(phoneNumber) {
  * @returns {boolean|void} Returns true to allow context menu on text inputs, otherwise prevents default behavior.
  */
 function preventRightClickOnNonText(e) {
-    var target = e.target;
-    if (!target)
-        return;
-
-    if (target.type === 'text' || target.tagName === 'TEXTAREA' || target.isContentEditable)
+    if (e.target.type === 'text' || e.target.type === 'textarea' || e.target.isContentEditable)
         return true;
-
     e.preventDefault();
 }
 
@@ -502,8 +555,12 @@ function initializeFormSecurity() {
 function setupEventListeners() {
     // Copy button functionality
     const copyButton = document.querySelector('.copy-info');
-    if (copyButton)
+    if (copyButton) {
+        updateCopyRecordTooltip();
+        copyButton.addEventListener('mouseenter', updateCopyRecordTooltip);
+        copyButton.addEventListener('focus', updateCopyRecordTooltip);
         copyButton.addEventListener('click', copyRecordInfo);
+    }
 
     // Right-click prevention
     document.addEventListener('contextmenu', preventRightClickOnNonText);
