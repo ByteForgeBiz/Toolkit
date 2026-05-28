@@ -130,7 +130,7 @@ class ByteForgeModal {
         if (config.showClose) {
             const closeBtn = document.createElement('button');
             closeBtn.className = 'byte-forge-modal-close';
-            closeBtn.innerHTML = '×';
+            closeBtn.innerHTML = '&#10060;';
             closeBtn.setAttribute('aria-label', 'Close');
             closeBtn.onclick = () => ByteForgeModal.close(overlay, config.onClose);
             header.appendChild(closeBtn);
@@ -248,12 +248,12 @@ class ByteForgeModal {
     static normalizeButtons(buttons) {
         const configuredButtons = Array.isArray(buttons) && buttons.length > 0
             ? buttons
-            : [{ text: 'OK', primary: true }];
+            : [{ text: 'Close', primary: true }];
 
         const normalizedButtons = configuredButtons
             .filter(btn => btn && typeof btn === 'object' && !Array.isArray(btn))
             .map(btn => ({
-                text: btn.text == null || String(btn.text).trim() === '' ? 'OK' : String(btn.text),
+                text: btn.text == null || String(btn.text).trim() === '' ? 'Close' : String(btn.text),
                 primary: btn.primary === true,
                 onClick: typeof btn.onClick === 'function' ? btn.onClick : null,
                 closeOnClick: btn.closeOnClick !== false,
@@ -263,7 +263,7 @@ class ByteForgeModal {
 
         return normalizedButtons.length > 0
             ? normalizedButtons
-            : [{ text: 'OK', primary: true, onClick: null, closeOnClick: true, className: '', type: 'button' }];
+            : [{ text: 'Close', primary: true, onClick: null, closeOnClick: true, className: '', type: 'button' }];
     }
 
     /**
