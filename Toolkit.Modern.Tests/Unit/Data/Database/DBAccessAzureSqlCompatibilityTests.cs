@@ -73,6 +73,7 @@ namespace ByteForge.Toolkit.Tests.Unit.Data.Database
         {
             var options = DatabaseTestHelper.CreateTestDatabaseOptions();
             options.DatabaseType = DBAccess.DataBaseType.AzureSQL;
+            options.ConnectionString = "";
             options.Server = "example.database.windows.net";
             options.DatabaseName = "Amch";
             options.UseTrustedConnection = false;
