@@ -1,3 +1,8 @@
+#if NET48
+using System.Data.SqlClient;
+#else
+using Microsoft.Data.SqlClient;
+#endif
 using ByteForge.Toolkit.Tests.Helpers;
 using AwesomeAssertions;
 using ByteForge.Toolkit.Data;
@@ -55,7 +60,10 @@ namespace ByteForge.Toolkit.Tests.Unit.Data.Database
             dbAccess.Should().NotBeNull();
             dbAccess.Options.Should().BeSameAs(options);
             dbAccess.DbType.Should().Be(DBAccess.DataBaseType.SQLServer);
-            dbAccess.ConnectionString.Should().Be(options.GetConnectionString());
+            var actual = new SqlConnectionStringBuilder(dbAccess.ConnectionString);
+            actual.ApplicationName.Should().NotBeNullOrWhiteSpace();
+            var expected = new SqlConnectionStringBuilder(options.GetConnectionString()) { ApplicationName = actual.ApplicationName };
+            actual.ConnectionString.Should().Be(expected.ConnectionString);
         }
 
         /// <summary>
@@ -192,13 +200,10 @@ namespace ByteForge.Toolkit.Tests.Unit.Data.Database
             var connectionString = dbAccess.ConnectionString;
 
             // Assert
-            connectionString.Should().NotBeNull()
-                           .And.Contain(expectedServer, "connection string should contain the configured server name")
-                           .And.Contain(expectedDatabase, "connection string should contain the configured database name")
-                           .And.SatisfyAny(
-                               because: "connection string should contain integrated security setting",
-                               cs => cs.Contains("Integrated Security=true"),
-                               cs => cs.Contains("Trusted_Connection=true"));
+            var parsed = new SqlConnectionStringBuilder(connectionString);
+            parsed.DataSource.Should().Be(expectedServer);
+            parsed.InitialCatalog.Should().Be(expectedDatabase);
+            parsed.IntegratedSecurity.Should().BeTrue("the default test connection uses Windows authentication");
         }
 
         #endregion

@@ -82,6 +82,67 @@
    MODAL NOTIFICATION SYSTEM
    ============================================================================= */
 
+/* Modals follow the system theme and retain the legacy dark-mode override. */
+.byte-forge-modal-overlay {
+    --bf-modal-overlay: rgba(0, 0, 0, .68);
+    --bf-modal-surface: #ffffff;
+    --bf-modal-text: #17272d;
+    --bf-modal-muted: #53666d;
+    --bf-modal-divider: #d2dee1;
+    --bf-modal-inset: #e9f0f1;
+    --bf-modal-primary: #176da6;
+    --bf-modal-primary-hover: #105193;
+    --bf-modal-on-primary: #ffffff;
+    --bf-modal-secondary: #53666d;
+    --bf-modal-secondary-hover: #405158;
+    --bf-modal-on-secondary: #ffffff;
+    --bf-modal-focus: #176da6;
+    --bf-modal-info: #176da6;
+    --bf-modal-success: #21734e;
+    --bf-modal-warning: #946000;
+    --bf-modal-error: #b53d43;
+}
+@media (prefers-color-scheme: dark) {
+    .byte-forge-modal-overlay {
+    --bf-modal-overlay: rgba(0, 0, 0, .82);
+    --bf-modal-surface: #142329;
+    --bf-modal-text: #edf5f6;
+    --bf-modal-muted: #a5b7bd;
+    --bf-modal-divider: #30464e;
+    --bf-modal-inset: #1b3037;
+    --bf-modal-primary: #6eafea;
+    --bf-modal-primary-hover: #a9d2f7;
+    --bf-modal-on-primary: #0b2740;
+    --bf-modal-secondary: #30464e;
+    --bf-modal-secondary-hover: #405b65;
+    --bf-modal-on-secondary: #edf5f6;
+    --bf-modal-focus: #6eafea;
+    --bf-modal-info: #6eafea;
+    --bf-modal-success: #68c596;
+    --bf-modal-warning: #ffbd59;
+    --bf-modal-error: #f18287;
+    }
+}
+body.dark-mode .byte-forge-modal-overlay {
+    --bf-modal-overlay: rgba(0, 0, 0, .82);
+    --bf-modal-surface: #142329;
+    --bf-modal-text: #edf5f6;
+    --bf-modal-muted: #a5b7bd;
+    --bf-modal-divider: #30464e;
+    --bf-modal-inset: #1b3037;
+    --bf-modal-primary: #6eafea;
+    --bf-modal-primary-hover: #a9d2f7;
+    --bf-modal-on-primary: #0b2740;
+    --bf-modal-secondary: #30464e;
+    --bf-modal-secondary-hover: #405b65;
+    --bf-modal-on-secondary: #edf5f6;
+    --bf-modal-focus: #6eafea;
+    --bf-modal-info: #6eafea;
+    --bf-modal-success: #68c596;
+    --bf-modal-warning: #ffbd59;
+    --bf-modal-error: #f18287;
+}
+
 .byte-forge-modal-overlay {
     display: none;
     position: fixed;
@@ -89,7 +150,7 @@
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(0, 0, 0, 0.68);
+    background: var(--bf-modal-overlay);
     backdrop-filter: blur(3px);
     z-index: 2000;
     justify-content: center;
@@ -99,7 +160,7 @@
 }
 
 .byte-forge-modal {
-    background: white;
+    background: var(--bf-modal-surface);
     border-radius: 8px;
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3), 0 0 0 2px rgba(52, 152, 219, 0.3);
     max-width: 500px;
@@ -137,7 +198,7 @@
 
 .byte-forge-modal-header {
     padding: 20px 24px 16px;
-    border-bottom: 1px solid #e5e5e5;
+    border-bottom: 1px solid var(--bf-modal-divider);
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -146,7 +207,7 @@
 .byte-forge-modal-title {
     font-size: var(--font-lg);
     font-weight: var(--font-medium);
-    color: #333;
+    color: var(--bf-modal-text);
     margin: 0;
     display: flex;
     align-items: center;
@@ -157,16 +218,16 @@
     font-size: var(--font-xl);
 }
 
-.byte-forge-modal-icon.info { color: #3498db; }
-.byte-forge-modal-icon.success { color: #27ae60; }
-.byte-forge-modal-icon.warning { color: #f39c12; }
-.byte-forge-modal-icon.error { color: #e74c3c; }
+.byte-forge-modal-icon.info { color: var(--bf-modal-info); }
+.byte-forge-modal-icon.success { color: var(--bf-modal-success); }
+.byte-forge-modal-icon.warning { color: var(--bf-modal-warning); }
+.byte-forge-modal-icon.error { color: var(--bf-modal-error); }
 
 .byte-forge-modal-close {
     background: none;
     border: none;
     font-size: var(--font-xl);
-    color: #999;
+    color: var(--bf-modal-muted);
     cursor: pointer;
     padding: 0;
     width: 30px;
@@ -179,13 +240,13 @@
 }
 
 .byte-forge-modal-close:hover {
-    background: #f5f5f5;
-    color: #666;
+    background: var(--bf-modal-inset);
+    color: var(--bf-modal-text);
 }
 
 .byte-forge-modal-body {
     padding: 24px;
-    color: #555;
+    color: var(--bf-modal-muted);
     line-height: 1.5;
     font-size: var(--font-base);
     max-height: min(75vh, 800px);
@@ -217,25 +278,25 @@
 }
 
 .byte-forge-modal-button.primary {
-    background: #3498db;
-    color: white;
+    background: var(--bf-modal-primary);
+    color: var(--bf-modal-on-primary);
 }
 
 .byte-forge-modal-button.primary:hover {
-    background: #2980b9;
+    background: var(--bf-modal-primary-hover);
 }
 
 .byte-forge-modal-button.secondary {
-    background: #95a5a6;
-    color: white;
+    background: var(--bf-modal-secondary);
+    color: var(--bf-modal-on-secondary);
 }
 
 .byte-forge-modal-button.secondary:hover {
-    background: #7f8c8d;
+    background: var(--bf-modal-secondary-hover);
 }
 
 .byte-forge-modal-button:focus {
-    outline: 2px solid #74b9ff;
+    outline: 2px solid var(--bf-modal-focus);
     outline-offset: 2px;
 }
 
@@ -847,61 +908,6 @@ body.dark-mode .container {
 }
 
 /* Modal Dark Mode */
-body.dark-mode .byte-forge-modal-overlay {
-    background: rgba(0, 0, 0, 0.82);
-    backdrop-filter: blur(3px);
-}
-
-body.dark-mode .byte-forge-modal {
-    background: #2c3e50;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6), 0 0 0 2px rgba(93, 173, 226, 0.4);
-    border: 2px solid rgba(93, 173, 226, 0.6);
-}
-
-body.dark-mode .byte-forge-modal-header {
-    border-bottom: 1px solid #34495e;
-}
-
-body.dark-mode .byte-forge-modal-title {
-    color: #ecf0f1;
-}
-
-body.dark-mode .byte-forge-modal-close {
-    color: #95a5a6;
-}
-
-body.dark-mode .byte-forge-modal-close:hover {
-    background: #34495e;
-    color: #bdc3c7;
-}
-
-body.dark-mode .byte-forge-modal-body {
-    color: #bdc3c7;
-}
-
-body.dark-mode .byte-forge-modal-button.primary {
-    background: #3498db;
-    color: white;
-}
-
-body.dark-mode .byte-forge-modal-button.primary:hover {
-    background: #2980b9;
-}
-
-body.dark-mode .byte-forge-modal-button.secondary {
-    background: #7f8c8d;
-    color: white;
-}
-
-body.dark-mode .byte-forge-modal-button.secondary:hover {
-    background: #95a5a6;
-}
-
-body.dark-mode .byte-forge-modal-button:focus {
-    outline: 2px solid #5dade2;
-    outline-offset: 2px;
-}
-
 /* Form Dark Mode */
 body.dark-mode .form-input,
 body.dark-mode .form-select {

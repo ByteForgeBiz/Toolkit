@@ -1,0 +1,12 @@
+/* Server-paged case controls use the host application's light/dark semantic colors. */
+.bf-submissions-list { padding: 0 16px 16px; }
+.bf-submissions-list .admin-list-toolbar { justify-content: flex-start; flex-wrap: wrap; }
+.bf-submissions-list .bf-submissions-type { margin-left: auto; }
+.bf-submissions-list .submissions-table th a { color: inherit; font: inherit; font-weight: 500; text-decoration: none; }
+.bf-submissions-list .submissions-table th a:hover { text-decoration: underline; }
+.bf-submissions-list a:focus-visible, .bf-submissions-list summary:focus-visible { outline: 2px solid var(--text); outline-offset: 3px; }
+.bf-submissions-list #submissionSettings { display: block; text-align: right; }
+.bf-submissions-list #submissionSettings summary { display: inline-flex; cursor: pointer; }
+.bf-submissions-list #submissionSettings .admin-list-page-size { display: inline-grid; margin: 12px 8px 0 0; text-align: left; }
+.bf-submissions-list [aria-current=page] { border-color: var(--text); font-weight: 600; }
+@media (max-width: 760px) { .bf-submissions-list .bf-submissions-type { margin-left: 0; } }

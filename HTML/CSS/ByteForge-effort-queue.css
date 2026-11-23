@@ -1,0 +1,25 @@
+.bf-effort-queue { color: var(--text); padding: 1.25rem; }
+.bf-effort-queue p, .bf-effort-queue td { font-weight: 400; }
+.bf-effort-queue label, .bf-effort-queue th, .bf-effort-queue summary { font-weight: 600; }
+.bf-effort-queue input, .bf-effort-queue select { font-weight: 400; }
+.bf-effort-filters, .bf-effort-pagination { display: flex; flex-wrap: wrap; gap: 1rem; align-items: end; margin: 1rem 0; }
+.bf-effort-filters label { display: grid; gap: .35rem; }
+.bf-effort-filters input[type=search] { min-width: min(24rem, 70vw); }
+.bf-effort-filters input, .bf-effort-filters select { color: var(--text); background: var(--control-bg); border: 1px solid var(--control-border); padding: .55rem .7rem; border-radius: .35rem; }
+.bf-effort-filters input:focus-visible, .bf-effort-filters select:focus-visible { outline: 2px solid var(--text); outline-offset: 2px; }
+.bf-effort-table-wrap { overflow-x: auto; }
+.bf-effort-queue table { width: 100%; min-width: 68rem; border-collapse: collapse; font-size: .9rem; }
+.bf-effort-queue th, .bf-effort-queue td { text-align: left; padding: .8rem; vertical-align: top; border-bottom: 1px solid var(--line); }
+.bf-effort-queue code { white-space: nowrap; }
+.bf-effort-queue td p { max-width: 30rem; }
+.bf-effort-queue td > span { display: block; }
+.bf-effort-queue a { color: inherit; text-decoration: underline; text-underline-offset: .2em; }
+.bf-effort-queue a:hover { text-decoration-thickness: 2px; }
+.bf-effort-queue a:focus-visible, .bf-effort-queue summary:focus-visible { outline: 2px solid currentColor; outline-offset: 3px; }
+.bf-effort-queue summary { cursor: pointer; }
+/* This stylesheet is loaded only on the Effort Queue page. Keep its shared header usable on phones. */
+@media (max-width: 700px) {
+    .admin-topbar { flex-direction: column; align-items: stretch; }
+    .admin-user { flex-wrap: wrap; justify-content: flex-start; }
+    .admin-user > * { flex: 0 0 auto; white-space: nowrap; }
+}

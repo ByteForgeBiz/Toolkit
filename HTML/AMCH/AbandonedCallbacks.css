@@ -1,0 +1,43 @@
+/* Reuse AMCH call detail styling, with a compact four-column callback table. */
+.bf-abandoned-callbacks .client-portal-call-table { min-width: 600px; }
+.bf-abandoned-callbacks .client-portal-call-table-wrap + .client-portal-call-pagination-bar { margin: 10px 0 0; }
+.bf-abandoned-callbacks .client-portal-panel-body > p { color: var(--muted); font-size: var(--font-sm); }
+.bf-abandoned-callback-toolbar { position: relative; flex-wrap: wrap; }
+.bf-abandoned-callback-toolbar .client-portal-call-search { flex: 1 1 240px; max-width: 350px; }
+.bf-abandoned-callback-search-button { align-self: flex-end; margin-bottom: 1px; }
+.bf-abandoned-callback-settings { margin-left: auto; align-self: flex-end; }
+.bf-abandoned-callback-settings > summary { list-style: none; }
+.bf-abandoned-callback-settings > summary::-webkit-details-marker { display: none; }
+.bf-abandoned-callback-settings-panel {
+    position: absolute; top: calc(100% + 8px); right: 0; z-index: 3;
+    display: flex; flex-wrap: wrap; align-items: center; gap: 10px;
+    width: 280px; max-width: 100%; padding: 12px;
+    background: var(--surface); color: var(--text); border: 1px solid var(--border);
+    border-radius: 6px; box-shadow: var(--shadow);
+}
+.bf-abandoned-callback-settings-panel label { margin: 0; font-size: var(--font-sm); font-weight: 500; }
+.bf-abandoned-callback-sort {
+    display: inline-flex; align-items: center; padding: 0; color: inherit;
+    font: inherit; text-transform: inherit; text-decoration: none;
+}
+.bf-abandoned-callback-sort.sort-asc::after { content: '\25B2'; margin-left: 5px; color: var(--accent); }
+.bf-abandoned-callback-sort.sort-desc::after { content: '\25BC'; margin-left: 5px; color: var(--accent); }
+.bf-abandoned-callbacks .client-portal-call-page-buttons > a,
+.bf-abandoned-callbacks .client-portal-call-page-buttons > span {
+    display: inline-flex; align-items: center; justify-content: center;
+    min-width: 32px; height: 30px; padding: 0 9px;
+    border: 1px solid var(--border); border-radius: 6px; color: var(--text);
+    font-size: var(--font-sm); font-weight: 600; line-height: 1; text-decoration: none;
+}
+.bf-abandoned-callbacks .client-portal-call-page-buttons .bf-abandoned-callback-page-current {
+    border-color: var(--accent); background: var(--accent); color: #fff;
+}
+.bf-abandoned-callbacks .client-portal-call-page-buttons .bf-abandoned-callback-page-disabled { color: var(--muted); opacity: .48; }
+.bf-abandoned-callback-sort:hover,
+.bf-abandoned-callbacks .client-portal-call-page-buttons > a:hover { color: var(--accent); }
+.bf-abandoned-callbacks a:focus-visible,
+.bf-abandoned-callbacks summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+
+.bf-abandoned-callback-row { cursor: pointer; }
+.bf-abandoned-callback-sale-link:hover code,
+.bf-abandoned-callback-sale-link:focus-visible code { border-color: var(--accent); }

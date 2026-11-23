@@ -49,6 +49,12 @@ public interface IConfigurationManager
     void Initialize();
 
     /// <summary>
+    /// Reloads the current configuration file into the active configuration root.
+    /// </summary>
+    /// <exception cref="System.InvalidOperationException">Thrown if configuration has not been initialized.</exception>
+    void Reload();
+
+    /// <summary>
     /// Adds a new section to the configuration.
     /// </summary>
     /// <typeparam name="T">The type of the section to add.</typeparam>
@@ -75,12 +81,28 @@ public interface IConfigurationManager
     string? GetString(string section, string key, string? defaultValue = null);
 
     /// <summary>
+    /// Gets the persisted raw string value from the specified section and key without decrypting encrypted keys.
+    /// </summary>
+    /// <param name="section">The section name.</param>
+    /// <param name="key">The key name.</param>
+    /// <param name="defaultValue">The default value to return if the key is not found.</param>
+    /// <returns>The raw string value, or the default value if not found.</returns>
+    string? GetRawString(string section, string key, string? defaultValue = null);
+
+    /// <summary>
     /// Sets a string value in the specified section and key.
     /// </summary>
     /// <param name="section">The section name.</param>
     /// <param name="key">The key name.</param>
     /// <param name="value">The value to set.</param>
     void SetString(string section, string key, string? value);
+
+    /// <summary>Assigns an editor value directly to registered settings, without reloading them.
+    /// Unregistered scalar keys are stored in the in-memory configuration root.</summary>
+    /// <param name="section">The owning section.</param>
+    /// <param name="key">The configuration key.</param>
+    /// <param name="value">A scalar string, array of strings, or string dictionary.</param>
+    void SetValue(string section, string key, object? value);
 
     /// <summary>
     /// Gets an integer value from the specified section and key.

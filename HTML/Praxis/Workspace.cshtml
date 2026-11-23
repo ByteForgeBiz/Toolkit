@@ -1,0 +1,163 @@
+@model PraxisAPI.Models.WorkspaceViewModel
+@{ Layout = null; var advisor = Model.Advisor ?? new PraxisAPI.Models.WorkspaceAdvisor(); }
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Praxis Call Workspace</title>
+  <link rel="stylesheet" href="@Url.Content("~/Content/Praxis/workspace.css")" />
+  <link rel="stylesheet" href="@Url.Content("~/Content/Praxis/workspace-save.css?v=20261023-1")" />
+  <link rel="stylesheet" href="@Url.Content("~/Content/ByteForge/ByteForge-searchable-select.css?v=20260928-1")" />
+  <link rel="stylesheet" href="@Url.Content("~/Content/Praxis/workspace-attribution.css?v=20260929-1")" />
+  <link rel="stylesheet" href="@Url.Content("~/Content/ByteForge/ByteForge-date-time-picker.css?v=20260914-1")" />
+  <link rel="stylesheet" href="@Url.Content("~/Content/ByteForge/ByteForge-time-zones.css?v=20260910-1")" />
+<link rel="stylesheet" href="@Url.Content("~/Content/Praxis/workspace-script-guide.css?v=20260910-2")" />
+  <link rel="stylesheet" href="@Url.Content("~/Content/ByteForge/ByteForge-footer.css")?v=20261020-1" />
+</head>
+<body>
+<form method="post" id="workspace-form">
+  @Html.AntiForgeryToken()
+  @Html.HiddenFor(m => m.RecordId)
+  @Html.HiddenFor(m => m.SaveAction, new { id = "workspace-save-action" })
+  @Html.HiddenFor(m => m.Launch.FromReport)
+  @Html.HiddenFor(m => m.Launch.Service)
+  @Html.HiddenFor(m => m.Launch.AgentId)
+  @Html.HiddenFor(m => m.Launch.AgentLogin)
+  @Html.HiddenFor(m => m.Launch.SessionId)
+  @Html.HiddenFor(m => m.Launch.GlobalSessionId)
+  @Html.HiddenFor(m => m.Launch.Origin)
+  @Html.HiddenFor(m => m.Launch.Phone)
+  @if (!string.IsNullOrWhiteSpace(Model.AgentSavePrompt)) {
+    <dialog open id="bf-workspace-agent-check" class="bf-workspace-attribution-warning" aria-labelledby="bf-agent-check-title" aria-describedby="bf-agent-check-message">
+      <h2 id="bf-agent-check-title">@(Model.NeedsAgentSelection ? "Choose the agent" : "Confirm agent mismatch")</h2>
+      <p id="bf-agent-check-message">@Model.AgentSavePrompt</p>
+      <p data-agent-check-status role="alert"></p>
+      @if (Model.NeedsAgentSelection) {
+        <label class="field" for="SelectedAgentId">Agent</label>
+        <select name="SelectedAgentId" id="SelectedAgentId" autofocus data-bf-searchable-select data-search-placeholder="Search agents">
+          <option value="">Select an agent</option>
+          @foreach (var agent in Model.AgentChoices) { <option value="@agent.AgentId">@agent.Name (@agent.AgentId)</option> }
+        </select>
+      }
+      <div class="bf-agent-check-actions">
+        <button type="button" data-agent-check-cancel hidden>&#10006;&#65039; Cancel</button>
+        @if (Model.NeedsAgentSelection) {
+          <button type="submit" formnovalidate>&#9989; Continue</button>
+        } else {
+          <button type="submit" name="AgentConfirmation" value="@Model.AgentConfirmation" autofocus formnovalidate>&#9989; Confirm save</button>
+        }
+      </div>
+      <noscript><p>To cancel, leave this question unanswered. Your edits have not been saved.</p></noscript>
+    </dialog>
+  }
+  @if (Model.IsManualSale) { <div class="notice" role="status"><strong>Manual Sale</strong> &middot; Booking agent: @Model.Launch.AgentId &middot; Service: @Model.Launch.Service. Save an appointment date and time to include this record in reporting.</div> }
+  <header class="topbar">
+    <div aria-live="polite"><span class="eyebrow">Current contact</span><h1 data-current-contact="name">@(string.IsNullOrWhiteSpace(Model.Contact) ? "New inbound contact" : Model.Contact)</h1><p data-current-contact="summary">@Model.Title @if(!string.IsNullOrWhiteSpace(Model.CompanyName)){<text>&middot; @Model.CompanyName</text>} @if(!string.IsNullOrWhiteSpace(Model.Location)){<text>&middot; @Model.Location</text>}</p></div>
+    <div class="event"><span data-current-contact="event">@(string.IsNullOrWhiteSpace(Model.EventType) ? "General" : Model.EventType)</span> event</div>
+  </header>
+
+  @if (!string.IsNullOrWhiteSpace(Model.ErrorMessage)) { <div class="notice error" role="alert">@Model.ErrorMessage</div> }
+  @if (!string.IsNullOrWhiteSpace(Model.StatusMessage)) { <div class="notice success" role="status">@Model.StatusMessage</div> }
+  @if (!string.IsNullOrWhiteSpace(Model.AttributionWarning)) { <div class="notice" role="alert">@Model.AttributionWarning</div> }
+  <div id="workspace-save-warning" class="notice" role="alert" hidden></div>
+
+  @Html.ValidationSummary(false, "Please review the following fields. Your entered values are still on this page.", new { @class="notice error", role="alert" })
+  <main class="layout">
+    <section class="panel guide">
+      <div class="section-heading"><div><span class="eyebrow">Research data</span><h2>Research brief</h2></div><span class="meta">AI-assisted</span></div>
+      @Html.TextAreaFor(m => m.AiData, new { maxlength="2500", rows="7", @class="research", aria_label="Research brief" })
+      <label class="field trigger"><span>TRIGGER EVENT</span>@Html.DropDownListFor(m => m.EventAccurate, new[] { new SelectListItem{Text="Select result",Value=""}, new SelectListItem{Text="True",Value="True"}, new SelectListItem{Text="False",Value="False"}, new SelectListItem{Text="Unable to Confirm",Value="Unable to Confirm"} })</label>
+
+      <div class="advisor-block">
+        <div class="field"><label for="advisor-select" class="eyebrow">Advisor</label><select id="advisor-select" name="FinalAdvisorId" data-bf-searchable-select data-search-placeholder="Search advisors">
+          @foreach(var item in Model.Advisors) {
+            <option value="@item.Id" selected="@(item.Id == Model.FinalAdvisorId ? "selected" : null)"
+                    data-name="@item.AdvisorName" data-first="@item.AdvisorFirst" data-firm="@item.AdvisorFirm"
+                    data-email="@item.AdvisorEmail" data-phone="@item.AdvisorPhone" data-website="@item.Website"
+                    data-zoom-link="@item.ZoomLink" data-phone-link="@item.PhoneLink" data-time-zone="@item.AdvisorTimeZone">@item.AdvisorName</option>
+          }
+        </select></div>
+        <div id="advisor-summary" class="advisor-summary">
+          <strong data-advisor-summary="firm">@advisor.AdvisorFirm</strong><span data-advisor-summary="contact">@advisor.AdvisorPhone &middot; @advisor.AdvisorEmail</span><span data-advisor-summary="time-zone">@advisor.AdvisorTimeZone</span>
+          <a class="plain-action" data-advisor-link="schedule" href="@advisor.PhoneLink" target="_blank" rel="noopener" hidden="@(string.IsNullOrWhiteSpace(advisor.PhoneLink) ? "hidden" : null)">Schedule an appointment</a>
+          <a class="plain-action" data-advisor-link="website" href="@advisor.Website" target="_blank" rel="noopener" hidden="@(string.IsNullOrWhiteSpace(advisor.Website) ? "hidden" : null)">Website</a>
+          <a class="plain-action" data-advisor-link="calendar" href="@advisor.ZoomLink" target="_blank" rel="noopener" hidden="@(string.IsNullOrWhiteSpace(advisor.ZoomLink) ? "hidden" : null)">Calendar</a>
+        </div>
+      </div>
+
+      <div class="section-heading script-heading">
+        <div><span class="eyebrow">Approved script</span><h2>Call guide</h2></div>
+        <div class="script-heading-actions"><span class="meta" data-script-progress>Database script</span><button type="button" class="plain-action" data-toggle="script" aria-expanded="true">Collapse</button></div>
+      </div>
+      <div id="script" class="script-guide" data-script-guide>
+        <div class="script-guide-steps" data-script-steps hidden></div>
+        <article class="script-copy" data-script-source>@Html.Raw(Model.ScriptHtml)</article>
+      </div>
+    </section>
+
+    <aside class="details">
+      <section class="panel">
+        <div class="section-heading"><h2>Contact details</h2><span class="meta">Record #@Model.RecordId</span></div>
+        <div class="fields">
+          <label class="field span-2"><span>Full name</span>@Html.TextBoxFor(m => m.Contact, new { maxlength="255" })</label>
+          <label class="field"><span>Phone</span>@Html.TextBoxFor(m => m.KeyPhone, new { maxlength="10", pattern="[0-9]{10}", title="Enter a 10-digit phone number", inputmode="tel" })</label>
+          <label class="field"><span>Email</span>@Html.TextBoxFor(m => m.EmailAddress, new { maxlength="150", type="email" })</label>
+          <label class="field span-2"><span>LinkedIn</span>@Html.TextBoxFor(m => m.LinkedInUrl, new { maxlength="255", type="url" })</label>
+          <label class="field"><span>Title</span>@Html.TextBoxFor(m => m.Title, new { maxlength="255" })</label>
+          <label class="field"><span>Company</span>@Html.TextBoxFor(m => m.CompanyName, new { maxlength="255" })</label>
+          <label class="field"><span>City</span>@Html.TextBoxFor(m => m.City, new { maxlength="150", autocomplete="address-level2" })</label>
+          <label class="field"><span>State</span>@Html.DropDownListFor(m => m.State, PraxisAPI.Models.WorkspaceViewModel.StateOptions(Model.State), "Select a state", new { autocomplete="address-level1" })</label>
+          <label class="field span-2"><span>Country</span>@Html.TextBoxFor(m => m.Country, new { maxlength="100", autocomplete="country-name" })</label>
+          <label class="field"><span>Industry</span>@Html.TextBoxFor(m => m.Industry, new { maxlength="255" })</label>
+          <label class="field"><span>University</span>@Html.TextBoxFor(m => m.University, new { maxlength="255" })</label>
+        </div>
+      </section>
+      <section class="panel" id="appointment">
+        <div class="section-heading"><h2>Appointment</h2><span class="meta" data-advisor-time-zone>@advisor.AdvisorTimeZone</span></div>
+        <div class="links">
+         <a data-advisor-link="schedule" href="@advisor.PhoneLink" target="_blank" rel="noopener" hidden="@(string.IsNullOrWhiteSpace(advisor.PhoneLink) ? "hidden" : null)">Schedule an appointment</a>
+        </div>
+        <div class="field"><span id="appointment-date-time-label">Date and time</span>@Html.Hidden("AppointmentDateTime", Model.AppointmentDateTime.HasValue ? Model.AppointmentDateTime.Value.ToString("yyyy-MM-ddTHH:mm") : "")<div id="appointment-date-time-picker"></div></div>
+        <div class="field"><span id="appointment-time-zone-label">Appointment time zone</span>@Html.TextBoxFor(m => m.AppointmentTimeZone, new { maxlength="50", autocomplete="off", placeholder="Search time zones", aria_labelledby="appointment-time-zone-label", aria_describedby="appointment-time-zone-help" })<select id="appointment-time-zone-options" hidden aria-hidden="true" tabindex="-1">@foreach (var option in Model.AppointmentTimeZones) {<option value="@option.Id" data-display-name="@option.DisplayName"></option>}</select><div id="appointment-time-zone-picker"></div></div>
+        <p class="meta" id="appointment-time-zone-help">Defaults to your current time zone when it is available. Otherwise, select the time zone used in the scheduling site. Advisor timezone: <span data-advisor-time-zone>@advisor.AdvisorTimeZone</span>.</p>
+        <label class="check">@Html.CheckBoxFor(m => m.AppointmentConfirmed) <span>Confirmed with contact</span></label>
+      </section>
+      <section class="panel">
+        <div class="section-heading"><h2>Call notes</h2><span id="notes-counter" class="meta">0 / 2,500</span></div>
+        @Html.TextAreaFor(m => m.AgentNotes, new { maxlength="2500", rows="8", id="notes" })
+      </section>
+    </aside>
+  </main>
+  <p class="meta bf-workspace-save-help">Save keeps contact details and notes for any call. Set Appointment saves the booking. Send Info saves contact details and notes for an information request. Only Set Appointment and Send Info copy a summary after saving; select the matching disposition in BrightPattern.</p>
+  <footer><span id="save-state" aria-live="polite">No unsaved changes</span>
+    <div class="bf-workspace-save-actions">
+      <button type="button" class="plain-action" id="workspace-copy-again" hidden>&#128203; Copy again</button>
+      <button class="primary" type="submit" name="workspaceAction" value="Save" formnovalidate>&#128190; Save</button>
+      <button class="primary" type="submit" name="workspaceAction" value="SetAppointment" formnovalidate>&#9200; Set Appointment</button>
+      <button class="primary bf-workspace-send-info" type="submit" name="workspaceAction" value="SendInfo" formnovalidate>&#128195; Send Info</button>
+    </div>
+  </footer>
+</form>
+<footer class="bf-application-footer" aria-label="Application and BrightPattern references">
+  <span>Version <code>@ByteForge.Toolkit.Core.Core.GetDisplayVersion(typeof(PraxisAPI.Controllers.WorkspaceController).Assembly)</code></span>
+  @if (!string.IsNullOrWhiteSpace(Model.Launch.SessionId)) { <span>BP Session ID: <code>@Model.Launch.SessionId</code></span> }
+  @if (!string.IsNullOrWhiteSpace(Model.Launch.GlobalSessionId)) { <span>Global Session ID: <code>@Model.Launch.GlobalSessionId</code></span> }
+</footer>
+@if (!string.IsNullOrWhiteSpace(Model.AttributionWarning)) {
+  <dialog id="bf-workspace-attribution-warning" class="bf-workspace-attribution-warning" aria-labelledby="bf-attribution-title" aria-describedby="bf-attribution-message">
+    <h2 id="bf-attribution-title">Agent ID unavailable</h2>
+    <p id="bf-attribution-message">@Model.AttributionWarning</p>
+    <form method="dialog"><button type="submit" autofocus>&#10006;&#65039; Close</button></form>
+  </dialog>
+}
+<script src="@Url.Content("~/Scripts/ByteForge/ByteForge-date-time-picker.js?v=20261019-1")"></script>
+<script src="@Url.Content("~/Scripts/ByteForge/ByteForge-time-zones.js?v=20260910-3")"></script>
+<script src="@Url.Content("~/Scripts/Praxis/workspace-script-guide.js?v=20260911-1")"></script>
+<script src="@Url.Content("~/Scripts/ByteForge/ByteForge-searchable-select.js?v=20260928-1")"></script>
+<script src="@Url.Content("~/Scripts/Praxis/workspace.js?v=20261023-1")"></script>
+<script src="@Url.Content("~/Scripts/Praxis/workspace-save.js?v=20261026-1")"></script>
+    <script src="@Url.Content("~/Scripts/ByteForge/ByteForge-page-loading.js")?v=20260926-1"></script>
+<script src="@Url.Content("~/Scripts/ByteForge/ByteForge-phonetic-alphabet.js")?v=20261012-1" data-position="top-right" data-state-key="Praxis.PhoneticAlphabet.Collapsed"></script>
+</body>
+</html>

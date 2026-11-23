@@ -1,3 +1,8 @@
+#if NET48
+using System.Data.SqlClient;
+#else
+using Microsoft.Data.SqlClient;
+#endif
 using System.Reflection;
 
 namespace ByteForge.Toolkit.Data;
@@ -101,6 +106,9 @@ public partial class BulkDbProcessor<T>
     /// Can be overridden in derived classes to customize timeout behavior.
     /// </remarks>
     public int BulkCopyTimeout { get; set; } = 600;
+
+    /// <summary>Gets or sets the SQL Server options applied to bulk inserts.</summary>
+    public SqlBulkCopyOptions InsertOptions { get; set; } = SqlBulkCopyOptions.Default;
 
     /// <summary>
     /// Gets the cached property to column mapping.

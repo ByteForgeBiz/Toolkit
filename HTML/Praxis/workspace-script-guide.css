@@ -1,0 +1,266 @@
+.script-heading-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.script-guide {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+}
+
+.script-guide-steps {
+  display: grid;
+  gap: 10px;
+}
+
+.script-guide-step {
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--border);
+  border-radius: 10px;
+  background: var(--input);
+  transition: border-color 140ms ease, background-color 140ms ease;
+}
+
+.script-guide-step.is-current {
+  border-left-color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.script-guide-step.is-complete:not(.is-current) {
+  border-left-color: var(--success);
+}
+
+.script-guide-step-toggle {
+  display: grid;
+  grid-template-columns: 28px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 12px 14px;
+  border: 0;
+  color: var(--text);
+  background: transparent;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.script-guide-step-toggle:hover {
+  background: color-mix(in srgb, var(--accent) 8%, transparent);
+}
+
+.script-guide-step-number {
+  display: inline-grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  color: var(--muted);
+  background: var(--panel);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.script-guide-step.is-current .script-guide-step-number {
+  border-color: var(--accent);
+  color: white;
+  background: var(--accent);
+}
+
+.script-guide-step.is-complete:not(.is-current) .script-guide-step-number {
+  border-color: var(--success);
+  color: var(--success);
+}
+
+.script-guide-step-title {
+  font-weight: 600;
+}
+
+.script-guide-step-state {
+  color: var(--accent);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.script-guide-step-disclosure {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+}
+
+.script-guide-step-chevron {
+  display: inline-flex;
+  align-items: center;
+  width: 18px;
+  color: var(--accent);
+  font-size: 13px;
+  line-height: 1;
+  transform: rotate(90deg);
+  transform-origin: center;
+  transition: transform 240ms cubic-bezier(.2, .75, .25, 1);
+}
+
+.script-guide-step-chevron span + span {
+  margin-left: -7px;
+}
+
+.script-guide-step.is-current .script-guide-step-chevron {
+  transform: rotate(-90deg);
+}
+
+.script-guide-step-body-shell {
+  display: grid;
+  grid-template-rows: 0fr;
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    grid-template-rows 260ms cubic-bezier(.2, .75, .25, 1),
+    opacity 170ms ease,
+    visibility 0s linear 260ms;
+}
+
+.script-guide-step.is-current .script-guide-step-body-shell {
+  grid-template-rows: 1fr;
+  opacity: 1;
+  visibility: visible;
+  transition:
+    grid-template-rows 260ms cubic-bezier(.2, .75, .25, 1),
+    opacity 200ms ease 45ms,
+    visibility 0s linear 0s;
+}
+
+.script-guide-step-body {
+  min-height: 0;
+  padding: 0 16px 0 52px;
+  overflow: hidden;
+  overflow-wrap: anywhere;
+  color: var(--text);
+  font-size: 15px;
+  line-height: 1.58;
+  transition: padding 260ms cubic-bezier(.2, .75, .25, 1);
+}
+
+.script-guide-step.is-current .script-guide-step-body {
+  padding-top: 4px;
+  padding-bottom: 16px;
+}
+
+.script-guide-step-body * {
+  /* Preserve editor colors, fonts and sizes; unformatted text inherits naturally. */
+  line-height: inherit !important;
+}
+
+.script-guide-step-body :is(p, h1, h2, h3, h4, h5, h6) {
+  margin: 0 0 12px !important;
+  font-weight: 400;
+}
+
+.script-guide-step-body strong {
+  font-weight: 600;
+}
+
+.script-guide-step-body .script-cue {
+  display: inline-block;
+  margin-right: 4px;
+  color: var(--accent);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+}
+
+.script-guide-step-body .script-direction {
+  padding: 9px 11px;
+  border-left: 3px solid var(--accent);
+  border-radius: 0 7px 7px 0;
+  background: color-mix(in srgb, var(--accent) 8%, transparent);
+}
+
+.script-guide-step-body .script-checklist-item {
+  padding: 9px 11px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--panel);
+}
+
+.script-guide-step-body .script-placeholder {
+  padding: 1px 4px;
+  border-radius: 4px;
+  color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+  font-weight: 600;
+}
+
+.script-guide-actions {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 16px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+}
+
+.script-guide-action {
+  min-width: 92px;
+  padding: 8px 12px;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  color: var(--text);
+  background: var(--panel);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.script-guide-action.is-next {
+  margin-left: auto;
+  border-color: var(--accent);
+  color: white;
+  background: var(--accent);
+}
+
+.script-guide-action:hover {
+  filter: brightness(1.06);
+}
+
+.script-guide-action:disabled {
+  opacity: .45;
+  cursor: default;
+}
+
+@media (max-width: 620px) {
+  .script-heading-actions .meta {
+    display: none;
+  }
+
+  .script-guide-step-toggle {
+    grid-template-columns: 28px minmax(0, 1fr) auto;
+  }
+
+  .script-guide-step-state {
+    display: none;
+  }
+
+  .script-guide-step-body {
+    padding-right: 12px;
+    padding-left: 12px;
+  }
+
+  .script-guide-step.is-current .script-guide-step-body {
+    padding-top: 4px;
+    padding-bottom: 14px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .script-guide-step,
+  .script-guide-step-chevron,
+  .script-guide-step-body-shell,
+  .script-guide-step-body {
+    transition: none;
+  }
+}

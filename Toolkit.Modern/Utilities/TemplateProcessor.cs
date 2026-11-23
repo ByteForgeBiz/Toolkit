@@ -27,6 +27,14 @@ public sealed class TemplateProcessor
     public bool UseEscapeSequences { get; set; } = false;
 
     /// <summary>
+    /// Gets or sets a value indicating whether new lines should be replaced in the output.
+    /// </summary>
+    /// <remarks>
+    /// If set to true, the output will replace new lines with HTML line breaks.
+    /// </remarks>
+    public bool ReplaceNewLines { get; set; } = false;
+
+    /// <summary>
     /// Adds a key-value pair to the dictionary.
     /// </summary>
     /// <param name="key">The key to add.</param>
@@ -84,6 +92,9 @@ public sealed class TemplateProcessor
 
         if (UseEscapeSequences)
             result = Regex.Unescape(result);
+
+        if (ReplaceNewLines)
+            result = (new Regex(@"\r?\n")).Replace(result, "<br/>");
 
         return result;
     }

@@ -68,3 +68,21 @@ The modern toolkit includes these legacy-parity additions:
 - Assembly metadata attributes under `ByteForge.Toolkit`.
 - Static HTML support assets under the repo-level `HTML` folder, with the
   companion overview in `Docs/HTML.md`.
+
+## November 2026 Telecom sync
+
+The Telecom fork's configuration reload/raw-value/collection assignment APIs,
+database connection transactions, application names, execution-plan and deadlock
+diagnostics, shared TELCO account/RBAC services, request probe defenses, mail
+helpers, and current HTML assets have been integrated into the modern layout.
+Shared account assets are embedded from the root `HTML` directory while retaining
+the logical resource names expected by the imported services.
+
+Two compatibility choices differ from Telecom: configuration reload refreshes
+existing typed settings objects in place, and `TemplateProcessor.ReplaceNewLines`
+defaults to false so existing plaintext templates keep their line breaks. Set it
+to true to produce HTML `<br/>` elements.
+
+The modern WinSCP source project, assembly identity, package versions, and existing
+modernized tests are retained. See [the sync record](Docs/Telecom-Sync.md) for scope,
+verification commands, and remaining validation limits.

@@ -8,6 +8,7 @@ using System.Data.SqlClient;
 using Microsoft.Data.SqlClient;
 #endif
 using System.Text.RegularExpressions;
+using System.Collections.Concurrent;
 
 namespace ByteForge.Toolkit.Data;
 /*
@@ -19,6 +20,9 @@ namespace ByteForge.Toolkit.Data;
  */
 public partial class DBAccess
 {
+    /// <summary>Bounded cache of names only; query argument values are never retained.</summary>
+    private static readonly ConcurrentDictionary<string,string[]> ParameterNameCache = new(StringComparer.Ordinal);
+
     /// <summary>
     /// Matches the boundary before a bind parameter while excluding SQL Server system variables such as @@ROWCOUNT.
     /// </summary>
@@ -128,6 +132,20 @@ public partial class DBAccess
     /// </remarks>
     private List<string> ParseParameters(string query)
     {
+        if (string.IsNullOrWhiteSpace(query)) return [];
+        // Large ad-hoc SQL is not retained. Provider and regex culture affect parsing semantics.
+        if (query.Length > 65536) return ParseParameterNames(query);
+        var key = Options.DatabaseType + ":" + System.Globalization.CultureInfo.CurrentCulture.Name + "\n" + query;
+        if (ParameterNameCache.TryGetValue(key, out var cached)) return new List<string>(cached);
+        var parsed = ParseParameterNames(query);
+        if (ParameterNameCache.Count >= 128) ParameterNameCache.Clear();
+        ParameterNameCache.TryAdd(key, parsed.ToArray());
+        return parsed;
+    }
+
+    /// <summary>Extracts bind names using the existing SQL/ODBC parsing rules.</summary>
+    private List<string> ParseParameterNames(string query)
+    {
         var allowRepetition = Options.DatabaseType == DataBaseType.ODBC;
         var set = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         var parameters = new List<string>();
@@ -160,7 +178,7 @@ public partial class DBAccess
         // Exclude assignments that are preceded by comparison keywords (these are comparisons, not parameter assignments)
         var namedAssignments = Regex.Matches(
             noComments,
-            @"(?<!(WHERE|HAVING|AND|OR|WHEN|ON|CASE|THEN|ELSE|NOT|EXISTS|IN|ANY|ALL|SOME)\s+)" +
+            @"(?<!(WHERE|HAVING|AND|OR|WHEN|ON|CASE|THEN|ELSE|NOT|EXISTS|IN|ANY|ALL|SOME|IF|WHILE)\s+)" +
             ParameterPrefixBoundaryPattern +
             ParameterNamePattern +
             @"\s*=\s*(?<valueParam>" +
@@ -191,7 +209,7 @@ public partial class DBAccess
 
             // Skip if this parameter is the left side of an assignment that is NOT a comparison
             // (i.e., skip assignments that are NOT preceded by comparison keywords)
-            var isAssignmentNotComparison = Regex.IsMatch(noComments, @"(?<!(WHERE|HAVING|AND|OR|WHEN|ON|CASE|THEN|ELSE|NOT|EXISTS|IN|ANY|ALL|SOME)\s+)" +
+            var isAssignmentNotComparison = Regex.IsMatch(noComments, @"(?<!(WHERE|HAVING|AND|OR|WHEN|ON|CASE|THEN|ELSE|NOT|EXISTS|IN|ANY|ALL|SOME|IF|WHILE)\s+)" +
                 ParameterPrefixBoundaryPattern +
                 Regex.Escape(param) +
                 @"\s*=\s*(?:" +

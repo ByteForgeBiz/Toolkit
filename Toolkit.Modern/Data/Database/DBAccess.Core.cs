@@ -19,6 +19,7 @@ namespace ByteForge.Toolkit.Data;
  * | EncryptedUser        | esUser             | The encrypted database user.                                                    |
  * | EncryptedPassword    | esPass             | The encrypted database password.                                                |
  * | ConnectionString     | sConnectionString  | The direct connection string (if provided).                                     |
+ * | ApplicationName      | sApplicationName   | The friendly application name reported to SQL Server.                           |
  * | UseEncryption        | bEncrypt           | Indicates whether the connection should be encrypted.                           |
  * | ConnectionTimeout    | iConnectionTimeout | The connection timeout duration in seconds (defaults to 60 seconds).            |
  * | CommandTimeout       | iCommandTimeout    | The command timeout duration in seconds (defaults to 240 seconds).              |
@@ -38,6 +39,8 @@ namespace ByteForge.Toolkit.Data;
 /// </summary>
 public partial class DBAccess : IDatabaseAccess
 {
+    private readonly string _defaultApplicationName;
+
     /// <summary>
     /// Enum representing the type of database.
     /// </summary>
@@ -103,6 +106,7 @@ public partial class DBAccess : IDatabaseAccess
             throw new ArgumentException("The database section cannot contain a colon.", nameof(dbSection));
 
         Options = Configuration.Configuration.GetSection<DatabaseOptions>(dbSection);
+        _defaultApplicationName = ResolveApplicationName();
     }
 
     /// <summary>
@@ -113,6 +117,7 @@ public partial class DBAccess : IDatabaseAccess
     public DBAccess(DatabaseOptions options)
     {
         Options = options ?? throw new ArgumentNullException(nameof(options));
+        _defaultApplicationName = ResolveApplicationName();
     }
 
     /// <summary>
@@ -134,7 +139,7 @@ public partial class DBAccess : IDatabaseAccess
     /// <summary>
     /// Gets the connection string for the database.
     /// </summary>
-    public string ConnectionString => Options.GetConnectionString();
+    public string ConnectionString => GetConnectionStringWithApplicationName();
 
     /// <summary>
     /// Gets the number of records affected by the last executed query.

@@ -1,0 +1,29 @@
+.bf-praxis-admin { padding-left: 232px; }
+.bf-praxis-sidebar { position: fixed; inset: 0 auto 0 0; width: 232px; z-index: 25; overflow-y: auto; padding: 28px 18px; background: var(--report-surface); border-right: 1px solid var(--report-border); }
+.bf-praxis-brand { display: grid; gap: 6px; padding: 0 14px 28px; color: var(--report-muted); font-size: .85rem; }
+.bf-praxis-brand strong { color: var(--report-text); font-size: 1.65rem; font-weight: 700; }
+.bf-praxis-sidebar nav { display: grid; gap: 8px; }
+.bf-praxis-sidebar nav a { display: block; padding: 13px 14px; border: 1px solid transparent; border-radius: 8px; color: var(--report-text); text-decoration: none; font-weight: 500; }
+.bf-praxis-sidebar nav a:hover { background: var(--report-surface-soft); border-color: var(--report-border); }
+.bf-praxis-sidebar nav a[aria-current="page"] { background: var(--report-primary-soft); color: var(--report-primary-dark); border-color: var(--report-primary); font-weight: 600; }
+.bf-praxis-sidebar nav a:focus-visible { outline: 2px solid var(--report-primary); outline-offset: 3px; }
+.bf-praxis-admin .report-main { padding-top: 26px; }
+.bf-praxis-admin .report-header-inner { flex-wrap: wrap; gap: 12px; padding-block: 12px; }
+.bf-praxis-admin .report-brand-detail { font-weight: 500; }
+@media (min-width: 901px) and (max-width: 1500px) {
+    .bf-praxis-admin .script-editor-layout { grid-template-columns: minmax(0, 1fr) minmax(200px, 240px); }
+    .bf-praxis-admin .script-list-panel { grid-column: 1 / -1; }
+}
+@media (max-width: 1100px) {
+    .bf-praxis-admin .script-editor-layout { grid-template-columns: minmax(0, 1fr); }
+    .bf-praxis-admin .script-list-panel, .bf-praxis-admin .script-form-panel, .bf-praxis-admin .script-token-panel { grid-column: 1; }
+    .bf-praxis-admin .script-token-panel { position: static; max-height: none; }
+}
+@media (max-width: 900px) {
+    .bf-praxis-admin { padding-left: 0; }
+    .bf-praxis-sidebar { position: static; width: auto; padding: 16px 20px; border-right: 0; border-bottom: 1px solid var(--report-border); }
+    .bf-praxis-brand { padding: 0 0 12px; display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+    .bf-praxis-brand strong { font-size: 1.2rem; }
+    .bf-praxis-sidebar nav { display: flex; flex-wrap: wrap; }
+    .bf-praxis-sidebar nav a { padding: 10px 12px; }
+}

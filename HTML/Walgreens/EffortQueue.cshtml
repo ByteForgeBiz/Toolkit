@@ -1,0 +1,102 @@
+@model PaydayPerx.Walgreens.Web.Models.Admin.WalgreensEffortQueueViewModel
+@{
+    ViewBag.Title = "Effort Queue";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+@functions {
+    private string QueueUrl(string sort, int page)
+    {
+        return Url.Action("Index", new { search = Model.Search, status = Model.Status, sort,
+            direction = sort == Model.Sort ? Model.Direction : "asc", page, pageSize = Model.PageSize });
+    }
+    private string SortUrl(string sort)
+    {
+        return Url.Action("Index", new { search = Model.Search, status = Model.Status, sort,
+            direction = sort == Model.Sort && Model.Direction == "asc" ? "desc" : "asc", page = 1, pageSize = Model.PageSize });
+    }
+    private string Indicator(string sort) { return sort != Model.Sort ? "" : Model.Direction == "asc" ? " (ascending)" : " (descending)"; }
+}
+@section styles {
+    <link rel="stylesheet" href="@Url.Content("~/Content/ByteForge/ByteForge-effort-queue.css")?v=20261023-1" />
+}
+<section class="admin-panel bf-effort-queue">
+    <p>Accepted efforts are stored on this server before the agent receives confirmation. Pending efforts have not yet finished saving to the database. All times below are UTC.</p>
+    @if (TempData["EffortQueueMessage"] != null) { <p role="status">@TempData["EffortQueueMessage"]</p> }
+    @if (!string.IsNullOrWhiteSpace(Model.Error)) { <p role="alert">@Model.Error</p> }
+    else if (!Model.Enabled) { <p role="status">The effort queue is disabled. Agent actions currently save directly.</p> }
+    else
+    {
+        <p class="bf-effort-summary" role="status">Pending: <strong>@Model.Pending</strong> &middot; Needs attention: <strong>@Model.Attention</strong> &middot; Completed: <strong>@Model.Completed</strong></p>
+        <p>Unreadable (Corrupt) files pause processing until recovered. A failed effort holds later efforts for the same lead or call in order.</p>
+        <form method="get" action="@Url.Action("Index")" class="bf-effort-filters">
+            <label>Search <input type="search" name="search" value="@Model.Search" placeholder="Reference, agent, lead, company or error" /></label>
+            <label>Status <select name="status">
+                <option value="">All statuses</option>
+                @foreach (var state in new[] { "Pending", "Processing", "Retrying", "NeedsAttention", "Corrupt", "Completed" })
+                { <option value="@state" selected="@(state == Model.Status ? "selected" : null)">@(state == "NeedsAttention" ? "Needs attention" : state)</option> }
+            </select></label>
+            <input type="hidden" name="sort" value="@Model.Sort" />
+            <input type="hidden" name="direction" value="@Model.Direction" />
+            <input type="hidden" name="page" value="1" />
+            <details><summary title="List settings">&#9881;&#65039; Settings</summary>
+                <label>Rows per page <select name="pageSize">
+                    @foreach (var size in new[] { 10, 25, 50, 100 }) { <option value="@size" selected="@(size == Model.PageSize ? "selected" : null)">@size</option> }
+                </select></label>
+            </details>
+            <button type="submit" class="small-button">&#128269; Search</button>
+            <a class="small-button" href="@QueueUrl(Model.Sort, Model.Page)">&#128260; Refresh</a>
+        </form>
+        <div class="bf-effort-table-wrap"><table>
+            <thead><tr>
+                <th scope="col">Reference / lead</th>
+                <th scope="col"><a href="@SortUrl("kind")">Action @Indicator("kind")</a></th>
+                <th scope="col"><a href="@SortUrl("agent")">Agent @Indicator("agent")</a></th>
+                <th scope="col"><a href="@SortUrl("status")">Status @Indicator("status")</a></th>
+                <th scope="col"><a href="@SortUrl("accepted")">Accepted @Indicator("accepted")</a></th>
+                <th scope="col"><a href="@SortUrl("attempts")">Attempts @Indicator("attempts")</a></th>
+                <th scope="col"><a href="@SortUrl("next")">Next attempt @Indicator("next")</a></th>
+                <th scope="col">Details / recovery</th>
+            </tr></thead>
+            <tbody>
+                @foreach (var effort in Model.Rows)
+                {
+                    var action = effort.Kind == "Outcome" && effort.Outcome != null ? effort.Outcome.Outcome
+                        : effort.Disposition != null ? effort.Disposition.Disposition
+                        : effort.SendInfoDisposition != null ? effort.SendInfoDisposition.Disposition : effort.Kind;
+                    var agent = effort.Intake != null ? effort.Intake.AgentId
+                        : effort.Note != null ? effort.Note.AgentId
+                        : effort.Outcome != null ? effort.Outcome.AgentId : effort.Actor;
+                    action = action == "MoreInfo" ? "GK Send Info" : action == "SendVoucher" ? "Send Voucher" : action == "NotInterested" ? "Not Interested" : action;
+                    <tr>
+                        <td><code title="@effort.Id" aria-label="@effort.Id">@effort.Id.ToString("N").Substring(0, 12)</code><br />@effort.Stream</td>
+                        <td>@action</td>
+                        <td>@agent</td>
+                        <td>@(effort.Status == "NeedsAttention" ? "Needs attention" : effort.Status) @if (Model.Blocked.Contains(effort.Id)) { <span>(waiting for earlier effort)</span> }</td>
+                        <td>@effort.AcceptedAtUtc.ToString("yyyy-MM-dd HH:mm:ss")</td>
+                        <td>@effort.Attempts</td>
+                        <td>@(effort.NextAttemptAtUtc.HasValue ? effort.NextAttemptAtUtc.Value.ToString("yyyy-MM-dd HH:mm:ss") : "--")</td>
+                        <td>
+                            @if (effort.RecordId.HasValue) { <span>Record @effort.RecordId</span> }
+                            @if (effort.CompletedAtUtc.HasValue) { <span>Completed @effort.CompletedAtUtc.Value.ToString("yyyy-MM-dd HH:mm:ss")</span> }
+                            @if (!string.IsNullOrWhiteSpace(effort.LastError)) { <p>@effort.LastError</p> }
+                            @if (effort.Errors.Count > 0) { <details><summary>&#128065;&#65039; Attempt history</summary><ul>@foreach (var error in effort.Errors) { <li>@error</li> }</ul></details> }
+                            @if (Model.CanRetry && (effort.Status == "NeedsAttention" || effort.Status == "Retrying"))
+                            {
+                                <form method="post" action="@Url.Action("Retry")">@Html.AntiForgeryToken()
+                                    <input type="hidden" name="id" value="@effort.Id" />
+                                    <button type="submit" class="small-button">&#128260; Retry</button>
+                                </form>
+                            }
+                        </td>
+                    </tr>
+                }
+                @if (Model.Rows.Count == 0) { <tr><td colspan="8">No efforts match these filters.</td></tr> }
+            </tbody>
+        </table></div>
+        <nav class="bf-effort-pagination" aria-label="Effort queue pages">
+            @if (Model.Page > 1) { <a href="@QueueUrl(Model.Sort, Model.Page - 1)">Previous</a> }
+            <span>@Model.Total matching efforts &middot; Page @Model.Page of @Model.Pages</span>
+            @if (Model.Page < Model.Pages) { <a href="@QueueUrl(Model.Sort, Model.Page + 1)">Next</a> }
+        </nav>
+    }
+</section>

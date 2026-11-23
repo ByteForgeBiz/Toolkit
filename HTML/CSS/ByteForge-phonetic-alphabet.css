@@ -1,0 +1,45 @@
+.bf-phonetic-alphabet {
+    --bf-reference-bg: #ffffff;
+    --bf-reference-fg: #172b4d;
+    --bf-reference-border: #526581;
+    position: fixed;
+    bottom: max(0.5rem, env(safe-area-inset-bottom));
+    right: 0;
+    z-index: 1000;
+    display: flex;
+    align-items: stretch;
+    border: 1px solid var(--bf-reference-border);
+    border-radius: 0.4rem 0 0 0.4rem;
+    background: var(--bf-reference-bg);
+    color: var(--bf-reference-fg);
+    font: 500 13px/1.4 system-ui, sans-serif;
+    box-shadow: 0 2px 6px #0003;
+}
+.bf-phonetic-alphabet-top-right {
+    top: max(0.5rem, env(safe-area-inset-top));
+    bottom: auto;
+}
+.bf-phonetic-alphabet-link, .bf-phonetic-alphabet-toggle {
+    box-sizing: border-box;
+    padding: 0.55rem 0.65rem;
+    min-height: 36px;
+    background: transparent;
+    color: var(--bf-reference-fg);
+    font: inherit;
+}
+.bf-phonetic-alphabet-link { text-decoration: none; white-space: nowrap; }
+.bf-phonetic-alphabet-link[hidden] { display: none; }
+.bf-phonetic-alphabet-toggle { border: 0; border-radius: 0 0.4rem 0.4rem 0; min-width: 36px; cursor: pointer; }
+.bf-phonetic-alphabet-link:hover { text-decoration: underline; }
+.bf-phonetic-alphabet-toggle:hover { background: var(--bf-reference-fg); color: var(--bf-reference-bg); }
+.bf-phonetic-alphabet-link:focus-visible, .bf-phonetic-alphabet-toggle:focus-visible { outline: 2px solid var(--bf-reference-fg); outline-offset: -3px; }
+@media (prefers-color-scheme: dark) {
+    .bf-phonetic-alphabet { --bf-reference-bg: #172b4d; --bf-reference-fg: #f4f7fc; --bf-reference-border: #9bacbf; }
+}
+[data-theme="dark"] .bf-phonetic-alphabet, .dark .bf-phonetic-alphabet {
+    --bf-reference-bg: #172b4d; --bf-reference-fg: #f4f7fc; --bf-reference-border: #9bacbf;
+}
+[data-theme="light"] .bf-phonetic-alphabet {
+    --bf-reference-bg: #ffffff; --bf-reference-fg: #172b4d; --bf-reference-border: #526581;
+}
+@media print { .bf-phonetic-alphabet { display: none; } }

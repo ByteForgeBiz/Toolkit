@@ -1,0 +1,28 @@
+﻿.retention-data
+{
+    display: none;
+}
+
+.no-retention
+{
+    display: block;
+}
+/* Keep publication, offering, and offer controls compact and aligned. */
+.bf-ghm-header-row {
+    display: grid;
+    grid-template-columns: 30% minmax(0, 60%);
+    column-gap: 4px;
+    align-items: start;
+    margin-bottom: 8px;
+}
+.bf-ghm-header-row > .form-section-header,
+.bf-ghm-header-row > .header-select {
+    width: auto;
+    display: block;
+}
+.bf-ghm-header-row h2 {
+    margin: 0;
+}
+.bf-ghm-header-row:last-child {
+    align-items: center;
+}

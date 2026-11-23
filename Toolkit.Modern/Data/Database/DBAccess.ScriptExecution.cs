@@ -44,11 +44,15 @@ public partial class DBAccess
     public ScriptExecutionResult ExecuteScript(string script, object[]? arguments = null, bool captureResults = false)
     {
         var result = new ScriptExecutionResult();
+        IDbConnection? failedConnection = null;
+        var operationId = Guid.NewGuid().ToString("N");
 
         try
         {
             using var dbConn = CreateConnection();
             dbConn.Open();
+            InitializeDeadlockTrace(dbConn);
+            failedConnection = dbConn;
             var batches = SplitIntoBatches(script);
 
             foreach (var batch in batches)
@@ -101,6 +105,7 @@ public partial class DBAccess
         }
         catch (Exception ex)
         {
+            CaptureDeadlockTrace(ex, failedConnection, operationId);
             result.Success = false;
             result.LastException = LastException = ex;
 #if NETFRAMEWORK

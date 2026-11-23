@@ -280,13 +280,22 @@ public partial class DBAccess
     /// <returns>The <see cref="DataRowCollection"/> containing the retrieved records, or <see langword="null"/> if no records are found.</returns>
     public DataRowCollection? GetRecords(string query, params object?[]? arguments)
     {
+        return GetTable(query, arguments)?.Rows;
+    }
+
+    /// <summary>Gets a result table, preserving its schema when the query returns no rows.</summary>
+    /// <param name="query">The SQL query to execute.</param>
+    /// <param name="arguments">Values for the query parameters.</param>
+    /// <returns>The first result table, or null when execution fails or produces no table.</returns>
+    public DataTable? GetTable(string query, params object?[]? arguments)
+    {
         var data = ExecuteCommand<DataSet>(query, cmd => {
             var ds = new DataSet();
             var adpt = CreateDataAdapter(cmd);
             adpt.Fill(ds);
             return ds;
         }, arguments);
-        return data?.Tables.Count > 0 ? data.Tables[0].Rows : null;
+        return data?.Tables.Count > 0 ? data.Tables[0] : null;
     }
 
     /// <summary>
@@ -326,25 +335,60 @@ public partial class DBAccess
     /// <returns>The result of type <typeparamref name="T"/> returned by the execution delegate, or the default value of <typeparamref name="T"/> if an exception occurs.</returns>
     private T? ExecuteCommand<T>(string query, Func<IDbCommand, T?> execute, params object?[]? arguments)
     {
-        var maxAttempts = Options.RetryEnabled ? Math.Max(1, Options.RetryMaxAttempts) : 1;
+        // A failed command can leave its local transaction unusable, so never retry inside it.
+        var maxAttempts = ConnectionTransaction != null
+            ? 1
+            : Options.RetryEnabled ? Math.Max(1, Options.RetryMaxAttempts) : 1;
 
+        var operationId = Guid.NewGuid().ToString("N");
+        var reference = operationId.Substring(0, 4).ToUpperInvariant();
+        string queryId;
+        using (var hash = System.Security.Cryptography.SHA256.Create())
+            queryId = BitConverter.ToString(hash.ComputeHash(System.Text.Encoding.UTF8.GetBytes(query))).Replace("-", "");
+        var totalWatch = System.Diagnostics.Stopwatch.StartNew();
         for (var attempt = 1; attempt <= maxAttempts; attempt++)
         {
+            IDbConnection? ownedConnection = null;
+            IDbConnection? failedConnection = null;
+            var phaseWatch = System.Diagnostics.Stopwatch.StartNew();
+            long connectionMs = 0;
+            long executionMs = 0;
+            var failed = false;
             try
             {
-                using var dbConn = CreateConnection();
-                dbConn.Open();
-                var cmd = CreateCommand(dbConn, query, arguments);
+                var dbConn = ConnectionTransactionConnection;
+                if (dbConn == null)
+                {
+                    ownedConnection = CreateConnection();
+                    ownedConnection.Open();
+                    InitializeDeadlockTrace(ownedConnection);
+                    dbConn = ownedConnection;
+                }
+                failedConnection = dbConn;
+                connectionMs = phaseWatch.ElapsedMilliseconds;
+                using var cmd = CreateCommand(dbConn, query, arguments, reference);
+                if (ConnectionTransaction != null)
+                    cmd.Transaction = ConnectionTransaction;
+                if (Options.LogEstimatedExecutionPlan)
+                    LogEstimatedPlan(cmd, reference, operationId, attempt);
                 RecordsAffected = -1;
                 LastException = null;
-                return TimeFunc(() => execute(cmd));
+                phaseWatch.Restart();
+                try { return TimeFunc(() => execute(cmd), reference); }
+                finally { executionMs = phaseWatch.ElapsedMilliseconds; }
             }
             catch (Exception ex)
             {
+                failed = true;
+                if (ConnectionTransaction != null)
+                    _connectionTransactionFailed = true;
+                CaptureDeadlockTrace(ex, failedConnection, operationId);
+                if (connectionMs == 0 && executionMs == 0)
+                    connectionMs = phaseWatch.ElapsedMilliseconds;
                 if (attempt < maxAttempts && IsTransientException(ex))
                 {
                     var delay = (int)(Options.RetryDelayMs * Math.Pow(2, attempt - 1));
-                    Log.Warning($"Transient database error on attempt {attempt} of {maxAttempts}. Retrying in {delay}ms... ({ex.Message})");
+                    Log.Warning($"Query ({reference}): transient database error on attempt {attempt} of {maxAttempts}. Retrying in {delay}ms... ({ex.Message})");
                     Thread.Sleep(delay);
                     continue;
                 }
@@ -358,6 +402,15 @@ public partial class DBAccess
 #endif
                 LogQueryError(ex, query, arguments);
                 break;
+            }
+            finally
+            {
+                ownedConnection?.Dispose();
+                if (Options.SlowCommandMilliseconds > 0 &&
+                    (failed || totalWatch.ElapsedMilliseconds >= Options.SlowCommandMilliseconds))
+                    Log.Warning($"Database command timing; reference={reference}; operationId={operationId}; queryId={queryId}; " +
+                        $"activityId={System.Diagnostics.Trace.CorrelationManager.ActivityId}; attempt={attempt}; " +
+                        $"connectionMs={connectionMs}; executionMs={executionMs}; totalMs={totalWatch.ElapsedMilliseconds}; failed={failed}.");
             }
         }
 
@@ -391,10 +444,11 @@ public partial class DBAccess
     /// </summary>
     /// <typeparam name="T">The type of the result returned by the function.</typeparam>
     /// <param name="func">The function to be executed and timed.</param>
+    /// <param name="reference">A reference to the operation being performed.</param>
     /// <returns>The result of the function execution.</returns>
-    private T? TimeFunc<T>(Func<T?> func)
+    private T? TimeFunc<T>(Func<T?> func, string reference)
     {
-        var watch = new System.Diagnostics.Stopwatch();
+        var watch = System.Diagnostics.Stopwatch.StartNew();
         var hasError = false;
         try
         {
@@ -411,9 +465,9 @@ public partial class DBAccess
             watch.Stop();
             var elapsed = watch.Elapsed;
             if (hasError)
-                Log.Warning($"Query failed after {elapsed}.");
+                Log.Warning($"Query ({reference}) failed after {elapsed}.");
             else
-                Log.Verbose($"Query executed in {elapsed}.");
+                Log.Verbose($"Query ({reference}) executed in {elapsed}.");
         }
     }
 }

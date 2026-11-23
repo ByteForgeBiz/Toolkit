@@ -1,0 +1,45 @@
+.bf-lead-imports { font-weight: 400; --bf-import-boundary: #7d8e96; }
+.bf-lead-imports h1, .bf-lead-imports h2 { font-weight: 700; }
+.bf-lead-imports .bf-import-toolbar { display: flex; flex-wrap: wrap; gap: 16px; align-items: end; margin: 16px 0; }
+.bf-lead-imports label { display: grid; gap: 6px; font-weight: 500; }
+.bf-lead-imports #import-form input { height: 42px; box-sizing: border-box; }
+.bf-lead-imports #import-form label { margin-bottom: 0; }
+.bf-lead-imports #import-form .report-button { height: 42px; margin: 0; align-self: end; display: inline-flex; align-items: center; justify-content: center; }
+.bf-lead-imports input, .bf-lead-imports select { color: var(--report-text); background: var(--report-surface); border: 1px solid var(--bf-import-boundary); border-radius: 6px; padding: 9px; font-weight: 400; max-width: 100%; }
+.bf-lead-imports input::placeholder { color: var(--report-qa-muted); opacity: 1; }
+.bf-lead-imports input[type="checkbox"] { width: 16px; height: 16px; min-height: 0; padding: 0; border: 0; accent-color: var(--report-primary); }
+.bf-lead-imports .bf-import-approve { display: flex; align-items: center; gap: 8px; margin: 16px 0; }
+.bf-lead-imports .bf-import-scroll { overflow: auto; }
+.bf-lead-imports table { border-collapse: collapse; width: 100%; font-size: .9rem; }
+.bf-lead-imports th, .bf-lead-imports td { padding: 10px; border-bottom: 1px solid var(--report-border); text-align: left; vertical-align: top; }
+.bf-lead-imports th { font-weight: 600; background: var(--report-surface-soft); }
+.bf-lead-imports th button { color: var(--report-text); border: 0; background: transparent; cursor: pointer; font-weight: 600; }
+.bf-lead-imports tbody tr:hover { background: var(--report-surface-soft); }
+.bf-lead-imports button:disabled { opacity: .6; cursor: default; }
+.bf-lead-imports :is(button,input,select,a):focus-visible { outline: 2px solid var(--report-primary); outline-offset: 3px; }
+.bf-lead-imports .bf-import-note { color: var(--report-qa-muted); line-height: 1.6; }
+.bf-lead-imports .bf-import-error { color: var(--report-danger); }
+.bf-lead-imports pre { background: var(--report-surface-soft); color: var(--report-text); padding: 16px; white-space: pre-wrap; overflow-wrap: anywhere; font: inherit; }
+.bf-lead-imports progress { width: min(100%, 420px); accent-color: var(--report-primary); }
+.bf-lead-imports .bf-import-progress-panel { margin: 20px 0; padding: 16px; background: var(--report-surface-soft); border: 1px solid var(--bf-import-boundary); border-radius: 8px; }
+.bf-lead-imports .bf-import-progress-heading { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px; margin-bottom: 10px; }
+.bf-lead-imports .bf-import-progress-heading strong { font-weight: 600; }
+.bf-lead-imports .bf-import-progress-panel progress { width: 100%; height: 18px; }
+.bf-lead-imports .bf-import-progress-panel p { margin: 10px 0; overflow-wrap: anywhere; }
+.bf-lead-imports .bf-import-progress-panel small { color: var(--report-qa-muted); }
+.bf-lead-imports .bf-import-progress-panel.bf-import-failed { border-color: var(--report-danger); }
+.bf-lead-imports .bf-import-progress-panel.bf-import-failed progress { accent-color: var(--report-danger); }
+.bf-lead-imports .bf-import-progress-panel.bf-import-complete progress { accent-color: var(--report-success); }
+@media (max-width: 640px) { .bf-lead-imports .bf-import-toolbar { align-items: stretch; flex-direction: column; } .bf-lead-imports input { width: 100%; } }
+@media (prefers-color-scheme: dark) { .bf-lead-imports { --bf-import-boundary: #647d87; } }
+
+/* The modal uses the same semantic light/dark surfaces as the importer. */
+.bf-import-details { color: var(--report-text); font-weight: 400; }
+.bf-import-details h3 { font-size: 1rem; margin: 20px 0 10px; font-weight: 600; }
+.bf-import-details .bf-import-field-grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 12px 20px; margin: 12px 0; }
+.bf-import-field-grid > div { min-width: 0; padding: 10px; background: var(--report-surface-soft); border: 1px solid var(--report-border); border-radius: 6px; }
+.bf-import-field-grid dt { font-weight: 600; color: var(--report-qa-muted); font-size: .85rem; margin-bottom: 5px; }
+.bf-import-field-grid dd { margin: 0; white-space: pre-wrap; overflow-wrap: anywhere; font-weight: 400; }
+.bf-import-details #import-detail-reason { padding: 12px; border-left: 3px solid var(--report-primary); background: var(--report-surface-soft); }
+.bf-import-details table { font-size: .85rem; }
+@media (max-width: 640px) { .bf-import-details .bf-import-field-grid { grid-template-columns: minmax(0,1fr); } }

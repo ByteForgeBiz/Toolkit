@@ -41,6 +41,12 @@ internal interface IConfigSection
     /// </remarks>
     object Value { get; }
 
+    /// <summary>Assigns a value to one matching property without reloading the section.</summary>
+    /// <param name="key">The configured property name.</param>
+    /// <param name="value">The plaintext scalar or collection value.</param>
+    /// <returns>Whether the property belongs to this section.</returns>
+    bool TrySetValue(string key, object? value);
+
     /// <summary>
     /// Loads the configuration values from the configuration root.
     /// </summary>

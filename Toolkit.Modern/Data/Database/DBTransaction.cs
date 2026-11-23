@@ -23,11 +23,15 @@ public class DBTransaction : IDisposable
     /// </summary>
     public string Id { get; } = Guid.NewGuid().ToString().Substring(0, 8);
 
-    internal DBTransaction(DBAccess dbAccess, bool autoCommit)
+    internal DBTransaction(DBAccess dbAccess, bool autoCommit, IsolationLevel isolationLevel)
     {
         _dbAccess = dbAccess;
         AutoCommit = autoCommit;
-        _scope = new TransactionScope(TransactionScopeOption.Required);
+        _scope = new TransactionScope(TransactionScopeOption.Required, new TransactionOptions
+        {
+            IsolationLevel = isolationLevel,
+            Timeout = TransactionManager.DefaultTimeout
+        });
     }
 
     /// <summary>

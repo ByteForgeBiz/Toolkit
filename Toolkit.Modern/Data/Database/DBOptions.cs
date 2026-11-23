@@ -49,6 +49,24 @@ public class DatabaseOptions
     private const bool DefaultUseTrustedConnection = false;
     private const bool DefaultAutoTrimStrings = true;
     private const bool DefaultAllowNullStrings = false;
+    /// <summary>Gets or sets the threshold for value-free database phase diagnostics; zero disables them.</summary>
+    [ConfigName("iSlowCommandMilliseconds")]
+    [DefaultValue(1000)]
+    [Description("Log command fingerprint, attempt, connection and execution timings at or above this many milliseconds; zero disables phase diagnostics.")]
+    public int SlowCommandMilliseconds { get; set; } = 1000;
+
+    /// <summary>Gets or sets whether SQL Server estimated execution plans are logged before execution.</summary>
+    [ConfigName("bLogEstimatedExecutionPlan")]
+    [DefaultValue(false)]
+    [Description("Log estimated SQL Server plans before command execution. Adds planning overhead; modern servers require SHOWPLAN permission in referenced databases. Unsupported providers skip capture.")]
+    public bool LogEstimatedExecutionPlan { get; set; } = false;
+
+    /// <summary>Gets or sets whether SQL Server deadlock trace diagnostics are enabled.</summary>
+    [ConfigName("bEnableDeadlockTrace")]
+    [DefaultValue(false)]
+    [Description("Capture candidate deadlock reports on SQL error 1205. Reuse global trace 1204/1222 if active; otherwise enable 1204 only as sysadmin. Permission failures disable this option in memory. Does not disable server tracing or modify the INI file.")]
+    public bool EnableDeadlockTrace { get; set; } = false;
+
     private const bool DefaultRetryEnabled = false;
     private const int DefaultRetryMaxAttempts = 3;
     private const int DefaultRetryDelayMs = 1000;
@@ -144,6 +162,18 @@ public class DatabaseOptions
     [ConfigName("sConnectionString")]
     [Description("Optional complete connection string used instead of building one from the individual fields.")]
     public string ConnectionString { get; set; } = "";
+
+    /// <summary>
+    /// Gets or sets the friendly application name reported to SQL Server.
+    /// </summary>
+    /// <remarks>
+    /// When left empty, <see cref="DBAccess"/> derives the name from the entry
+    /// application's assembly metadata. This setting applies only to SQL Server
+    /// and Azure SQL connections.
+    /// </remarks>
+    [ConfigName("sApplicationName")]
+    [Description("Friendly application name reported to SQL Server; defaults to the entry assembly title.")]
+    public string ApplicationName { get; set; } = "";
 
     /// <summary>
     /// Gets or sets whether the connection should be encrypted.

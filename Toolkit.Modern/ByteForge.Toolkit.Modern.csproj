@@ -29,6 +29,9 @@
 
   <ItemGroup>
     <EmbeddedResource Include="Dependencies\WinSCP.exe" />
+    <EmbeddedResource Include="..\HTML\CSS\ByteForge-rbac.css;..\HTML\CSS\ByteForge-account.css;..\HTML\CSS\ByteForge-sort-indicator.css;..\HTML\CSS\ByteForge-time-zones.css" LogicalName="ByteForge.Toolkit.HTML.CSS.%(Filename)%(Extension)" />
+    <EmbeddedResource Include="..\HTML\JavaScript\ByteForge-account.js;..\HTML\JavaScript\ByteForge-rbac.js;..\HTML\JavaScript\ByteForge-invitation.js;..\HTML\JavaScript\ByteForge-sort-indicator.js;..\HTML\JavaScript\ByteForge-time-zones.js" LogicalName="ByteForge.Toolkit.HTML.JavaScript.%(Filename)%(Extension)" />
+    <EmbeddedResource Include="..\HTML\Rbac\portal-sign-in.html;..\HTML\Rbac\invitation.html" LogicalName="ByteForge.Toolkit.HTML.Rbac.%(Filename)%(Extension)" />
   </ItemGroup>
 
   <ItemGroup>
@@ -77,6 +80,8 @@
   <ItemGroup Condition="'$(TargetFramework)' == 'net48'">
     <Reference Include="System.IO.Compression" />
     <Reference Include="System.Transactions" />
+    <Reference Include="System.Web" />
+    <Reference Include="System.Web.Abstractions" />
   </ItemGroup>
 
   <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->

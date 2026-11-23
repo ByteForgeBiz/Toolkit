@@ -65,14 +65,16 @@ public partial class BulkDbProcessor<T>
             if (CreateDestinationTable)
                 CreateTable(db, dt, DestinationTableName, DropDestinationTableIfExists);
 
-            using (var bulkCopy = new SqlBulkCopy(db.ConnectionString, SqlBulkCopyOptions.Default)
+            var hasActiveTransaction = db.TryGetActiveSqlTransaction(out var activeConnection, out var activeTransaction);
+            using (var bulkCopy = hasActiveTransaction
+                ? new SqlBulkCopy(activeConnection!, InsertOptions, activeTransaction)
+                : new SqlBulkCopy(db.ConnectionString, InsertOptions))
             {
-                DestinationTableName = DestinationTableName,
-                NotifyAfter = BatchSize,
-                BatchSize = BatchSize,
-                BulkCopyTimeout = BulkCopyTimeout,
-            })
-            {
+                bulkCopy.DestinationTableName = DestinationTableName;
+                bulkCopy.NotifyAfter = BatchSize;
+                bulkCopy.BatchSize = BatchSize;
+                bulkCopy.BulkCopyTimeout = BulkCopyTimeout;
+
                 foreach (DataColumn column in dt.Columns)
                     bulkCopy.ColumnMappings.Add(column.ColumnName, column.ColumnName);
 
@@ -81,7 +83,9 @@ public partial class BulkDbProcessor<T>
 
                 try
                 {
-                    OnDebug("Starting bulk copy to database...");
+                    OnDebug(hasActiveTransaction
+                        ? "Starting bulk copy on the active connection transaction..."
+                        : "Starting bulk copy to database...");
                     await bulkCopy.WriteToServerAsync(dt, cancellationToken);
                     OnDebug("Bulk copy completed successfully.");
                 }

@@ -211,6 +211,27 @@ The bidirectional sync uses a custom inline Roslyn task (`BidirectionalSyncTask`
 
 ## Module Documentation
 
+The November 2026 Telecom sync adds shared account/RBAC services, connection
+transactions, database diagnostics, configuration reload/assignment APIs, and
+updated browser assets. See the [sync and validation record](Docs/Telecom-Sync.md)
+for compatibility decisions and the [RBAC overview](Docs/RBAC.md) for the security
+model and host authorization responsibilities.
+
+The full non-ODBC suite passed 1,019 tests on each of net48 and net9.0, including
+22 new transaction and account-security integration cases. SQL-backed tests need
+the seeded `TestUnitDB`; the new isolated fixtures also need database creation
+rights. Run frameworks sequentially because older tests share `TestUnitDB`.
+See [database setup](Toolkit.Modern.Tests/TODO/03_DatabaseSetupInstructions.md).
+
+To reproduce the verified run while disabling legacy bidirectional build sync:
+
+```powershell
+foreach ($framework in 'net48', 'net9.0') {
+    dotnet test Toolkit.Modern.Tests/ByteForge.Toolkit.Modern.Tests.csproj -c Release -f $framework --disable-build-servers -p:ImportByteForgeTasks=false -p:CopyFiles=false -p:UseSharedCompilation=false --filter 'TestCategory!=ODBC'
+    if ($LASTEXITCODE -ne 0) { throw "Tests failed for $framework" }
+}
+```
+
 | Module | readme |
 |--------|--------|
 | Core library | [Toolkit.Modern/readme.md](Toolkit.Modern/readme.md) |
@@ -225,4 +246,7 @@ The bidirectional sync uses a custom inline Roslyn task (`BidirectionalSyncTask`
 | Mail | [Toolkit.Modern/Mail/readme.md](Toolkit.Modern/Mail/readme.md) |
 | Net | [Toolkit.Modern/Net/readme.md](Toolkit.Modern/Net/readme.md) |
 | Security | [Toolkit.Modern/Security/readme.md](Toolkit.Modern/Security/readme.md) |
+| Shared account and RBAC integration | [Docs/RBAC.md](Docs/RBAC.md) |
+| RBAC browser assets and host routes | [HTML/Rbac/README.md](HTML/Rbac/README.md) |
+| Deadlock diagnostics | [Toolkit.Modern/Data/Database/DeadlockTrace.md](Toolkit.Modern/Data/Database/DeadlockTrace.md) |
 | Utilities | [Toolkit.Modern/Utilities/readme.md](Toolkit.Modern/Utilities/readme.md) |

@@ -1,0 +1,20 @@
+.bf-log-tools { display: flex; flex-wrap: wrap; gap: .75rem; align-items: center; margin: 1rem 0; }
+.bf-log-tools input, .bf-log-tools select { background: var(--report-surface); color: var(--report-text); border: 1px solid var(--report-border); border-radius: 6px; padding: .5rem; font-weight: 400; }
+.bf-log-tools label { font-weight: 500; }
+.bf-log-settings { margin: 1rem 0; }
+.bf-log-table { width: 100%; border-collapse: collapse; background: var(--report-surface); }
+.bf-log-table th, .bf-log-table td { text-align: left; padding: .75rem; border-bottom: 1px solid var(--report-border); overflow-wrap: anywhere; }
+.bf-log-table th { font-weight: 600; }
+.bf-log-table tr[aria-selected="true"] { background: var(--report-primary-soft); }
+.bf-log-preview { max-height: 60vh; overflow: auto; padding: 1rem; background: var(--report-surface); color: var(--report-text); border: 1px solid var(--report-border); border-radius: 8px; white-space: pre-wrap; overflow-wrap: anywhere; font-size: .85rem; }
+.bf-log-page a:hover, .bf-log-page summary:hover { text-decoration: underline; }
+.bf-log-page :focus-visible { outline: 3px solid var(--report-primary); outline-offset: 3px; }
+.bf-log-page button:disabled { opacity: .65; }
+.bf-log-page summary { cursor: pointer; color: var(--report-primary-dark); }
+
+.bf-log-dialog { box-sizing: border-box; width: min(1200px, 94vw); max-height: 90vh; padding: 1.25rem; border: 1px solid var(--report-border); border-radius: 10px; background: var(--report-surface); color: var(--report-text); }
+.bf-log-dialog::backdrop { background: rgba(0, 0, 0, .65); }
+.bf-log-dialog h2 { flex: 1; min-width: 0; margin: 0; overflow-wrap: anywhere; }
+.bf-log-dialog .bf-log-preview { max-height: 60vh; }
+.bf-log-dialog a { color: var(--report-primary-dark); }
+.bf-log-dialog :focus-visible { outline: 3px solid var(--report-primary); outline-offset: 3px; }

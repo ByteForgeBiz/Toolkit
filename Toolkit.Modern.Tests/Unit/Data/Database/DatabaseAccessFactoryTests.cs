@@ -1,3 +1,8 @@
+#if NET48
+using System.Data.SqlClient;
+#else
+using Microsoft.Data.SqlClient;
+#endif
 using AwesomeAssertions;
 using ByteForge.Toolkit.Data;
 using ByteForge.Toolkit.Tests.Helpers;
@@ -62,7 +67,10 @@ namespace ByteForge.Toolkit.Tests.Unit.Data.Database
             var result = new DBAccess(options);
 
             result.Should().BeAssignableTo<IDatabaseAccess>();
-            ((IDatabaseAccess)result).ConnectionString.Should().Be(options.GetConnectionString());
+            var actual = new SqlConnectionStringBuilder(((IDatabaseAccess)result).ConnectionString);
+            actual.ApplicationName.Should().NotBeNullOrWhiteSpace();
+            var expected = new SqlConnectionStringBuilder(options.GetConnectionString()) { ApplicationName = actual.ApplicationName };
+            actual.ConnectionString.Should().Be(expected.ConnectionString);
         }
 
         /// <summary>

@@ -105,6 +105,12 @@ public class Configuration : IConfigurationManager
     => DefaultInstance.Initialize();
 
     /// <summary>
+    /// Reloads the current configuration file into the active configuration root.
+    /// </summary>
+    public static void Reload()
+    => DefaultInstance.Reload();
+
+    /// <summary>
     /// Gets a string value from the specified section and key.
     /// </summary>
     /// <param name="section">The section name.</param>
@@ -115,6 +121,16 @@ public class Configuration : IConfigurationManager
     => DefaultInstance.GetString(section, key, defaultValue);
 
     /// <summary>
+    /// Gets the persisted raw string value from the specified section and key without decrypting encrypted keys.
+    /// </summary>
+    /// <param name="section">The section name.</param>
+    /// <param name="key">The key name.</param>
+    /// <param name="defaultValue">The default value to return if the key is not found.</param>
+    /// <returns>The raw string value, or the default value if not found.</returns>
+    public static string? GetRawString(string section, string key, string? defaultValue = null)
+    => DefaultInstance.GetRawString(section, key, defaultValue);
+
+    /// <summary>
     /// Sets a string value in the specified section and key.
     /// </summary>
     /// <param name="section">The section name.</param>
@@ -122,6 +138,13 @@ public class Configuration : IConfigurationManager
     /// <param name="value">The value to set.</param>
     public static void SetString(string section, string key, string? value)
     => DefaultInstance.SetString(section, key, value);
+
+    /// <summary>Assigns a scalar or collection in memory without reloading settings.</summary>
+    /// <param name="section">The owning section.</param>
+    /// <param name="key">The configuration key.</param>
+    /// <param name="value">The plaintext scalar or collection value.</param>
+    public static void SetValue(string section, string key, object? value)
+    => DefaultInstance.SetValue(section, key, value);
 
     /// <summary>
     /// Gets an integer value from the specified section and key.
@@ -523,6 +546,35 @@ public class Configuration : IConfigurationManager
     }
 
     /// <summary>
+    /// Reloads the current configuration file into the active configuration root.
+    /// </summary>
+    void IConfigurationManager.Reload()
+    {
+        if (!_isInitialized)
+            throw new InvalidOperationException("Configuration must be initialized before it can be reloaded.");
+
+        var path = Path.Combine(ConfigDirectory, _configFile);
+        if (!File.Exists(path))
+            throw new FileNotFoundException($@"The file was not found: {path}");
+
+        try
+        {
+            _configLock.EnterWriteLock();
+            _root!.Reload();
+            _globalizationInfo = null;
+        }
+        finally
+        {
+            _configLock.ExitWriteLock();
+        }
+
+        foreach (var section in _sections.Values.SelectMany(types => types.Values).OfType<IConfigSection>())
+            section.LoadFromConfiguration();
+
+        _globalizationInfo = ((IConfigurationManager)this).GetSection<GlobalizationInfo>("Globalization");
+    }
+
+    /// <summary>
     /// Adds a new section to the configuration.
     /// </summary>
     /// <typeparam name="T">The type of the section to add.</typeparam>
@@ -608,6 +660,30 @@ public class Configuration : IConfigurationManager
     }
 
     /// <summary>
+    /// Gets the persisted raw string value from the specified section and key without decrypting encrypted keys.
+    /// </summary>
+    /// <param name="section">The section name.</param>
+    /// <param name="key">The key name.</param>
+    /// <param name="defaultValue">The default value to return if the key is not found.</param>
+    /// <returns>The raw string value, or the default value if not found.</returns>
+    string? IConfigurationManager.GetRawString(string section, string key, string? defaultValue)
+    {
+        if (!_isInitialized)
+            return defaultValue;
+
+        try
+        {
+            _configLock.EnterReadLock();
+            var configKey = $"{section}:{key}";
+            return _root?.GetSection(configKey)?.Value ?? defaultValue;
+        }
+        finally
+        {
+            _configLock.ExitReadLock();
+        }
+    }
+
+    /// <summary>
     /// Sets a string value in the specified section and key.
     /// </summary>
     /// <param name="section">The section name.</param>
@@ -646,6 +722,31 @@ public class Configuration : IConfigurationManager
         if (_sections.TryGetValue(sectionName, out var typeSections))
             foreach (var configSection in typeSections.Values.OfType<IConfigSection>())
                 configSection.LoadFromConfiguration();
+    }
+
+    /// <inheritdoc />
+    void IConfigurationManager.SetValue(string section, string key, object? value)
+    {
+        if (!_isInitialized)
+            throw new InvalidOperationException("Configuration must be initialized before setting values.");
+        _configLock.EnterWriteLock();
+        try
+        {
+            var assigned = false;
+            if (_sections.TryGetValue(section, out var sections))
+                foreach (var settings in sections.Values.OfType<IConfigSection>())
+                    assigned |= settings.TrySetValue(key, value);
+            if (!assigned)
+            {
+                if (value != null && !(value is string))
+                    throw new InvalidOperationException($"No registered collection property exists for '{section}:{key}'.");
+                var text = (string?)value;
+                _root![$"{section}:{key}"] = !string.IsNullOrEmpty(text) && IsEncryptedKey(section, key)
+                    ? Encryptor.Default.Encrypt(text) : text;
+            }
+            if (value != null) _deletedSectionNames.TryRemove(section, out _);
+        }
+        finally { _configLock.ExitWriteLock(); }
     }
 
     /// <summary>

@@ -1,0 +1,17 @@
+const assert = require('node:assert/strict');
+require('./ByteForge-date-range.js');
+const range = globalThis.ByteForgeDateRange;
+assert.deepEqual(range.resolve('today', '2026-09-25'), {start:'2026-09-25', end:'2026-09-25'});
+assert.deepEqual(range.resolve('yesterday', '2026-01-01'), {start:'2025-12-31', end:'2025-12-31'});
+assert.deepEqual(range.resolve('last7', '2026-09-25'), {start:'2026-09-19', end:'2026-09-25'});
+assert.deepEqual(range.resolve('last30', '2026-03-15'), {start:'2026-02-14', end:'2026-03-15'});
+assert.equal(range.resolve('custom', '2026-09-25'), null);
+const control = value => ({value, handlers:{}, addEventListener(type, handler) {this.handlers[type] = handler;}});
+const preset = control('last7'), start = control('2026-01-01'), end = control('2026-09-25');
+range.init({querySelector: selector => ({'[data-range-preset]':preset, '[data-range-start]':start, '[data-range-end-input]':end}[selector]), getAttribute: () => '2026-09-25'});
+preset.handlers.change();
+assert.equal(start.value, '2026-09-19');
+assert.equal(end.value, '2026-09-25');
+start.handlers.change();
+assert.equal(preset.value, 'custom');
+console.log('8 date-range checks passed.');

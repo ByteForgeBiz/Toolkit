@@ -27,6 +27,9 @@
   <ItemGroup>
     <Using Include="Microsoft.VisualStudio.TestTools.UnitTesting" />
   </ItemGroup>
+  <ItemGroup Condition="'$(TargetFramework)' == 'net48'">
+    <Reference Include="System.Transactions" />
+  </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Toolkit.Modern\ByteForge.Toolkit.Modern.csproj" />

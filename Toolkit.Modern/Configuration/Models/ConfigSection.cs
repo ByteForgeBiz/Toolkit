@@ -72,6 +72,33 @@ internal class ConfigSection<T> : IConfigSection<T> where T : class, new()
     /// </summary>
     object IConfigSection.Value => (object)Value;
 
+    /// <inheritdoc />
+    bool IConfigSection.TrySetValue(string key, object? value)
+    {
+        var prop = _properties.FirstOrDefault(property => string.Equals(
+            property.GetCustomAttribute<ConfigNameAttribute>()?.Name ?? property.Name,
+            key, StringComparison.OrdinalIgnoreCase));
+        if (prop == null || !prop.CanWrite) return false;
+
+        if (prop.GetCustomAttribute<ArrayAttribute>() != null)
+        {
+            var (list, elementType) = CreateListFromPropertyType(prop.PropertyType);
+            foreach (var item in (IEnumerable<string>?)value ?? Enumerable.Empty<string>())
+                list.Add(Parser.Parse(elementType, item));
+            SetArrayValue(prop, list);
+        }
+        else if (prop.GetCustomAttribute<DictionaryAttribute>() != null)
+        {
+            SetDictionaryValue(prop, new Dictionary<string, string>(
+                (IDictionary<string, string>?)value ?? new Dictionary<string, string>(), StringComparer.OrdinalIgnoreCase));
+        }
+        else if (!TryLoadDefaultValue(prop, (string)value!))
+        {
+            LoadStandardProperty(prop, TypeHelper.ResolveType(prop), (string)value!);
+        }
+        return true;
+    }
+
     #endregion
 
     #region Constructors

@@ -1,0 +1,9 @@
+.bf-workspace-save-actions { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: .65rem; }
+.bf-workspace-save-help { margin: 1rem .25rem 0; }
+button.primary.bf-workspace-send-info { background: var(--accent-soft); color: var(--text); border: 1px solid var(--accent); }
+.bf-workspace-save-actions button { font-weight: 600; }
+.bf-workspace-save-actions button.primary { color: light-dark(#ffffff, #111827); }
+button.primary.bf-workspace-send-info { color: var(--text); }
+.bf-workspace-save-actions button:disabled { cursor: wait; opacity: .65; }
+.bf-workspace-save-actions .plain-action { text-decoration: underline; text-underline-offset: .2em; padding: .65rem; font: inherit; }
+@media(max-width:600px) { #workspace-form > footer { flex-direction: column; align-items: stretch; } .bf-workspace-save-actions { justify-content: flex-start; } }

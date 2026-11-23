@@ -1,0 +1,32 @@
+/* Scoped to the post-save warning; inherits the workspace's light/dark palette. */
+.bf-workspace-attribution-warning {
+    width: min(480px, calc(100vw - 32px));
+    max-height: calc(100dvh - 32px);
+    overflow: auto;
+    padding: 24px;
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    color: var(--text);
+    background: var(--panel);
+    box-shadow: var(--shadow);
+}
+.bf-workspace-attribution-warning::backdrop { background: rgb(0 0 0 / 55%); }
+.bf-workspace-attribution-warning h2 { margin: 0; font-weight: 700; }
+.bf-workspace-attribution-warning p { font-weight: 400; }
+.bf-workspace-attribution-warning form { text-align: right; }
+.bf-workspace-attribution-warning button {
+    padding: 8px 16px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    background: var(--input);
+    font: inherit;
+    font-weight: 500;
+    cursor: pointer;
+}
+.bf-workspace-attribution-warning button:hover { background: var(--accent-soft); }
+.bf-workspace-attribution-warning button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.bf-agent-check-actions { display: flex; justify-content: flex-end; flex-wrap: wrap; gap: 12px; margin-top: 20px; }
+.bf-workspace-attribution-warning { overflow-wrap: anywhere; }
+#bf-workspace-agent-check:not(:modal) { position: static; margin: 16px auto; }
+#bf-workspace-agent-check [hidden] { display: none; }

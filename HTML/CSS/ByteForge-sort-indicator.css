@@ -1,0 +1,45 @@
+button.byte-forge-sort-control {
+    display: inline-flex;
+    align-items: center;
+    gap: .35rem;
+}
+
+.byte-forge-sort-control > [data-sort-indicator],
+.byte-forge-sort-control > span:last-child {
+    display: none;
+}
+
+.byte-forge-sort-control::after {
+    display: inline-block;
+    width: 0;
+    height: 0;
+    margin-left: .35rem;
+    border-right: .28rem solid transparent;
+    border-bottom: .42rem solid currentColor;
+    border-left: .28rem solid transparent;
+    content: "";
+    opacity: 0;
+    transform: translateY(.08rem) rotate(0deg) scale(.65);
+    transform-origin: center;
+    transition: opacity 140ms ease, transform 180ms ease;
+}
+
+button.byte-forge-sort-control::after {
+    margin-left: 0;
+}
+
+.byte-forge-sort-control[data-sort-direction="asc"]::after {
+    opacity: 1;
+    transform: translateY(0) rotate(0deg) scale(1);
+}
+
+.byte-forge-sort-control[data-sort-direction="desc"]::after {
+    opacity: 1;
+    transform: translateY(0) rotate(180deg) scale(1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .byte-forge-sort-control::after {
+        transition: none;
+    }
+}

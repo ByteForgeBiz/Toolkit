@@ -1,0 +1,2766 @@
+@using PaydayPerx.Walgreens.Web.Models.Walgreens
+@model PaydayPerx.Walgreens.Web.Models.Walgreens.WalgreensVaccinationInterestViewModel
+@using System
+@using System.IO
+@using System.Linq
+@using Newtonsoft.Json
+@{
+    ViewBag.Title = "Vaccination Interest";
+    ViewBag.HasAgentVersionFooter = true;
+    Func<string, string> checkedVaccination = value => Model.Vaccinations != null && Model.Vaccinations.Contains(value) ? "checked" : null;
+    var isOtherVaccinationSelected = Model.Vaccinations != null && Model.Vaccinations.Contains("Other");
+    var otherVaccinationHidden = isOtherVaccinationSelected ? null : "hidden";
+    Func<string, string> checkedPayment = value => Model.PaymentTypes != null && Model.PaymentTypes.Contains(value) ? "checked" : null;
+    Func<string, string> checkedProgram = value => string.Equals(Model.Program, value, StringComparison.Ordinal) ? "checked" : null;
+    Func<bool, string> checkedMultipleStates = value => Model.MultipleStates.HasValue && Model.MultipleStates.Value == value ? "checked" : null;
+    Func<bool, string> checkedPreviousClinic = value => Model.PreviousWalgreensClinic.HasValue && Model.PreviousWalgreensClinic.Value == value ? "checked" : null;
+    Func<string, string> formatPhone = value =>
+    {
+        var digits = new string((value ?? string.Empty).Where(char.IsDigit).Take(11).ToArray());
+        if (digits.Length == 11 && digits[0] == '1')
+            digits = digits.Substring(1);
+        if (digits.Length == 10)
+            return "(" + digits.Substring(0, 3) + ") " + digits.Substring(3, 3) + "-" + digits.Substring(6, 4);
+
+        return string.IsNullOrWhiteSpace(value) ? string.Empty : value;
+    };
+    var reworkPhoneDigits = new string((Model.ReworkPhoneNumber ?? string.Empty).Where(char.IsDigit).Take(11).ToArray());
+    var formattedDnis = formatPhone(Model.Dnis);
+    var hasDnis = !string.IsNullOrWhiteSpace(Model.Dnis);
+    var hasCallId = !string.IsNullOrWhiteSpace(Model.CallId);
+    var hasAgentId = !string.IsNullOrWhiteSpace(Model.AgentId);
+    var hasBpSessionId = !string.IsNullOrWhiteSpace(Model.BpSessionId);
+    var hasGlobalId = !string.IsNullOrWhiteSpace(Model.GlobalId);
+    var hasBpOrigin = !string.IsNullOrWhiteSpace(Model.BpOrigin);
+    var isReadOnly = ViewBag.IsReadOnly == true;
+    var isSupervisorClinicSubmission = Model.SupervisorEntryId.GetValueOrDefault() > 0
+        && string.Equals(Model.SupervisorEntryType, PaydayPerx.Walgreens.Web.Models.Admin.WalgreensSubmissionEditViewModel.ClinicSubmissionType, StringComparison.OrdinalIgnoreCase);
+    var isSupervisorSendInfo = Model.SupervisorEntryId.GetValueOrDefault() > 0
+        && string.Equals(Model.SupervisorEntryType, PaydayPerx.Walgreens.Web.Models.Admin.WalgreensSubmissionEditViewModel.SendInfoType, StringComparison.OrdinalIgnoreCase);
+    var isSupervisorSendVoucher = Model.SupervisorEntryId.GetValueOrDefault() > 0
+        && string.Equals(Model.SupervisorEntryType, PaydayPerx.Walgreens.Web.Models.Admin.WalgreensSubmissionEditViewModel.SendVoucherType, StringComparison.OrdinalIgnoreCase);
+    var isSupervisorCorrectableEntry = isSupervisorClinicSubmission || isSupervisorSendInfo || isSupervisorSendVoucher;
+    var isInvalidated = string.Equals(Model.SupervisorEntryStatus, "Invalidated", StringComparison.OrdinalIgnoreCase);
+    var lastInvalidationCancellation = ViewBag.LastInvalidationCancellation as PaydayPerx.Walgreens.Web.Models.Admin.WalgreensInvalidationCancellationAudit;
+    var correctionEntryLabel = isSupervisorSendVoucher
+        ? "Send Voucher entry"
+        : isSupervisorSendInfo
+            ? "GK Send Info entry"
+            : "clinic submission";
+    var hasEquivalentSendInfo = isSupervisorClinicSubmission && Model.SupervisorEquivalentSendInfoId.HasValue;
+    var equivalentRequestLabel = string.Equals(
+        Model.SupervisorEquivalentRequestType,
+        PaydayPerx.Walgreens.Web.Models.Admin.WalgreensSubmissionEditViewModel.SendVoucherType,
+        StringComparison.OrdinalIgnoreCase)
+        ? "Send Voucher"
+        : "GK Send Info";
+    var equivalentSendInfoIsInvalidated = string.Equals(
+        Model.SupervisorEquivalentSendInfoStatus,
+        "Invalidated",
+        StringComparison.OrdinalIgnoreCase);
+    var correctionDispositionOptions = ViewBag.CorrectionDispositionOptions as System.Collections.Generic.IEnumerable<string>
+        ?? Enumerable.Empty<string>();
+    var reworkDispositionOptions = ViewBag.ReworkDispositionOptions as System.Collections.Generic.IEnumerable<string>
+        ?? Enumerable.Empty<string>();
+    var sendInfoReworkDispositionOptions = ViewBag.SendInfoReworkDispositionOptions as System.Collections.Generic.IEnumerable<string>
+        ?? Enumerable.Empty<string>();
+    var isSendInfoRework = Model.SendInfoWorkItemId.GetValueOrDefault() > 0;
+    var isQueueWork = Model.ReworkItemId.GetValueOrDefault() > 0 || isSendInfoRework;
+    var queueDispositionOptions = isSendInfoRework ? sendInfoReworkDispositionOptions : reworkDispositionOptions;
+    var supportsDraftSave = string.IsNullOrWhiteSpace(Model.SupervisorEntryType)
+        || string.Equals(Model.SupervisorEntryType, PaydayPerx.Walgreens.Web.Models.Admin.WalgreensSubmissionEditViewModel.ClinicSubmissionType, StringComparison.OrdinalIgnoreCase);
+    var hasLeadContext = Model.PaydayPerxLeadId.HasValue
+        || !string.IsNullOrWhiteSpace(Model.PaydayPerxLeadListName)
+        || !string.IsNullOrWhiteSpace(Model.PaydayPerxLeadWebAddress)
+        || !string.IsNullOrWhiteSpace(Model.PaydayPerxLeadSicDescription)
+        || !string.IsNullOrWhiteSpace(Model.PaydayPerxLeadEmployeeCount);
+    var callScriptPath = Server.MapPath("~/Scripts/walgreens-call-script.js");
+    var callScriptVersion = File.Exists(callScriptPath) ? File.GetLastWriteTimeUtc(callScriptPath).Ticks.ToString() : "1";
+    var additionalLocationsJson = JsonConvert.SerializeObject(Model.AdditionalLocations ?? new System.Collections.Generic.List<PaydayPerx.Walgreens.Web.Models.Walgreens.WalgreensLocationViewModel>());
+    Func<string, string> normalizePhone = value =>
+    {
+        var digits = new string((value ?? string.Empty).Where(char.IsDigit).ToArray());
+        return digits.Length == 11 && digits[0] == '1' ? digits.Substring(1) : digits;
+    };
+    var importedPhoneOptions = new System.Collections.Generic.List<Tuple<
+        PaydayPerx.Walgreens.Web.Models.Walgreens.WalgreensImportedContact,
+        PaydayPerx.Walgreens.Web.Models.Walgreens.WalgreensImportedContactPhone>>();
+    var displayedPhoneNumbers = new System.Collections.Generic.HashSet<string>(StringComparer.OrdinalIgnoreCase);
+    var mainPhoneDigits = normalizePhone(Model.PhoneNumber);
+    if (!string.IsNullOrWhiteSpace(mainPhoneDigits))
+    {
+        displayedPhoneNumbers.Add(mainPhoneDigits);
+    }
+    foreach (var importedContact in Model.ImportedContacts ?? new System.Collections.Generic.List<PaydayPerx.Walgreens.Web.Models.Walgreens.WalgreensImportedContact>())
+    {
+        foreach (var importedPhone in importedContact.Phones ?? new System.Collections.Generic.List<PaydayPerx.Walgreens.Web.Models.Walgreens.WalgreensImportedContactPhone>())
+        {
+            var importedDigits = normalizePhone(importedPhone.NormalizedPhone ?? importedPhone.PhoneNumber);
+            if (importedPhoneOptions.Count < 2
+                && importedDigits.Length >= 7
+                && displayedPhoneNumbers.Add(importedDigits))
+            {
+                importedPhoneOptions.Add(Tuple.Create(importedContact, importedPhone));
+            }
+        }
+    }
+}
+<div class="agent-theme-toolbar" aria-label="Page actions and display settings">
+    @if (isSupervisorCorrectableEntry && !isInvalidated && !isReadOnly)
+    {
+        <button type="button"
+                class="agent-correction-toggle"
+                data-agent-correction-toggle
+                aria-expanded="false"
+                aria-controls="agentCorrectionPanel">
+            &#9940; Invalidate
+        </button>
+    }
+    <label class="theme-selector">
+        <span>Theme</span>
+        <select id="walgreensThemeSelector" aria-label="Color theme">
+            <option value="dark">&#127753; - Dark</option>
+            <option value="light">&#127751; - Light</option>
+            <option value="system" selected="selected">&#128421;&#65039; - System</option>
+        </select>
+    </label>
+</div>
+
+@if (Model.WasSavedOnly)
+{
+    <div class="agent-success" role="status">
+        Intake record @Model.SavedRecordId was saved in the portal. Nothing was sent to Walgreens.
+    </div>
+}
+
+<div class="agent-toast" data-agent-toast role="status" aria-live="polite" aria-atomic="true"></div>
+
+@if (isQueueWork && !isSupervisorCorrectableEntry)
+{
+    <section class="agent-rework-banner" aria-label="Rework call company and phone number">
+        <div>
+            <span>@(isSendInfoRework ? "GK Send Info follow-up" : "Rework item") #@(isSendInfoRework ? Model.SendInfoWorkItemId : Model.ReworkItemId)</span>
+            <div class="agent-rework-identity">
+                <h2>@(!string.IsNullOrWhiteSpace(Model.Company) ? Model.Company : "Company unavailable")</h2>
+                <strong data-rework-phone data-rework-phone-copy="@reworkPhoneDigits">@formatPhone(Model.ReworkPhoneNumber)</strong>
+            </div>
+        </div>
+        <div class="agent-rework-control-stack">
+            <div class="agent-rework-control-card agent-rework-disposition-card">
+                <form action="@(isSendInfoRework ? Url.Action("Disposition", "SendInfoRework") : Url.Action("ReworkDisposition", "Home"))" method="post" data-rework-disposition-form>
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="ItemId" value="@(isSendInfoRework ? Model.SendInfoWorkItemId : Model.ReworkItemId)" />
+                    <input type="hidden" name="LeadId" value="@Model.PaydayPerxLeadId" />
+                    <label>
+                        <span>Disposition</span>
+                        <select name="Disposition" required>
+                            <option value="">Choose a disposition</option>
+                            @foreach (var disposition in queueDispositionOptions)
+                            {
+                                <option value="@disposition">@WalgreensOutcomeDisplay.Name(disposition)</option>
+                            }
+                        </select>
+                    </label>
+                    <button type="submit" class="small-button primary-button">&#128190; @(isSendInfoRework ? "Save disposition" : "Save & complete")</button>
+                </form>
+            </div>
+            <div class="agent-rework-control-card agent-rework-navigation-card" aria-label="Rework item actions">
+                <button type="button" class="small-button" data-copy-rework-phone>&#128203; Copy phone</button>
+                <a href="@(isSendInfoRework ? Url.Action("Index", "SendInfoRework") : Url.Action("Index", "ReworkUnworkables"))" class="small-button">&#8617;&#65039; Back to List</a>
+                @using (Html.BeginForm("Next", isSendInfoRework ? "SendInfoRework" : "ReworkUnworkables", FormMethod.Post, new { @class = "agent-rework-next-form" }))
+                {
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="currentItemId" value="@(isSendInfoRework ? Model.SendInfoWorkItemId : Model.ReworkItemId)" />
+                    <input type="hidden" name="redirectToAgent" value="true" />
+                    <button type="submit" class="small-button primary-button">Next Item</button>
+                }
+            </div>
+        </div>
+    </section>
+    <style>
+        .agent-rework-banner { align-items: center; background: var(--warning-panel-bg); border: 2px solid var(--warning-text); border-radius: .75rem; color: var(--text); display: flex; gap: 1rem; justify-content: space-between; margin: 1rem auto; max-width: 96rem; padding: 1rem 1.25rem; }
+        .agent-rework-banner span { color: var(--muted); display: block; font-size: .85rem; font-weight: 600; }
+        .agent-rework-identity { align-items: baseline; display: flex; flex-wrap: wrap; gap: .35rem 1.25rem; margin-top: .35rem; }
+        .agent-rework-banner h2 { font-size: clamp(1.15rem, 3vw, 1.65rem); font-weight: 700; line-height: 1.2; margin: 0; }
+        .agent-rework-banner strong { display: block; font-size: clamp(1.55rem, 4vw, 2.4rem); letter-spacing: .04em; }
+        .agent-rework-control-stack { display: grid; gap: .65rem; min-width: min(100%, 42rem); }
+        .agent-rework-control-card { align-items: center; background: var(--surface-raised); border: 1px solid var(--line); border-radius: .6rem; display: flex; flex-wrap: wrap; gap: .65rem; padding: .75rem; }
+        .agent-rework-disposition-card form { align-items: flex-end; display: flex; flex: 1 1 auto; flex-wrap: wrap; gap: .65rem; margin: 0; }
+        .agent-rework-disposition-card form label { display: grid; flex: 1 1 13rem; gap: .25rem; }
+        .agent-rework-disposition-card form label span { font-size: .78rem; font-weight: 600; }
+        .agent-rework-disposition-card form select { min-width: 13rem; width: 100%; }
+        .agent-rework-navigation-card .small-button, .agent-rework-disposition-card .small-button { align-items: center; display: inline-flex; justify-content: center; text-decoration: none; }
+        .agent-rework-next-form { margin: 0; }
+        @@media (max-width: 760px) { .agent-rework-banner { align-items: stretch; flex-direction: column; } .agent-rework-control-stack { min-width: 0; } }
+    </style>
+}
+
+@if (isReadOnly)
+{
+    <div class="agent-success" role="status">
+        Read-only record view. No changes can be saved or sent from this page.
+    </div>
+}
+
+@if (hasEquivalentSendInfo)
+{
+    <div class="agent-correction-related" role="status">
+        Matching @equivalentRequestLabel entry <strong>#@Model.SupervisorEquivalentSendInfoId</strong>
+        has status <strong>@Model.SupervisorEquivalentSendInfoStatus</strong>.
+        @if (equivalentSendInfoIsInvalidated)
+        {
+            <text>It has already been invalidated.</text>
+        }
+        else
+        {
+            <text>You can invalidate both entries together when confirming this correction.</text>
+        }
+    </div>
+}
+
+@if (isSupervisorCorrectableEntry && lastInvalidationCancellation != null)
+{
+    <section class="agent-correction-panel" aria-labelledby="cancellationAuditHeading">
+        <h2 id="cancellationAuditHeading">Last invalidation cancellation</h2>
+        <dl>
+            <div><dt>Cancelled by</dt><dd>@lastInvalidationCancellation.CancelledBy</dd></div>
+            <div><dt>Cancelled</dt><dd>@lastInvalidationCancellation.CancelledAtUtc.ToLocalTime().ToString("MMM d, yyyy h:mm tt")</dd></div>
+            <div><dt>Reason</dt><dd>@lastInvalidationCancellation.CancellationReason</dd></div>
+        </dl>
+    </section>
+}
+@if (isSupervisorCorrectableEntry && isInvalidated)
+{
+    <section class="agent-correction-panel" aria-labelledby="correctionHeading">
+        <h2 id="correctionHeading">Invalidated @correctionEntryLabel</h2>
+        <p>This historical entry is excluded from Walgreens reports and cannot be saved or resubmitted.</p>
+        <dl>
+            <div><dt>Corrected disposition</dt><dd>@WalgreensOutcomeDisplay.Name(Model.SupervisorCorrectedDisposition)</dd></div>
+            <div><dt>Reason</dt><dd>@Model.SupervisorCorrectionReason</dd></div>
+            <div><dt>Corrected by</dt><dd>@Model.SupervisorCorrectedBy</dd></div>
+            <div><dt>Corrected</dt><dd>@(Model.SupervisorCorrectedAtUtc.HasValue ? Model.SupervisorCorrectedAtUtc.Value.ToLocalTime().ToString("MMM d, yyyy h:mm tt") : string.Empty)</dd></div>
+        </dl>
+        @if (ViewBag.CanCancelInvalidation == true)
+        {
+            <div class="agent-invalidation-cancellation">
+            @using (Html.BeginForm("CancelInvalidation", "WalgreensSubmissions", FormMethod.Post, new { @class = "agent-correction-form agent-invalidation-cancellation-form" }))
+            {
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="EntryType" value="@Model.SupervisorEntryType" />
+                <input type="hidden" name="Id" value="@Model.SupervisorEntryId" />
+                <input type="hidden" name="ExpectedCorrectedAtTicks" value="@(Model.SupervisorCorrectedAtUtc.HasValue ? Model.SupervisorCorrectedAtUtc.Value.Ticks.ToString() : string.Empty)" />
+                <p>Cancelling restores the entry and its previous local call disposition. Entries invalidated together will be restored together. Nothing will be sent automatically to Walgreens.</p>
+                if (ViewBag.HasInvalidationSnapshot != true)
+                {
+                    <p>This older invalidation has no saved previous status. Choose the restored status below. Its local correction will be removed so the original BrightPattern disposition applies.</p>
+                    <label>
+                        <span>Restored status</span>
+                        <select name="RestoreStatus" required>
+                            <option value="">Choose a status</option>
+                            @if (isSupervisorClinicSubmission)
+                            {
+                                if (ViewBag.HasWalgreensSubmissionEvidence == true)
+                                {
+                                    <option value="Completed">Already submitted to Walgreens</option>
+                                }
+                                else
+                                {
+                                    <option value="Submitted">Awaiting review</option>
+                                    <option value="ReviewCompleted">Review completed (does not mark it sent to Walgreens)</option>
+                                }
+                            }
+                            else
+                            {
+                                <option value="Pending">Pending</option>
+                                <option value="Submitted">Submitted</option>
+                            }
+                        </select>
+                    </label>
+                }
+                <label>
+                    <span>Reason for cancelling invalidation</span>
+                    <textarea name="Reason" maxlength="500" required placeholder="Explain why this invalidation should be cancelled."></textarea>
+                </label>
+                <button type="submit" class="agent-correction-submit">&#8617;&#65039; Cancel Invalidation</button>
+            }
+            </div>
+        }
+    </section>
+}
+else if (isSupervisorCorrectableEntry && !isReadOnly)
+{
+    <section id="agentCorrectionPanel"
+             class="agent-correction-panel agent-correction-panel-collapsible"
+             aria-labelledby="correctionHeading"
+             hidden>
+        <h2 id="correctionHeading">Correct an erroneous @correctionEntryLabel</h2>
+        <p>Invalidating preserves this entry for audit, excludes it from Walgreens reports, and applies a Walgreens-local call disposition correction.</p>
+        @using (Html.BeginForm("Correct", "WalgreensSubmissions", FormMethod.Post, new
+        {
+            @class = "agent-correction-form",
+            data_agent_correction_form = "true",
+            data_equivalent_send_info_id = hasEquivalentSendInfo && !equivalentSendInfoIsInvalidated
+                ? Model.SupervisorEquivalentSendInfoId.ToString()
+                : null,
+            data_correction_entry_label = correctionEntryLabel
+        }))
+        {
+            @Html.AntiForgeryToken()
+            <input type="hidden" name="EntryType" value="@Model.SupervisorEntryType" />
+            <input type="hidden" name="Id" value="@Model.SupervisorEntryId" />
+            <input type="hidden" name="InvalidateEquivalentSendInfo" value="false" data-invalidate-equivalent-send-info />
+            <label>
+                <span>Corrected disposition</span>
+                <select name="Disposition" required>
+                    <option value="">Choose a disposition</option>
+                    @foreach (var disposition in correctionDispositionOptions)
+                    {
+                        <option value="@disposition">@WalgreensOutcomeDisplay.Name(disposition)</option>
+                    }
+                </select>
+            </label>
+            <label>
+                <span>Correction reason</span>
+                <textarea name="Reason" maxlength="500" required placeholder="Explain why this is not a valid @(correctionEntryLabel)."></textarea>
+            </label>
+            <button type="submit" class="agent-correction-submit">&#9940; Confirm Invalidation</button>
+        }
+    </section>
+}
+
+<div class="agent-workspace @(importedPhoneOptions.Count > 0 ? "has-imported-contacts" : null)">
+    <div class="agent-script-layout @(importedPhoneOptions.Count > 0 ? "has-imported-contacts" : null)">
+        @Html.Partial("_WalgreensCallScript", Model.CallScript)
+
+        @if (importedPhoneOptions.Count > 0)
+        {
+            <aside class="agent-imported-contacts" aria-labelledby="importedContactsHeading">
+                <div class="agent-imported-contacts-heading">
+                    <span>Call contacts</span>
+                    <h2 id="importedContactsHeading">Phone numbers</h2>
+                </div>
+                @if (!string.IsNullOrWhiteSpace(mainPhoneDigits))
+                {
+                    <article class="agent-contact-phone-card is-dialed">
+                        <span class="agent-contact-phone-kind">Dialed</span>
+                        <strong>@formatPhone(Model.PhoneNumber)</strong>
+                        <p>@(string.IsNullOrWhiteSpace((Model.FirstName + " " + Model.LastName).Trim()) ? "Main contact" : (Model.FirstName + " " + Model.LastName).Trim())</p>
+                    </article>
+                }
+                @foreach (var importedOption in importedPhoneOptions)
+                {
+                    var importedContact = importedOption.Item1;
+                    var importedPhone = importedOption.Item2;
+                    var importedName = ((importedContact.FirstName ?? string.Empty) + " " + (importedContact.LastName ?? string.Empty)).Trim();
+                    var importedDigits = normalizePhone(importedPhone.NormalizedPhone ?? importedPhone.PhoneNumber);
+                    <article class="agent-contact-phone-card"
+                             data-imported-contact-card
+                             data-phone="@importedDigits"
+                             data-phone-formatted="@formatPhone(importedPhone.PhoneNumber)"
+                             data-phone-type="@importedPhone.PhoneType"
+                             data-first-name="@importedContact.FirstName"
+                             data-last-name="@importedContact.LastName"
+                             data-job-title="@importedContact.JobTitle"
+                             data-email="@importedContact.Email">
+                        <span class="agent-contact-phone-kind">Client-provided @importedPhone.PhoneType</span>
+                        <strong>@formatPhone(importedPhone.PhoneNumber)</strong>
+                        <p>@(string.IsNullOrWhiteSpace(importedName) ? "Client-provided contact" : importedName)</p>
+                        <div class="agent-phone-split-button">
+                            <button type="button" class="agent-phone-copy" data-imported-phone-copy>&#128203; Copy phone</button>
+                            <button type="button" class="agent-phone-menu-toggle" data-imported-phone-menu-toggle aria-label="More phone actions" title="More phone actions" aria-haspopup="true" aria-expanded="false">&#9662;</button>
+                            <div class="agent-phone-menu" data-imported-phone-menu role="menu" hidden>
+                                <button type="button" role="menuitem" data-imported-phone-action="copy">Copy only</button>
+                                <button type="button" role="menuitem" data-imported-phone-action="fill">Copy + fill contact info</button>
+                                <button type="button" role="menuitem" data-imported-phone-action="notes">Copy + add to Notes</button>
+                            </div>
+                        </div>
+                    </article>
+                }
+                <p class="agent-imported-contacts-help">Changes to contact fields or Notes are not saved until you save the form.</p>
+            </aside>
+        }
+    </div>
+
+    @using (Html.BeginForm("Agent", "Home", FormMethod.Post, new
+    {
+        @class = "agent-intake-form",
+        data_read_only = isReadOnly ? "true" : null,
+        data_allow_typed_company = ViewBag.AllowTypedCompany == true ? "true" : "false",
+        data_more_info_outcome_url = !isReadOnly ? Url.Action("ScriptOutcome", "Home") : null,
+        data_company_lookup_url = !isReadOnly ? Url.Action("CompanyLookup", "Home") : null,
+        data_company_choices_url = !isReadOnly ? Url.Action("CompanyChoices", "Home") : null,
+        data_draft_save_url = !isReadOnly && supportsDraftSave ? Url.Action("SaveDraft", "Home") : null
+    }))
+    {
+        @Html.AntiForgeryToken()
+        @Html.HiddenFor(m => m.CallId)
+        @Html.HiddenFor(m => m.AgentId)
+        @Html.HiddenFor(m => m.AgentName)
+        @Html.HiddenFor(m => m.Ani)
+        @Html.HiddenFor(m => m.RawAni)
+        @Html.HiddenFor(m => m.Dnis)
+        @Html.HiddenFor(m => m.GlobalId)
+        @Html.HiddenFor(m => m.BpSessionId)
+        @Html.HiddenFor(m => m.BpOrigin)
+        @Html.HiddenFor(m => m.PaydayPerxLeadId)
+        @Html.HiddenFor(m => m.ReworkItemId)
+        @Html.HiddenFor(m => m.SendInfoWorkItemId)
+        @Html.HiddenFor(m => m.SendInfoAttemptId)
+        @Html.HiddenFor(m => m.CanonicalCompanyLeadId)
+        @Html.HiddenFor(m => m.PaydayPerxLeadListName)
+        @Html.HiddenFor(m => m.PaydayPerxLeadWebAddress)
+        @Html.HiddenFor(m => m.PaydayPerxLeadSicDescription)
+        @Html.HiddenFor(m => m.PaydayPerxLeadEmployeeCount)
+        @Html.HiddenFor(m => m.SupervisorEntryType)
+        @Html.HiddenFor(m => m.SupervisorEntryId)
+        @Html.HiddenFor(m => m.SavedRecordId)
+        @Html.Hidden("ScriptOpenedAtUtc", Model.ScriptOpenedAtUtc.HasValue ? Model.ScriptOpenedAtUtc.Value.ToString("o") : string.Empty)
+        @Html.Hidden("CallStartedAtUtc", Model.CallStartedAtUtc.HasValue ? Model.CallStartedAtUtc.Value.ToString("o") : string.Empty)
+        @Html.ValidationSummary(false, "", new { @class = "validation-summary" })
+
+        <section class="agent-call-context" aria-label="Call and lead context" id="contactHeading">
+            @if (Model.PaydayPerxLeadId.HasValue)
+            {
+                <div>
+                    <span>Lead ID</span>
+                    <code>@Model.PaydayPerxLeadId</code>
+                </div>
+            }
+            @if (hasDnis)
+            {
+                <div>
+                    <span>DNIS</span>
+                    <strong>@formattedDnis</strong>
+                </div>
+            }
+            @if (hasAgentId)
+            {
+                <div>
+                    <span>Agent</span>
+                    <strong title="@Model.AgentId">@(!string.IsNullOrWhiteSpace(Model.AgentName) ? Model.AgentName : Model.AgentId)</strong>
+                </div>
+            }
+            @if (hasCallId)
+            {
+                <div>
+                    <span>Call ID</span>
+                    <code>@Model.CallId</code>
+                </div>
+            }
+            @if (hasLeadContext && !string.IsNullOrWhiteSpace(Model.PaydayPerxLeadListName))
+            {
+                <div>
+                    <span>List</span>
+                    <strong>@Model.PaydayPerxLeadListName</strong>
+                </div>
+            }
+            @if (hasLeadContext && !string.IsNullOrWhiteSpace(Model.PaydayPerxLeadSicDescription))
+            {
+                <div>
+                    <span>SIC</span>
+                    <strong>@Model.PaydayPerxLeadSicDescription</strong>
+                </div>
+            }
+            @if (hasLeadContext && !string.IsNullOrWhiteSpace(Model.PaydayPerxLeadEmployeeCount))
+            {
+                <div>
+                    <span>Employees</span>
+                    <strong>@Model.PaydayPerxLeadEmployeeCount</strong>
+                </div>
+            }
+            @if (hasLeadContext && !string.IsNullOrWhiteSpace(Model.PaydayPerxLeadWebAddress))
+            {
+                <div>
+                    <span>Website</span>
+                    <strong>@Model.PaydayPerxLeadWebAddress</strong>
+                </div>
+            }
+        </section>
+
+        <section class="agent-form-section agent-notes-section" aria-labelledby="notesHeading">
+            <div class="agent-notes-heading">
+                <div>
+                    <h2 id="notesHeading">Notes</h2>
+                    <p>@(isReadOnly ? "Notes captured with this record." : "Save the complete current Intention snapshot, including these notes.")</p>
+                </div>
+                @if (!isReadOnly)
+                {
+                    <div class="agent-notes-actions">
+                        <button type="button" class="agent-note-save" data-draft-save>Save Notes</button>
+                    </div>
+                }
+            </div>
+            @Html.TextAreaFor(m => m.Notes, new
+            {
+                maxlength = "4000",
+                rows = "5",
+                placeholder = "Add notes about this call...",
+                data_call_note = ""
+            })
+        </section>
+
+        <section class="agent-form-section agent-program-section" aria-labelledby="programHeading">
+            <h2 id="programHeading">Vaccination Program</h2>
+            <fieldset class="agent-choice-group">
+                <legend>Which program is your organization interested in? <strong class="bf-required-marker" aria-label="required">*</strong></legend>
+                <label><input name="Program" type="radio" value="Voucher Program Only" required data-voucher-program @checkedProgram("Voucher Program Only") /> Voucher Program Only</label>
+                <p>Vouchers can be distributed to employees so they can get no-cost vaccinations at any Walgreens near their homes or workplace. With night and weekend hours, we have plenty of options for your employees to get vaccinated at their convenience.</p>
+                <label><input name="Program" type="radio" value="Clinic" data-clinic-program @checkedProgram("Clinic") /> Clinic</label>
+                <p>Minimum number of 50 participants required for a clinic. Our immunization experts can administer vaccines right at your worksite so employees can save time and trips. And we'll arrange it to fit your needs.</p>
+                <label><input name="Program" type="radio" value="Clinic + Vouchers" data-clinic-program @checkedProgram("Clinic + Vouchers") /> Clinic + Vouchers</label>
+                <p data-voucher-only-message hidden>Companies with fewer than 50 employees are eligible for Voucher Program Only.</p>
+            </fieldset>
+            <div class="agent-form-grid">
+                <label>
+                    <span>Estimated Number of Participants <strong class="bf-required-marker" aria-label="required">*</strong></span>
+                    @Html.TextBoxFor(m => m.EstimatedParticipants, new { type = "number", min = "0", max = "999999", required = "required" })
+                </label>
+            </div>
+        </section>
+
+        <section class="agent-form-section agent-form-section-primary" aria-labelledby="contactHeading">
+        <h2>Contact Information</h2>
+        <div class="agent-form-grid">
+            <div class="agent-company-field agent-field-wide" data-company-lookup>
+                <label for="Company">
+                    <span>Company <strong class="bf-required-marker" aria-label="required">*</strong></span>
+                </label>
+                @if (!isReadOnly)
+                {
+                    @Html.TextBoxFor(m => m.Company, new
+                    {
+                        maxlength = "35",
+                        autocomplete = "off",
+                        required = "required",
+                        role = "combobox",
+                        aria_autocomplete = "list",
+                        aria_expanded = "false",
+                        aria_controls = "companyLookupResults",
+                        data_company_lookup_input = ""
+                    })
+                    <div class="agent-company-results" id="companyLookupResults" role="listbox" hidden></div>
+                    <span class="agent-company-lookup-status" role="status" aria-live="polite" data-company-lookup-status>
+                        @(ViewBag.AllowTypedCompany == true ? "Search for an existing company or enter a new company name for this inbound call." : "Type at least 2 characters, then select an existing company.")
+                    </span>
+                    <button type="button" class="small-button" data-company-show-more hidden>Show more</button>
+                }
+                else
+                {
+                    @Html.TextBoxFor(m => m.Company, new { maxlength = "35", autocomplete = "organization", required = "required", @readonly = "readonly" })
+                }
+            </div>
+            <label>
+                <span>First Name <strong class="bf-required-marker" aria-label="required">*</strong></span>
+                @Html.TextBoxFor(m => m.FirstName, new { maxlength = "20", autocomplete = "given-name", required = "required" })
+            </label>
+            <label>
+                <span>Last Name <strong class="bf-required-marker" aria-label="required">*</strong></span>
+                @Html.TextBoxFor(m => m.LastName, new { maxlength = "20", autocomplete = "family-name", required = "required" })
+            </label>
+            <label class="agent-field-wide">
+                <span>Address 1 <strong class="bf-required-marker" aria-label="required">*</strong></span>
+                @Html.TextBoxFor(m => m.Address1, new { maxlength = "35", autocomplete = "address-line1", required = "required" })
+            </label>
+            <label class="agent-field-wide">
+                <span>Address 2</span>
+                @Html.TextBoxFor(m => m.Address2, new { maxlength = "20", autocomplete = "address-line2" })
+            </label>
+            <label class="agent-field-city">
+                <span>City <strong class="bf-required-marker" aria-label="required">*</strong></span>
+                @Html.TextBoxFor(m => m.City, new { maxlength = "20", autocomplete = "address-level2", required = "required" })
+            </label>
+            <label class="agent-field-state">
+                <span>State <strong class="bf-required-marker" aria-label="required">*</strong></span>
+                <select name="State" autocomplete="address-level1" required>
+                    <option value="">Select</option>
+                    <option value="AL" @(Model.State == "AL" ? "selected" : null)>Alabama</option>
+                    <option value="AK" @(Model.State == "AK" ? "selected" : null)>Alaska</option>
+                    <option value="AZ" @(Model.State == "AZ" ? "selected" : null)>Arizona</option>
+                    <option value="AR" @(Model.State == "AR" ? "selected" : null)>Arkansas</option>
+                    <option value="CA" @(Model.State == "CA" ? "selected" : null)>California</option>
+                    <option value="CO" @(Model.State == "CO" ? "selected" : null)>Colorado</option>
+                    <option value="CT" @(Model.State == "CT" ? "selected" : null)>Connecticut</option>
+                    <option value="DE" @(Model.State == "DE" ? "selected" : null)>Delaware</option>
+                    <option value="DC" @(Model.State == "DC" ? "selected" : null)>District of Columbia</option>
+                    <option value="FL" @(Model.State == "FL" ? "selected" : null)>Florida</option>
+                    <option value="GA" @(Model.State == "GA" ? "selected" : null)>Georgia</option>
+                    <option value="HI" @(Model.State == "HI" ? "selected" : null)>Hawaii</option>
+                    <option value="ID" @(Model.State == "ID" ? "selected" : null)>Idaho</option>
+                    <option value="IL" @(Model.State == "IL" ? "selected" : null)>Illinois</option>
+                    <option value="IN" @(Model.State == "IN" ? "selected" : null)>Indiana</option>
+                    <option value="IA" @(Model.State == "IA" ? "selected" : null)>Iowa</option>
+                    <option value="KS" @(Model.State == "KS" ? "selected" : null)>Kansas</option>
+                    <option value="KY" @(Model.State == "KY" ? "selected" : null)>Kentucky</option>
+                    <option value="LA" @(Model.State == "LA" ? "selected" : null)>Louisiana</option>
+                    <option value="ME" @(Model.State == "ME" ? "selected" : null)>Maine</option>
+                    <option value="MD" @(Model.State == "MD" ? "selected" : null)>Maryland</option>
+                    <option value="MA" @(Model.State == "MA" ? "selected" : null)>Massachusetts</option>
+                    <option value="MI" @(Model.State == "MI" ? "selected" : null)>Michigan</option>
+                    <option value="MN" @(Model.State == "MN" ? "selected" : null)>Minnesota</option>
+                    <option value="MS" @(Model.State == "MS" ? "selected" : null)>Mississippi</option>
+                    <option value="MO" @(Model.State == "MO" ? "selected" : null)>Missouri</option>
+                    <option value="MT" @(Model.State == "MT" ? "selected" : null)>Montana</option>
+                    <option value="NE" @(Model.State == "NE" ? "selected" : null)>Nebraska</option>
+                    <option value="NV" @(Model.State == "NV" ? "selected" : null)>Nevada</option>
+                    <option value="NH" @(Model.State == "NH" ? "selected" : null)>New Hampshire</option>
+                    <option value="NJ" @(Model.State == "NJ" ? "selected" : null)>New Jersey</option>
+                    <option value="NM" @(Model.State == "NM" ? "selected" : null)>New Mexico</option>
+                    <option value="NY" @(Model.State == "NY" ? "selected" : null)>New York</option>
+                    <option value="NC" @(Model.State == "NC" ? "selected" : null)>North Carolina</option>
+                    <option value="ND" @(Model.State == "ND" ? "selected" : null)>North Dakota</option>
+                    <option value="OH" @(Model.State == "OH" ? "selected" : null)>Ohio</option>
+                    <option value="OK" @(Model.State == "OK" ? "selected" : null)>Oklahoma</option>
+                    <option value="OR" @(Model.State == "OR" ? "selected" : null)>Oregon</option>
+                    <option value="PA" @(Model.State == "PA" ? "selected" : null)>Pennsylvania</option>
+                    <option value="RI" @(Model.State == "RI" ? "selected" : null)>Rhode Island</option>
+                    <option value="SC" @(Model.State == "SC" ? "selected" : null)>South Carolina</option>
+                    <option value="SD" @(Model.State == "SD" ? "selected" : null)>South Dakota</option>
+                    <option value="TN" @(Model.State == "TN" ? "selected" : null)>Tennessee</option>
+                    <option value="TX" @(Model.State == "TX" ? "selected" : null)>Texas</option>
+                    <option value="UT" @(Model.State == "UT" ? "selected" : null)>Utah</option>
+                    <option value="VT" @(Model.State == "VT" ? "selected" : null)>Vermont</option>
+                    <option value="VA" @(Model.State == "VA" ? "selected" : null)>Virginia</option>
+                    <option value="WA" @(Model.State == "WA" ? "selected" : null)>Washington</option>
+                    <option value="WV" @(Model.State == "WV" ? "selected" : null)>West Virginia</option>
+                    <option value="WI" @(Model.State == "WI" ? "selected" : null)>Wisconsin</option>
+                    <option value="WY" @(Model.State == "WY" ? "selected" : null)>Wyoming</option>
+                </select>
+            </label>
+            <label class="agent-field-zip">
+                <span>ZIP <strong class="bf-required-marker" aria-label="required">*</strong></span>
+                @Html.TextBoxFor(m => m.ZipCode, new { maxlength = "5", inputmode = "numeric", autocomplete = "postal-code", required = "required" })
+            </label>
+            <label class="agent-field-phone">
+                <span>Phone Number <strong class="bf-required-marker" aria-label="required">*</strong></span>
+                @Html.TextBoxFor(m => m.PhoneNumber, new { type = "tel", maxlength = "14", autocomplete = "tel", placeholder = "(555) 555-5555", required = "required", @class = "js-phone" })
+            </label>
+            <label class="agent-field-ext">
+                <span>Ext</span>
+                @Html.TextBoxFor(m => m.Extension, new { maxlength = "5", inputmode = "numeric" })
+            </label>
+            <label class="agent-field-email">
+                <span>Email <strong class="bf-required-marker" aria-label="required">*</strong></span>
+                @Html.TextBoxFor(m => m.Email, new { type = "email", maxlength = "50", autocomplete = "email", required = "required" })
+            </label>
+        </div>
+
+    </section>
+
+    <section class="agent-form-section" aria-labelledby="businessHeading">
+        <h2 id="businessHeading">Walgreens Business Details</h2>
+        <div class="agent-form-grid">
+            <label class="agent-field-wide">
+                <span>Industry <strong class="bf-required-marker" aria-label="required">*</strong></span>
+                <select name="Industry" required>
+                    <option value="">Select</option>
+                    <option value="Agriculture, Forestry, Fishing and Hunting" @(Model.Industry == "Agriculture, Forestry, Fishing and Hunting" ? "selected" : null)>Agriculture, Forestry, Fishing and Hunting</option>
+                    <option value="Construction" @(Model.Industry == "Construction" ? "selected" : null)>Construction</option>
+                    <option value="Education Services" @(Model.Industry == "Education Services" ? "selected" : null)>Education Services</option>
+                    <option value="Finance, Insurance and Information" @(Model.Industry == "Finance, Insurance and Information" ? "selected" : null)>Finance, Insurance and Information</option>
+                    <option value="Food Services, Accommodation and Entertainment" @(Model.Industry == "Food Services, Accommodation and Entertainment" ? "selected" : null)>Food Services, Accommodation and Entertainment</option>
+                    <option value="Health Care and Social Assistance" @(Model.Industry == "Health Care and Social Assistance" ? "selected" : null)>Health Care and Social Assistance</option>
+                    <option value="Manufacturing" @(Model.Industry == "Manufacturing" ? "selected" : null)>Manufacturing</option>
+                    <option value="Mining, Quarrying, Oil and Gas Extraction" @(Model.Industry == "Mining, Quarrying, Oil and Gas Extraction" ? "selected" : null)>Mining, Quarrying, Oil and Gas Extraction</option>
+                    <option value="Professional, Scientific and Technical Services" @(Model.Industry == "Professional, Scientific and Technical Services" ? "selected" : null)>Professional, Scientific and Technical Services</option>
+                    <option value="Public Administration" @(Model.Industry == "Public Administration" ? "selected" : null)>Public Administration</option>
+                    <option value="Religious Organizations and Community Groups" @(Model.Industry == "Religious Organizations and Community Groups" ? "selected" : null)>Religious Organizations and Community Groups</option>
+                    <option value="Retail and Wholesale Trade" @(Model.Industry == "Retail and Wholesale Trade" ? "selected" : null)>Retail and Wholesale Trade</option>
+                    <option value="Transportation and Warehousing" @(Model.Industry == "Transportation and Warehousing" ? "selected" : null)>Transportation and Warehousing</option>
+                    <option value="Other" @(Model.Industry == "Other" ? "selected" : null)>Other</option>
+                </select>
+            </label>
+            <label class="agent-field-wide">
+                <span>Primary Employee Medical Insurance</span>
+                @Html.TextBoxFor(m => m.PrimaryEmployeeMedicalInsurance, new { maxlength = "100" })
+            </label>
+            <label class="agent-field-wide">
+                <span>Employee Pharmacy Insurance</span>
+                @Html.TextBoxFor(m => m.EmployeePharmacyInsurance, new { maxlength = "100" })
+            </label>
+            <label class="agent-field-wide">
+                <span>Current/Past Walgreens Contact</span>
+                @Html.TextBoxFor(m => m.CurrentPastWalgreensContact, new { maxlength = "100" })
+            </label>
+            <label class="agent-field-wide">
+                <span>Decision Maker Job Title <strong class="bf-required-marker" aria-label="required">*</strong></span>
+                @Html.TextBoxFor(m => m.MainContactJobTitle, new { maxlength = "50", required = "required" })
+            </label>
+        </div>
+    </section>
+
+    <section class="agent-form-section" aria-labelledby="alternateHeading">
+        <h2 id="alternateHeading">Alternate Point of Contact</h2>
+        <div class="agent-form-grid">
+            <label>
+                <span>First Name</span>
+                @Html.TextBoxFor(m => m.AlternateFirstName, new { maxlength = "20" })
+            </label>
+            <label>
+                <span>Last Name</span>
+                @Html.TextBoxFor(m => m.AlternateLastName, new { maxlength = "20" })
+            </label>
+            <label class="agent-field-wide">
+                <span>Job Title</span>
+                @Html.TextBoxFor(m => m.AlternateContactJobTitle, new { maxlength = "50" })
+            </label>
+            <label class="agent-field-phone">
+                <span>Phone</span>
+                @Html.TextBoxFor(m => m.AlternateContactPhoneNumber, new { type = "tel", maxlength = "14", placeholder = "(555) 555-5555", @class = "js-phone" })
+            </label>
+            <label class="agent-field-ext">
+                <span>Ext</span>
+                @Html.TextBoxFor(m => m.AlternateContactExtension, new { maxlength = "5", inputmode = "numeric" })
+            </label>
+            <label class="agent-field-email">
+                <span>Email</span>
+                @Html.TextBoxFor(m => m.AlternateContactEmail, new { type = "email", maxlength = "50" })
+            </label>
+        </div>
+    </section>
+
+    <section class="agent-form-section" aria-labelledby="vaccinationHeading" data-vaccination-details>
+        <h2 id="vaccinationHeading">Vaccination Info</h2>
+        <fieldset class="agent-choice-group agent-checkbox-grid">
+            <legend>Which vaccinations are you interested in? <strong class="bf-required-marker" aria-label="required">*</strong></legend>
+            <label><input name="Vaccinations" type="checkbox" value="Flu Trivalent" @checkedVaccination("Flu Trivalent") /> Flu Trivalent</label>
+            <label><input name="Vaccinations" type="checkbox" value="Flu HD (65+)" @checkedVaccination("Flu HD (65+)") /> Flu HD (65+)</label>
+            <label><input name="Vaccinations" type="checkbox" value="COVID19" @checkedVaccination("COVID19") /> COVID19</label>
+            <label><input name="Vaccinations" type="checkbox" value="Pneumonia" @checkedVaccination("Pneumonia") /> Pneumonia</label>
+            <label><input name="Vaccinations" type="checkbox" value="Tdap (Whooping Cough)" @checkedVaccination("Tdap (Whooping Cough)") /> Tdap (Whooping Cough)</label>
+            <label><input name="Vaccinations" type="checkbox" value="Shingles" @checkedVaccination("Shingles") /> Shingles</label>
+            <label><input name="Vaccinations" type="checkbox" value="RSV" @checkedVaccination("RSV") /> RSV</label>
+            <label><input id="OtherVaccinationCheckbox" name="Vaccinations" type="checkbox" value="Other" @checkedVaccination("Other") /> Other</label>
+            <div id="OtherVaccinationDetail" class="agent-other-vaccination-detail" @otherVaccinationHidden>
+                <label for="OtherVaccination">Other Vaccination</label>
+                @Html.TextBoxFor(m => m.OtherVaccination, new { maxlength = "35", autocomplete = "off" })
+            </div>
+        </fieldset>
+
+        <div class="agent-form-grid" data-clinic-only>
+            <label>
+                <span>Preferred Clinic Date</span>
+                <input name="PreferredClinicDate" type="date" value="@(Model.PreferredClinicDate.HasValue ? Model.PreferredClinicDate.Value.ToString("yyyy-MM-dd") : null)" />
+            </label>
+            <label>
+                <span>Alternate Clinic Date</span>
+                <input name="AlternateClinicDate" type="date" value="@(Model.AlternateClinicDate.HasValue ? Model.AlternateClinicDate.Value.ToString("yyyy-MM-dd") : null)" />
+            </label>
+            <label>
+                <span>Estimated Number of Clinics <strong class="bf-required-marker" aria-label="required">*</strong></span>
+                @Html.TextBoxFor(m => m.EstimatedClinics, new { type = "number", min = "0", max = "99999", required = "required" })
+            </label>
+        </div>
+    </section>
+
+    <section class="agent-form-section" aria-labelledby="additionalLocationsHeading" data-location-details>
+        <div class="agent-additional-location-heading">
+            <div>
+                <h2 id="additionalLocationsHeading">Additional Locations</h2>
+                <p>Add each additional clinic location and its Walgreens point of contact.</p>
+            </div>
+            @if (!isReadOnly)
+            {
+                <button id="AddAdditionalLocation" type="button" class="agent-additional-location-add">Add Another Location</button>
+            }
+        </div>
+
+        <div id="AdditionalLocations" class="agent-additional-locations" aria-live="polite"></div>
+
+        <template id="AdditionalLocationTemplate">
+            <article class="agent-additional-location" data-additional-location>
+                <header>
+                    <h3>Location <span data-additional-location-number></span></h3>
+                    @if (!isReadOnly)
+                    {
+                        <button type="button" class="agent-additional-location-remove" data-remove-additional-location>Remove</button>
+                    }
+                </header>
+                <div class="agent-form-grid">
+                    <label data-clinic-only>
+                        <span>Preferred Clinic Date</span>
+                        <input name="AdditionalLocations[__index__].PreferredClinicDate" data-location-field="PreferredClinicDate" type="date" />
+                    </label>
+                    <label data-clinic-only>
+                        <span>Alternate Clinic Date</span>
+                        <input name="AdditionalLocations[__index__].AlternateClinicDate" data-location-field="AlternateClinicDate" type="date" />
+                    </label>
+                    <label class="agent-field-wide">
+                        <span>Address 1 <strong class="bf-required-marker" aria-label="required">*</strong></span>
+                        <input name="AdditionalLocations[__index__].Address1" data-location-field="Address1" maxlength="35" required />
+                    </label>
+                    <label class="agent-field-wide">
+                        <span>Address 2</span>
+                        <input name="AdditionalLocations[__index__].Address2" data-location-field="Address2" maxlength="20" />
+                    </label>
+                    <label class="agent-field-city">
+                        <span>City <strong class="bf-required-marker" aria-label="required">*</strong></span>
+                        <input name="AdditionalLocations[__index__].City" data-location-field="City" maxlength="20" required />
+                    </label>
+                    <label class="agent-field-state">
+                        <span>State <strong class="bf-required-marker" aria-label="required">*</strong></span>
+                        <select name="AdditionalLocations[__index__].State" data-location-field="State" required></select>
+                    </label>
+                    <label class="agent-field-zip">
+                        <span>Zip <strong class="bf-required-marker" aria-label="required">*</strong></span>
+                        <input name="AdditionalLocations[__index__].ZipCode" data-location-field="ZipCode" maxlength="5" inputmode="numeric" required />
+                    </label>
+                    <label>
+                        <span>First Name <strong class="bf-required-marker" aria-label="required">*</strong></span>
+                        <input name="AdditionalLocations[__index__].FirstName" data-location-field="FirstName" maxlength="20" required />
+                    </label>
+                    <label>
+                        <span>Last Name <strong class="bf-required-marker" aria-label="required">*</strong></span>
+                        <input name="AdditionalLocations[__index__].LastName" data-location-field="LastName" maxlength="20" required />
+                    </label>
+                    <label class="agent-field-wide">
+                        <span>Main Contact Job Title</span>
+                        <input name="AdditionalLocations[__index__].MainContactJobTitle" data-location-field="MainContactJobTitle" maxlength="50" />
+                    </label>
+                    <label class="agent-field-email">
+                        <span>Main Contact Email <strong class="bf-required-marker" aria-label="required">*</strong></span>
+                        <input name="AdditionalLocations[__index__].Email" data-location-field="Email" type="email" maxlength="50" required />
+                    </label>
+                    <label class="agent-field-phone">
+                        <span>Phone Number <strong class="bf-required-marker" aria-label="required">*</strong></span>
+                        <input name="AdditionalLocations[__index__].PhoneNumber" data-location-field="PhoneNumber" type="tel" maxlength="14" placeholder="(555) 555-5555" class="js-phone" required />
+                    </label>
+                    <label class="agent-field-ext">
+                        <span>Ext</span>
+                        <input name="AdditionalLocations[__index__].Extension" data-location-field="Extension" maxlength="5" inputmode="numeric" />
+                    </label>
+                </div>
+            </article>
+        </template>
+    </section>
+
+    <section class="agent-form-section" aria-labelledby="logisticsHeading" data-clinic-only>
+        <h2 id="logisticsHeading">Logistics and Payment</h2>
+        <fieldset class="agent-choice-group">
+            <legend>Do you have employees located in multiple states? <strong class="bf-required-marker" aria-label="required">*</strong></legend>
+            <label><input name="MultipleStates" type="radio" value="true" required @checkedMultipleStates(true) /> Yes</label>
+            <label><input name="MultipleStates" type="radio" value="false" @checkedMultipleStates(false) /> No</label>
+        </fieldset>
+
+        <fieldset class="agent-choice-group">
+            <legend>Have you had a clinic with Walgreens in the past? <strong class="bf-required-marker" aria-label="required">*</strong></legend>
+            <label><input name="PreviousWalgreensClinic" type="radio" value="true" required @checkedPreviousClinic(true) /> Yes</label>
+            <label><input name="PreviousWalgreensClinic" type="radio" value="false" @checkedPreviousClinic(false) /> No</label>
+        </fieldset>
+
+        <fieldset class="agent-choice-group">
+            <legend>Payment Type (Click all that apply) <strong class="bf-required-marker" aria-label="required">*</strong></legend>
+            <label><input name="PaymentTypes" type="checkbox" value="Insurance" @checkedPayment("Insurance") /> <span><b>Insurance:</b> Walgreens can bill patient's insurance directly and the patient would be responsible for the copay. Walgreens can bill many pharmacy and medical plans.</span></label>
+            <label><input name="PaymentTypes" type="checkbox" value="Cash" @checkedPayment("Cash") /> <span><b>Cash:</b> Payment for the vaccine can be collected from the patient receiving the immunization at the time of vaccination by cash or via check from the employer/location.</span></label>
+            <label><input name="PaymentTypes" type="checkbox" value="Direct Bill" @checkedPayment("Direct Bill") /> <span><b>Direct Bill:</b> Employer/Location will pay for employee immunizations. They will receive an invoice directly from Walgreens for the number of immunizations provided. No payment will be collected at the time of the immunization.</span></label>
+        </fieldset>
+    </section>
+
+        if (!isReadOnly)
+        {
+            <div class="agent-form-actions">
+                <button type="submit" class="agent-save" name="submissionAction" value="save" formnovalidate data-draft-save data-template-action="SAVE">Save</button>
+                <button type="button" class="agent-send-info" data-more-info-open data-request-outcome="MoreInfo" data-template-action="GK SEND INFO"
+                        @(isSendInfoRework ? "disabled" : null)
+                        title="@(isSendInfoRework ? "This entry is already in GK Send Info and cannot be marked GK Send Info again." : null)">GK Send Info</button>
+                <button type="button" class="agent-send-info" data-more-info-open data-request-outcome="SendVoucher" data-template-action="SEND VOUCHER">Send Referral Voucher</button>
+                <button type="button" data-more-info-open data-request-outcome="OptIn" data-template-action="CLINIC SUBMISSION">Opt-In</button>
+                <button type="button" class="agent-template-copy" data-template-action="COPY SIGN-UP TEMPLATE">
+                    &#128203; Copy Sign-Up Template
+                </button>
+                <span class="agent-draft-status @(Model.SavedRecordId.HasValue ? "saved" : "unsaved")" data-draft-status role="status">
+                    @(Model.SavedRecordId.HasValue ? "Saved" : "Not saved yet")
+                </span>
+            </div>
+        }
+
+        if (!isReadOnly)
+        {
+            <aside class="agent-send-info-confirmation" data-more-info-confirmation hidden>
+                <p data-request-instructions>Review the information below. Confirming saves the Opt-In in the portal. Nothing will be sent automatically to Walgreens.</p>
+                <dl class="agent-send-info-summary">
+                    <div><dt>Company</dt><dd data-more-info-summary="Company">--</dd></div>
+                    <div><dt>Contact</dt><dd data-more-info-summary="Contact">--</dd></div>
+                    <div><dt>Job title</dt><dd data-more-info-summary="ContactJobTitle">--</dd></div>
+                    <div><dt>Email</dt><dd data-more-info-summary="ContactEmail">--</dd></div>
+                    <div><dt>Phone</dt><dd data-more-info-summary="ContactPhone">--</dd></div>
+                    <div><dt>Address</dt><dd data-more-info-summary="Address">--</dd></div>
+                    <div><dt>Program</dt><dd data-more-info-summary="Program">--</dd></div>
+                    <div class="agent-send-info-summary-wide" data-more-info-vaccinations>
+                        <dt>Vaccinations</dt><dd data-more-info-summary="Vaccinations">--</dd>
+                    </div>
+                    <div class="agent-send-info-summary-wide"><dt>Notes</dt><dd data-more-info-summary="Notes">--</dd></div>
+                </dl>
+                <div class="agent-send-info-confirmation-actions">
+                    <button type="button" data-more-info-confirm>Confirm Opt-In</button>
+                    <button type="button" class="agent-send-info-cancel" data-more-info-cancel>Cancel</button>
+                    <span role="status" aria-live="polite" data-more-info-status></span>
+                </div>
+            </aside>
+        }
+
+        <footer class="agent-context-footer" aria-label="BrightPattern session details">
+            <div><span>Version&nbsp;</span><code>@ByteForge.Toolkit.Core.Core.GetDisplayVersion(typeof(PaydayPerx.Walgreens.Web.Controllers.HomeController).Assembly)</code></div>
+            <div><span>Script opened&nbsp;</span><code>@(Model.ScriptOpenedAtUtc.HasValue ? Model.ScriptOpenedAtUtc.Value.ToString("u") : "--")</code></div>
+            @if (Model.CallStartedAtUtc.HasValue)
+            {
+                <div><span>Call started&nbsp;</span><code>@Model.CallStartedAtUtc.Value.ToString("u")</code></div>
+            }
+            @if (hasBpSessionId)
+            {
+                <div><span>BP Session ID&nbsp;</span><code>@Model.BpSessionId</code></div>
+            }
+            @if (hasGlobalId)
+            {
+                <div><span>Global Session ID&nbsp;</span><code>@Model.GlobalId</code></div>
+            }
+            @if (hasBpOrigin)
+            {
+                <div><span>BP Origin&nbsp;</span><code>@Model.BpOrigin</code></div>
+            }
+        </footer>
+    }
+</div>
+
+<script src="@Url.Content("~/Scripts/ByteForge/ByteForge-modal.js")"></script>
+<script src="@Url.Content("~/Scripts/ByteForge/ByteForge-sort-indicator.js")"></script>
+<script src="@Url.Content("~/Scripts/ByteForge/ByteForge-company-entry.js")?v=20260925-1"></script>
+<script src="@Url.Content("~/Scripts/walgreens-intake.js")?v=20261001-1"></script>
+<script src="@Url.Content("~/Scripts/ByteForge-effort-client.js")?v=20261023-1"></script>
+<script>
+    (function () {
+        "use strict";
+
+        function formatPhone(value) {
+            var digits = (value || "").replace(/\D/g, "").slice(0, 10);
+            if (digits.length <= 3) {
+                return digits;
+            }
+
+            if (digits.length <= 6) {
+                return "(" + digits.slice(0, 3) + ") " + digits.slice(3);
+            }
+
+            return "(" + digits.slice(0, 3) + ") " + digits.slice(3, 6) + "-" + digits.slice(6);
+        }
+
+        function bindPhoneFormatter(field) {
+            if (!field || field.getAttribute("data-phone-formatter") === "bound") {
+                return;
+            }
+
+            field.setAttribute("data-phone-formatter", "bound");
+            field.addEventListener("input", function () {
+                field.value = formatPhone(field.value);
+            });
+
+            field.value = formatPhone(field.value);
+        }
+
+        Array.prototype.forEach.call(document.querySelectorAll(".js-phone"), function (field) {
+            bindPhoneFormatter(field);
+        });
+
+        var reworkCopyButton = document.querySelector("[data-copy-rework-phone]");
+        var reworkDispositionForm = document.querySelector("[data-rework-disposition-form]");
+        if (reworkDispositionForm) {
+            reworkDispositionForm.addEventListener("submit", function (event) {
+                event.preventDefault();
+                if (!reworkDispositionForm.checkValidity()) {
+                    reworkDispositionForm.reportValidity();
+                    return;
+                }
+
+                var submitButton = reworkDispositionForm.querySelector("button[type='submit']");
+                if (submitButton) {
+                    submitButton.disabled = true;
+                    submitButton.textContent = "Saving...";
+                }
+
+                ByteForgeEffortClient.fetch(reworkDispositionForm.action, {
+                    method: "POST",
+                    credentials: "same-origin",
+                    headers: { "X-Requested-With": "XMLHttpRequest" },
+                    body: new FormData(reworkDispositionForm)
+                })
+                    .then(function (response) {
+                        return response.json().then(function (payload) {
+                            if (!response.ok || !payload || payload.ok === false) {
+                                var requestError = new Error(payload && payload.message
+                                    ? payload.message
+                                    : "The disposition could not be saved.");
+                                requestError.completed = payload && payload.completed === true;
+                                requestError.redirectUrl = payload && payload.redirectUrl;
+                                throw requestError;
+                            }
+                            return payload;
+                        });
+                    })
+                    .then(function (payload) {
+                        showDraftToast(payload.message || "The disposition was saved.", "success");
+                        window.setTimeout(function () {
+                            window.location.href = payload.redirectUrl || "@(isSendInfoRework ? Url.Action("Index", "SendInfoRework") : Url.Action("Index", "ReworkUnworkables"))";
+                        }, 500);
+                    })
+                    .catch(function (error) {
+                        showDraftToast(error.message || "The disposition could not be saved.", "error");
+                        if (error.completed) {
+                            window.setTimeout(function () {
+                                window.location.href = error.redirectUrl || "@(isSendInfoRework ? Url.Action("Index", "SendInfoRework") : Url.Action("Index", "ReworkUnworkables"))";
+                            }, 2500);
+                        } else if (submitButton) {
+                            submitButton.disabled = false;
+                            submitButton.innerHTML = "&#128190; @(isSendInfoRework ? "Save disposition" : "Save &amp; complete")";
+                        }
+                    });
+            });
+        }
+
+        if (reworkCopyButton) {
+            reworkCopyButton.addEventListener("click", function () {
+                var phoneElement = document.querySelector("[data-rework-phone]");
+                var phone = phoneElement ? phoneElement.getAttribute("data-rework-phone-copy") || "" : "";
+                var copy = navigator.clipboard && navigator.clipboard.writeText
+                    ? navigator.clipboard.writeText(phone)
+                    : new Promise(function (resolve, reject) {
+                        var input = document.createElement("textarea");
+                        input.value = phone;
+                        input.setAttribute("readonly", "readonly");
+                        input.style.position = "fixed";
+                        input.style.opacity = "0";
+                        document.body.appendChild(input);
+                        input.select();
+                        try { document.execCommand("copy") ? resolve() : reject(new Error("Copy failed.")); }
+                        catch (error) { reject(error); }
+                        document.body.removeChild(input);
+                    });
+                copy.then(function () {
+                    reworkCopyButton.textContent = "Copied";
+                    window.setTimeout(function () { reworkCopyButton.innerHTML = "&#128203; Copy phone"; }, 1600);
+                });
+            });
+        }
+
+        var additionalLocations = @Html.Raw(additionalLocationsJson);
+        var additionalLocationsEl = document.getElementById("AdditionalLocations");
+        var additionalLocationTemplate = document.getElementById("AdditionalLocationTemplate");
+        var addAdditionalLocationButton = document.getElementById("AddAdditionalLocation");
+        var primaryStateSelect = document.querySelector("select[name='State']");
+
+        function toDateInputValue(value) {
+            if (!value) {
+                return "";
+            }
+
+            var match = /\/Date\((-?\d+)/.exec(String(value));
+            var date = match ? new Date(parseInt(match[1], 10)) : new Date(value);
+            if (Number.isNaN(date.getTime())) {
+                return "";
+            }
+
+            return date.getFullYear() + "-" +
+                String(date.getMonth() + 1).padStart(2, "0") + "-" +
+                String(date.getDate()).padStart(2, "0");
+        }
+
+        function reindexAdditionalLocations() {
+            Array.prototype.forEach.call(additionalLocationsEl.querySelectorAll("[data-additional-location]"), function (card, index) {
+                var number = card.querySelector("[data-additional-location-number]");
+                if (number) {
+                    number.textContent = String(index + 2);
+                }
+
+                Array.prototype.forEach.call(card.querySelectorAll("[name]"), function (field) {
+                    field.name = field.name.replace(/AdditionalLocations\[\d+\]/, "AdditionalLocations[" + index + "]");
+                });
+            });
+        }
+
+        function addAdditionalLocation(location) {
+            if (!additionalLocationsEl || !additionalLocationTemplate) {
+                return;
+            }
+
+            var index = additionalLocationsEl.querySelectorAll("[data-additional-location]").length;
+            var html = additionalLocationTemplate.innerHTML.replace(/__index__/g, String(index));
+            var wrapper = document.createElement("div");
+            wrapper.innerHTML = html;
+            var card = wrapper.firstElementChild;
+            var state = card.querySelector("select[data-location-field='State']");
+
+            if (state && primaryStateSelect) {
+                state.innerHTML = primaryStateSelect.innerHTML;
+            }
+
+            Object.keys(location || {}).forEach(function (key) {
+                var field = card.querySelector("[data-location-field='" + key + "']");
+                if (!field) {
+                    return;
+                }
+
+                field.value = key.indexOf("ClinicDate") >= 0 ? toDateInputValue(location[key]) : (location[key] || "");
+            });
+
+            Array.prototype.forEach.call(card.querySelectorAll(".js-phone"), bindPhoneFormatter);
+            additionalLocationsEl.appendChild(card);
+            reindexAdditionalLocations();
+        }
+
+        if (addAdditionalLocationButton) {
+            addAdditionalLocationButton.addEventListener("click", function () {
+                addAdditionalLocation({});
+                updateProgramFieldVisibility();
+                scheduleDraftSave();
+            });
+        }
+
+        if (additionalLocationsEl) {
+            additionalLocationsEl.addEventListener("click", function (event) {
+                var removeButton = event.target.closest("[data-remove-additional-location]");
+                if (!removeButton) {
+                    return;
+                }
+
+                var card = removeButton.closest("[data-additional-location]");
+                if (card) {
+                    card.remove();
+                    reindexAdditionalLocations();
+                    scheduleDraftSave();
+                }
+            });
+        }
+
+        (additionalLocations || []).forEach(addAdditionalLocation);
+
+        var otherVaccinationCheckbox = document.getElementById("OtherVaccinationCheckbox");
+        var otherVaccinationDetail = document.getElementById("OtherVaccinationDetail");
+        var otherVaccinationInput = document.getElementById("OtherVaccination");
+
+        function toggleOtherVaccinationDetail() {
+            var isSelected = otherVaccinationCheckbox && otherVaccinationCheckbox.checked;
+            if (otherVaccinationDetail) {
+                otherVaccinationDetail.hidden = !isSelected;
+            }
+
+            if (otherVaccinationInput) {
+                if (isSelected) {
+                    otherVaccinationInput.setAttribute("required", "required");
+                } else {
+                    otherVaccinationInput.removeAttribute("required");
+                }
+            }
+        }
+
+        if (otherVaccinationCheckbox) {
+            otherVaccinationCheckbox.addEventListener("change", toggleOtherVaccinationDetail);
+            toggleOtherVaccinationDetail();
+        }
+
+        var intakeForm = document.querySelector(".agent-intake-form");
+        var isReadOnly = intakeForm && intakeForm.getAttribute("data-read-only") === "true";
+        if (isReadOnly) {
+            intakeForm.querySelectorAll("input, select, textarea, button").forEach(function (control) {
+                control.disabled = true;
+            });
+            intakeForm.addEventListener("submit", function (event) {
+                event.preventDefault();
+            });
+        }
+
+        function updateProgramFieldVisibility() {
+            window.ByteForgeWalgreensIntake.updateProgramFieldVisibility(intakeForm, isReadOnly,
+                @PaydayPerx.Walgreens.Web.Models.Walgreens.WalgreensVaccinationInterestViewModel.MinimumClinicParticipants);
+        }
+
+        if (intakeForm) {
+            intakeForm.querySelectorAll("input[name='Program']").forEach(function (programOption) {
+                programOption.addEventListener("change", updateProgramFieldVisibility);
+            });
+            var estimatedParticipantsField = intakeForm.querySelector("[name='EstimatedParticipants']");
+            if (estimatedParticipantsField) {
+                estimatedParticipantsField.addEventListener("input", updateProgramFieldVisibility);
+                estimatedParticipantsField.addEventListener("change", updateProgramFieldVisibility);
+            }
+            intakeForm.querySelectorAll("input[name='Vaccinations']").forEach(function (vaccinationOption) {
+                vaccinationOption.addEventListener("change", updateProgramFieldVisibility);
+            });
+            updateProgramFieldVisibility();
+        }
+
+        var signUpTemplateActionButtons = document.querySelectorAll("[data-template-action]");
+        var companyLookupUrl = intakeForm ? intakeForm.getAttribute("data-company-lookup-url") : "";
+        var companyChoicesUrl = intakeForm ? intakeForm.getAttribute("data-company-choices-url") : "";
+        var companyLookupInput = document.querySelector("[data-company-lookup-input]");
+        var canonicalCompanyLeadIdField = intakeForm
+            ? intakeForm.querySelector("[name='CanonicalCompanyLeadId']")
+            : null;
+        var companyLookupResults = document.getElementById("companyLookupResults");
+        var companyLookupStatus = document.querySelector("[data-company-lookup-status]");
+        var companyShowMoreButton = document.querySelector("[data-company-show-more]");
+        var companyLookupTimer = null;
+        var companyLookupRequest = null;
+        var companyChoicesRequest = null;
+        var companyMatches = [];
+        var activeCompanyMatch = -1;
+        var applyingCompanyMatch = false;
+        var draftSaveUrl = intakeForm ? intakeForm.getAttribute("data-draft-save-url") : "";
+        var draftSaveButtons = document.querySelectorAll("[data-draft-save]");
+        var draftSaveStatus = document.querySelector("[data-draft-status]");
+        var agentToast = document.querySelector("[data-agent-toast]");
+        var draftSaveTimer = null;
+        var draftToastTimer = null;
+        var draftSaveInFlight = false;
+        var draftSavePromise = Promise.resolve();
+        var draftSaveQueued = false;
+        var queuedManualSave = false;
+        var finalSubmissionStarted = false;
+        var optInSubmitted = false;
+        var outcomeRequestInFlight = false;
+
+        function showDraftToast(message, type) {
+            if (!agentToast) {
+                return;
+            }
+
+            window.clearTimeout(draftToastTimer);
+            agentToast.className = "agent-toast " + (type || "error") + " visible";
+            agentToast.textContent = message || "";
+            draftToastTimer = window.setTimeout(function () {
+                agentToast.classList.remove("visible");
+            }, type === "success" || type === "info" ? 3000 : 6000);
+        }
+
+        function copyTextToClipboard(value) {
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                return navigator.clipboard.writeText(value).catch(function () {
+                    return copyTextToClipboardFallback(value);
+                });
+            }
+
+            return copyTextToClipboardFallback(value);
+        }
+
+        function copyTextToClipboardFallback(value) {
+            return new Promise(function (resolve, reject) {
+                var copyField = document.createElement("textarea");
+                copyField.value = value;
+                copyField.setAttribute("readonly", "readonly");
+                copyField.style.position = "fixed";
+                copyField.style.opacity = "0";
+                document.body.appendChild(copyField);
+                copyField.select();
+
+                try {
+                    if (!document.execCommand("copy")) {
+                        throw new Error("The browser did not allow clipboard access.");
+                    }
+
+                    resolve();
+                } catch (error) {
+                    reject(error);
+                } finally {
+                    document.body.removeChild(copyField);
+                }
+            });
+        }
+
+        function isVisibleIntakeField(field) {
+            if (!field || field.disabled || field.type === "hidden" || field.closest("[hidden]")) {
+                return false;
+            }
+
+            var style = window.getComputedStyle(field);
+            return style.display !== "none" && style.visibility !== "hidden";
+        }
+
+        function hasVisibleIntakeField(name) {
+            if (!intakeForm) {
+                return false;
+            }
+
+            return Array.prototype.some.call(
+                intakeForm.querySelectorAll("[name='" + name + "']"),
+                isVisibleIntakeField
+            );
+        }
+
+        function appendVisibleTemplateLine(lines, label, fieldName, value) {
+            if (hasVisibleIntakeField(fieldName)) {
+                lines.push(label + ": " + (value || ""));
+            }
+        }
+
+        function locationFieldValue(card, fieldName) {
+            var field = card ? card.querySelector("[data-location-field='" + fieldName + "']") : null;
+            return field ? field.value : "";
+        }
+
+        function buildSignUpTemplate(actionLabel) {
+                var address = [intakeValue("Address1"), intakeValue("Address2")]
+                    .filter(function (value) { return Boolean(value); })
+                    .join(", ");
+                var phone = intakeValue("PhoneNumber");
+                var extension = intakeValue("Extension");
+                var vaccinations = checkedIntakeValues("Vaccinations").map(function (value) {
+                    return value === "Other" ? (intakeValue("OtherVaccination") || "Other") : value;
+                }).join(", ");
+                var lines = [
+                    "========================================",
+                    "ACTION: " + actionLabel,
+                    "========================================",
+                    "",
+                    "Successful Sign-Up:",
+                    ""
+                ];
+
+                appendVisibleTemplateLine(lines, "Company", "Company", intakeValue("Company"));
+                appendVisibleTemplateLine(lines, "Address", "Address1", address);
+                appendVisibleTemplateLine(lines, "City", "City", intakeValue("City"));
+                appendVisibleTemplateLine(lines, "State", "State", intakeValue("State"));
+                appendVisibleTemplateLine(lines, "ZIP", "ZipCode", intakeValue("ZipCode"));
+                appendVisibleTemplateLine(lines, "First Name", "FirstName", intakeValue("FirstName"));
+                appendVisibleTemplateLine(lines, "Last Name", "LastName", intakeValue("LastName"));
+                appendVisibleTemplateLine(lines, "Title", "MainContactJobTitle", intakeValue("MainContactJobTitle"));
+                appendVisibleTemplateLine(lines, "Email", "Email", intakeValue("Email"));
+                appendVisibleTemplateLine(
+                    lines,
+                    "Phone",
+                    "PhoneNumber",
+                    phone + (extension ? " ext. " + extension : ""));
+                appendVisibleTemplateLine(lines, "Employee Count", "EstimatedParticipants", intakeValue("EstimatedParticipants"));
+                appendVisibleTemplateLine(lines, "Program Type", "Program", intakeValue("Program"));
+                appendVisibleTemplateLine(lines, "Industry", "Industry", intakeValue("Industry"));
+                appendVisibleTemplateLine(
+                    lines,
+                    "Primary Employee Medical Insurance",
+                    "PrimaryEmployeeMedicalInsurance",
+                    intakeValue("PrimaryEmployeeMedicalInsurance"));
+                appendVisibleTemplateLine(
+                    lines,
+                    "Employee Pharmacy Insurance",
+                    "EmployeePharmacyInsurance",
+                    intakeValue("EmployeePharmacyInsurance"));
+                appendVisibleTemplateLine(
+                    lines,
+                    "Current/Past Walgreens Contact",
+                    "CurrentPastWalgreensContact",
+                    intakeValue("CurrentPastWalgreensContact"));
+                appendVisibleTemplateLine(lines, "Vaccinations Requested", "Vaccinations", vaccinations);
+                appendVisibleTemplateLine(lines, "Preferred Clinic Date", "PreferredClinicDate", intakeValue("PreferredClinicDate"));
+                appendVisibleTemplateLine(lines, "Alternate Clinic Date", "AlternateClinicDate", intakeValue("AlternateClinicDate"));
+                appendVisibleTemplateLine(lines, "Estimated Number of Clinics", "EstimatedClinics", intakeValue("EstimatedClinics"));
+                appendVisibleTemplateLine(lines, "Alternate First Name", "AlternateFirstName", intakeValue("AlternateFirstName"));
+                appendVisibleTemplateLine(lines, "Alternate Last Name", "AlternateLastName", intakeValue("AlternateLastName"));
+                appendVisibleTemplateLine(
+                    lines,
+                    "Alternate Title",
+                    "AlternateContactJobTitle",
+                    intakeValue("AlternateContactJobTitle"));
+                appendVisibleTemplateLine(
+                    lines,
+                    "Alternate Email",
+                    "AlternateContactEmail",
+                    intakeValue("AlternateContactEmail"));
+
+                var alternatePhone = intakeValue("AlternateContactPhoneNumber");
+                var alternateExtension = intakeValue("AlternateContactExtension");
+                appendVisibleTemplateLine(
+                    lines,
+                    "Alternate Phone",
+                    "AlternateContactPhoneNumber",
+                    alternatePhone + (alternateExtension ? " ext. " + alternateExtension : ""));
+
+                if (additionalLocationsEl && !additionalLocationsEl.closest("[hidden]")) {
+                    Array.prototype.forEach.call(
+                        additionalLocationsEl.querySelectorAll("[data-additional-location]"),
+                        function (card, index) {
+                            var prefix = "Additional Location " + (index + 1) + " ";
+                            var locationAddress = [
+                                locationFieldValue(card, "Address1"),
+                                locationFieldValue(card, "Address2")
+                            ].filter(function (value) { return Boolean(value); }).join(", ");
+                            var locationPhone = locationFieldValue(card, "PhoneNumber");
+                            var locationExtension = locationFieldValue(card, "Extension");
+
+                            lines.push(
+                                prefix + "Address: " + locationAddress,
+                                prefix + "City: " + locationFieldValue(card, "City"),
+                                prefix + "State: " + locationFieldValue(card, "State"),
+                                prefix + "ZIP: " + locationFieldValue(card, "ZipCode"),
+                                prefix + "First Name: " + locationFieldValue(card, "FirstName"),
+                                prefix + "Last Name: " + locationFieldValue(card, "LastName"),
+                                prefix + "Title: " + locationFieldValue(card, "MainContactJobTitle"),
+                                prefix + "Email: " + locationFieldValue(card, "Email"),
+                                prefix + "Phone: " + locationPhone
+                                    + (locationExtension ? " ext. " + locationExtension : ""),
+                                prefix + "Preferred Clinic Date: " + locationFieldValue(card, "PreferredClinicDate"),
+                                prefix + "Alternate Clinic Date: " + locationFieldValue(card, "AlternateClinicDate")
+                            );
+                        });
+                }
+
+                appendVisibleTemplateLine(
+                    lines,
+                    "Do you have employees located in multiple states?",
+                    "MultipleStates",
+                    yesNoIntakeValue("MultipleStates"));
+                appendVisibleTemplateLine(
+                    lines,
+                    "Have you had a clinic with Walgreens in the past?",
+                    "PreviousWalgreensClinic",
+                    yesNoIntakeValue("PreviousWalgreensClinic"));
+                appendVisibleTemplateLine(lines, "Payment Types", "PaymentTypes", checkedIntakeValues("PaymentTypes").join(", "));
+                appendVisibleTemplateLine(lines, "Notes", "Notes", intakeValue("Notes"));
+                lines.push("---");
+
+                return lines.join("\r\n");
+        }
+
+        function copySignUpTemplate(actionLabel) {
+            return copyTextToClipboard(buildSignUpTemplate(actionLabel)).then(function () {
+                showDraftToast(actionLabel + " template copied to the clipboard.", "success");
+            }).catch(function () {
+                showDraftToast("Unable to copy the sign-up template. Check browser clipboard permissions.", "error");
+            });
+        }
+
+        signUpTemplateActionButtons.forEach(function (button) {
+            button.addEventListener("click", function () {
+                // Clinic templates are copied only after the server confirms persistence.
+                if (button.getAttribute("data-request-outcome") === "OptIn") {
+                    return;
+                }
+                copySignUpTemplate(button.getAttribute("data-template-action") || "UNKNOWN ACTION");
+            });
+        });
+
+        function updateDraftStatus(state, message) {
+            if (!draftSaveStatus) {
+                return;
+            }
+
+            draftSaveStatus.className = "agent-draft-status " + state;
+            draftSaveStatus.textContent = message;
+        }
+
+        function importedContactCardValue(card, name) {
+            return card ? card.getAttribute("data-" + name) || "" : "";
+        }
+
+        function copyImportedPhone(card) {
+            var phone = importedContactCardValue(card, "phone");
+            if (!phone) {
+                showDraftToast("This imported contact does not have a phone number to copy.", "error");
+                return Promise.reject(new Error("Missing imported phone."));
+            }
+
+            return copyTextToClipboard(phone).then(function () {
+                showDraftToast("Phone number copied to the clipboard.", "success");
+            }).catch(function () {
+                showDraftToast("Unable to copy the phone number. Check browser clipboard permissions.", "error");
+                throw new Error("Clipboard access was denied.");
+            });
+        }
+
+        function assignImportedField(name, value) {
+            var field = intakeForm ? intakeForm.querySelector("[name='" + name + "']") : null;
+            if (!field || !value) {
+                return false;
+            }
+
+            field.value = field.maxLength > 0 ? value.slice(0, field.maxLength) : value;
+            return true;
+        }
+
+        function fillImportedContact(card) {
+            var changed = false;
+            changed = assignImportedField("FirstName", importedContactCardValue(card, "first-name")) || changed;
+            changed = assignImportedField("LastName", importedContactCardValue(card, "last-name")) || changed;
+            changed = assignImportedField("MainContactJobTitle", importedContactCardValue(card, "job-title")) || changed;
+            changed = assignImportedField("Email", importedContactCardValue(card, "email")) || changed;
+            changed = assignImportedField("PhoneNumber", formatPhone(importedContactCardValue(card, "phone"))) || changed;
+            if (changed) {
+                updateDraftStatus("unsaved", "Unsaved changes");
+                showDraftToast("Contact fields filled. Click Save Draft to keep the changes.", "info");
+            }
+        }
+
+        function addImportedContactToNotes(card) {
+            var notes = intakeForm ? intakeForm.querySelector("[name='Notes']") : null;
+            if (!notes) {
+                showDraftToast("The Notes field is not available on this form.", "error");
+                return;
+            }
+
+            var fullName = (importedContactCardValue(card, "first-name") + " " + importedContactCardValue(card, "last-name")).trim();
+            var phoneType = importedContactCardValue(card, "phone-type") || "Phone";
+            var phone = importedContactCardValue(card, "phone-formatted") || importedContactCardValue(card, "phone");
+            var line = "Client-provided contact: " + (fullName || "Contact") + " - " + phoneType + ": " + phone;
+            var existingLines = (notes.value || "").split(/\r?\n/).map(function (value) { return value.trim(); });
+            if (existingLines.indexOf(line) < 0) {
+                notes.value = (notes.value || "").replace(/\s+$/, "") + ((notes.value || "").trim() ? "\r\n" : "") + line;
+            }
+            notes.focus();
+            notes.scrollIntoView({ behavior: "smooth", block: "center" });
+            notes.classList.add("agent-notes-import-highlight");
+            window.setTimeout(function () { notes.classList.remove("agent-notes-import-highlight"); }, 1800);
+            updateDraftStatus("unsaved", "Unsaved changes");
+            showDraftToast("Contact added to Notes. Click Save Notes to keep it.", "info");
+        }
+
+        function closeImportedPhoneMenus(exceptMenu) {
+            document.querySelectorAll("[data-imported-phone-menu]").forEach(function (menu) {
+                if (menu === exceptMenu) {
+                    return;
+                }
+                menu.hidden = true;
+                var toggle = menu.parentElement.querySelector("[data-imported-phone-menu-toggle]");
+                if (toggle) {
+                    toggle.setAttribute("aria-expanded", "false");
+                }
+            });
+        }
+
+        document.querySelectorAll("[data-imported-contact-card]").forEach(function (card) {
+            var copyButton = card.querySelector("[data-imported-phone-copy]");
+            var toggle = card.querySelector("[data-imported-phone-menu-toggle]");
+            var menu = card.querySelector("[data-imported-phone-menu]");
+            if (copyButton) {
+                copyButton.addEventListener("click", function () { copyImportedPhone(card).catch(function () {}); });
+            }
+            if (toggle && menu) {
+                toggle.addEventListener("click", function () {
+                    var willOpen = menu.hidden;
+                    closeImportedPhoneMenus(willOpen ? menu : null);
+                    menu.hidden = !willOpen;
+                    toggle.setAttribute("aria-expanded", willOpen ? "true" : "false");
+                    if (willOpen) {
+                        var firstItem = menu.querySelector("[role='menuitem']");
+                        if (firstItem) firstItem.focus();
+                    }
+                });
+                menu.querySelectorAll("[data-imported-phone-action]").forEach(function (button) {
+                    button.addEventListener("click", function () {
+                        var action = button.getAttribute("data-imported-phone-action");
+                        menu.hidden = true;
+                        toggle.setAttribute("aria-expanded", "false");
+                        copyImportedPhone(card).then(function () {
+                            if (action === "fill") fillImportedContact(card);
+                            if (action === "notes") addImportedContactToNotes(card);
+                        }).catch(function () {});
+                    });
+                });
+            }
+        });
+
+        document.addEventListener("click", function (event) {
+            if (!event.target.closest(".agent-phone-split-button")) closeImportedPhoneMenus(null);
+        });
+        document.addEventListener("keydown", function (event) {
+            if (event.key === "Escape") closeImportedPhoneMenus(null);
+        });
+
+        var importedContactsPanel = document.querySelector(".agent-imported-contacts");
+        var stickyScriptPanel = document.querySelector(".agent-script-panel");
+        function syncImportedContactsHeight() {
+            if (!importedContactsPanel || !stickyScriptPanel || window.innerWidth <= 900) {
+                if (importedContactsPanel) {
+                    importedContactsPanel.style.maxHeight = "";
+                    importedContactsPanel.style.overflowY = "";
+                }
+                return;
+            }
+
+            importedContactsPanel.style.maxHeight = Math.ceil(stickyScriptPanel.getBoundingClientRect().height) + "px";
+            importedContactsPanel.style.overflowY = importedContactsPanel.scrollHeight <= importedContactsPanel.clientHeight + 1
+                ? "hidden"
+                : "auto";
+        }
+        if (importedContactsPanel && stickyScriptPanel) {
+            syncImportedContactsHeight();
+            window.addEventListener("resize", syncImportedContactsHeight);
+            if (window.ResizeObserver) {
+                new ResizeObserver(syncImportedContactsHeight).observe(stickyScriptPanel);
+            }
+        }
+
+        function buildDraftPayload(saveIntent) {
+            var payload = new URLSearchParams(new FormData(intakeForm));
+            payload.delete("submissionAction");
+            payload.set("saveIntent", saveIntent);
+            return payload;
+        }
+
+        function saveDraft(isManual) {
+            if (!draftSaveUrl || !intakeForm || finalSubmissionStarted) {
+                return Promise.resolve();
+            }
+
+            if (!validateCanonicalCompanySelection(true, isManual)) {
+                return Promise.resolve();
+            }
+
+            if (draftSaveInFlight) {
+                draftSaveQueued = true;
+                queuedManualSave = queuedManualSave || isManual;
+                return draftSavePromise;
+            }
+
+            window.clearTimeout(draftSaveTimer);
+            draftSaveInFlight = true;
+            if (isManual) {
+                draftSaveButtons.forEach(function (button) {
+                    button.disabled = true;
+                });
+            }
+            updateDraftStatus("saving", isManual ? "Saving..." : "Auto-saving...");
+
+            draftSavePromise = ByteForgeEffortClient.fetch(draftSaveUrl, {
+                method: "POST",
+                credentials: "same-origin",
+                headers: {
+                    "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
+                    "X-Requested-With": "XMLHttpRequest"
+                },
+                body: buildDraftPayload(isManual ? "manual" : "autosave").toString()
+            })
+                .then(function (response) {
+                    return response.json().then(function (result) {
+                        if (!response.ok || !result || !result.ok) {
+                            throw new Error(result && result.message ? result.message : "The form could not be saved.");
+                        }
+
+                        return result;
+                    });
+                })
+                .then(function (result) {
+                    var recordIdField = intakeForm.querySelector("[name='SavedRecordId']");
+                    if (recordIdField && result.recordId) {
+                        recordIdField.value = result.recordId;
+                    }
+
+                    updateDraftStatus("saved", result.queued && result.status !== "Completed"
+                        ? (result.status === "NeedsAttention" ? "Needs supervisor attention" : "Accepted for processing")
+                        : isManual ? "Saved" : "Auto-saved");
+                    showDraftToast(result.queued ? result.message : isManual ? "Draft saved successfully." : "Draft auto-saved.", isManual ? "success" : "info");
+                })
+                .catch(function (error) {
+                    updateDraftStatus("error", "Save failed");
+                    showDraftToast(error.message || "The form could not be saved.", "error");
+                })
+                .then(function () {
+                    draftSaveInFlight = false;
+                    draftSaveButtons.forEach(function (button) {
+                        button.disabled = false;
+                    });
+
+                    if (draftSaveQueued && !finalSubmissionStarted) {
+                        var runAsManual = queuedManualSave;
+                        draftSaveQueued = false;
+                        queuedManualSave = false;
+                        saveDraft(runAsManual);
+                    }
+                });
+            return draftSavePromise;
+        }
+
+        function scheduleDraftSave() {
+            if (!draftSaveUrl || finalSubmissionStarted) {
+                return;
+            }
+
+            updateDraftStatus("unsaved", "Unsaved changes");
+            window.clearTimeout(draftSaveTimer);
+            draftSaveTimer = window.setTimeout(function () {
+                saveDraft(false);
+            }, 5000);
+        }
+
+        function requestManualDraftSave(event) {
+            if (event) {
+                event.preventDefault();
+            }
+            saveDraft(true);
+        }
+
+        if (intakeForm && draftSaveUrl) {
+            intakeForm.addEventListener("input", scheduleDraftSave);
+            intakeForm.addEventListener("change", scheduleDraftSave);
+            intakeForm.addEventListener("submit", function (event) {
+                var submitter = event.submitter || document.activeElement;
+                var isDraftSave = submitter && submitter.hasAttribute("data-draft-save");
+                if (isDraftSave) {
+                    requestManualDraftSave(event);
+                    return;
+                }
+
+                finalSubmissionStarted = true;
+                window.clearTimeout(draftSaveTimer);
+            });
+            draftSaveButtons.forEach(function (button) {
+                if (button.type === "button") {
+                    button.addEventListener("click", requestManualDraftSave);
+                }
+            });
+        }
+
+        function intakeValue(name) {
+            var field = intakeForm ? intakeForm.querySelector("[name='" + name + "']") : null;
+            if (field && (field.type === "radio" || field.type === "checkbox")) {
+                field = intakeForm.querySelector("[name='" + name + "']:checked");
+            }
+
+            return field ? field.value : "";
+        }
+
+        function checkedIntakeValues(name) {
+            if (!intakeForm) {
+                return [];
+            }
+
+            return Array.prototype.map.call(
+                intakeForm.querySelectorAll("[name='" + name + "']:checked"),
+                function (field) { return field.value; }
+            );
+        }
+
+        function yesNoIntakeValue(name) {
+            var value = intakeValue(name).toLowerCase();
+            if (value === "true") {
+                return "Yes";
+            }
+
+            if (value === "false") {
+                return "No";
+            }
+
+            return "";
+        }
+
+        function setIntakeValue(name, value) {
+            var field = intakeForm ? intakeForm.querySelector("[name='" + name + "']") : null;
+            if (!field) {
+                return;
+            }
+
+            field.value = value === null || value === undefined ? "" : value;
+            field.dispatchEvent(new Event("input", { bubbles: true }));
+            field.dispatchEvent(new Event("change", { bubbles: true }));
+        }
+
+        function setCompanyLookupStatus(message, isError) {
+            ByteForgeCompanyEntry.setStatus(companyLookupStatus, message, isError,
+                intakeForm && intakeForm.getAttribute("data-allow-typed-company") === "true");
+        }
+
+        function validateCanonicalCompanySelection(allowBlank, showMessage) {
+            return ByteForgeCompanyEntry.validate(companyLookupInput, canonicalCompanyLeadIdField,
+                intakeForm && intakeForm.getAttribute("data-allow-typed-company") === "true",
+                allowBlank, showMessage, setCompanyLookupStatus);
+        }
+
+        function closeCompanyLookup() {
+            if (!companyLookupResults || !companyLookupInput) {
+                return;
+            }
+
+            companyLookupResults.hidden = true;
+            if (companyShowMoreButton) {
+                companyShowMoreButton.hidden = true;
+            }
+            companyLookupInput.setAttribute("aria-expanded", "false");
+            companyLookupInput.removeAttribute("aria-activedescendant");
+            activeCompanyMatch = -1;
+        }
+
+        function activateCompanyMatch(index) {
+            if (!companyLookupResults || !companyLookupInput || !companyMatches.length) {
+                return;
+            }
+
+            activeCompanyMatch = (index + companyMatches.length) % companyMatches.length;
+            Array.prototype.forEach.call(companyLookupResults.querySelectorAll("[role='option']"), function (option, optionIndex) {
+                var isActive = optionIndex === activeCompanyMatch;
+                option.classList.toggle("is-active", isActive);
+                option.setAttribute("aria-selected", isActive ? "true" : "false");
+                if (isActive) {
+                    companyLookupInput.setAttribute("aria-activedescendant", option.id);
+                    option.scrollIntoView({ block: "nearest" });
+                }
+            });
+        }
+
+        function applyCompanyMatch(match) {
+            if (!match) {
+                return false;
+            }
+
+            var existingStatuses = match.existingListStatuses || [];
+            if (existingStatuses.length) {
+                setCompanyLookupStatus(
+                    "This company entry already has a valid " + window.ByteForgeWalgreensLabels.outcome(existingStatuses[0]) + " status and cannot be selected.",
+                    true);
+                return false;
+            }
+
+            applyingCompanyMatch = true;
+            setIntakeValue("Company", match.company);
+            setIntakeValue("CanonicalCompanyLeadId", match.id);
+            setIntakeValue("FirstName", match.firstName);
+            setIntakeValue("LastName", match.lastName);
+            setIntakeValue("Address1", match.address1);
+            setIntakeValue("City", match.city);
+            setIntakeValue("State", match.state);
+            setIntakeValue("ZipCode", match.zipCode);
+            setIntakeValue("PhoneNumber", match.phoneNumber);
+            setIntakeValue("MainContactJobTitle", match.mainContactJobTitle);
+            setIntakeValue("Industry", match.industry);
+            setIntakeValue("EstimatedParticipants", match.estimatedParticipants);
+            applyingCompanyMatch = false;
+            closeCompanyLookup();
+            validateCanonicalCompanySelection(false, false);
+            setCompanyLookupStatus("Company entry confirmed. Review and update its details as needed.", false);
+            return true;
+        }
+
+        function companyChoiceDetails(match) {
+            var contactName = [match.firstName, match.lastName].filter(Boolean).join(" ");
+            var location = [match.city, match.state].filter(Boolean).join(", ");
+            var details = [
+                location || "City/state unavailable",
+                match.address1,
+                contactName ? "Contact: " + contactName : "",
+                match.phoneNumber,
+                match.listName,
+                match.initiallySelected ? "Initially selected" : ""
+            ].filter(Boolean);
+            var statuses = match.existingListStatuses || [];
+            details.push(statuses.length
+                ? "Already: " + statuses.map(window.ByteForgeWalgreensLabels.outcome).join(", ")
+                : "No existing Opt-In, GK Send Info, or Send Voucher status");
+            return details.join(" | ");
+        }
+
+        function showSameNameCompanyChoices(matches) {
+            var content = document.createElement("div");
+            var explanation = document.createElement("p");
+            var toolbar = document.createElement("div");
+            var searchLabel = document.createElement("label");
+            var searchLabelText = document.createElement("span");
+            var citySearch = document.createElement("input");
+            var tableScroll = document.createElement("div");
+            var table = document.createElement("table");
+            var tableHead = document.createElement("thead");
+            var headingRow = document.createElement("tr");
+            var tableBody = document.createElement("tbody");
+            var emptyMessage = document.createElement("p");
+            var headings = [
+                { key: "company", label: "Company name" },
+                { key: "city", label: "City" },
+                { key: "state", label: "State" },
+                { key: "status", label: "Status" }
+            ];
+            var sortKey = "city";
+            var sortDirection = "asc";
+            var modal = null;
+
+            explanation.textContent = "One or more master-list entries with this exact company name already have a Walgreens status. Entries with a status are unavailable; confirm the city and select an entry showing \"-\".";
+            toolbar.className = "admin-list-toolbar";
+            searchLabel.className = "admin-list-search";
+            searchLabelText.textContent = "Search cities";
+            citySearch.type = "search";
+            citySearch.placeholder = "City";
+            citySearch.autocomplete = "off";
+            citySearch.setAttribute("data-company-city-search", "");
+            searchLabel.appendChild(searchLabelText);
+            searchLabel.appendChild(citySearch);
+            toolbar.appendChild(searchLabel);
+            tableScroll.className = "admin-table-scroll";
+            table.className = "admin-table opt-in-table";
+            table.setAttribute("aria-label", "Same-name Walgreens company entries");
+            headings.forEach(function (heading) {
+                var cell = document.createElement("th");
+                var button = document.createElement("button");
+                cell.scope = "col";
+                button.type = "button";
+                button.textContent = heading.label;
+                button.setAttribute("data-company-choice-sort", heading.key);
+                button.addEventListener("click", function () {
+                    if (sortKey === heading.key) {
+                        sortDirection = sortDirection === "asc" ? "desc" : "asc";
+                    } else {
+                        sortKey = heading.key;
+                        sortDirection = "asc";
+                    }
+                    renderRows();
+                });
+                cell.appendChild(button);
+                headingRow.appendChild(cell);
+            });
+            tableHead.appendChild(headingRow);
+            table.appendChild(tableHead);
+            table.appendChild(tableBody);
+            tableScroll.appendChild(table);
+            emptyMessage.textContent = "No same-name company entries match this city.";
+            emptyMessage.hidden = true;
+            content.appendChild(explanation);
+            content.appendChild(toolbar);
+            content.appendChild(tableScroll);
+            content.appendChild(emptyMessage);
+
+            function statusSortValue(match) {
+                var status = (match.existingListStatuses || [])[0] || "";
+                if (status === "Opt-In") {
+                    return "0";
+                }
+                if (status === "Send Voucher") {
+                    return "1";
+                }
+                if (status === "Send Info" || status === "GK Send Info") {
+                    return "2";
+                }
+                return "3";
+            }
+
+            function sortValue(match, key) {
+                if (key === "status") {
+                    return statusSortValue(match);
+                }
+                return String(match[key] || "").trim().toLocaleLowerCase();
+            }
+
+            function compareMatches(left, right) {
+                var leftValue = sortValue(left, sortKey);
+                var rightValue = sortValue(right, sortKey);
+                var comparison = leftValue < rightValue ? -1 : leftValue > rightValue ? 1 : 0;
+                if (comparison === 0) {
+                    comparison = sortValue(left, "city").localeCompare(sortValue(right, "city"));
+                }
+                if (comparison === 0) {
+                    comparison = Number(left.id || 0) - Number(right.id || 0);
+                }
+                return sortDirection === "desc" ? comparison * -1 : comparison;
+            }
+
+            function appendCompanyRow(match) {
+                var row = document.createElement("tr");
+                var statuses = match.existingListStatuses || [];
+                var isUnavailable = statuses.length > 0;
+                var values = [
+                    match.company || "Unnamed company",
+                    match.city || "-",
+                    match.state || "-",
+                    statuses.length ? statuses.map(window.ByteForgeWalgreensLabels.outcome).join(", ") : "-"
+                ];
+                row.setAttribute("data-opt-in-row", "");
+                row.classList.toggle("is-selected", isUnavailable);
+                row.title = companyChoiceDetails(match) + (isUnavailable ? " | Unavailable for selection" : "");
+                row.setAttribute("aria-label", values.join(", "));
+                if (isUnavailable) {
+                    row.setAttribute("aria-disabled", "true");
+                    row.style.cursor = "not-allowed";
+                } else {
+                    row.tabIndex = 0;
+                    row.setAttribute("data-company-choice-row", "");
+                }
+                values.forEach(function (value, index) {
+                    var cell = document.createElement("td");
+                    if (index === 3 && statuses.length) {
+                        var status = document.createElement("strong");
+                        status.className = "opt-in-edit-warning";
+                        status.textContent = value;
+                        cell.appendChild(status);
+                    } else {
+                        cell.textContent = value;
+                    }
+                    row.appendChild(cell);
+                });
+
+                if (!isUnavailable) {
+                    function chooseCompany() {
+                        if (applyCompanyMatch(match) && modal) {
+                            ByteForgeModal.close(modal);
+                        }
+                    }
+
+                    row.addEventListener("click", chooseCompany);
+                    row.addEventListener("keydown", function (event) {
+                        if (event.key === "Enter" || event.key === " ") {
+                            event.preventDefault();
+                            chooseCompany();
+                        }
+                    });
+                }
+                tableBody.appendChild(row);
+            }
+
+            function renderRows() {
+                var cityQuery = citySearch.value.trim().toLocaleLowerCase();
+                var visibleMatches = matches.filter(function (match) {
+                    return !cityQuery || String(match.city || "").toLocaleLowerCase().indexOf(cityQuery) >= 0;
+                }).sort(compareMatches);
+
+                tableBody.textContent = "";
+                visibleMatches.forEach(appendCompanyRow);
+                emptyMessage.hidden = visibleMatches.length > 0;
+
+                if (window.ByteForgeSortIndicator) {
+                    ByteForgeSortIndicator.update(
+                        headingRow.querySelectorAll("[data-company-choice-sort]"),
+                        "data-company-choice-sort",
+                        { key: sortKey, direction: sortDirection });
+                }
+            }
+
+            citySearch.addEventListener("input", renderRows);
+            renderRows();
+
+            setCompanyLookupStatus("Confirm the correct same-name company entry.", true);
+            modal = ByteForgeModal.show("", {
+                type: "warning",
+                title: "Confirm Walgreens Company",
+                contentElement: content,
+                maxWidth: "860px",
+                initialFocusSelector: "[data-company-city-search]",
+                buttons: [{ text: "Cancel", primary: false }]
+            });
+        }
+
+        function selectCompanyMatch(match) {
+            if (!match) {
+                return;
+            }
+
+            if (!companyChoicesUrl) {
+                applyCompanyMatch(match);
+                return;
+            }
+
+            if (companyChoicesRequest) {
+                companyChoicesRequest.abort();
+            }
+
+            companyChoicesRequest = typeof AbortController === "function" ? new AbortController() : null;
+            var payload = new URLSearchParams();
+            payload.append("__RequestVerificationToken", intakeValue("__RequestVerificationToken"));
+            payload.append("canonicalCompanyLeadId", match.id);
+            closeCompanyLookup();
+            setCompanyLookupStatus("Checking same-name company entries...", false);
+
+            fetch(companyChoicesUrl, {
+                method: "POST",
+                credentials: "same-origin",
+                headers: {
+                    "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
+                    "X-Requested-With": "XMLHttpRequest"
+                },
+                body: payload.toString(),
+                signal: companyChoicesRequest ? companyChoicesRequest.signal : undefined
+            })
+                .then(function (response) {
+                    return response.json().then(function (result) {
+                        if (!response.ok || !result || !result.ok) {
+                            throw new Error(result && result.message
+                                ? result.message
+                                : "Same-name company entries could not be checked.");
+                        }
+                        return result;
+                    });
+                })
+                .then(function (result) {
+                    var matches = result.results || [];
+                    var selectedMatch = matches.filter(function (item) { return item.initiallySelected; })[0] || match;
+                    var hasExistingStatus = matches.some(function (item) {
+                        return item.existingListStatuses && item.existingListStatuses.length;
+                    });
+                    if (hasExistingStatus) {
+                        if (window.ByteForgeModal && typeof window.ByteForgeModal.show === "function") {
+                            showSameNameCompanyChoices(matches);
+                        } else {
+                            setCompanyLookupStatus(
+                                "A same-name company entry already has a valid Walgreens status. Company selection is unavailable until the entries can be confirmed.",
+                                true);
+                        }
+                        return;
+                    }
+                    applyCompanyMatch(selectedMatch);
+                })
+                .catch(function (error) {
+                    if (error && error.name === "AbortError") {
+                        return;
+                    }
+                    var message = error && error.message
+                        ? error.message
+                        : "Same-name company entries could not be checked.";
+                    setCompanyLookupStatus(message, true);
+                    if (window.ByteForgeModal && typeof window.ByteForgeModal.error === "function") {
+                        ByteForgeModal.error(message, "Company Check Failed");
+                    }
+                });
+        }
+
+        function renderCompanyMatches(matches, appendMatches, hasMore) {
+            if (!companyLookupResults || !companyLookupInput) {
+                return;
+            }
+
+            var nextMatches = matches || [];
+            if (appendMatches) {
+                companyMatches = companyMatches.concat(nextMatches);
+            } else {
+                companyMatches = nextMatches;
+                companyLookupResults.textContent = "";
+            }
+            activeCompanyMatch = -1;
+
+            nextMatches.forEach(function (match, matchIndex) {
+                var index = companyMatches.length - nextMatches.length + matchIndex;
+                var option = document.createElement("button");
+                var company = document.createElement("strong");
+                var detail = document.createElement("span");
+                var contactName = [match.firstName, match.lastName].filter(Boolean).join(" ");
+                var location = [match.city, match.state].filter(Boolean).join(", ");
+                var details = [contactName ? "Contact: " + contactName : "", location, match.phoneNumber, match.listName]
+                    .filter(Boolean)
+                    .join(" | ");
+                var existingStatuses = match.existingListStatuses || [];
+                if (existingStatuses.length) {
+                    details += (details ? " | " : "") + "Already: " + existingStatuses.join(", ");
+                }
+
+                option.type = "button";
+                option.className = "agent-company-result";
+                option.id = "companyLookupOption" + index;
+                option.setAttribute("role", "option");
+                option.setAttribute("aria-selected", "false");
+                company.textContent = match.company || "Unnamed company";
+                detail.textContent = details || "Company record";
+                option.appendChild(company);
+                option.appendChild(detail);
+                option.addEventListener("mousedown", function (event) {
+                    event.preventDefault();
+                });
+                option.addEventListener("click", function () {
+                    selectCompanyMatch(match);
+                });
+                companyLookupResults.appendChild(option);
+            });
+
+            if (!companyMatches.length) {
+                closeCompanyLookup();
+                setCompanyLookupStatus("No matching existing company was found. This company cannot be saved.", true);
+                return;
+            }
+
+            companyLookupResults.hidden = false;
+            if (companyShowMoreButton) {
+                companyShowMoreButton.hidden = !hasMore;
+                companyShowMoreButton.disabled = false;
+            }
+            companyLookupInput.setAttribute("aria-expanded", "true");
+            setCompanyLookupStatus(
+                "Showing " + companyMatches.length + (companyMatches.length === 1 ? " company." : " companies.") +
+                (hasMore ? " More matches are available." : ""),
+                false);
+        }
+
+        function searchCompanies(query, appendMatches) {
+            if (!companyLookupUrl || !companyLookupInput) {
+                return;
+            }
+
+            if (companyLookupRequest) {
+                companyLookupRequest.abort();
+            }
+
+            companyLookupRequest = typeof AbortController === "function" ? new AbortController() : null;
+            var payload = new URLSearchParams();
+            payload.append("__RequestVerificationToken", intakeValue("__RequestVerificationToken"));
+            payload.append("query", query);
+            payload.append("ani", intakeValue("Ani"));
+            payload.append("offset", appendMatches ? companyMatches.length : 0);
+            if (companyShowMoreButton) {
+                companyShowMoreButton.disabled = true;
+            }
+            setCompanyLookupStatus(appendMatches ? "Loading more companies..." : "Searching companies...", false);
+
+            fetch(companyLookupUrl, {
+                method: "POST",
+                credentials: "same-origin",
+                headers: {
+                    "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
+                    "X-Requested-With": "XMLHttpRequest"
+                },
+                body: payload.toString(),
+                signal: companyLookupRequest ? companyLookupRequest.signal : undefined
+            })
+                .then(function (response) {
+                    return response.json().then(function (result) {
+                        if (!response.ok || !result || !result.ok) {
+                            throw new Error(result && result.message
+                                ? result.message
+                                : "The company lookup request failed.");
+                        }
+
+                        return result;
+                    });
+                })
+                .then(function (result) {
+                    if (companyLookupInput.value.trim() !== query) {
+                        return;
+                    }
+
+                    renderCompanyMatches(result.results, appendMatches, Boolean(result.hasMore));
+                })
+                .catch(function (error) {
+                    if (error && error.name === "AbortError") {
+                        return;
+                    }
+
+                    if (appendMatches && companyMatches.length) {
+                        companyLookupResults.hidden = false;
+                        companyLookupInput.setAttribute("aria-expanded", "true");
+                        if (companyShowMoreButton) {
+                            companyShowMoreButton.hidden = false;
+                            companyShowMoreButton.disabled = false;
+                        }
+                        setCompanyLookupStatus(error.message || "More companies could not be loaded.", true);
+                        return;
+                    }
+
+                    closeCompanyLookup();
+                    setCompanyLookupStatus(error.message || "Companies could not be loaded.", true);
+                });
+        }
+
+        if (companyShowMoreButton) {
+            companyShowMoreButton.addEventListener("mousedown", function (event) {
+                event.preventDefault();
+            });
+            companyShowMoreButton.addEventListener("click", function () {
+                var query = companyLookupInput ? companyLookupInput.value.trim() : "";
+                if (query.length >= 2) {
+                    searchCompanies(query, true);
+                }
+            });
+        }
+
+        if (companyLookupInput && companyLookupResults && companyLookupUrl) {
+            companyLookupInput.addEventListener("input", function () {
+                if (applyingCompanyMatch) {
+                    return;
+                }
+
+                if (canonicalCompanyLeadIdField) {
+                    canonicalCompanyLeadIdField.value = "";
+                }
+                validateCanonicalCompanySelection(true, false);
+                var query = companyLookupInput.value.trim();
+                window.clearTimeout(companyLookupTimer);
+                if (companyShowMoreButton) {
+                    companyShowMoreButton.hidden = true;
+                }
+                if (query.length < 2) {
+                    if (companyLookupRequest) {
+                        companyLookupRequest.abort();
+                    }
+                    closeCompanyLookup();
+                    setCompanyLookupStatus("Type at least 2 characters, then select an existing company.", false);
+                    return;
+                }
+
+                companyLookupTimer = window.setTimeout(function () {
+                    searchCompanies(query, false);
+                }, 250);
+            });
+
+            companyLookupInput.addEventListener("keydown", function (event) {
+                if (companyLookupResults.hidden || !companyMatches.length) {
+                    return;
+                }
+
+                if (event.key === "ArrowDown") {
+                    event.preventDefault();
+                    activateCompanyMatch(activeCompanyMatch + 1);
+                } else if (event.key === "ArrowUp") {
+                    event.preventDefault();
+                    activateCompanyMatch(activeCompanyMatch < 0 ? companyMatches.length - 1 : activeCompanyMatch - 1);
+                } else if (event.key === "Enter" && activeCompanyMatch >= 0) {
+                    event.preventDefault();
+                    selectCompanyMatch(companyMatches[activeCompanyMatch]);
+                } else if (event.key === "Escape") {
+                    event.preventDefault();
+                    closeCompanyLookup();
+                }
+            });
+
+            companyLookupInput.addEventListener("blur", function () {
+                window.setTimeout(closeCompanyLookup, 150);
+            });
+            validateCanonicalCompanySelection(true, false);
+        }
+
+        var moreInfoOpenButtons = document.querySelectorAll("[data-more-info-open]");
+        var moreInfoPanel = document.querySelector("[data-more-info-confirmation]");
+        var moreInfoConfirmButton = document.querySelector("[data-more-info-confirm]");
+        var moreInfoCancelButton = document.querySelector("[data-more-info-cancel]");
+        var moreInfoStatus = document.querySelector("[data-more-info-status]");
+        var requestInstructions = document.querySelector("[data-request-instructions]");
+        var activeRequestOutcome = "MoreInfo";
+        var activeRequestModal = null;
+
+        function moreInfoDisplay(value) {
+            var normalized = String(value || "").trim();
+            return normalized || "--";
+        }
+
+        function setMoreInfoSummary(name, value) {
+            var target = document.querySelector("[data-more-info-summary='" + name + "']");
+            if (target) {
+                target.textContent = moreInfoDisplay(value);
+            }
+        }
+
+        function refreshMoreInfoSummary() {
+            var contact = [intakeValue("FirstName"), intakeValue("LastName")].filter(Boolean).join(" ");
+            var phone = intakeValue("PhoneNumber");
+            var extension = intakeValue("Extension");
+            var rawProgram = intakeValue("Program");
+            if (!rawProgram) {
+                rawProgram = activeRequestOutcome === "SendVoucher"
+                    ? "Voucher Program Only"
+                    : "Clinic + Vouchers";
+            }
+            var program = rawProgram === "Voucher Program Only"
+                ? "Voucher"
+                : rawProgram === "Clinic + Vouchers"
+                    ? "Both"
+                    : rawProgram;
+            var vaccinations = checkedIntakeValues("Vaccinations").map(function (value) {
+                return value === "Other" ? (intakeValue("OtherVaccination") || "Other") : value;
+            }).join(", ");
+            var vaccinationSummary = document.querySelector("[data-more-info-vaccinations]");
+            var address = [
+                intakeValue("Address1"),
+                intakeValue("Address2"),
+                [intakeValue("City"), intakeValue("State"), intakeValue("ZipCode")].filter(Boolean).join(" ")
+            ].filter(Boolean).join(", ");
+
+            setMoreInfoSummary("Company", intakeValue("Company"));
+            setMoreInfoSummary("Contact", contact);
+            setMoreInfoSummary("ContactJobTitle", intakeValue("MainContactJobTitle"));
+            setMoreInfoSummary("ContactEmail", intakeValue("Email"));
+            setMoreInfoSummary("ContactPhone", phone + (extension ? " ext. " + extension : ""));
+            setMoreInfoSummary("Address", address);
+            setMoreInfoSummary("Program", program);
+            setMoreInfoSummary("Vaccinations", vaccinations);
+            setMoreInfoSummary("Notes", intakeValue("Notes"));
+            if (vaccinationSummary) {
+                vaccinationSummary.hidden = program !== "Clinic" && program !== "Both";
+            }
+        }
+
+        function setMoreInfoStatus(message, isError) {
+            if (!moreInfoStatus) {
+                return;
+            }
+
+            moreInfoStatus.textContent = message || "";
+            moreInfoStatus.classList.toggle("is-error", Boolean(isError));
+        }
+
+        function validateMoreInfoEmail() {
+            var emailField = intakeForm
+                ? intakeForm.querySelector("[name='Email']")
+                : null;
+            if (emailField && emailField.checkValidity()) {
+                return true;
+            }
+
+            if (emailField) {
+                emailField.reportValidity();
+                emailField.focus();
+            }
+            return false;
+        }
+
+        function validateSendInfoProgram(outcome) {
+            if (outcome !== "MoreInfo" || !intakeForm) {
+                return true;
+            }
+
+            var programOptions = intakeForm.querySelectorAll("input[name='Program']");
+            var selectedProgram = intakeForm.querySelector("input[name='Program']:checked");
+            if (!selectedProgram) {
+                if (programOptions.length) {
+                    programOptions[0].reportValidity();
+                    programOptions[0].focus();
+                }
+                return false;
+            }
+
+            if (selectedProgram.value === "Voucher Program Only") {
+                return true;
+            }
+
+            var vaccinationOptions = intakeForm.querySelectorAll("input[name='Vaccinations']");
+            var selectedVaccinations = intakeForm.querySelectorAll("input[name='Vaccinations']:checked");
+            if (!selectedVaccinations.length) {
+                if (vaccinationOptions.length) {
+                    vaccinationOptions[0].setCustomValidity("Select at least one vaccination.");
+                    vaccinationOptions[0].reportValidity();
+                    vaccinationOptions[0].focus();
+                }
+                return false;
+            }
+            if (vaccinationOptions.length) {
+                vaccinationOptions[0].setCustomValidity("");
+            }
+
+            var otherSelected = Array.prototype.some.call(selectedVaccinations, function (option) {
+                return option.value === "Other";
+            });
+            var otherVaccination = intakeForm.querySelector("[name='OtherVaccination']");
+            if (otherSelected && otherVaccination && !otherVaccination.checkValidity()) {
+                otherVaccination.reportValidity();
+                otherVaccination.focus();
+                return false;
+            }
+
+            return true;
+        }
+
+        function buildMoreInfoPayload(outcome) {
+            var payload = new URLSearchParams();
+            var values = {
+                __RequestVerificationToken: intakeValue("__RequestVerificationToken"),
+                Outcome: outcome,
+                StepId: outcome === "SendVoucher" ? "voucher-offer" : "send-info",
+                PaydayPerxLeadId: intakeValue("PaydayPerxLeadId"),
+                SendInfoWorkItemId: intakeValue("SendInfoWorkItemId"),
+                SendInfoAttemptId: intakeValue("SendInfoAttemptId"),
+                CanonicalCompanyLeadId: intakeValue("CanonicalCompanyLeadId"),
+                CallId: intakeValue("CallId"),
+                AgentId: intakeValue("AgentId"),
+                AgentName: intakeValue("AgentName"),
+                Ani: intakeValue("Ani"),
+                RawAni: intakeValue("RawAni"),
+                Dnis: intakeValue("Dnis"),
+                GlobalId: intakeValue("GlobalId"),
+                BpSessionId: intakeValue("BpSessionId"),
+                BpOrigin: intakeValue("BpOrigin"),
+                ScriptOpenedAtUtc: intakeValue("ScriptOpenedAtUtc"),
+                CallStartedAtUtc: intakeValue("CallStartedAtUtc"),
+                Company: intakeValue("Company"),
+                ContactFirstName: intakeValue("FirstName"),
+                ContactLastName: intakeValue("LastName"),
+                ContactJobTitle: intakeValue("MainContactJobTitle"),
+                ContactEmail: intakeValue("Email"),
+                ContactPhoneNumber: intakeValue("PhoneNumber"),
+                ContactExtension: intakeValue("Extension"),
+                Program: intakeValue("Program"),
+                Address1: intakeValue("Address1"),
+                Address2: intakeValue("Address2"),
+                City: intakeValue("City"),
+                State: intakeValue("State"),
+                ZipCode: intakeValue("ZipCode"),
+                Notes: intakeValue("Notes")
+            };
+
+            Object.keys(values).forEach(function (name) {
+                payload.append(name, values[name] || "");
+            });
+
+            new FormData(intakeForm).forEach(function (value, name) {
+                if (name !== "__RequestVerificationToken" && name !== "submissionAction") {
+                    payload.append("intake." + name, value);
+                }
+            });
+            return payload;
+        }
+
+        function buildOptInPayload() {
+            var payload = new URLSearchParams(new FormData(intakeForm));
+            payload.set("submissionAction", "submit");
+            return payload;
+        }
+
+        function validateOptInForm() {
+            updateProgramFieldVisibility();
+            if (intakeForm.checkValidity()) {
+                return true;
+            }
+
+            intakeForm.reportValidity();
+            return false;
+        }
+
+        if (moreInfoOpenButtons.length && moreInfoPanel && intakeForm) {
+            moreInfoOpenButtons.forEach(function (button) {
+                button.addEventListener("click", function () {
+                    var requestedOutcome = button.getAttribute("data-request-outcome") || "MoreInfo";
+                    var isOptIn = requestedOutcome === "OptIn";
+                    if (outcomeRequestInFlight || (isOptIn && optInSubmitted)) {
+                        return;
+                    }
+                    if (!validateCanonicalCompanySelection(false, true)
+                        || (isOptIn
+                            ? !validateOptInForm()
+                            : (!validateMoreInfoEmail() || !validateSendInfoProgram(requestedOutcome)))) {
+                        return;
+                    }
+
+                    activeRequestOutcome = requestedOutcome;
+                    var isVoucher = activeRequestOutcome === "SendVoucher";
+                    var requestTitle = isOptIn
+                        ? "Confirm Opt-In"
+                        : isVoucher
+                            ? "Confirm Employee Voucher Request"
+                            : "Confirm GK Send Info";
+                    requestInstructions.innerHTML = isOptIn
+                        ? "Review the information below. Confirming saves the Opt-In in the portal. Nothing will be sent automatically to Walgreens."
+                        : isVoucher
+                            ? "Review the company information below. Confirming saves the current form as a Walgreens Intention and records a separate voucher request without submitting the form to Walgreens. After it is saved, set the BrightPattern disposition to <strong>Send Voucher</strong>."
+                            : "Review the company information below. Confirming saves the current form as a Walgreens Intention and records the information request. After it is saved, set the matching information-request disposition in BrightPattern to finish the interaction.";
+                    moreInfoConfirmButton.textContent = isOptIn
+                        ? "Confirm Opt-In"
+                        : isVoucher
+                            ? "Confirm and Send Voucher"
+                            : "Confirm and GK Send Info";
+                    moreInfoConfirmButton.disabled = false;
+                    if (moreInfoCancelButton) {
+                        moreInfoCancelButton.textContent = "Cancel";
+                    }
+                    refreshMoreInfoSummary();
+                    setMoreInfoStatus("", false);
+                    activeRequestModal = ByteForgeModal.show("", {
+                        type: "none",
+                        title: requestTitle,
+                        showClose: false,
+                        closeOnOverlay: false,
+                        contentElement: moreInfoPanel,
+                        hideFooter: true,
+                        maxWidth: "760px",
+                        initialFocusSelector: "[data-more-info-confirm]",
+                        onClose: function () {
+                            activeRequestModal = null;
+                        }
+                    });
+                });
+            });
+        }
+
+        if (moreInfoCancelButton && moreInfoPanel) {
+            moreInfoCancelButton.addEventListener("click", function () {
+                if (activeRequestModal) {
+                    ByteForgeModal.close(activeRequestModal);
+                }
+                setMoreInfoStatus("", false);
+            });
+        }
+
+        if (moreInfoConfirmButton && moreInfoPanel && intakeForm) {
+            moreInfoConfirmButton.addEventListener("click", function () {
+                var isOptIn = activeRequestOutcome === "OptIn";
+                if (outcomeRequestInFlight || (isOptIn && optInSubmitted)) {
+                    return;
+                }
+                var requestUrl = isOptIn
+                    ? intakeForm.action
+                    : intakeForm.getAttribute("data-more-info-outcome-url");
+                if (!validateCanonicalCompanySelection(false, true)
+                    || (isOptIn
+                        ? !validateOptInForm()
+                        : (!validateMoreInfoEmail() || !validateSendInfoProgram(activeRequestOutcome)))) {
+                    if (activeRequestModal) {
+                        ByteForgeModal.close(activeRequestModal);
+                    }
+                    return;
+                }
+
+                var pendingDraftSave = draftSaveInFlight
+                    ? draftSavePromise
+                    : Promise.resolve();
+                finalSubmissionStarted = true;
+                outcomeRequestInFlight = true;
+                window.clearTimeout(draftSaveTimer);
+                moreInfoConfirmButton.disabled = true;
+                var isVoucher = activeRequestOutcome === "SendVoucher";
+                var requestLabel = isOptIn
+                    ? "Opt-In"
+                    : isVoucher ? "voucher email request" : "information package request";
+                var dispositionLabel = isOptIn ? "Opt-In" : isVoucher ? "Send Voucher" : "GK Send Info";
+                setMoreInfoStatus("Saving the " + requestLabel + "...", false);
+
+                pendingDraftSave
+                    .then(function () {
+                        return ByteForgeEffortClient.fetch(requestUrl, {
+                            method: "POST",
+                            credentials: "same-origin",
+                            headers: {
+                                "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
+                                "X-Requested-With": "XMLHttpRequest"
+                            },
+                            body: (isOptIn ? buildOptInPayload() : buildMoreInfoPayload(activeRequestOutcome)).toString()
+                        });
+                    })
+                    .then(function (response) {
+                        return response.text().then(function (body) {
+                            var result = null;
+                            try { result = body ? JSON.parse(body) : null; }
+                            catch (error) { result = null; }
+                            if (!response.ok || !result || result.ok === false) {
+                                var requestError = new Error(result && result.message
+                                    ? result.message
+                                    : "The " + requestLabel + " could not be saved.");
+                                requestError.completed = result && result.completed === true;
+                                requestError.recordId = result && result.recordId;
+                                throw requestError;
+                            }
+                            return result;
+                        });
+                    })
+                    .then(function (result) {
+                        if (moreInfoCancelButton) {
+                            moreInfoCancelButton.textContent = "Close";
+                        }
+                        if (isOptIn) {
+                            optInSubmitted = true;
+                            moreInfoOpenButtons.forEach(function (button) {
+                                if (button.getAttribute("data-request-outcome") === "OptIn") {
+                                    button.disabled = true;
+                                    button.title = "An Opt-In has already been saved for this BP lead.";
+                                }
+                            });
+                            var recordIdField = intakeForm.querySelector("[name='SavedRecordId']");
+                            if (recordIdField && result.recordId) {
+                                recordIdField.value = result.recordId;
+                            }
+                            setMoreInfoStatus(result.message || "The Opt-In was saved successfully.", false);
+                            if (result.recordId > 0 && !result.alreadySubmitted
+                                && (!result.queued || result.status === "Completed")) {
+                                copySignUpTemplate("CLINIC SUBMISSION");
+                            }
+                        } else {
+                            setMoreInfoStatus(
+                                result.queued ? result.message : (isVoucher ? "Voucher email request" : "Information package request") +
+                                " saved. Walgreens reporting will use " + dispositionLabel +
+                                " for this interaction.",
+                                false);
+                        }
+                    })
+                    .catch(function (error) {
+                        setMoreInfoStatus(error.message || dispositionLabel + " could not be completed.", true);
+                        if (error.completed) {
+                            if (moreInfoCancelButton) {
+                                moreInfoCancelButton.textContent = "Close";
+                            }
+                            var recordIdField = intakeForm.querySelector("[name='SavedRecordId']");
+                            if (recordIdField && error.recordId) {
+                                recordIdField.value = error.recordId;
+                            }
+                        } else {
+                            moreInfoConfirmButton.disabled = false;
+                        }
+                    })
+                    .then(function () {
+                        outcomeRequestInFlight = false;
+                    });
+            });
+        }
+
+    }());
+</script>
+
+<script src="@Url.Content("~/Scripts/walgreens-call-script.js")?v=@callScriptVersion"></script>
+
+@if (isSupervisorCorrectableEntry && !isInvalidated && !isReadOnly)
+{
+    <script>
+        (function () {
+            "use strict";
+
+            var toggle = document.querySelector("[data-agent-correction-toggle]");
+            var panel = document.getElementById("agentCorrectionPanel");
+            var correctionForm = document.querySelector("[data-agent-correction-form]");
+            var invalidateEquivalentInput = correctionForm
+                ? correctionForm.querySelector("[data-invalidate-equivalent-send-info]")
+                : null;
+            var transitionDuration = 240;
+
+            if (!toggle || !panel) {
+                return;
+            }
+
+            toggle.addEventListener("click", function () {
+                var isExpanded = toggle.getAttribute("aria-expanded") === "true";
+
+                if (isExpanded) {
+                    toggle.setAttribute("aria-expanded", "false");
+                    panel.classList.remove("is-expanded");
+                    window.setTimeout(function () {
+                        if (toggle.getAttribute("aria-expanded") === "false") {
+                            panel.hidden = true;
+                        }
+                    }, transitionDuration);
+                    return;
+                }
+
+                panel.hidden = false;
+                window.requestAnimationFrame(function () {
+                    panel.classList.add("is-expanded");
+                    toggle.setAttribute("aria-expanded", "true");
+
+                    var disposition = panel.querySelector("select[name='Disposition']");
+                    if (disposition) {
+                        disposition.focus();
+                    }
+                });
+            });
+
+            if (correctionForm) {
+                correctionForm.addEventListener("submit", function (event) {
+                    event.preventDefault();
+                    if (!correctionForm.checkValidity()) {
+                        correctionForm.reportValidity();
+                        return;
+                    }
+
+                    var equivalentSendInfoId = correctionForm.getAttribute("data-equivalent-send-info-id");
+                    var entryLabel = correctionForm.getAttribute("data-correction-entry-label") || "submission";
+
+                    function submitCorrection(invalidateEquivalent) {
+                        if (invalidateEquivalentInput) {
+                            invalidateEquivalentInput.value = invalidateEquivalent ? "true" : "false";
+                        }
+                        window.HTMLFormElement.prototype.submit.call(correctionForm);
+                    }
+
+                    if (equivalentSendInfoId) {
+                        ByteForgeModal.show(
+                            "Matching GK Send Info entry #" + equivalentSendInfoId +
+                                " exists. Would you like to invalidate it in the same action?",
+                            {
+                                type: "warning",
+                                title: "Matching GK Send Info Entry",
+                                closeExisting: true,
+                                buttons: [
+                                    { text: "Cancel" },
+                                    { text: "Invalidate Clinic Only", onClick: function () { submitCorrection(false); } },
+                                    { text: "Invalidate Both", primary: true, onClick: function () { submitCorrection(true); } }
+                                ]
+                            });
+                        return;
+                    }
+
+                    ByteForgeModal.confirm(
+                        "Invalidate this " + entryLabel + " and correct its call disposition?",
+                        function () { submitCorrection(false); },
+                        null,
+                        "Confirm Invalidation",
+                        "Confirm Invalidation",
+                        "Cancel");
+                });
+            }
+        }());
+    </script>
+}

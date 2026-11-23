@@ -1,0 +1,172 @@
+.bf-time-zone-picker {
+    position: relative;
+    width: 100%;
+    margin-top: 5px;
+    color: var(--text, CanvasText);
+    font: inherit;
+    font-weight: 400;
+}
+
+.bf-time-zone-picker-source[hidden] {
+    display: none !important;
+}
+
+.bf-time-zone-picker-control {
+    display: flex;
+    width: 100%;
+    min-height: 44px;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 8px 11px;
+    border: 1px solid var(--border, ButtonBorder);
+    border-radius: 8px;
+    color: var(--text, ButtonText);
+    background: var(--input, ButtonFace);
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+}
+
+.bf-time-zone-picker-control:hover {
+    border-color: var(--accent, Highlight);
+}
+
+.bf-time-zone-picker-control:focus-visible {
+    outline: 2px solid var(--accent, Highlight);
+    outline-offset: 1px;
+}
+
+.bf-time-zone-picker-control-text,
+.bf-time-zone-picker-option-details {
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
+}
+
+.bf-time-zone-picker-control-name,
+.bf-time-zone-picker-option-name {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.bf-time-zone-picker-control-id,
+.bf-time-zone-picker-option-id {
+    overflow: hidden;
+    color: var(--muted, GrayText);
+    font-size: 11px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.bf-time-zone-picker-arrow {
+    flex: 0 0 auto;
+}
+
+.bf-time-zone-picker-popup {
+    position: absolute;
+    z-index: 1000;
+    top: calc(100% + 6px);
+    right: 0;
+    left: 0;
+    overflow: hidden;
+    border: 1px solid var(--border, ButtonBorder);
+    border-radius: 10px;
+    color: var(--text, CanvasText);
+    background: var(--panel, Canvas);
+    box-shadow: 0 16px 36px rgb(0 0 0 / 24%);
+}
+
+.bf-time-zone-picker-popup[hidden] {
+    display: none !important;
+}
+
+.bf-time-zone-picker-search {
+    width: calc(100% - 24px) !important;
+    margin: 12px !important;
+    padding: 10px 12px !important;
+    border: 1px solid var(--border, ButtonBorder) !important;
+    border-radius: 8px !important;
+    color: var(--text, FieldText) !important;
+    background: var(--input, Field) !important;
+    font: inherit !important;
+    font-weight: 400 !important;
+}
+
+.bf-time-zone-picker-search:focus {
+    border-color: var(--accent, Highlight) !important;
+    outline: 2px solid var(--accent, Highlight) !important;
+    outline-offset: 1px;
+}
+
+.bf-time-zone-picker-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 6px 12px 8px;
+    border-bottom: 1px solid var(--border, ButtonBorder);
+    color: var(--muted, GrayText);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+}
+
+.bf-time-zone-picker-list {
+    max-height: 290px;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+}
+
+.bf-time-zone-picker-option {
+    display: flex;
+    width: 100%;
+    min-height: 48px;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 7px 12px;
+    border: 0;
+    border-bottom: 1px solid color-mix(in srgb, var(--border, ButtonBorder) 55%, transparent);
+    color: var(--text, ButtonText);
+    background: transparent;
+    font: inherit;
+    font-weight: 400;
+    text-align: left;
+    cursor: pointer;
+}
+
+.bf-time-zone-picker-option:hover,
+.bf-time-zone-picker-option:focus-visible {
+    color: var(--text, ButtonText);
+    background: color-mix(in srgb, var(--accent, Highlight) 14%, transparent);
+    outline: 0;
+}
+
+.bf-time-zone-picker-option.is-selected {
+    color: HighlightText;
+    background: var(--accent, Highlight);
+}
+
+.bf-time-zone-picker-option.is-selected .bf-time-zone-picker-option-id {
+    color: color-mix(in srgb, HighlightText 80%, transparent);
+}
+
+.bf-time-zone-picker-option-time {
+    flex: 0 0 auto;
+    font-variant-numeric: tabular-nums;
+}
+
+.bf-time-zone-picker-empty {
+    padding: 20px 12px;
+    color: var(--muted, GrayText);
+    text-align: center;
+}
+
+@media (max-width: 520px) {
+    .bf-time-zone-picker-popup {
+        right: -2px;
+        left: -2px;
+    }
+}

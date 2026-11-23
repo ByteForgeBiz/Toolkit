@@ -118,6 +118,19 @@ public static bool SendMail(string emailAddresses, string subject, string body, 
         Log.Warning($"The following email addresses are invalid and thus removed: {string.Join(", ", invalidAddrs)}");
     addrs = addrs.Except(invalidAddrs).ToArray();
 
+    if (!Settings.AllowExternalEmail)
+    {
+        var senderDomain = GetEmailDomain(Settings.Sender);
+        var externalAddrs = addrs
+            .Where(address => !string.Equals(GetEmailDomain(address), senderDomain, StringComparison.OrdinalIgnoreCase))
+            .ToList();
+
+        if (externalAddrs.Count > 0)
+            Log.Warning($"External email is disabled. The following recipients were removed: {string.Join(", ", externalAddrs)}");
+
+        addrs = addrs.Except(externalAddrs).ToArray();
+    }
+
     if (addrs.Length == 0)
     {
         Log.Error("No valid email addresses specified to send to.");
@@ -224,6 +237,13 @@ private static bool IsValidEmail(string email)
         return false;
     }
 }
+
+/// <summary>
+/// Gets the domain portion of a validated email address.
+/// </summary>
+/// <param name="email">The email address to inspect.</param>
+/// <returns>The normalized email domain.</returns>
+private static string GetEmailDomain(string email) => new MailAddress(email).Host;
 }
 
 /*
@@ -291,6 +311,14 @@ public string? Sender  { get; set; }
 [ConfigName("sSendTo")]
 [Description("Default recipient email address or recipient list.")]
 public string? SendTo  { get; set; }
+
+/// <summary>
+/// Gets or sets whether email may be sent to recipients outside the sender's domain.
+/// </summary>
+[ConfigName("bAllowExternalEmail")]
+[DefaultValue(true)]
+[Description("Allows recipients whose email domain differs from the configured sender domain.")]
+public bool AllowExternalEmail { get; set; } = true;
 
 /// <summary>
 /// Gets the decrypted username for SMTP authentication.

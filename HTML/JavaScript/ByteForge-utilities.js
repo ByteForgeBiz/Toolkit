@@ -1,18 +1,18 @@
 /*
- *  ___      _       ___                              _   _ _ _ _   _           _    
+ *  ___      _       ___                              _   _ _ _ _   _           _
  * | _ )_  _| |_ ___| __|__ _ _ __ _ ___   ___   _  _| |_(_) (_) |_(_)___ ___  (_)___
  * | _ \ || |  _/ -_) _/ _ \ '_/ _` / -_) |___| | || |  _| | | |  _| / -_)_-<_ | (_-<
  * |___/\_, |\__\___|_|\___/_| \__, \___|        \_,_|\__|_|_|_|\__|_\___/__(_)/ /__/
- *      |__/                   |___/                                         |__/    
+ *      |__/                   |___/                                         |__/
  */
 
 /**
  * Utility Functions Collection
- * 
+ *
  * A comprehensive collection of utility functions for web applications,
  * including form validation, clipboard operations, input filtering,
  * scrolling, and focus management.
- * 
+ *
  * @module Utilities
  */
 
@@ -159,7 +159,7 @@ function RequireValue(id, isRequired) {
         assocElements.forEach((el) => { el.classList.toggle('required', isRequired); });
 
     if (isRequired === true) {
-        /* 
+        /*
          * Restore the original blur and focus events if they are stored.
          */
         element.blur = element.oldBlur;
@@ -625,7 +625,10 @@ function initializeUtilities() {
 }
 
 // Auto-initialize when DOM is loaded
-if (document.readyState === 'loading') {
+// Consumers may load the helpers without changing page-wide form, theme, or menu behavior.
+if (document.currentScript && document.currentScript.getAttribute('data-bf-auto-init') === 'false') {
+    // Explicitly opted out of automatic page initialization.
+} else if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', initializeUtilities);
 } else {
     initializeUtilities();
@@ -643,4 +646,3 @@ if (document.readyState === 'loading') {
 function isJQueryElement(obj) {
     return obj instanceof jQuery || (obj && obj.jquery);
 }
-

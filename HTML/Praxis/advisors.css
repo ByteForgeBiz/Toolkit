@@ -1,0 +1,55 @@
+.bf-advisors [hidden] { display: none !important; }
+.bf-advisors { --advisor-active-bg: #dcfce7; --advisor-active-text: #166534; --advisor-inactive-bg: #fee2e2; --advisor-inactive-text: #991b1b; }
+@media (prefers-color-scheme: dark) {
+    .bf-advisors { --advisor-active-bg: #14532d; --advisor-active-text: #dcfce7; --advisor-inactive-bg: #7f1d1d; --advisor-inactive-text: #fee2e2; }
+}
+.bf-advisors .bf-advisor-status { display: inline-block; padding: 3px 10px; border-radius: 999px; font-size: .875rem; font-weight: 600; white-space: nowrap; }
+.bf-advisors .bf-advisor-status-active { background: var(--advisor-active-bg); color: var(--advisor-active-text); }
+.bf-advisors .bf-advisor-status-inactive { background: var(--advisor-inactive-bg); color: var(--advisor-inactive-text); }
+.bf-advisors .bf-advisor-toolbar, .bf-advisors .bf-advisor-actions { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 16px; }
+.bf-advisors .report-panel { padding: 24px; margin-bottom: 20px; }
+.bf-advisors label { display: grid; gap: 6px; font-weight: 500; }
+.bf-advisors input, .bf-advisors select { background: var(--report-surface); color: var(--report-text); border: 1px solid var(--report-muted); border-radius: 6px; padding: 9px; font: inherit; font-weight: 400; width: 100%; min-width: 0; }
+.bf-advisors input[type=checkbox] { width: auto; }
+.bf-advisors button { cursor: pointer; }
+.bf-advisors button:disabled { cursor: not-allowed; opacity: .65; }
+.bf-advisors :is(input, select, button, a):focus-visible { outline: 3px solid var(--report-primary); outline-offset: 3px; }
+.bf-advisors .bf-advisor-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; margin-bottom: 20px; }
+.bf-advisors .bf-advisor-scroll { overflow-x: auto; }
+.bf-advisors table { width: 100%; border-collapse: collapse; }
+.bf-advisors th, .bf-advisors td { padding: 12px; text-align: left; border-bottom: 1px solid var(--report-border); overflow-wrap: anywhere; }
+.bf-advisors th { font-weight: 600; }
+.bf-advisors th button { color: var(--report-text); background: transparent; border: 0; font: inherit; text-decoration: underline; }
+.bf-advisors tbody tr:hover { background: var(--report-surface-soft); }
+.bf-advisors .bf-advisor-note { padding: 16px; border-left: 3px solid var(--report-primary); background: var(--report-primary-soft); }
+.bf-advisors .bf-advisor-check { display: flex; align-items: center; gap: 8px; }
+.bf-advisors h1, .bf-advisors h2 { margin-top: 0; }
+.bf-advisors h2 { scroll-margin-top: 110px; }
+.bf-advisors .bf-advisor-review { table-layout: fixed; }
+@media (max-width: 640px) { .bf-advisors .bf-advisor-grid { grid-template-columns: 1fr; } .bf-advisors .report-panel { padding: 16px; } }
+.bf-advisor-modal .byte-forge-modal-content { max-height: 90vh; }
+.bf-advisor-modal .byte-forge-modal-body { overflow-y: auto; }
+.bf-advisor-modal .report-panel { border: 0; padding: 4px; box-shadow: none; }
+.bf-advisor-modal table { margin-bottom: 16px; }
+.bf-advisors [role=status]:not(:empty) { padding: 12px 0; }
+.bf-advisors #advisor-firm-form label { margin-bottom: 16px; }
+.bf-advisors #advisor-history { white-space: pre-wrap; }
+.bf-advisor-modal.byte-forge-modal,
+.bf-advisor-modal .byte-forge-modal-header,
+.bf-advisor-modal .byte-forge-modal-body { background: var(--report-surface); color: var(--report-text); border-color: var(--report-border); }
+.bf-advisor-modal .byte-forge-modal-title { color: var(--report-text); }
+.bf-advisor-modal.byte-forge-modal { max-height: 90vh; display: flex; flex-direction: column; }
+.bf-advisor-modal .byte-forge-modal-header { flex: 0 0 auto; }
+.bf-advisor-modal .byte-forge-modal-body { min-height: 0; }
+
+.bf-advisors #advisor-import-errors { white-space: pre-wrap; overflow-wrap: anywhere; font: inherit; }
+.bf-advisors #advisor-import-impact table { min-width: 600px; }
+.bf-advisor-list-config .bf-advisor-toolbar label { flex: 1 1 220px; }
+.bf-advisor-list-config td:last-child .report-link-button { margin: 4px 12px 4px 0; }
+.bf-advisor-mapping-rows { display: grid; gap: 14px; margin: 20px 0; }
+.bf-advisor-mappings label { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-items: center; gap: 16px; }
+.bf-advisor-mappings p { overflow-wrap: anywhere; }
+.bf-advisor-list-config table { min-width: 640px; }
+
+.bf-advisors #advisor-message:empty { margin: 0; }
+.bf-advisors #advisor-page > .report-panel > h1 { font-size: 1.5rem; }

@@ -1,0 +1,103 @@
+.byte-forge-rich-text {
+    --bf-rte-bg: var(--report-surface, #fff);
+    --bf-rte-bg-soft: var(--report-surface-soft, #f4f7f8);
+    --bf-rte-border: var(--report-border, #cbd6da);
+    --bf-rte-focus: var(--report-primary, #126778);
+    --bf-rte-text: var(--report-text, #16262b);
+    border: 1px solid var(--bf-rte-border);
+    border-radius: 10px;
+    overflow: hidden;
+}
+.byte-forge-rich-text-toolbar {
+    align-items: center;
+    background: var(--bf-rte-bg-soft);
+    border-bottom: 1px solid var(--bf-rte-border);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    padding: 7px;
+}
+.byte-forge-rich-text-toolbar button {
+    align-items: center;
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: 6px;
+    color: var(--bf-rte-text);
+    cursor: pointer;
+    display: inline-flex;
+    font: inherit;
+    font-size: .82rem;
+    font-weight: 600;
+    justify-content: center;
+    min-height: 34px;
+    min-width: 36px;
+    padding: 5px 9px;
+}
+.byte-forge-rich-text-toolbar button:hover { background: var(--bf-rte-bg); border-color: var(--bf-rte-border); }
+.byte-forge-rich-text-toolbar button:focus-visible { outline: 3px solid color-mix(in srgb, var(--bf-rte-focus) 30%, transparent); outline-offset: 1px; }
+.byte-forge-rich-text-surface {
+    background: var(--bf-rte-bg);
+    color: var(--bf-rte-text);
+    font-weight: 400;
+    line-height: 1.6;
+    min-height: 360px;
+    outline: none;
+    overflow-y: auto;
+    padding: 18px;
+}
+.byte-forge-rich-text-surface:focus { box-shadow: inset 0 0 0 2px var(--bf-rte-focus); }
+/* Synchronous whole-section paste only: prevent Edge retaining the destination
+   heading/emphasis while preserving the native insertion's Undo/Redo history. */
+.byte-forge-rich-text-surface.byte-forge-rich-text-replacing-all * {
+    display: inline !important;
+    font-weight: 400 !important;
+    font-style: normal !important;
+    text-decoration: none !important;
+}
+.byte-forge-rich-text-surface > :first-child { margin-top: 0; }
+.byte-forge-rich-text-surface > :last-child { margin-bottom: 0; }
+.byte-forge-rich-text-surface blockquote { border-left: 4px solid var(--bf-rte-border); margin-left: 0; padding-left: 16px; }
+.byte-forge-rich-text-surface[contenteditable="false"] { background: var(--bf-rte-bg-soft); cursor: wait; opacity: .75; }
+@media (prefers-color-scheme: dark) {
+    .byte-forge-rich-text {
+        --bf-rte-bg: var(--report-surface, #14252a);
+        --bf-rte-bg-soft: var(--report-surface-soft, #1c3036);
+        --bf-rte-border: var(--report-border, #3b525a);
+        --bf-rte-focus: var(--report-primary, #54b8ca);
+        --bf-rte-text: var(--report-text, #edf6f7);
+    }
+}
+/* Quill owns the editable child; keep the shared container and both themes. */
+.byte-forge-rich-text-surface.ql-container { padding: 0; font: inherit; }
+.byte-forge-rich-text-surface .ql-editor { min-height: 360px; padding: 18px; font-weight: 400; line-height: 1.6; }
+.byte-forge-rich-text-surface .ql-editor:focus { box-shadow: inset 0 0 0 2px var(--bf-rte-focus); }
+.byte-forge-rich-text-toolbar button[aria-pressed="true"] { background: var(--bf-rte-bg); border-color: var(--bf-rte-focus); color: var(--bf-rte-text); }
+.byte-forge-rich-text-surface .ql-editor.ql-blank::before { color: var(--bf-rte-text); opacity: .7; }
+/* Full Quill toolbar: theme-aware controls, pickers and link editor. */
+.byte-forge-rich-text { overflow: visible; }
+.byte-forge-rich-text .bf-script-format-toolbar.ql-toolbar { border: 0; border-bottom: 1px solid var(--bf-rte-border); border-radius: 10px 10px 0 0; background: var(--bf-rte-bg-soft); color: var(--bf-rte-text); padding: 10px; font: inherit; }
+.byte-forge-rich-text .bf-script-format-toolbar .ql-formats { margin: 3px 10px 3px 0; }
+.byte-forge-rich-text .bf-script-format-toolbar button { border-radius: 4px; min-width: 28px; height: 30px; color: var(--bf-rte-text); font-weight: 500; }
+.byte-forge-rich-text .ql-snow .ql-stroke { stroke: var(--bf-rte-text); }
+.byte-forge-rich-text .ql-snow .ql-fill { fill: var(--bf-rte-text); }
+.byte-forge-rich-text .ql-snow .ql-picker { color: var(--bf-rte-text); font-weight: 400; }
+.byte-forge-rich-text .ql-snow .ql-picker-options, .byte-forge-rich-text .ql-snow .ql-tooltip { background: var(--bf-rte-bg); color: var(--bf-rte-text); border-color: var(--bf-rte-border); box-shadow: 0 4px 14px #0003; z-index: 20; }
+.byte-forge-rich-text .ql-snow .ql-picker.ql-expanded .ql-picker-label { color: var(--bf-rte-text); border-color: var(--bf-rte-border); }
+.byte-forge-rich-text .ql-snow .ql-picker-label { border-radius: 4px; min-height: 30px; }
+.byte-forge-rich-text .ql-snow .ql-picker-label::before, .byte-forge-rich-text .ql-snow .ql-picker-item::before { content: attr(data-label); }
+.byte-forge-rich-text .ql-snow .ql-picker.ql-font { width: 150px; }
+.byte-forge-rich-text .ql-snow .ql-picker.ql-size { width: 105px; }
+.byte-forge-rich-text .ql-snow .ql-picker.ql-header { width: 112px; }
+.byte-forge-rich-text .ql-snow .ql-picker-label:hover, .byte-forge-rich-text .ql-snow .ql-picker-item:hover, .byte-forge-rich-text .ql-snow button:hover, .byte-forge-rich-text .ql-snow button.ql-active { color: var(--bf-rte-focus); background: var(--bf-rte-bg); }
+.byte-forge-rich-text .ql-snow button:hover .ql-stroke, .byte-forge-rich-text .ql-snow button.ql-active .ql-stroke { stroke: var(--bf-rte-focus); }
+.byte-forge-rich-text .ql-snow button:hover .ql-fill, .byte-forge-rich-text .ql-snow button.ql-active .ql-fill { fill: var(--bf-rte-focus); }
+.byte-forge-rich-text .ql-snow .ql-picker-item.ql-selected { color: var(--bf-rte-focus); }
+.byte-forge-rich-text .ql-snow button:focus-visible, .byte-forge-rich-text .ql-snow [tabindex]:focus-visible, .byte-forge-rich-text .ql-tooltip a:focus-visible { outline: 2px solid var(--bf-rte-focus); outline-offset: 2px; }
+.byte-forge-rich-text .ql-container.ql-snow { border: 0; border-radius: 0 0 10px 10px; height: auto; }
+.byte-forge-rich-text .ql-editor { border-radius: 0 0 10px 10px; }
+.byte-forge-rich-text .ql-tooltip { white-space: normal; max-width: min(420px, 90vw); }
+.byte-forge-rich-text .ql-tooltip input[type=text] { background: var(--bf-rte-bg); color: var(--bf-rte-text); border-color: var(--bf-rte-border); font-weight: 400; max-width: 100%; }
+.byte-forge-rich-text .ql-tooltip a { color: var(--bf-rte-focus); }
+.byte-forge-rich-text .ql-snow .ql-picker-label.ql-active, .byte-forge-rich-text .ql-snow .ql-picker-item.ql-selected { color: var(--bf-rte-focus); }
+.byte-forge-rich-text .ql-snow .ql-picker-label.ql-active .ql-stroke, .byte-forge-rich-text .ql-snow .ql-picker-item.ql-selected .ql-stroke { stroke: var(--bf-rte-focus); }
+.byte-forge-rich-text .ql-editor a { color: var(--bf-rte-focus); }

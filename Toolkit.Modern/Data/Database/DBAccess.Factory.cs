@@ -59,16 +59,18 @@ public partial class DBAccess
     /// <param name="connection">The database connection.</param>
     /// <param name="query">The SQL query to execute.</param>
     /// <param name="arguments">The arguments for the SQL query.</param>
+    /// <param name="reference">The short reference for the operation.</param>
     /// <returns>The created command.</returns>
-    private IDbCommand CreateCommand(IDbConnection connection, string query, object?[]? arguments)
+    private IDbCommand CreateCommand(IDbConnection connection, string query, object?[]? arguments, string reference)
     {
         var cmd = connection.CreateCommand();
         cmd.CommandTimeout = Options.CommandTimeout;
         cmd.CommandText = query;
 
-        Log.Verbose($"Command created for query:{Environment.NewLine}{query}");
         AddParametersToCommand(cmd, query, arguments);
+        Log.Verbose($"Command created for query ({reference}):{Environment.NewLine}{query}");
 
         return cmd;
     }
+
 }
